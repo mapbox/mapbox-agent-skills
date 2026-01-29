@@ -1,0 +1,51 @@
+name: General Issue
+description: Ask a question, request a feature, or report other issues
+title: "[Issue] "
+labels: [needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For skill proposals, use the "Skill Proposal" template.
+        For bugs in existing skills, use the "Bug Report" template.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of Issue
+      description: What kind of issue is this?
+      options:
+        - Question
+        - Feature Request
+        - Documentation
+        - Repository Maintenance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What's your question or request?
+      placeholder: Provide a clear description
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Any relevant background or use case
+      placeholder: What problem are you trying to solve or what would you like to understand?
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any other relevant information
+      placeholder: Links, examples, screenshots, etc.
+    validations:
+      required: false

@@ -1,0 +1,32 @@
+{
+  "name": "@mapbox/agent-skills",
+  "version": "1.0.0",
+  "description": "Agent Skills for building fast, beautiful, secure Mapbox applications",
+  "type": "module",
+  "scripts": {
+    "spellcheck": "cspell \"*.md\" \"skills/**/*.md\"",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules",
+    "validate:skills": "node scripts/validate-skills.js",
+    "check": "npm run spellcheck && npm run lint:markdown && npm run validate:skills"
+  },
+  "keywords": [
+    "agent-skills",
+    "mapbox",
+    "mapbox-gl-js",
+    "claude-code",
+    "cursor",
+    "copilot",
+    "performance",
+    "best-practices"
+  ],
+  "author": "Mapbox",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mapbox/mapbox-agent-skills.git"
+  },
+  "devDependencies": {
+    "cspell": "^8.0.0",
+    "markdownlint-cli": "^0.39.0"
+  }
+}

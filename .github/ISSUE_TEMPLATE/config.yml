@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Mapbox Support
+    url: https://support.mapbox.com/
+    about: For general Mapbox questions or account issues
+  - name: Mapbox MCP DevKit Server
+    url: https://github.com/mapbox/mcp-devkit-server
+    about: For MCP tools, prompts, and server functionality

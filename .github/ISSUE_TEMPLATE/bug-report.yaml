@@ -1,0 +1,107 @@
+name: Bug Report
+description: Report an error, incorrect guidance, or broken example in a skill
+title: "[Bug] "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! This helps us maintain accurate and helpful guidance.
+
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Which Skill?
+      description: Which skill contains the bug?
+      options:
+        - mapbox-web-performance-patterns
+        - mapbox-web-integration-patterns
+        - mapbox-ios-patterns
+        - mapbox-android-patterns
+        - mapbox-cartography
+        - mapbox-style-patterns
+        - mapbox-style-quality
+        - mapbox-token-security
+        - Multiple skills
+        - Repository/CI issue
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of Issue
+      description: What kind of bug is this?
+      options:
+        - Incorrect technical information
+        - Broken or outdated code example
+        - Misleading guidance or anti-pattern
+        - Typo or formatting issue
+        - Missing information
+        - Broken link or reference
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is incorrect or broken?
+      placeholder: Clear description of the issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Where is this issue in the skill?
+      placeholder: |
+        File: skills/mapbox-web-performance-patterns/SKILL.md
+        Section: "Marker Performance"
+        Line/heading: Near line 250 or under "Clustering Patterns"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current (Incorrect) Content
+      description: What does the skill currently say?
+      placeholder: Copy the incorrect text or code example
+      render: markdown
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected (Correct) Content
+      description: What should it say instead?
+      placeholder: Provide the correct information or example
+      render: markdown
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: How does this affect users or AI assistants?
+      placeholder: e.g., "AI might recommend an anti-pattern that causes performance issues"
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to documentation, examples, or evidence that supports the correction
+      placeholder: |
+        - Mapbox docs: https://docs.mapbox.com/...
+        - GitHub issue: https://github.com/...
+        - Stack Overflow: https://stackoverflow.com/...
+    validations:
+      required: false

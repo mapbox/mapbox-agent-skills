@@ -1,0 +1,105 @@
+name: Skill Proposal
+description: Propose a new agent skill for Mapbox development
+title: "[Skill] "
+labels: [skill-proposal, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a new skill! Please provide as much detail as possible to help us evaluate the proposal.
+
+  - type: input
+    id: skill-name
+    attributes:
+      label: Skill Name
+      description: What should this skill be called?
+      placeholder: e.g., mapbox-accessibility-patterns
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What domain expertise would this skill provide?
+      placeholder: Brief 1-2 sentence description of what the skill teaches AI assistants
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: When Should This Skill Be Used?
+      description: What scenarios or tasks would trigger this skill?
+      placeholder: |
+        - When optimizing for accessibility compliance
+        - When implementing keyboard navigation
+        - When ensuring screen reader compatibility
+    validations:
+      required: true
+
+  - type: textarea
+    id: topics
+    attributes:
+      label: Key Topics to Cover
+      description: What specific topics, patterns, or best practices should this skill include?
+      placeholder: |
+        - WCAG compliance levels
+        - ARIA labels for map controls
+        - Keyboard shortcuts and focus management
+        - Screen reader announcements for map state changes
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this skill?
+      options:
+        - Critical - Addresses common pain point or frequent mistakes
+        - High - Would significantly improve AI guidance quality
+        - Medium - Nice to have, fills a gap
+        - Low - Edge case or specialized use case
+    validations:
+      required: true
+
+  - type: textarea
+    id: gap
+    attributes:
+      label: What Gap Does This Fill?
+      description: Why isn't this covered by existing skills or Mapbox documentation?
+      placeholder: Explain what's missing or unclear in current resources
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example Scenarios
+      description: Provide 1-2 concrete examples of where this skill would help
+      placeholder: |
+        Example: User asks "How do I make my Mapbox map accessible for screen readers?"
+        Current state: AI has to piece together info from docs
+        With this skill: AI knows specific patterns, ARIA labels, and common pitfalls
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Any relevant documentation, examples, or resources
+      placeholder: Links to Mapbox docs, blog posts, GitHub issues, etc.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution Interest
+      description: Are you interested in contributing this skill?
+      options:
+        - label: I'm willing to draft this skill
+        - label: I can provide technical review/feedback
+        - label: Just proposing the idea

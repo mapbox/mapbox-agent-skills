@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**8 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, and security best practices.
+**9 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, geospatial operations, and security best practices.
 
 ## Quick Start
 
@@ -36,6 +36,39 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 - 🌐 **Web**: React, Vue, Svelte, Angular, Next.js (Mapbox GL JS)
 - 📱 **iOS**: Swift, SwiftUI, UIKit (Maps SDK for iOS)
 - 📱 **Android**: Kotlin, Jetpack Compose, View system (Maps SDK for Android)
+
+---
+
+### 🗺️ mapbox-geospatial-operations
+
+**Expert guidance on choosing between offline geometric tools and routing APIs for geospatial operations.**
+
+Helps AI assistants select the right tool based on problem type (geometric vs routing), accuracy requirements, and performance needs. Features the "as the crow flies" vs "as the crow drives" decision framework.
+
+**Use when:**
+- Deciding between offline calculations and API calls
+- Calculating distances (straight-line vs road distance)
+- Checking if points are within an area
+- Creating travel-time zones vs distance buffers
+- Optimizing geospatial operations for performance
+- Understanding when to use routing vs geometry
+
+**Key topics:**
+- Decision framework: geometric operations vs routing APIs
+- Distance calculations (crow flies vs crow drives)
+- Proximity and containment checks
+- Area and shape operations
+- Routing and navigation patterns
+- Clustering and optimization
+- Hybrid approaches (combining tools)
+- Common anti-patterns to avoid
+- Performance and scale considerations
+
+**Tool categories covered:**
+- Offline geometric: distance, bearing, buffer, centroid, area, containment
+- Routing APIs: directions, matrix, optimization, isochrone, map matching
+
+[View skill →](./skills/mapbox-geospatial-operations/SKILL.md)
 
 ---
 

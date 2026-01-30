@@ -291,10 +291,10 @@ Once installed, skills activate automatically when relevant:
 
 ### Performance Optimization
 
-```
 👤 User: "My Mapbox map with 5,000 restaurant markers is slow. How do I optimize it?"
 
 🤖 Claude: [Uses mapbox-web-performance-patterns skill]
+
 "Based on the marker performance thresholds:
 - < 100 markers: HTML markers OK
 - 100-1,000: Use Symbol layers (GeoJSON)
@@ -302,14 +302,13 @@ Once installed, skills activate automatically when relevant:
 - > 10,000: Server-side clustering
 
 For 5,000 markers, you need clustering. Here's the pattern..."
-```
 
 ### Framework Integration
 
-```
 👤 User: "Set up Mapbox in my React app"
 
 🤖 Claude: [Uses mapbox-web-integration-patterns skill]
+
 "I'll use the React pattern with useRef + useEffect:
 
 ```jsx
@@ -344,16 +343,14 @@ Key points:
 - Use useRef for both map instance and container
 - Initialize in useEffect with empty deps []
 - Always return cleanup function that calls map.remove()
-- Never initialize map in render (causes infinite loops)
-"
-```
+- Never initialize map in render (causes infinite loops)"
 
 ### Map Design
 
-```
 👤 User: "Create a map style for a restaurant finder app"
 
 🤖 Claude: [Uses mapbox-cartography + mapbox-style-patterns skills]
+
 "For a restaurant finder, you need:
 
 Design (from cartography skill):
@@ -369,7 +366,6 @@ I'll apply the POI Finder pattern:
 - White roads on light gray background
 - Simplified labels (only major streets)
 ..."
-```
 
 ## How Skills Complement Mapbox MCP Server
 

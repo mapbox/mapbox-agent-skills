@@ -1,5 +1,3 @@
-Mapbox Search Patterns Skill - Expert guidance on choosing search tools and parameters for geocoding and POI search
-
 ---
 name: mapbox-search-patterns
 description: Expert guidance on choosing the right Mapbox search tool and parameters for geocoding, POI search, and location discovery

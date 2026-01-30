@@ -1,5 +1,3 @@
-Mapbox Geospatial Operations Skill - Expert guidance on choosing between offline and API-based geospatial tools
-
 ---
 name: mapbox-geospatial-operations
 description: Expert guidance on choosing the right geospatial tool based on problem type, accuracy requirements, and performance needs

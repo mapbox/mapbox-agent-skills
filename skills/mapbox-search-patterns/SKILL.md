@@ -220,6 +220,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 | `false` (default) | Exact matching | Final query, not autocomplete |
 
 **Example:**
+<!-- cspell:disable -->
 ```json
 // User types "starb"
 {"q": "starb", "auto_complete": true}
@@ -229,6 +230,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 **Use for:**
 - Search-as-you-type interfaces
 - Handling typos ("mcdonalds" → McDonald's)
+<!-- cspell:enable -->
 - Incomplete queries
 
 **Don't use for:**

@@ -45,6 +45,8 @@
     "lateinit",
     "mapbox",
     "mapboxgl",
+    "maplibre",
+    "maplibregl",
     "maki",
     "markerstroked",
     "maxzoom",

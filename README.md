@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**8 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, and security best practices.
+**9 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, and security best practices.
 
 ## Quick Start
 
@@ -36,6 +36,41 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 - 🌐 **Web**: React, Vue, Svelte, Angular, Next.js (Mapbox GL JS)
 - 📱 **iOS**: Swift, SwiftUI, UIKit (Maps SDK for iOS)
 - 📱 **Android**: Kotlin, Jetpack Compose, View system (Maps SDK for Android)
+
+---
+
+### 🔄 mapbox-maplibre-migration
+
+**Migration guide between Mapbox GL JS and MapLibre GL JS in both directions.**
+
+Covers the fork history, API compatibility (~95% identical), token handling, style differences, and feature parity. Helps developers migrate in either direction or use both libraries together.
+
+**Use when:**
+- Migrating from Mapbox to MapLibre (or vice versa)
+- Evaluating which library to use
+- Understanding API compatibility
+- Switching tile sources
+- Combining MapLibre rendering with Mapbox APIs
+
+**Key topics:**
+- Fork history and license differences
+- Package and import changes
+- Token handling (Mapbox token vs no token)
+- Style URL differences (mapbox:// vs OSM/custom)
+- Feature parity comparison
+- Plugin compatibility
+- Migration in both directions
+- When to choose each library
+- Using both together
+
+**Covers:**
+- Step-by-step migration guides (both directions)
+- API compatibility matrix (100% compatible vs minor differences)
+- Common migration issues and solutions
+- Decision guide (when to use which)
+- Side-by-side code examples
+
+[View skill →](./skills/mapbox-maplibre-migration/SKILL.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**8 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, and security best practices.
+**9 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, search integration, and security best practices.
 
 ## Quick Start
 
@@ -36,6 +36,46 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 - 🌐 **Web**: React, Vue, Svelte, Angular, Next.js (Mapbox GL JS)
 - 📱 **iOS**: Swift, SwiftUI, UIKit (Maps SDK for iOS)
 - 📱 **Android**: Kotlin, Jetpack Compose, View system (Maps SDK for Android)
+
+---
+
+### 🔍 mapbox-search-integration
+
+**Complete workflow for implementing Mapbox search in applications from discovery to production.**
+
+Guides AI assistants through the entire search integration process: asking discovery questions, selecting the right product, implementing with best practices, and avoiding common pitfalls. Embodies collective knowledge from the Mapbox search team and customer learnings.
+
+**Use when:**
+- User needs to add search to their app
+- Implementing location search or geocoding
+- Need to ask the right questions about requirements
+- Want production-ready search implementation
+- Avoiding common integration mistakes
+
+**Key workflow:**
+1. **Discovery questions** - What to ask users (POIs? Addresses? Geographic scope? Platform?)
+2. **Product selection** - Search Box API vs Geocoding API, SDK vs direct API
+3. **Implementation patterns** - Complete code examples for web, iOS, Android
+4. **Best practices** - Debouncing, session tokens, error handling, UX patterns
+5. **Common pitfalls** - What goes wrong and how to avoid it
+
+**Covers all platforms:**
+- Web (Search Box JS, React, Vue, direct API)
+- iOS (Search SDK, UISearchController integration)
+- Android (Search SDK, SearchView integration)
+- Framework-specific patterns
+
+**Best practices from "the good parts":**
+- ✅ Debouncing (prevent API spam)
+- ✅ Session token management (cost optimization)
+- ✅ Geographic filtering (better results)
+- ✅ Error handling (all failure cases)
+- ✅ Mobile UX (touch targets, keyboards)
+- ✅ Accessibility (keyboard nav, ARIA)
+- ✅ Caching strategies (high-volume apps)
+- ✅ Token security (proper scoping)
+
+[View skill →](./skills/mapbox-search-integration/SKILL.md)
 
 ---
 

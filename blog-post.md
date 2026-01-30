@@ -1,6 +1,6 @@
 # Mapbox Agent Skills: Teaching AI Assistants to Build Better Maps
 
-If you've been following along with what we're doing at Mapbox in the AI space, you know we've been busy. We launched our [MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) with tools for creating styles, managing tokens, and generating previews. We also have a Mapbox-specific agent in private preview that's been helping developers build mapping applications. Today, I'm excited to share what we've been working on next: **Mapbox Agent Skills**.
+If you've been following along with what we're doing at Mapbox in the AI space, you know we've been busy. We launched our [Mapbox MCP Server](https://github.com/mapbox/mcp-server) ([announcement blog post](https://dev.to/mapbox/introducing-the-mapbox-mcp-server-location-intelligence-for-ai-agents-4bia)) that gives AI agents access to geocoding, routing, search, isochrones, and more location intelligence capabilities. We also have a Mapbox-specific agent in private preview that's been helping developers build mapping applications. Today, I'm excited to share what we've been working on next: **Mapbox Agent Skills**.
 
 ## What Are Agent Skills?
 
@@ -154,6 +154,6 @@ If you're building with Mapbox and using an AI assistant, give these skills a sh
 
 The skills are open source at [github.com/mapbox/mapbox-agent-skills](https://github.com/mapbox/mapbox-agent-skills). If you have ideas for new skills or improvements to existing ones, pull requests are welcome.
 
-And if you want even more power, combine these skills with our [MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server). Skills provide the expertise (how to design a good map style), and MCP tools provide the actions (create the style, generate a preview). Together, they enable complete workflows from idea to deployment.
+And if you want even more power, combine these skills with our [Mapbox MCP Server](https://github.com/mapbox/mcp-server). Skills provide the expertise (performance patterns, design principles, framework integration), and MCP tools provide the actions (geocoding, routing, search, static maps). Together, they enable complete workflows from idea to deployment.
 
 Happy mapping!

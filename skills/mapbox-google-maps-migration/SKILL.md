@@ -904,7 +904,7 @@ Consider staying with Google Maps if:
 ## Additional Resources
 
 - [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/)
-- [Google Maps to Mapbox Migration Guide](https://docs.mapbox.com/help/tutorials/)
+- [Official Google Maps to Mapbox Migration Guide](https://docs.mapbox.com/help/tutorials/google-to-mapbox/)
 - [Mapbox Examples](https://docs.mapbox.com/mapbox-gl-js/examples/)
 - [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
 

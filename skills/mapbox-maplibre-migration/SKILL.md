@@ -90,7 +90,7 @@ Or with CDN:
 mapboxgl.accessToken = 'pk.your_mapbox_token';
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/standard', // or streets-v12, satellite-v9, outdoors-v12, light-v11, dark-v11
+  style: 'mapbox://styles/mapbox/streets-v12', // or satellite-v9, outdoors-v12, light-v11, dark-v11
   center: [-122.4194, 37.7749],
   zoom: 12
 });
@@ -179,33 +179,7 @@ const map = new maplibregl.Map({
 });
 ```
 
-**Better Option:** Fetch a Mapbox style and use it directly:
-```javascript
-// Fetch the Mapbox style JSON and use it with MapLibre
-fetch('https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=YOUR_MAPBOX_TOKEN')
-  .then(response => response.json())
-  .then(styleJson => {
-    // Update tile URLs to include access token
-    Object.keys(styleJson.sources).forEach(sourceName => {
-      const source = styleJson.sources[sourceName];
-      if (source.url && source.url.startsWith('mapbox://')) {
-        // Replace mapbox:// URLs with full API URLs
-        const tilesetId = source.url.replace('mapbox://', '');
-        source.tiles = [
-          `https://api.mapbox.com/v4/${tilesetId}/{z}/{x}/{y}.mvt?access_token=YOUR_MAPBOX_TOKEN`
-        ];
-        delete source.url;
-      }
-    });
-
-    const map = new maplibregl.Map({
-      container: 'map',
-      center: [-122.4194, 37.7749],
-      zoom: 12,
-      style: styleJson
-    });
-  });
-```
+**Note:** For production use, you may want to use a complete Mapbox style.json. You can download a Mapbox style from the Mapbox Studio or Styles API, then manually replace any `mapbox://` source URLs with explicit tile URLs (as shown above) before using it with MapLibre.
 
 #### 5. Update Marker/Popup Code
 
@@ -321,7 +295,7 @@ See `mapbox-token-security` skill for details.
 style: 'https://demotiles.maplibre.org/style.json'
 
 // After (Mapbox)
-style: 'mapbox://styles/mapbox/standard'
+style: 'mapbox://styles/mapbox/streets-v12'
 // Other options: satellite-v9, outdoors-v12, light-v11, dark-v11
 ```
 
@@ -468,23 +442,16 @@ new mapboxgl.GeolocateControl() / new maplibregl.GeolocateControl()
 **Problem:**
 ```javascript
 // This won't work in MapLibre without configuration
-style: 'mapbox://styles/mapbox/standard'
+style: 'mapbox://styles/mapbox/streets-v12'
 ```
 
 **Solution:**
 ```javascript
-// Option A: Use MapLibre-compatible style URL
+// Use MapLibre-compatible style URL
 style: 'https://demotiles.maplibre.org/style.json'
 
-// Option B: Configure transformRequest to handle mapbox:// URLs
-const map = new maplibregl.Map({
-  style: 'mapbox://styles/mapbox/standard',
-  transformRequest: (url) => {
-    if (url.startsWith('https://api.mapbox.com')) {
-      return { url: url + '?access_token=YOUR_TOKEN' };
-    }
-  }
-});
+// Or define Mapbox tiles explicitly in a custom style.json
+// (see "Option C: Keep using Mapbox tiles" in the migration steps above)
 ```
 
 ### Issue 2: Plugin Compatibility
@@ -514,8 +481,9 @@ maplibregl.accessToken = 'pk.xxx'; // This does nothing
 
 **Solution:**
 ```javascript
-// If using Mapbox tiles with MapLibre, use transformRequest
-// If using OSM/custom tiles, no token needed
+// MapLibre doesn't use accessToken - pass tokens in tile URLs instead
+// If using Mapbox tiles with MapLibre, define them explicitly in style.json
+// (see "Option C: Keep using Mapbox tiles" in the migration steps above)
 
 // For Mapbox GL JS, token is required:
 mapboxgl.accessToken = 'pk.xxx'; // Required
@@ -545,7 +513,7 @@ mapboxgl.accessToken = 'pk.your_token';
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/standard',
+  style: 'mapbox://styles/mapbox/streets-v12',
   center: [-122.4194, 37.7749],
   zoom: 12
 });
@@ -674,7 +642,7 @@ const map = new gl.Map({
 
 function getStyle() {
   if (typeof mapboxgl !== 'undefined') {
-    return 'mapbox://styles/mapbox/standard';
+    return 'mapbox://styles/mapbox/streets-v12';
   }
   return 'https://demotiles.maplibre.org/style.json';
 }
@@ -806,7 +774,7 @@ Both libraries have similar performance as they share the same core codebase:
 | Package | `mapbox-gl` | `maplibre-gl` |
 | Import | `import mapboxgl from 'mapbox-gl'` | `import maplibregl from 'maplibre-gl'` |
 | Token | Required: `mapboxgl.accessToken = 'pk.xxx'` | Optional (depends on tiles) |
-| Style | `mapbox://styles/mapbox/standard` | Custom URL or OSM tiles |
+| Style | `mapbox://styles/mapbox/streets-v12` | Custom URL or OSM tiles |
 | License | Proprietary (v2+) | BSD (Open Source) |
 | Cost | Mapbox billing | Free (but need tile source) |
 | API | ~95% compatible | ~95% compatible |

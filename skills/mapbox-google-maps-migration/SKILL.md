@@ -557,7 +557,7 @@ map.setStyle('mapbox://styles/mapbox/dark-v11');
 // Or create custom style in Mapbox Studio and reference it
 map.setStyle('mapbox://styles/yourusername/your-style-id');
 
-// Or modify style programmatically
+// For classic styles (pre Mapbox Standard) you can modify style programmatically by using the setPaintProperty()
 map.setPaintProperty('water', 'fill-color', '#242f3e');
 ```
 

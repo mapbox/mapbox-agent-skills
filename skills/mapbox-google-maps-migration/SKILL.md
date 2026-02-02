@@ -106,7 +106,7 @@ const marker = new mapboxgl.Marker()
 marker.remove();
 ```
 
-### Multiple Markers (Data-Driven Approach)
+### Multiple Markers
 
 **Google Maps:**
 ```javascript
@@ -118,9 +118,19 @@ const markers = locations.map(loc =>
 );
 ```
 
-**Mapbox GL JS (Recommended):**
+**Mapbox GL JS (Equivalent Approach):**
 ```javascript
-// Add as GeoJSON source + layer
+// Same object-oriented approach
+const markers = locations.map(loc =>
+  new mapboxgl.Marker()
+    .setLngLat([loc.lng, loc.lat])
+    .addTo(map)
+);
+```
+
+**Mapbox GL JS (Data-Driven Approach - Recommended for 100+ points):**
+```javascript
+// Add as GeoJSON source + layer (uses WebGL, not DOM)
 map.addSource('points', {
   type: 'geojson',
   data: {
@@ -144,7 +154,7 @@ map.addLayer({
 });
 ```
 
-**Why this matters:** Mapbox's data-driven approach is much more performant for large datasets.
+**Performance Advantage:** Google Maps renders all markers as DOM elements (even when using the Data Layer), which becomes slow with 500+ markers. Mapbox's circle and symbol layers are rendered by WebGL, making them much faster for large datasets (1,000-10,000+ points). This is a significant advantage when building applications with many points.
 
 ## Info Windows / Popups
 
@@ -344,11 +354,11 @@ geocoder.geocode({ address: '1600 Amphitheatre Parkway' }, (results, status) => 
 
 ### Mapbox GL JS
 ```javascript
-// Use Mapbox Geocoding API
-fetch(`https://api.mapbox.com/search/geocode/v6/forward?q=1600+Amphitheatre+Parkway?&access_token=${mapboxgl.accessToken}`)
+// Use Mapbox Geocoding API v6
+fetch(`https://api.mapbox.com/search/geocode/v6/forward?q=1600+Amphitheatre+Parkway&access_token=${mapboxgl.accessToken}`)
   .then(response => response.json())
   .then(data => {
-    const [lng, lat] = data.features[0].center;
+    const [lng, lat] = data.features[0].geometry.coordinates;
     map.setCenter([lng, lat]);
   });
 
@@ -532,8 +542,9 @@ map.addLayer({
 **Mapbox GL JS:**
 - Full control over every visual element
 - Pre-built styles: standard, standard-satellite, streets, outdoors, light, dark
-- Custom styles via Mapbox Studio
+- Custom styles via Mapbox Studio for unique branding and design
 - Dynamic styling based on data properties
+- For classic styles (pre Mapbox Standard) you can modify style programmatically by using the setPaintProperty()
 
 ### Custom Styling Example
 

@@ -345,7 +345,7 @@ geocoder.geocode({ address: '1600 Amphitheatre Parkway' }, (results, status) => 
 ### Mapbox GL JS
 ```javascript
 // Use Mapbox Geocoding API
-fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/1600%20Amphitheatre%20Parkway.json?access_token=${mapboxgl.accessToken}`)
+fetch(`https://api.mapbox.com/search/geocode/v6/forward?q=1600+Amphitheatre+Parkway?&access_token=${mapboxgl.accessToken}`)
   .then(response => response.json())
   .then(data => {
     const [lng, lat] = data.features[0].center;

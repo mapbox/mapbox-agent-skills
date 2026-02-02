@@ -137,20 +137,74 @@ style: {
 
 **Option C: Keep using Mapbox tiles (with token)**
 ```javascript
-// You CAN still use Mapbox tiles with MapLibre
+// You CAN still use Mapbox tiles with MapLibre by manually defining sources
+// Note: MapLibre doesn't parse mapbox:// URLs, so you need to explicitly define the tile sources
 const map = new maplibregl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
   center: [-122.4194, 37.7749],
   zoom: 12,
-  transformRequest: (url, resourceType) => {
-    if (url.startsWith('https://api.mapbox.com')) {
-      return {
-        url: url + '?access_token=YOUR_MAPBOX_TOKEN'
-      };
-    }
+  style: {
+    version: 8,
+    sources: {
+      'mapbox-streets': {
+        type: 'vector',
+        tiles: [
+          'https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.mvt?access_token=YOUR_MAPBOX_TOKEN'
+        ],
+        minzoom: 0,
+        maxzoom: 14
+      }
+    },
+    layers: [
+      {
+        id: 'background',
+        type: 'background',
+        paint: {
+          'background-color': '#f8f8f8'
+        }
+      },
+      {
+        id: 'roads',
+        type: 'line',
+        source: 'mapbox-streets',
+        'source-layer': 'road',
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 2
+        }
+      }
+      // Add more layers as needed
+    ]
   }
 });
+```
+
+**Better Option:** Fetch a Mapbox style and use it directly:
+```javascript
+// Fetch the Mapbox style JSON and use it with MapLibre
+fetch('https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=YOUR_MAPBOX_TOKEN')
+  .then(response => response.json())
+  .then(styleJson => {
+    // Update tile URLs to include access token
+    Object.keys(styleJson.sources).forEach(sourceName => {
+      const source = styleJson.sources[sourceName];
+      if (source.url && source.url.startsWith('mapbox://')) {
+        // Replace mapbox:// URLs with full API URLs
+        const tilesetId = source.url.replace('mapbox://', '');
+        source.tiles = [
+          `https://api.mapbox.com/v4/${tilesetId}/{z}/{x}/{y}.mvt?access_token=YOUR_MAPBOX_TOKEN`
+        ];
+        delete source.url;
+      }
+    });
+
+    const map = new maplibregl.Map({
+      container: 'map',
+      center: [-122.4194, 37.7749],
+      zoom: 12,
+      style: styleJson
+    });
+  });
 ```
 
 #### 5. Update Marker/Popup Code

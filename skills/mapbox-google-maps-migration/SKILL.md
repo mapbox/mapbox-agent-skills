@@ -531,7 +531,7 @@ map.addLayer({
 
 **Mapbox GL JS:**
 - Full control over every visual element
-- Pre-built styles: streets, satellite, outdoors, light, dark
+- Pre-built styles: standard, standard-satellite, streets, outdoors, light, dark
 - Custom styles via Mapbox Studio
 - Dynamic styling based on data properties
 

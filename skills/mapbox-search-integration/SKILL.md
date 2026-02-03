@@ -261,7 +261,96 @@ function App() {
 - ✅ Handle `retrieve` event for result selection
 - ✅ Integrate with map (flyTo, markers, popups)
 
-### Web: Direct API Integration (More Control)
+#### Option 3: Search JS Core (Custom UI)
+
+**When to use:** Need custom UI design, full control over UX, works in any framework or Node.js
+
+**Installation:**
+```bash
+npm install @mapbox/search-js-core
+```
+
+**Complete implementation:**
+```javascript
+import { SearchSession } from '@mapbox/search-js-core';
+import mapboxgl from 'mapbox-gl';
+
+// Initialize search session
+const search = new SearchSession({
+  accessToken: 'YOUR_MAPBOX_TOKEN'
+});
+
+// Initialize map
+mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v12',
+  center: [-122.4194, 37.7749],
+  zoom: 12
+});
+
+// Your custom search input
+const searchInput = document.getElementById('search-input');
+const resultsContainer = document.getElementById('results');
+
+// Handle user input
+searchInput.addEventListener('input', async (e) => {
+  const query = e.target.value;
+
+  if (query.length < 2) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  // Get suggestions (Search JS Core handles debouncing and session tokens)
+  const response = await search.suggest(query, {
+    proximity: map.getCenter().toArray(),
+    country: 'US', // Optional
+    types: ['address', 'poi']
+  });
+
+  // Render custom results UI
+  resultsContainer.innerHTML = response.suggestions.map(suggestion => `
+    <div class="result-item" data-id="${suggestion.mapbox_id}">
+      <strong>${suggestion.name}</strong>
+      <div>${suggestion.place_formatted}</div>
+    </div>
+  `).join('');
+});
+
+// Handle result selection
+resultsContainer.addEventListener('click', async (e) => {
+  const resultItem = e.target.closest('.result-item');
+  if (!resultItem) return;
+
+  const mapboxId = resultItem.dataset.id;
+
+  // Retrieve full details
+  const result = await search.retrieve(mapboxId);
+  const feature = result.features[0];
+  const [lng, lat] = feature.geometry.coordinates;
+
+  // Update map
+  map.flyTo({ center: [lng, lat], zoom: 15 });
+  new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
+
+  // Clear search
+  searchInput.value = feature.properties.name;
+  resultsContainer.innerHTML = '';
+});
+```
+
+**Key benefits:**
+- ✅ Full control over UI/UX
+- ✅ Search JS Core handles session tokens automatically
+- ✅ Works in any framework (React, Vue, Angular, etc.)
+- ✅ Can use in Node.js for server-side search
+
+#### Option 4: Direct API Integration (Advanced - Last Resort)
+
+**When to use:** Very specific requirements that SDKs don't support, or server-side integration where Search JS Core doesn't fit
+
+**Important:** Only use direct API calls when SDKs don't meet your needs. You'll need to handle debouncing and session tokens manually.
 
 **When to use:** Custom UI, framework integration, need full control
 
@@ -555,8 +644,74 @@ function MapboxSearchComponent({ accessToken, country, types = 'address,poi' }) 
 export default MapboxSearchComponent;
 ```
 
-### iOS Integration Pattern
+### iOS: Search SDK for iOS (Recommended)
 
+#### Option 1: Search SDK with UI (Easiest)
+
+**When to use:** iOS app, want pre-built search UI, fastest implementation
+
+**Installation:**
+```swift
+// Add to Package.swift or SPM
+dependencies: [
+    .package(url: "https://github.com/mapbox/mapbox-search-ios.git", from: "2.0.0")
+]
+```
+
+**Complete implementation with built-in UI:**
+```swift
+import MapboxSearch
+import MapboxMaps
+
+class SearchViewController: UIViewController {
+    private var searchController: MapboxSearchController!
+    private var mapView: MapView!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        setupMap()
+        setupSearchWithUI()
+    }
+
+    func setupMap() {
+        mapView = MapView(frame: view.bounds)
+        view.addSubview(mapView)
+    }
+
+    func setupSearchWithUI() {
+        // MapboxSearchController provides complete UI automatically
+        searchController = MapboxSearchController()
+        searchController.delegate = self
+
+        // Present the search UI
+        present(searchController, animated: true)
+    }
+}
+
+extension SearchViewController: SearchControllerDelegate {
+    func searchResultSelected(_ searchResult: SearchResult) {
+        // SDK handled all the search interaction
+        // Just respond to selection
+
+        mapView.camera.fly(to: CameraOptions(
+            center: searchResult.coordinate,
+            zoom: 15
+        ))
+
+        let annotation = PointAnnotation(coordinate: searchResult.coordinate)
+        mapView.annotations.pointAnnotations = [annotation]
+
+        dismiss(animated: true)
+    }
+}
+```
+
+#### Option 2: Search SDK Core (Custom UI)
+
+**When to use:** Need custom UI, integrate with UISearchController, full control over UX
+
+**Complete implementation:**
 ```swift
 import MapboxSearch
 import MapboxMaps
@@ -568,16 +723,8 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Initialize Search Engine
+        // Initialize Search Engine (SDK handles debouncing and session tokens)
         searchEngine = SearchEngine(accessToken: "YOUR_MAPBOX_TOKEN")
-
-        // Configure search options based on discovery
-        searchEngine.options = SearchOptions(
-            countries: ["US"], // Question 2: Geographic scope
-            language: .default,
-            limit: 5,
-            proximity: nil // Or set to user location
-        )
 
         setupSearchBar()
         setupMap()
@@ -602,44 +749,111 @@ extension SearchViewController: UISearchResultsUpdating {
             return
         }
 
-        // CRITICAL: Debounce in production
+        // Search SDK handles debouncing automatically
         searchEngine.search(query: query) { [weak self] result in
             switch result {
             case .success(let results):
                 self?.displayResults(results)
             case .failure(let error):
-                print("Search error: \\(error)")
+                print("Search error: \(error)")
             }
         }
     }
 
     func displayResults(_ results: [SearchResult]) {
-        // Display results in table view or collection view
+        // Display results in custom table view
         // When user selects a result:
         handleResultSelection(results[0])
     }
 
     func handleResultSelection(_ result: SearchResult) {
-        // Fly to location
         mapView.camera.fly(to: CameraOptions(
             center: result.coordinate,
             zoom: 15
         ))
 
-        // Add annotation
         let annotation = PointAnnotation(coordinate: result.coordinate)
         mapView.annotations.pointAnnotations = [annotation]
     }
 }
 ```
 
-### Android Integration Pattern
+#### Option 3: Direct API Integration (Advanced)
 
+**When to use:** Very specific requirements, server-side iOS backend
+
+**Important:** Only use if SDK doesn't meet your needs. You must handle debouncing and session tokens manually.
+
+```swift
+// Direct API calls - see Web direct API example
+// Not recommended for iOS - use Search SDK instead
+```
+
+### Android: Search SDK for Android (Recommended)
+
+#### Option 1: Search SDK with UI (Easiest)
+
+**When to use:** Android app, want pre-built search UI, fastest implementation
+
+**Installation:**
+```gradle
+// Add to build.gradle
+dependencies {
+    implementation 'com.mapbox.search:mapbox-search-android-ui:2.0.0'
+    implementation 'com.mapbox.maps:android:11.0.0'
+}
+```
+
+**Complete implementation with built-in UI:**
+```kotlin
+import com.mapbox.search.ui.view.SearchBottomSheetView
+import com.mapbox.maps.MapView
+
+class SearchActivity : AppCompatActivity() {
+    private lateinit var searchView: SearchBottomSheetView
+    private lateinit var mapView: MapView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_search)
+
+        mapView = findViewById(R.id.map_view)
+
+        // SearchBottomSheetView provides complete UI automatically
+        searchView = findViewById(R.id.search_view)
+        searchView.initializeSearch(
+            savedInstanceState,
+            SearchBottomSheetView.Configuration()
+        )
+
+        // Handle result selection
+        searchView.addOnSearchResultClickListener { searchResult ->
+            // SDK handled all the search interaction
+            val coordinate = searchResult.coordinate
+
+            mapView.getMapboxMap().flyTo(
+                CameraOptions.Builder()
+                    .center(Point.fromLngLat(coordinate.longitude, coordinate.latitude))
+                    .zoom(15.0)
+                    .build()
+            )
+
+            searchView.hide()
+        }
+    }
+}
+```
+
+#### Option 2: Search SDK Core (Custom UI)
+
+**When to use:** Need custom UI, integrate with SearchView, full control over UX
+
+**Complete implementation:**
 ```kotlin
 import com.mapbox.search.SearchEngine
+import com.mapbox.search.SearchEngineSettings
 import com.mapbox.search.SearchOptions
 import com.mapbox.maps.MapView
-import com.mapbox.maps.plugin.animation.flyTo
 
 class SearchActivity : AppCompatActivity() {
     private lateinit var searchEngine: SearchEngine
@@ -648,7 +862,7 @@ class SearchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize Search Engine
+        // Initialize Search Engine (SDK handles debouncing and session tokens)
         searchEngine = SearchEngine.createSearchEngine(
             SearchEngineSettings("YOUR_MAPBOX_TOKEN")
         )
@@ -667,8 +881,8 @@ class SearchActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                // CRITICAL: Debounce in production
                 if (newText.length >= 2) {
+                    // Search SDK handles debouncing automatically
                     performSearch(newText)
                 }
                 return true
@@ -678,7 +892,7 @@ class SearchActivity : AppCompatActivity() {
 
     private fun performSearch(query: String) {
         val options = SearchOptions(
-            countries = listOf("US"), // Based on discovery Question 2
+            countries = listOf("US"),
             limit = 5
         )
 
@@ -692,27 +906,114 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun displayResults(results: List<SearchResult>) {
-        // Display in RecyclerView
-        // When user selects:
+        // Display in custom RecyclerView
         handleResultSelection(results[0])
     }
 
     private fun handleResultSelection(result: SearchResult) {
         val coordinate = result.coordinate
 
-        // Fly to location
         mapView.getMapboxMap().flyTo(
             CameraOptions.Builder()
                 .center(Point.fromLngLat(coordinate.longitude, coordinate.latitude))
                 .zoom(15.0)
                 .build()
         )
-
-        // Add marker
-        // (marker implementation)
     }
 }
 ```
+
+#### Option 3: Direct API Integration (Advanced)
+
+**When to use:** Very specific requirements, server-side Android backend
+
+**Important:** Only use if SDK doesn't meet your needs. You must handle debouncing and session tokens manually.
+
+```kotlin
+// Direct API calls - see Web direct API example
+// Not recommended for Android - use Search SDK instead
+```
+
+### Node.js: Mapbox Search JS Core (Recommended)
+
+#### Option 1: Search JS Core (Recommended)
+
+**When to use:** Server-side search, backend API, serverless functions
+
+**Installation:**
+```bash
+npm install @mapbox/search-js-core
+```
+
+**Complete implementation:**
+```javascript
+import { SearchSession } from '@mapbox/search-js-core';
+
+// Initialize search session (handles session tokens automatically)
+const search = new SearchSession({
+  accessToken: process.env.MAPBOX_TOKEN
+});
+
+// Express.js API endpoint example
+app.get('/api/search', async (req, res) => {
+  const { query, proximity, country } = req.query;
+
+  try {
+    // Get suggestions (Search JS Core handles session management)
+    const response = await search.suggest(query, {
+      proximity: proximity ? proximity.split(',').map(Number) : undefined,
+      country: country,
+      limit: 10
+    });
+
+    res.json(response.suggestions);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Retrieve full details for a selected result
+app.get('/api/search/:id', async (req, res) => {
+  try {
+    const result = await search.retrieve(req.params.id);
+    res.json(result.features[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+```
+
+**Key benefits:**
+- ✅ Search JS Core handles session tokens automatically
+- ✅ Perfect for serverless (Vercel, Netlify, AWS Lambda)
+- ✅ Same API as browser Search JS Core
+- ✅ No manual debouncing needed (handle at API gateway level)
+
+#### Option 2: Direct API Integration (Advanced)
+
+**When to use:** Very specific requirements, need features not in Search JS Core
+
+**Implementation:**
+```javascript
+import fetch from 'node-fetch';
+
+async function searchPlaces(query, options = {}) {
+  const params = new URLSearchParams({
+    q: query,
+    access_token: process.env.MAPBOX_TOKEN,
+    session_token: generateSessionToken(), // You must manage this
+    ...options
+  });
+
+  const response = await fetch(
+    `https://api.mapbox.com/search/searchbox/v1/suggest?${params}`
+  );
+
+  return response.json();
+}
+```
+
+**Important:** Only use direct API calls if Search JS Core doesn't meet your needs. You'll need to handle session tokens manually.
 
 ## Best Practices: "The Good Parts"
 

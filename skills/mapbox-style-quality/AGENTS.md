@@ -276,7 +276,7 @@ if (!map.getSource('source')) {
 ## Tools & Resources
 
 **Validation:**
-- Mapbox Style Specification: https://docs.mapbox.com/mapbox-gl-js/style-spec/
+- Mapbox Style Specification: <https://docs.mapbox.com/mapbox-gl-js/style-spec/>
 - JSON Schema validators
 
 **Accessibility:**

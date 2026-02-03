@@ -142,7 +142,9 @@ Mapbox provides professionally designed, maintained styles:
 
 ```javascript
 // Mapbox built-in styles
-style: 'mapbox://styles/mapbox/streets-v12'        // Street maps (default)
+style: 'mapbox://styles/mapbox/standard'        // Mapbox Standard (default)
+style: 'mapbox://styles/mapbox/standard-satellite'.   //  Mapbox Standard Satellite 
+style: 'mapbox://styles/mapbox/streets-v12'               // Streets v12
 style: 'mapbox://styles/mapbox/satellite-v9'       // Satellite imagery
 style: 'mapbox://styles/mapbox/satellite-streets-v12'  // Hybrid
 style: 'mapbox://styles/mapbox/outdoors-v12'       // Outdoor/recreation

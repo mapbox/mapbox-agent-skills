@@ -287,6 +287,46 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 
 ---
 
+### 🔄 mapbox-google-maps-migration
+
+**Comprehensive migration guide for developers moving from Google Maps Platform to Mapbox GL JS.**
+
+Covers API equivalents, coordinate order gotchas, pattern translations, and step-by-step migration strategies with side-by-side code examples.
+
+**Use when:**
+- Migrating an existing Google Maps application to Mapbox
+- Evaluating Mapbox as a Google Maps alternative
+- Learning Mapbox with Google Maps background
+- Translating Google Maps patterns to Mapbox
+- Troubleshooting migration issues
+
+**Key topics:**
+- API equivalents (Map, Marker, Polygon, InfoWindow, etc.)
+- Critical differences (lng,lat vs lat,lng coordinate order)
+- Event mapping and handling changes
+- Markers: Object-oriented vs data-driven approaches
+- Geocoding, directions, and clustering comparisons
+- Performance considerations (WebGL vs DOM)
+- Custom styling: Map types vs style URLs
+- Step-by-step migration strategy and checklist
+- When NOT to migrate guidance
+
+**Covers all major features:**
+- Map initialization and configuration
+- Markers (individual and data-driven)
+- Popups/info windows
+- Polygons, polylines, shapes
+- Custom icons and symbols
+- Geocoding and reverse geocoding
+- Directions/routing
+- Clustering (built-in vs MarkerClusterer)
+- Controls and UI elements
+- Framework integration (React, Vue, etc.)
+
+[View skill →](./skills/mapbox-google-maps-migration/SKILL.md)
+
+---
+
 ## How Skills Work
 
 ### With Claude Code

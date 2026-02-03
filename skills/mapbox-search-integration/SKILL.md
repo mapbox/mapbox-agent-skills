@@ -1549,17 +1549,19 @@ function useMapboxSearch(accessToken, options = {}) {
 }
 ```
 
-### Vue Composition API
+### Vue Composition API (Using Search JS Core - Recommended)
 
 ```javascript
 import { ref, watch } from 'vue';
-import { debounce } from 'lodash-es';
+import { SearchSession } from '@mapbox/search-js-core';
 
 export function useMapboxSearch(accessToken, options = {}) {
   const query = ref('');
   const results = ref([]);
   const isLoading = ref(false);
-  const sessionToken = ref(generateSessionToken());
+
+  // Use Search JS Core - handles debouncing and session tokens automatically
+  const searchSession = new SearchSession({ accessToken });
 
   const performSearch = async (searchQuery) => {
     if (!searchQuery || searchQuery.length < 2) {
@@ -1570,14 +1572,9 @@ export function useMapboxSearch(accessToken, options = {}) {
     isLoading.value = true;
 
     try {
-      const response = await fetch(buildSearchUrl(searchQuery, {
-        accessToken,
-        sessionToken: sessionToken.value,
-        ...options
-      }));
-
-      const data = await response.json();
-      results.value = data.suggestions || [];
+      // Search JS Core handles debouncing and session tokens
+      const response = await searchSession.suggest(searchQuery, options);
+      results.value = response.suggestions || [];
     } catch (error) {
       console.error('Search error:', error);
       results.value = [];
@@ -1586,21 +1583,14 @@ export function useMapboxSearch(accessToken, options = {}) {
     }
   };
 
-  // Debounced search
-  const debouncedSearch = debounce(performSearch, 300);
-
-  // Watch query changes
+  // Watch query changes (Search JS Core handles debouncing)
   watch(query, (newQuery) => {
-    debouncedSearch(newQuery);
+    performSearch(newQuery);
   });
 
-  const retrieve = async (mapboxId) => {
-    const feature = await retrieveFeature(mapboxId, {
-      accessToken,
-      sessionToken: sessionToken.value
-    });
-
-    sessionToken.value = generateSessionToken();
+  const retrieve = async (suggestion) => {
+    // Search JS Core handles session tokens automatically
+    const feature = await searchSession.retrieve(suggestion);
     return feature;
   };
 
@@ -1612,6 +1602,12 @@ export function useMapboxSearch(accessToken, options = {}) {
   };
 }
 ```
+
+**Key benefits:**
+- ✅ Search JS Core handles debouncing automatically (no lodash needed)
+- ✅ Session tokens managed automatically (no manual token generation)
+- ✅ Simpler code, fewer dependencies
+- ✅ Same API works in browser and Node.js
 
 ## Testing Strategy
 

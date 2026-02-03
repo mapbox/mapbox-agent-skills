@@ -524,88 +524,113 @@ function handleResultSelection(feature) {
 
 ### React Integration Pattern
 
+**Best Practice:** Use Search JS React for easiest implementation, or Search JS Core for custom UI.
+
+#### Option 1: Search JS React (Recommended - Easiest)
+
 ```javascript
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { SearchBox } from '@mapbox/search-js-react';
+import mapboxgl from 'mapbox-gl';
+import { useState } from 'react';
+
+function MapboxSearchComponent() {
+  const [map, setMap] = useState(null);
+
+  useEffect(() => {
+    const mapInstance = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [-122.4194, 37.7749],
+      zoom: 12
+    });
+    setMap(mapInstance);
+  }, []);
+
+  const handleRetrieve = (result) => {
+    const [lng, lat] = result.features[0].geometry.coordinates;
+    map.flyTo({ center: [lng, lat], zoom: 14 });
+
+    new mapboxgl.Marker()
+      .setLngLat([lng, lat])
+      .addTo(map);
+  };
+
+  return (
+    <div>
+      <SearchBox
+        accessToken="YOUR_MAPBOX_TOKEN"
+        onRetrieve={handleRetrieve}
+        placeholder="Search for places"
+        options={{
+          country: 'US', // Optional
+          types: 'address,poi'
+        }}
+      />
+      <div id="map" style={{ height: '600px' }} />
+    </div>
+  );
+}
+```
+
+**Benefits:**
+- ✅ Complete UI component provided
+- ✅ No manual debouncing needed
+- ✅ No manual session token management
+- ✅ Production-ready out of the box
+
+#### Option 2: Search JS Core (Custom UI)
+
+```javascript
+import { useState, useEffect } from 'react';
+import { SearchSession } from '@mapbox/search-js-core';
 import mapboxgl from 'mapbox-gl';
 
-function MapboxSearchComponent({ accessToken, country, types = 'address,poi' }) {
+function MapboxSearchComponent({ country, types = 'address,poi' }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const debounceTimeout = useRef(null);
-  const sessionToken = useRef(generateSessionToken());
 
-  function generateSessionToken() {
-    return `${Date.now()}-${Math.random().toString(36).substring(7)}`;
-  }
+  // Search JS Core handles debouncing and session tokens automatically
+  const searchSession = new SearchSession({
+    accessToken: 'YOUR_MAPBOX_TOKEN'
+  });
 
-  const performSearch = useCallback(async (searchQuery) => {
-    if (!searchQuery || searchQuery.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    setIsLoading(true);
-
-    const params = new URLSearchParams({
-      q: searchQuery,
-      access_token: accessToken,
-      session_token: sessionToken.current,
-      types: types,
-      limit: 5,
-    });
-
-    if (country) {
-      params.append('country', country);
-    }
-
-    try {
-      const response = await fetch(
-        `https://api.mapbox.com/search/searchbox/v1/suggest?${params}`
-      );
-      const data = await response.json();
-      setResults(data.suggestions || []);
-    } catch (error) {
-      console.error('Search error:', error);
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, country, types]);
-
-  // Debounced search
   useEffect(() => {
-    clearTimeout(debounceTimeout.current);
+    const performSearch = async () => {
+      if (!query || query.length < 2) {
+        setResults([]);
+        return;
+      }
 
-    debounceTimeout.current = setTimeout(() => {
-      performSearch(query);
-    }, 300);
+      setIsLoading(true);
+      try {
+        const response = await searchSession.suggest(query, {
+          country,
+          types,
+          limit: 5
+        });
+        setResults(response.suggestions || []);
+      } catch (error) {
+        console.error('Search error:', error);
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    return () => clearTimeout(debounceTimeout.current);
-  }, [query, performSearch]);
+    performSearch();
+  }, [query]);
 
-  const handleResultClick = async (result) => {
-    const params = new URLSearchParams({
-      access_token: accessToken,
-      session_token: sessionToken.current,
-    });
-
+  const handleResultClick = async (suggestion) => {
     try {
-      const response = await fetch(
-        `https://api.mapbox.com/search/searchbox/v1/retrieve/${result.mapbox_id}?${params}`
-      );
-      const data = await response.json();
-      const feature = data.features[0];
+      const result = await searchSession.retrieve(suggestion);
+      const feature = result.features[0];
 
-      // Call parent component's callback
+      // Handle result (fly to location, add marker, etc.)
       onResultSelect(feature);
 
-      // Reset search
       setQuery(feature.properties.name);
       setResults([]);
-
-      // Generate new session token
-      sessionToken.current = generateSessionToken();
     } catch (error) {
       console.error('Retrieve error:', error);
     }
@@ -640,9 +665,15 @@ function MapboxSearchComponent({ accessToken, country, types = 'address,poi' }) 
     </div>
   );
 }
-
-export default MapboxSearchComponent;
 ```
+
+**Benefits:**
+- ✅ Full control over UI design
+- ✅ Search JS Core handles debouncing automatically
+- ✅ Search JS Core handles session tokens automatically
+- ✅ Cleaner code than direct API calls
+
+**Note:** For React apps, prefer Search JS React (Option 1) unless you need a completely custom UI design.
 
 ### iOS: Search SDK for iOS (Recommended)
 

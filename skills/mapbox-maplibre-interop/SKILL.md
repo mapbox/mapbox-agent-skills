@@ -207,7 +207,7 @@ async function getDirections(start, end) {
 import maplibregl from 'maplibre-gl';
 
 // Upload your data to Mapbox Tiling Service (MTS)
-// via Mapbox Studio or Tilesets API:
+// via Mapbox Studio or Mapbox Tiling Service (API):
 // https://docs.mapbox.com/api/maps/tilesets/
 
 // Then consume your custom tileset with MapLibre
@@ -249,7 +249,7 @@ const map = new maplibregl.Map({
 
 1. **Upload data to Mapbox:**
    - Use Mapbox Studio to upload GeoJSON, CSV, Shapefile
-   - Or use Tilesets API for programmatic uploads
+   - Or use Mapbox Tiling Service (API) for programmatic uploads
    - Or use Mapbox Tiling Service CLI
 
 2. **Mapbox processes your data:**
@@ -282,9 +282,9 @@ const map = new maplibregl.Map({
 - Census data (detailed geographic data)
 - IoT sensor data (time-series geospatial)
 
-**MTS Resources:**
-- Upload via Studio: <https://studio.mapbox.com/tilesets/>
-- Tilesets API: <https://docs.mapbox.com/api/maps/tilesets/>
+**Upload using Mapbox Studio or Mapbox Tiling Service (API):**
+- Mapbox Studio: <https://studio.mapbox.com/tilesets/>
+- Mapbox Tiling Service API: <https://docs.mapbox.com/api/maps/tilesets/>
 - MTS CLI: <https://docs.mapbox.com/help/tutorials/get-started-mts/>
 
 ## Token Management

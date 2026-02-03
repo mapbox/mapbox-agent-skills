@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**9 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, geospatial operations, and security best practices.
+**10 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, geospatial operations, and security best practices.
 
 ## Quick Start
 
@@ -69,6 +69,41 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 - Routing APIs: directions, matrix, optimization, isochrone, map matching
 
 [View skill →](./skills/mapbox-geospatial-operations/SKILL.md)
+
+---
+
+### 🔄 mapbox-maplibre-migration
+
+**Migration guide between Mapbox GL JS and MapLibre GL JS in both directions.**
+
+Covers the fork history, API compatibility (~95% identical), token handling, style differences, and feature parity. Helps developers migrate in either direction or use both libraries together.
+
+**Use when:**
+- Migrating from Mapbox to MapLibre (or vice versa)
+- Evaluating which library to use
+- Understanding API compatibility
+- Switching tile sources
+- Combining MapLibre rendering with Mapbox APIs
+
+**Key topics:**
+- Fork history and license differences
+- Package and import changes
+- Token handling (Mapbox token vs no token)
+- Style URL differences (mapbox:// vs OSM/custom)
+- Feature parity comparison
+- Plugin compatibility
+- Migration in both directions
+- When to choose each library
+- Using both together
+
+**Covers:**
+- Step-by-step migration guides (both directions)
+- API compatibility matrix (100% compatible vs minor differences)
+- Common migration issues and solutions
+- Decision guide (when to use which)
+- Side-by-side code examples
+
+[View skill →](./skills/mapbox-maplibre-migration/SKILL.md)
 
 ---
 
@@ -282,6 +317,46 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 - Incident response plans
 
 [View skill →](./skills/mapbox-token-security/SKILL.md)
+
+---
+
+### 🔄 mapbox-google-maps-migration
+
+**Comprehensive migration guide for developers moving from Google Maps Platform to Mapbox GL JS.**
+
+Covers API equivalents, coordinate order gotchas, pattern translations, and step-by-step migration strategies with side-by-side code examples.
+
+**Use when:**
+- Migrating an existing Google Maps application to Mapbox
+- Evaluating Mapbox as a Google Maps alternative
+- Learning Mapbox with Google Maps background
+- Translating Google Maps patterns to Mapbox
+- Troubleshooting migration issues
+
+**Key topics:**
+- API equivalents (Map, Marker, Polygon, InfoWindow, etc.)
+- Critical differences (lng,lat vs lat,lng coordinate order)
+- Event mapping and handling changes
+- Markers: Object-oriented vs data-driven approaches
+- Geocoding, directions, and clustering comparisons
+- Performance considerations (WebGL vs DOM)
+- Custom styling: Map types vs style URLs
+- Step-by-step migration strategy and checklist
+- When NOT to migrate guidance
+
+**Covers all major features:**
+- Map initialization and configuration
+- Markers (individual and data-driven)
+- Popups/info windows
+- Polygons, polylines, shapes
+- Custom icons and symbols
+- Geocoding and reverse geocoding
+- Directions/routing
+- Clustering (built-in vs MarkerClusterer)
+- Controls and UI elements
+- Framework integration (React, Vue, etc.)
+
+[View skill →](./skills/mapbox-google-maps-migration/SKILL.md)
 
 ---
 

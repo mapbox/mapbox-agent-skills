@@ -1,206 +1,285 @@
-# Mapbox ↔ MapLibre Migration Guide
+# MapLibre to Mapbox Migration Guide
 
-Quick reference for migrating between Mapbox GL JS and MapLibre GL JS. APIs are ~95% identical.
+Quick reference for migrating from MapLibre GL JS to Mapbox GL JS. APIs are ~95% identical - migration is straightforward.
 
-## Key Differences
+## Why Migrate to Mapbox?
 
-| Aspect | Mapbox GL JS | MapLibre GL JS |
-|--------|--------------|----------------|
-| **License** | Proprietary (v2+) | BSD Open Source |
-| **Token** | Required | Optional (depends on tiles) |
-| **Package** | `mapbox-gl` | `maplibre-gl` |
-| **Tiles** | Mapbox hosted | Custom/OSM tiles |
-| **Styles** | `mapbox://styles/...` | Custom URL or OSM |
+**Key advantages:**
+- ✅ Official support and SLAs
+- ✅ Premium global tile coverage (streets, satellite, terrain)
+- ✅ Mapbox APIs (Geocoding, Directions, Isochrone, Matrix)
+- ✅ Mapbox Studio for custom styles (no coding required)
+- ✅ Advanced features (Globe view, 3D terrain, better satellite)
+- ✅ No infrastructure management (hosted tiles)
+- ✅ Predictable costs, free tier: 50,000 map loads/month
+- ✅ Enterprise features (compliance, analytics, support)
 
-## Migration Decision Tree
+## Migration Overview
 
-**From Mapbox → MapLibre?**
-- Reason: Open source license, cost savings, custom tiles
-- Change: Package, imports, style URLs, remove token
-- Keep: All map code (95% compatible)
+| Aspect | MapLibre GL JS (Current) | Mapbox GL JS (Target) |
+|--------|--------------------------|----------------------|
+| **Package** | `maplibre-gl` | `mapbox-gl` |
+| **Token** | Optional | Required (pk.*) |
+| **Styles** | Custom URL / OSM | `mapbox://styles/...` |
+| **Tiles** | OSM / Custom | Mapbox premium tiles |
+| **Support** | Community | Official + SLA |
+| **APIs** | Separate | Integrated ecosystem |
+| **API Compatibility** | ~95% identical | ~95% identical |
 
-**From MapLibre → Mapbox?**
-- Reason: Mapbox support, hosted tiles, specific features
-- Change: Package, imports, add token, use mapbox:// styles
-- Keep: All map code (95% compatible)
+**Key insight:** Most of your code stays the same. Only packaging and configuration changes.
 
-## Mapbox → MapLibre Migration
+## Step-by-Step Migration
 
-### 1. Update Package
+### 1. Get Mapbox Access Token
 ```bash
-npm uninstall mapbox-gl
-npm install maplibre-gl
+# Sign up at mapbox.com
+# Get token from account dashboard
+# Free tier: 50,000 map loads/month
 ```
 
-### 2. Update Imports
-```javascript
-// Before
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-// After
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-```
-
-### 3. Update Initialization
-```javascript
-// Before (Mapbox)
-mapboxgl.accessToken = 'pk.your_token';
-const map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12'
-});
-
-// After (MapLibre with OSM)
-const map = new maplibregl.Map({
-  container: 'map',
-  style: 'https://demotiles.maplibre.org/style.json'
-});
-// No token needed for OSM tiles
-```
-
-### 4. Using Mapbox Tiles with MapLibre
-```javascript
-// Define Mapbox tiles explicitly in style.json
-const map = new maplibregl.Map({
-  container: 'map',
-  style: {
-    version: 8,
-    sources: {
-      'mapbox-streets': {
-        type: 'vector',
-        tiles: [
-          'https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.mvt?access_token=YOUR_TOKEN'
-        ]
-      }
-    },
-    layers: [/* your layers */]
-  }
-});
-```
-
-**Note:** MapLibre doesn't parse `mapbox://` URLs. Use explicit tile URLs.
-
-### What Stays the Same (100% Compatible)
-```javascript
-// All these work identically in both:
-map.setCenter([lng, lat])
-map.setZoom(zoom)
-map.fitBounds(bounds)
-map.on('click', handler)
-new maplibregl.Marker().setLngLat([lng, lat]).addTo(map)
-new maplibregl.Popup().setHTML(html).addTo(map)
-map.addSource(id, source)
-map.addLayer(layer)
-```
-
-## MapLibre → Mapbox Migration
-
-### 1. Update Package
+### 2. Update Package
 ```bash
 npm uninstall maplibre-gl
 npm install mapbox-gl
 ```
 
-### 2. Update Imports
+### 3. Update Imports
 ```javascript
-// Before
+// Before (MapLibre)
 import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
-// After
+// After (Mapbox)
 import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 ```
 
-### 3. Add Token
+### 4. Add Access Token
 ```javascript
 // Required for Mapbox
 mapboxgl.accessToken = 'pk.your_mapbox_token';
+
+// Best practice: Use environment variables
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 ```
 
-### 4. Update Style URL
+### 5. Update Map Initialization
 ```javascript
-// Before (MapLibre with OSM)
-style: 'https://demotiles.maplibre.org/style.json'
+// Before (MapLibre with OSM tiles)
+const map = new maplibregl.Map({
+  container: 'map',
+  style: 'https://demotiles.maplibre.org/style.json',
+  center: [-122.4194, 37.7749],
+  zoom: 12
+});
 
-// After (Mapbox)
-style: 'mapbox://styles/mapbox/streets-v12'
+// After (Mapbox with premium tiles)
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v12',  // Or any Mapbox style
+  center: [-122.4194, 37.7749],
+  zoom: 12
+});
 ```
 
-### Plugin Migration
-| Mapbox Plugin | MapLibre Alternative |
-|---------------|---------------------|
-| `@mapbox/mapbox-gl-geocoder` | `@maplibre/maplibre-gl-geocoder` |
-| `@mapbox/mapbox-gl-draw` | `@maplibre/maplibre-gl-draw` |
-| `mapbox-gl-compare` | `maplibre-gl-compare` |
-
-## Common Migration Issues
-
-### Issue: Style URL Format
+### 6. Everything Else Stays the Same!
 ```javascript
-// ❌ Won't work in MapLibre
-style: 'mapbox://styles/mapbox/streets-v12'
+// All these work identically:
+map.setCenter([lng, lat])
+map.setZoom(zoom)
+map.fitBounds(bounds)
+map.on('click', handler)
+new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map)
+new mapboxgl.Popup().setHTML(html).addTo(map)
+map.addSource(id, source)
+map.addLayer(layer)
+```
 
-// ✅ Use OSM tiles or explicit Mapbox tiles
-style: 'https://demotiles.maplibre.org/style.json'
-// OR define Mapbox tiles explicitly (see above)
+## Mapbox Style Options
+
+**Pre-built styles:**
+```javascript
+'mapbox://styles/mapbox/standard'                      // Mapbox Standard
+'mapbox://styles/mapbox/standard-satellite'       // Mapbox Standard Satellite
+'mapbox://styles/mapbox/streets-v12'                  // Streets v12
+'mapbox://styles/mapbox/outdoors-v12'          // Hiking/outdoor
+'mapbox://styles/mapbox/light-v11'             // Minimal light
+'mapbox://styles/mapbox/dark-v11'              // Minimal dark
+'mapbox://styles/mapbox/satellite-v9'          // Satellite imagery
+'mapbox://styles/mapbox/satellite-streets-v12' // Satellite + labels
+'mapbox://styles/mapbox/navigation-day-v1'     // Turn-by-turn navigation
+```
+
+**Custom styles:**
+- Create in Mapbox Studio (visual editor)
+- Reference as `'mapbox://styles/your-username/style-id'`
+
+## Plugin Migration
+
+| MapLibre Plugin | Mapbox Plugin |
+|----------------|---------------|
+| `@maplibre/maplibre-gl-geocoder` | `@mapbox/mapbox-gl-geocoder` |
+| `@maplibre/maplibre-gl-draw` | `@mapbox/mapbox-gl-draw` |
+| `maplibre-gl-compare` | `mapbox-gl-compare` |
+
+**Note:** Most Mapbox plugins work directly, no alternatives needed.
+
+## API Compatibility (95%+)
+
+**100% Compatible APIs:**
+- Map methods (all setters/getters)
+- Event handling
+- Markers and Popups
+- Sources and Layers
+- Controls
+- GeoJSON handling
+- Camera animations
+- Feature state
+
+**Only differences:**
+- Package name (`maplibre-gl` vs `mapbox-gl`)
+- Style URL format (custom vs `mapbox://`)
+- Token requirement (optional vs required)
+- Some plugins need Mapbox versions
+
+## Common Issues
+
+### Issue: Missing Token
+```javascript
+// ❌ Forgot to set token
+const map = new mapboxgl.Map({...});  // Error!
+
+// ✅ Set token first
+mapboxgl.accessToken = 'pk.your_token';
+const map = new mapboxgl.Map({...});
+```
+
+### Issue: Wrong Style Format
+```javascript
+// ❌ Using OSM/custom URL
+style: 'https://demotiles.maplibre.org/style.json'  // Won't load Mapbox tiles
+
+// ✅ Use Mapbox style URL
+style: 'mapbox://styles/mapbox/streets-v12'
 ```
 
 ### Issue: Plugin Compatibility
 ```javascript
-// ❌ Mapbox plugins won't work with MapLibre
-import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-
-// ✅ Use MapLibre versions
+// ❌ Using MapLibre plugin with Mapbox
 import MaplibreGeocoder from '@maplibre/maplibre-gl-geocoder';
+
+// ✅ Use Mapbox plugin
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 ```
 
-### Issue: Access Token
+## Testing Checklist
+
+✅ Map initializes without errors
+✅ Tiles load correctly (Mapbox tiles, not OSM)
+✅ Access token configured
+✅ Markers/popups display properly
+✅ Events fire as expected
+✅ Custom layers render correctly
+✅ Plugins work (if using Mapbox versions)
+✅ No console errors
+✅ Performance same or better
+
+## Token Security
+
+**Best practices:**
 ```javascript
-// ❌ MapLibre doesn't use accessToken by default
-maplibregl.accessToken = 'pk.xxx'; // Does nothing
+// ✅ Use environment variables
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-// ✅ Pass token in tile URLs if using Mapbox tiles
-tiles: ['https://api.mapbox.com/...?access_token=YOUR_TOKEN']
+// ✅ Add URL restrictions in Mapbox dashboard
+// Only allow your domains
+
+// ✅ Never commit tokens
+// Add .env to .gitignore
+
+// ✅ Use public tokens (pk.*) for client-side
+// Never expose secret tokens (sk.*)
 ```
 
-## When to Choose Each
+## Mapbox Ecosystem Benefits
 
-### Choose Mapbox GL JS When:
-- Need official commercial support
-- Want Mapbox-hosted tiles (streets, satellite)
-- Using Mapbox APIs (Directions, Geocoding)
-- Need latest Mapbox-specific features
-- Want simplest setup with `mapbox://` styles
+**After migration, you gain access to:**
 
-### Choose MapLibre GL JS When:
-- Need open source license (BSD)
-- Cost optimization important
-- Using custom tile infrastructure
-- Want self-hosted tiles
-- Avoiding vendor lock-in
+**Mapbox APIs:**
+- Geocoding API (forward/reverse)
+- Directions API (routing, turn-by-turn)
+- Isochrone API (time/distance polygons)
+- Matrix API (distance matrices)
+- Tilequery API (feature lookup)
 
-## Testing Migration
+**Mapbox Studio:**
+- Visual style editor (no coding)
+- Dataset editor
+- Tileset management
+- Style publishing
 
-**Checklist:**
-- ✅ Map initializes without errors
-- ✅ Tiles load correctly
-- ✅ Markers/popups display properly
-- ✅ Events fire as expected
-- ✅ Custom layers render correctly
-- ✅ Plugins work (if using alternatives)
-- ✅ No console errors
-- ✅ Performance unchanged
+**Advanced Features:**
+- Globe view (3D Earth)
+- 3D terrain with real elevations
+- Premium satellite imagery
+- Traffic-aware routing
+- Real-time updates
 
-## API Compatibility (100%)
+## Performance Notes
 
-Both libraries support identical APIs for:
-- Map methods (setCenter, setZoom, fitBounds, flyTo, etc.)
-- Event handling (on, once, off)
-- Markers and Popups
-- Sources and Layers
-- Controls (Navigation, Geolocate, etc.)
-- GeoJSON handling
-- Style manipulation
+**Mapbox tiles are optimized for:**
+- Fast loading (global CDN)
+- Smaller file sizes (vector tiles)
+- Better caching
+- Consistent quality worldwide
 
-**Difference:** Packaging and tile sources, not API.
+**Expected performance:**
+- Similar or better rendering speed
+- Potentially faster tile loading (Mapbox CDN)
+- Same memory usage
+- Identical frame rates
+
+## Migration Timeline
+
+**Typical migration: 1-2 hours**
+
+1. **Setup (15 min):** Get token, update packages
+2. **Code changes (30 min):** Update imports, add token, change style URL
+3. **Testing (30 min):** Verify all features work
+4. **Deployment (15 min):** Deploy and monitor
+
+**For large apps:** May take 1-2 days including QA
+
+## Support & Resources
+
+**After migration:**
+- Official Mapbox support (for paid plans)
+- Extensive documentation
+- Code examples
+- Community forums
+- Enterprise SLAs (for enterprise plans)
+
+## Quick Decision: Should I Migrate?
+
+**Migrate to Mapbox if:**
+- ✅ Want official support
+- ✅ Need Mapbox APIs (Geocoding, Directions)
+- ✅ Want better tile quality/coverage
+- ✅ Prefer no infrastructure management
+- ✅ Need enterprise features
+- ✅ Want Mapbox Studio for styling
+- ✅ Building production applications
+
+**Free tier (50K loads/month) is often sufficient for:**
+- Small-medium websites
+- Internal tools
+- MVPs and prototypes
+- Many business applications
+
+## Migration is Low Risk
+
+✅ ~95% API compatibility = minimal code changes
+✅ Quick migration (1-2 hours typical)
+✅ Free tier available for testing
+✅ Easy to rollback if needed
+✅ No data loss (just configuration changes)

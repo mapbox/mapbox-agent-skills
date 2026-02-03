@@ -8,6 +8,7 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 |-------|-------------|
 | [mapbox-google-maps-migration](./mapbox-google-maps-migration/) | Migration guide from Google Maps Platform to Mapbox GL JS with API equivalents and patterns |
 | [mapbox-maplibre-migration](./mapbox-maplibre-migration/) | Migration guide between Mapbox GL JS and MapLibre GL JS in both directions |
+| [mapbox-maplibre-interop](./mapbox-maplibre-interop/) | Using Mapbox services with MapLibre GL JS (hybrid architecture) |
 | [mapbox-web-performance-patterns](./mapbox-web-performance-patterns/) | Performance optimization for Mapbox GL JS (initialization, markers, data loading, memory) |
 | [mapbox-cartography](./mapbox-cartography/) | Map design principles, color theory, visual hierarchy, typography |
 | [mapbox-web-integration-patterns](./mapbox-web-integration-patterns/) | Framework integration (React, Vue, Svelte, Angular, Next.js) |

@@ -1522,15 +1522,48 @@ async function performSearch(query) {
 
 ### React Best Practices
 
+**Best Practice:** Use Search JS React or Search JS Core instead of building custom hooks with direct API calls.
+
+#### Option 1: Use Search JS React (Recommended)
+
 ```javascript
-// Custom hook for Mapbox search
+import { SearchBox } from '@mapbox/search-js-react';
+
+// Easiest - just use the SearchBox component
+function MyComponent() {
+  return (
+    <SearchBox
+      accessToken="YOUR_TOKEN"
+      onRetrieve={(result) => {
+        // Handle result
+      }}
+      options={{
+        country: 'US',
+        types: 'address,poi'
+      }}
+    />
+  );
+}
+```
+
+#### Option 2: Custom Hook with Search JS Core
+
+```javascript
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { SearchSession } from '@mapbox/search-js-core';
+
+// Custom hook using Search JS Core (handles debouncing and session tokens)
 function useMapboxSearch(accessToken, options = {}) {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const searchCounterRef = useRef(0);
-  const sessionTokenRef = useRef(generateSessionToken());
+  // Search JS Core handles session tokens automatically
+  const searchSessionRef = useRef(null);
+
+  useEffect(() => {
+    searchSessionRef.current = new SearchSession({ accessToken });
+  }, [accessToken]);
 
   const search = useCallback(async (query) => {
     if (!query || query.length < 2) {
@@ -1538,47 +1571,42 @@ function useMapboxSearch(accessToken, options = {}) {
       return;
     }
 
-    const searchId = ++searchCounterRef.current;
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await performSearch(query, {
-        accessToken,
-        sessionToken: sessionTokenRef.current,
-        ...options
-      });
-
-      // Check if this is still the latest search
-      if (searchId === searchCounterRef.current) {
-        setResults(data.suggestions || []);
-      }
+      // Search JS Core handles debouncing and session tokens
+      const response = await searchSessionRef.current.suggest(query, options);
+      setResults(response.suggestions || []);
     } catch (err) {
-      if (searchId === searchCounterRef.current) {
-        setError(err.message);
-        setResults([]);
-      }
+      setError(err.message);
+      setResults([]);
     } finally {
-      if (searchId === searchCounterRef.current) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
-  }, [accessToken, options]);
+  }, [options]);
 
-  const retrieve = useCallback(async (mapboxId) => {
-    const feature = await retrieveFeature(mapboxId, {
-      accessToken,
-      sessionToken: sessionTokenRef.current
-    });
-
-    // New session
-    sessionTokenRef.current = generateSessionToken();
-    return feature;
-  }, [accessToken]);
+  const retrieve = useCallback(async (suggestion) => {
+    try {
+      // Search JS Core handles session tokens automatically
+      const result = await searchSessionRef.current.retrieve(suggestion);
+      return result.features[0];
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  }, []);
 
   return { results, isLoading, error, search, retrieve };
 }
 ```
+
+**Benefits of using Search JS Core:**
+- ✅ No manual session token management
+- ✅ No manual debouncing needed
+- ✅ No race condition handling needed (SDK handles it)
+- ✅ Cleaner, simpler code
+- ✅ Production-ready error handling built-in
 
 ### Vue Composition API (Using Search JS Core - Recommended)
 

@@ -99,7 +99,9 @@ map.addLayer(layer)
 
 **Pre-built styles:**
 ```javascript
-'mapbox://styles/mapbox/streets-v12'           // Standard streets
+'mapbox://styles/mapbox/standard'                      // Mapbox Standard
+'mapbox://styles/mapbox/standard-satellite'       // Mapbox Standard Satellite
+'mapbox://styles/mapbox/streets-v12'                  // Streets v12
 'mapbox://styles/mapbox/outdoors-v12'          // Hiking/outdoor
 'mapbox://styles/mapbox/light-v11'             // Minimal light
 'mapbox://styles/mapbox/dark-v11'              // Minimal dark

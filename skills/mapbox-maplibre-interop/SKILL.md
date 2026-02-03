@@ -283,9 +283,9 @@ const map = new maplibregl.Map({
 - IoT sensor data (time-series geospatial)
 
 **MTS Resources:**
-- Upload via Studio: https://studio.mapbox.com/tilesets/
-- Tilesets API: https://docs.mapbox.com/api/maps/tilesets/
-- MTS CLI: https://docs.mapbox.com/help/tutorials/get-started-mts/
+- Upload via Studio: <https://studio.mapbox.com/tilesets/>
+- Tilesets API: <https://docs.mapbox.com/api/maps/tilesets/>
+- MTS CLI: <https://docs.mapbox.com/help/tutorials/get-started-mts/>
 
 ## Token Management
 

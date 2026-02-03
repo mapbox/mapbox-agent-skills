@@ -16,6 +16,7 @@ Quick reference for MapLibre users leveraging Mapbox services, APIs, and data wi
 | Mapbox Service | Use With MapLibre | Common Use |
 |----------------|-------------------|------------|
 | **Vector Tiles** | ✅ Yes | Base map data |
+| **Tiling Service (MTS)** | ✅ Yes | Custom data hosting |
 | **Satellite Tiles** | ✅ Yes | Imagery layers |
 | **Search JS** | ✅ Yes | Address search |
 | **Geocoding API** | ✅ Yes | Address lookup |
@@ -136,6 +137,46 @@ const isochroneResponse = await fetch(
 - Best-in-class routing and geocoding
 - All Mapbox APIs available
 - MapLibre handles rendering
+
+### Pattern 4: MapLibre + Mapbox Tiling Service (Custom Data)
+
+```javascript
+// Upload your data to MTS (via Studio or Tilesets API)
+// Then consume with MapLibre:
+
+const map = new maplibregl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    sources: {
+      'my-custom-data': {
+        type: 'vector',
+        tiles: [
+          `https://api.mapbox.com/v4/username.tileset-id/{z}/{x}/{y}.mvt?access_token=${MAPBOX_TOKEN}`
+        ]
+      }
+    },
+    layers: [
+      {
+        id: 'custom-layer',
+        type: 'fill',
+        source: 'my-custom-data',
+        'source-layer': 'your-source-layer',
+        paint: { 'fill-color': '#0080ff' }
+      }
+    ]
+  }
+});
+```
+
+**Benefits:**
+- No tile processing infrastructure
+- No hosting/CDN management
+- Scalable (handles any load)
+- Pay only for tile requests
+- Focus on rendering, not infrastructure
+
+**Use cases:** Real estate, store locators, delivery zones, census data
 
 ## Token Management
 

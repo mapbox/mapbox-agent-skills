@@ -33,6 +33,7 @@ This hybrid approach gives you the best of both worlds: open-source flexibility 
 | Service | Description | Use Case |
 |---------|-------------|----------|
 | **Vector Tiles** | Mapbox Streets, Satellite, Terrain | Base map data |
+| **Tiling Service (MTS)** | Process, host, serve custom vector tiles | Custom data hosting |
 | **Raster Tiles** | Satellite imagery, terrain | Imagery layers |
 | **Search JS** | Address search, autocomplete | Search functionality |
 | **Geocoding API** | Forward/reverse geocoding | Address lookup |
@@ -197,6 +198,94 @@ async function getDirections(start, end) {
 - Access all Mapbox APIs
 - MapLibre for rendering
 - Best-in-class routing and geocoding
+
+### Pattern 4: MapLibre + Mapbox Tiling Service (Custom Data)
+
+**Use when:** You have custom vector data and need tile processing, hosting, and CDN infrastructure.
+
+```javascript
+import maplibregl from 'maplibre-gl';
+
+// Upload your data to Mapbox Tiling Service (MTS)
+// via Mapbox Studio or Tilesets API:
+// https://docs.mapbox.com/api/maps/tilesets/
+
+// Then consume your custom tileset with MapLibre
+const map = new maplibregl.Map({
+  container: 'map',
+  center: [-122.4194, 37.7749],
+  zoom: 12,
+  style: {
+    version: 8,
+    sources: {
+      'my-custom-data': {
+        type: 'vector',
+        url: 'mapbox://your-username.your-tileset-id',
+        // Or use explicit tile URLs:
+        tiles: [
+          `https://api.mapbox.com/v4/your-username.your-tileset-id/{z}/{x}/{y}.mvt?access_token=${MAPBOX_TOKEN}`
+        ],
+        minzoom: 0,
+        maxzoom: 14
+      }
+    },
+    layers: [
+      {
+        id: 'custom-data-layer',
+        type: 'fill',
+        source: 'my-custom-data',
+        'source-layer': 'your-source-layer',
+        paint: {
+          'fill-color': '#0080ff',
+          'fill-opacity': 0.5
+        }
+      }
+    ]
+  }
+});
+```
+
+**Workflow:**
+
+1. **Upload data to Mapbox:**
+   - Use Mapbox Studio to upload GeoJSON, CSV, Shapefile
+   - Or use Tilesets API for programmatic uploads
+   - Or use Mapbox Tiling Service CLI
+
+2. **Mapbox processes your data:**
+   - Converts to optimized vector tiles
+   - Generates tiles at multiple zoom levels
+   - Validates and optimizes geometry
+
+3. **Mapbox hosts and serves tiles:**
+   - Global CDN for fast delivery
+   - Automatic scaling
+   - Built-in caching
+
+4. **Consume with MapLibre:**
+   - Reference tileset ID in your style
+   - MapLibre handles rendering
+   - Full control over styling
+
+**Benefits:**
+- No tile processing infrastructure needed
+- No hosting or CDN management
+- Scalable tile serving (handles any load)
+- Optimized vector tiles (fast rendering)
+- Pay only for tile requests
+- Focus on rendering and UX, not infrastructure
+
+**Example use cases:**
+- Real estate listings (millions of properties)
+- Store locators (thousands of locations)
+- Delivery zones (custom polygons)
+- Census data (detailed geographic data)
+- IoT sensor data (time-series geospatial)
+
+**MTS Resources:**
+- Upload via Studio: https://studio.mapbox.com/tilesets/
+- Tilesets API: https://docs.mapbox.com/api/maps/tilesets/
+- MTS CLI: https://docs.mapbox.com/help/tutorials/get-started-mts/
 
 ## Token Management
 

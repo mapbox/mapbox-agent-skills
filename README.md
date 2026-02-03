@@ -60,10 +60,10 @@ Guides AI assistants through the entire search integration process: asking disco
 5. **Common pitfalls** - What goes wrong and how to avoid it
 
 **Covers all platforms:**
-- Web (Search Box JS, React, Vue, direct API)
-- iOS (Search SDK, UISearchController integration)
-- Android (Search SDK, SearchView integration)
-- Framework-specific patterns
+- Web (Mapbox Search JS React/Web/Core, Vue, Angular, Next.js)
+- iOS (Search SDK for iOS with UISearchController integration)
+- Android (Search SDK for Android with SearchView integration)
+- Node.js (Mapbox Search JS Core)
 
 **Best practices from "the good parts":**
 - ✅ Debouncing (prevent API spam)

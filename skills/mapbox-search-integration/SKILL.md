@@ -11,7 +11,7 @@ Expert guidance for implementing Mapbox search functionality in applications. Co
 
 User says things like:
 - "I need to add search to my map"
-- "I need a search bar for my app"
+- "I need a search bar for my mapping app"
 - "How do I implement location search?"
 - "I want users to search for places/addresses"
 - "I need geocoding in my application"
@@ -62,11 +62,12 @@ Before jumping into code, ask these questions to understand requirements:
 **Ask:** "What platform is this for?"
 
 **Common answers and implications:**
-- **"Web application"** → Search Box JS (easiest), or direct API calls
-- **"iOS app"** → iOS Search SDK or direct API integration
-- **"Android app"** → Android Search SDK or direct API integration
-- **"Multiple platforms"** → Direct API approach for consistency, or platform-specific SDKs
-- **"React / Vue / Other framework"** → Framework-specific patterns
+- **"Web application"** → Mapbox Search JS (easiest), or direct API calls for advanced cases
+- **"iOS app"** → Search SDK for iOS (recommended), or direct API integration for advanced cases
+- **"Android app"** → Search SDK for Android (recommended), or direct API integration for advanced cases
+- **"Multiple platforms"** → Platform-specific SDKs (recommended), or direct API approach for consistency
+- **"React app"** → Mapbox Search JS React (easiest with UI), or Search JS Core for custom UI
+- **"Vue / Angular / Other framework"** → Mapbox Search JS Core or Web, or direct API calls
 
 ### Question 5: How will results be used?
 
@@ -110,11 +111,14 @@ Based on discovery answers, recommend the right product:
 
 **Products:**
 - **Search Box API** (REST) - Direct API integration
-- **Search Box JS** (SDK) - Easiest web integration with UI
-- **iOS Search SDK** - Native iOS integration
-- **Android Search SDK** - Native Android integration
+- **Mapbox Search JS** (SDK) - Web integration with three components:
+  - **Search JS React** - Easy search integration via React library with UI
+  - **Search JS Web** - Easy search integration via Web Components with UI
+  - **Search JS Core** - JavaScript (node or web) wrapper for API, build your own UI
+- **Search SDK for iOS** - Native iOS integration
+- **Search SDK for Android** - Native Android integration
 
-### Legacy: Geocoding API
+### Geocoding API
 
 **Use when:**
 - Only need address geocoding (no POIs)
@@ -122,13 +126,67 @@ Based on discovery answers, recommend the right product:
 - Need permanent geocoding (not search)
 - Batch geocoding jobs
 
-**Note:** For new projects, prefer Search Box API unless you specifically only need address geocoding.
+**Note:** Prefer Search Box API unless the user specifically says they only want address geocoding.
 
 ## Integration Patterns by Platform
 
-### Web: Search Box JS (Recommended)
+**Important:** Always prefer using SDKs (Mapbox Search JS, Search SDK for iOS/Android) over calling APIs directly. SDKs handle debouncing, session tokens, error handling, and provide UI components. Only use direct API calls for advanced use cases.
 
-**When to use:** Web application, want autocomplete UI, fastest implementation
+### Web: Mapbox Search JS (Recommended)
+
+#### Option 1: Search JS React (Easiest - React apps with UI)
+
+**When to use:** React application, want autocomplete UI component, fastest implementation
+
+**Installation:**
+```bash
+npm install @mapbox/search-js-react
+```
+
+**Complete implementation:**
+```jsx
+import { SearchBox } from '@mapbox/search-js-react';
+import mapboxgl from 'mapbox-gl';
+
+function App() {
+  const [map, setMap] = React.useState(null);
+
+  React.useEffect(() => {
+    mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
+    const mapInstance = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [-122.4194, 37.7749],
+      zoom: 12
+    });
+    setMap(mapInstance);
+  }, []);
+
+  const handleRetrieve = (result) => {
+    const [lng, lat] = result.features[0].geometry.coordinates;
+    map.flyTo({ center: [lng, lat], zoom: 14 });
+
+    new mapboxgl.Marker()
+      .setLngLat([lng, lat])
+      .addTo(map);
+  };
+
+  return (
+    <div>
+      <SearchBox
+        accessToken="YOUR_MAPBOX_TOKEN"
+        onRetrieve={handleRetrieve}
+        placeholder="Search for places"
+      />
+      <div id="map" style={{ height: '600px' }} />
+    </div>
+  );
+}
+```
+
+#### Option 2: Search JS Web (Web Components with UI)
+
+**When to use:** Vanilla JavaScript, Web Components, or any framework, want autocomplete UI
 
 **Complete implementation:**
 
@@ -660,9 +718,11 @@ class SearchActivity : AppCompatActivity() {
 
 ### 1. Debouncing (CRITICAL for Autocomplete)
 
+**Note:** Debouncing is only a concern if you are calling the API directly. Mapbox Search JS and the Search SDKs handle debouncing automatically.
+
 **Problem:** Every keystroke = API call = expensive + slow
 
-**Solution:** Wait until user stops typing
+**Solution:** Wait until user stops typing (for direct API integration)
 
 ```javascript
 let debounceTimeout;
@@ -683,6 +743,8 @@ function debouncedSearch(query) {
 
 ### 2. Session Token Management
 
+**Note:** Session tokens are only a concern if you are calling the API directly. Mapbox Search JS and the Search SDKs for iOS/Android handle session tokens automatically.
+
 **Problem:** Search Box API charges per session, not per request
 
 **What's a session?**
@@ -690,7 +752,7 @@ function debouncedSearch(query) {
 - Ends with retrieve request
 - Use same token for all requests in session
 
-**Implementation:**
+**Implementation (direct API calls only):**
 
 ```javascript
 class SearchSession {
@@ -1418,14 +1480,18 @@ Before launching, verify:
 ## Resources
 
 - [Search Box API Documentation](https://docs.mapbox.com/api/search/search-box/)
-- [Search Box JS](https://docs.mapbox.com/mapbox-search-js/api/)
-- [iOS Search SDK](https://docs.mapbox.com/ios/search/guides/)
-- [Android Search SDK](https://docs.mapbox.com/android/search/guides/)
-- [Geocoding API](https://docs.mapbox.com/api/search/geocoding/) (legacy)
+- [Geocoding API Documentation](https://docs.mapbox.com/api/search/geocoding/)
+- [Mapbox Search JS](https://docs.mapbox.com/mapbox-search-js/api/)
+  - [Search JS React](https://docs.mapbox.com/mapbox-search-js/api/react/)
+  - [Search JS Web](https://docs.mapbox.com/mapbox-search-js/api/web/)
+  - [Search JS Core](https://docs.mapbox.com/mapbox-search-js/api/core/)
+- [Search SDK for iOS](https://docs.mapbox.com/ios/search/guides/)
+- [Search SDK for Android](https://docs.mapbox.com/android/search/guides/)
+- [Location Helper Tool](https://labs.mapbox.com/location-helper/) - Calculate bounding boxes
 
 ## Quick Decision Guide
 
-**User says: "I need search"**
+**User says: "I need location search"**
 
 1. **Ask discovery questions** (Questions 1-6 above)
 2. **Recommend product:**

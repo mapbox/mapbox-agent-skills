@@ -383,7 +383,7 @@ Use these APIs alongside your map for enhanced functionality:
 ```javascript
 // Geocoding API - Convert addresses to coordinates
 const response = await fetch(
-  `https://api.mapbox.com/geocoding/v5/mapbox.places/San%20Francisco.json?access_token=${mapboxgl.accessToken}`
+  `https://api.mapbox.com/search/geocode/v6/forward?q=San+Francisco&access_token=${mapboxgl.accessToken}`
 );
 
 // Directions API - Get turn-by-turn directions

@@ -1101,6 +1101,8 @@ class SearchSession {
 { } // Returns global results, slower, less relevant
 ```
 
+**Tip:** Use the [Location Helper tool](https://labs.mapbox.com/location-helper/) to easily calculate bounding boxes for your service area.
+
 **Why it matters:**
 - ✅ Better result relevance
 - ✅ Faster response times

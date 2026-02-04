@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**10 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
+**11 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
 
 ## Quick Start
 
@@ -324,6 +324,55 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 - Incident response plans
 
 [View skill →](./skills/mapbox-token-security/SKILL.md)
+
+---
+
+### 🧭 mapbox-navigation-patterns
+
+**Quick reference for implementing navigation and routing with Mapbox Directions API and Navigation SDKs.**
+
+Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, traffic-aware routing, and voice guidance across Web, iOS, and Android platforms.
+
+**Use when:**
+- Implementing routing and directions in applications
+- Adding turn-by-turn navigation (iOS/Android)
+- Building delivery route optimization
+- Showing traffic-aware routes
+- Need voice guidance for navigation
+- Calculating ETAs or route alternatives
+
+**Key topics:**
+- Directions API for web (basic routes, alternatives, multi-stop, optimization)
+- Navigation SDK for iOS (NavigationViewController, voice guidance, custom UI)
+- Navigation SDK for Android (NavigationView, custom UI, route progress)
+- Traffic-aware routing with congestion data
+- Route caching and performance optimization
+- Error handling and best practices
+
+**Covers all platforms:**
+- Web (Directions API with Mapbox GL JS)
+- iOS (Navigation SDK for iOS with Swift)
+- Android (Navigation SDK for Android with Kotlin)
+
+**Common patterns:**
+- Basic route display on map
+- Alternative routes comparison
+- Multi-stop waypoint routing (up to 25 waypoints)
+- Route optimization for deliveries
+- Turn-by-turn instruction display
+- Traffic congestion visualization
+- Voice-guided navigation
+- Ride-sharing ETA calculations
+
+**API features:**
+- Routing profiles (driving, driving-traffic, walking, cycling)
+- Multi-stop routing and optimization
+- Alternative route generation
+- Turn-by-turn instructions
+- Traffic congestion annotations
+- Voice guidance (Navigation SDK only)
+
+[View skill →](./skills/mapbox-navigation-patterns/SKILL.md)
 
 ---
 

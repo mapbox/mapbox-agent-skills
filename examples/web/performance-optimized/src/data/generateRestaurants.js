@@ -6,28 +6,64 @@
  */
 
 const cuisines = [
-  'Italian', 'Chinese', 'Japanese', 'Mexican', 'Thai',
-  'French', 'Indian', 'American', 'Mediterranean', 'Korean',
-  'Vietnamese', 'Greek', 'Spanish', 'Brazilian', 'Ethiopian'
+  'Italian',
+  'Chinese',
+  'Japanese',
+  'Mexican',
+  'Thai',
+  'French',
+  'Indian',
+  'American',
+  'Mediterranean',
+  'Korean',
+  'Vietnamese',
+  'Greek',
+  'Spanish',
+  'Brazilian',
+  'Ethiopian'
 ];
 
 const adjectives = [
-  'Golden', 'Blue', 'Red', 'Green', 'Silver',
-  'Happy', 'Lucky', 'Royal', 'Grand', 'Little',
-  'Big', 'Old', 'New', 'Modern', 'Classic'
+  'Golden',
+  'Blue',
+  'Red',
+  'Green',
+  'Silver',
+  'Happy',
+  'Lucky',
+  'Royal',
+  'Grand',
+  'Little',
+  'Big',
+  'Old',
+  'New',
+  'Modern',
+  'Classic'
 ];
 
 const nouns = [
-  'Dragon', 'Phoenix', 'Garden', 'Palace', 'House',
-  'Kitchen', 'Bistro', 'Cafe', 'Grill', 'Tavern',
-  'Restaurant', 'Eatery', 'Diner', 'Lounge', 'Bar'
+  'Dragon',
+  'Phoenix',
+  'Garden',
+  'Palace',
+  'House',
+  'Kitchen',
+  'Bistro',
+  'Cafe',
+  'Grill',
+  'Tavern',
+  'Restaurant',
+  'Eatery',
+  'Diner',
+  'Lounge',
+  'Bar'
 ];
 
 // San Francisco Bay Area bounds
 const SF_BOUNDS = {
   minLng: -122.52,
   maxLng: -122.35,
-  minLat: 37.70,
+  minLat: 37.7,
   maxLat: 37.85
 };
 

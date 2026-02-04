@@ -224,10 +224,7 @@ map.addLayer({
 // Click handler (one listener for all features)
 map.on('click', 'restaurants', (e) => {
   const feature = e.features[0];
-  new mapboxgl.Popup()
-    .setLngLat(feature.geometry.coordinates)
-    .setHTML(feature.properties.name)
-    .addTo(map);
+  new mapboxgl.Popup().setLngLat(feature.geometry.coordinates).setHTML(feature.properties.name).addTo(map);
 });
 ```
 
@@ -252,15 +249,7 @@ map.addLayer({
   source: 'restaurants',
   filter: ['has', 'point_count'],
   paint: {
-    'circle-color': [
-      'step',
-      ['get', 'point_count'],
-      '#51bbd6',
-      100,
-      '#f1f075',
-      750,
-      '#f28cb1'
-    ],
+    'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
     'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
   }
 });
@@ -317,12 +306,7 @@ map.addLayer({
 // ✅ Only load data in current viewport
 async function loadVisibleData(map) {
   const bounds = map.getBounds();
-  const bbox = [
-    bounds.getWest(),
-    bounds.getSouth(),
-    bounds.getEast(),
-    bounds.getNorth()
-  ].join(',');
+  const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].join(',');
 
   const data = await fetch(`/api/data?bbox=${bbox}&zoom=${map.getZoom()}`);
 
@@ -536,10 +520,7 @@ useEffect(() => {
 ```javascript
 // ❌ BAD: Creates new popup on every click (memory leak)
 map.on('click', 'restaurants', (e) => {
-  new mapboxgl.Popup()
-    .setLngLat(e.lngLat)
-    .setHTML(e.features[0].properties.name)
-    .addTo(map);
+  new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(e.features[0].properties.name).addTo(map);
   // Popup never removed!
 });
 
@@ -582,18 +563,12 @@ map.on('mousemove', 'restaurants', (e) => {
   if (e.features.length > 0) {
     // Remove previous hover state
     if (hoveredFeatureId !== null) {
-      map.setFeatureState(
-        { source: 'restaurants', id: hoveredFeatureId },
-        { hover: false }
-      );
+      map.setFeatureState({ source: 'restaurants', id: hoveredFeatureId }, { hover: false });
     }
 
     // Set new hover state
     hoveredFeatureId = e.features[0].id;
-    map.setFeatureState(
-      { source: 'restaurants', id: hoveredFeatureId },
-      { hover: true }
-    );
+    map.setFeatureState({ source: 'restaurants', id: hoveredFeatureId }, { hover: true });
   }
 });
 
@@ -782,11 +757,7 @@ map.addLayer({
       100,
       '#606060'
     ],
-    'fill-extrusion-height': [
-      '*',
-      ['get', 'height'],
-      ['case', ['>', ['zoom'], 16], 1.5, 1.0]
-    ]
+    'fill-extrusion-height': ['*', ['get', 'height'], ['case', ['>', ['zoom'], 16], 1.5, 1.0]]
   }
 });
 

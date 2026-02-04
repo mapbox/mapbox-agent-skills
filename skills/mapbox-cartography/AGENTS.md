@@ -5,20 +5,24 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ## Core Cartography Principles
 
 ### 1. Visual Hierarchy
+
 **Most Important Rule:** Direct user attention to what matters most.
 
 **Priority levels:**
+
 - **Primary:** Main features (roads, labels for user's task)
 - **Secondary:** Supporting context (water, parks)
 - **Tertiary:** Background (minor roads, less important labels)
 
 **Tools:**
+
 - Size: Larger = more important
 - Color: Brighter/saturated = more important
 - Contrast: Higher contrast = more important
 - Position: Foreground > Background
 
 ### 2. Figure-Ground Relationship
+
 **Make primary features stand out from background:**
 
 ```javascript
@@ -32,18 +36,22 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ### 3. Color Theory
 
 **Color Schemes:**
+
 - **Sequential:** Light → Dark (population density, elevation)
 - **Diverging:** Low ← Neutral → High (temperature, sentiment)
 - **Categorical:** Distinct colors for categories (never more than 7-8)
 
 **Rules:**
+
 - Limit palette to 5-7 colors maximum
 - Use ColorBrewer for data visualization
 - Test for colorblindness (deuteranopia most common)
 - Avoid red/green combinations
 
 ### 4. Label Hierarchy
+
 **Typography sizing:**
+
 ```javascript
 // Cities by population
 'text-size': [
@@ -58,6 +66,7 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ```
 
 **Label placement rules:**
+
 - Cities: Above point
 - Roads: Along line
 - Areas: Inside polygon
@@ -66,7 +75,9 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ## Color Best Practices
 
 ### Accessible Color Contrast
+
 **WCAG 2.1 Standards:**
+
 - Normal text: 4.5:1 contrast ratio
 - Large text: 3:1 contrast ratio
 - Essential graphics: 3:1 contrast ratio
@@ -79,12 +90,15 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ```
 
 ### Colorblind-Safe Palettes
+
 **Avoid:**
+
 - ❌ Red/Green (deuteranopia)
 - ❌ Blue/Yellow (tritanopia)
 - ❌ Pure color differentiation
 
 **Use:**
+
 - ✅ Pattern/texture in addition to color
 - ✅ Labels for categories
 - ✅ Size/shape variations
@@ -93,19 +107,24 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ## Typography
 
 ### Font Selection
+
 **Mapbox fonts:**
+
 - **Roboto**: Clean, modern, web-optimized
 - **Open Sans**: Highly legible, good for labels
 - **DIN Pro**: Professional, geometric
 - **Montserrat**: Elegant headlines
 
 **Rules:**
+
 - Max 2 font families per map
 - Use font-weight for hierarchy
 - Sans-serif for UI, optional serif for labels
 
 ### Label Sizing
+
 **Base sizes:**
+
 ```javascript
 'text-size': [
   'interpolate', ['linear'], ['zoom'],
@@ -118,6 +137,7 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ## Data Visualization
 
 ### Choropleth Maps
+
 **For area data (population, income, etc.):**
 
 ```javascript
@@ -136,12 +156,14 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ```
 
 **Rules:**
+
 - 5-7 data classes maximum
 - Equal intervals or quantiles
 - Include legend
 - Show data source
 
 ### Proportional Symbols
+
 **For point data (city size, counts):**
 
 ```javascript
@@ -157,21 +179,25 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 ## Map Styles by Use Case
 
 ### Navigation/Wayfinding
+
 - **Emphasize:** Roads, labels, route
 - **De-emphasize:** Buildings, terrain
 - **Colors:** High contrast, clear hierarchy
 
 ### Data Visualization
+
 - **Emphasize:** Data layer, legend
 - **De-emphasize:** Base map (grayscale)
 - **Colors:** Data-appropriate palette
 
 ### Storytelling
+
 - **Emphasize:** Story points, annotations
 - **De-emphasize:** Irrelevant features
 - **Colors:** Support narrative mood
 
 ### Reference Map
+
 - **Balanced:** All features proportionate
 - **Clear:** Good labels, readable
 - **Colors:** Conventional (blue water, green parks)

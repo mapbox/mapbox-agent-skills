@@ -12,6 +12,7 @@ This conversation demonstrates how the **mapbox-ios-patterns** skill helps set u
 ## Conversation
 
 ### User
+
 > I need to add a Mapbox map to my SwiftUI app. Can you show me how to do this correctly?
 
 ### AI Assistant
@@ -27,6 +28,7 @@ First, add the SDK via Swift Package Manager in Xcode:
 3. Select "Up to Next Major Version" with version 11.0.0
 
 Or add to your `Package.swift`:
+
 ```swift
 dependencies: [
     .package(url: "https://github.com/mapbox/mapbox-maps-ios.git", from: "11.0.0")
@@ -38,22 +40,26 @@ dependencies: [
 **Following the mapbox-token-security skill**, we'll store your token securely using a `.xcconfig` file:
 
 **Create `Config/Secrets.xcconfig`:**
+
 ```bash
 MAPBOX_ACCESS_TOKEN = pk.your_actual_token_here
 ```
 
 **Add to `.gitignore`:**
+
 ```
 Config/Secrets.xcconfig
 ```
 
 **Update `Info.plist`:**
+
 ```xml
 <key>MBXAccessToken</key>
 <string>$(MAPBOX_ACCESS_TOKEN)</string>
 ```
 
 **Link in Xcode Project Settings:**
+
 - Select your project → Info → Configurations
 - Set Secrets.xcconfig for Debug and Release
 
@@ -152,19 +158,23 @@ struct ContentView: View {
 ### Key Points from mapbox-ios-patterns
 
 ✅ **Proper Lifecycle Management:**
+
 - SwiftUI automatically handles map lifecycle through UIViewRepresentable
 - No manual cleanup needed - SwiftUI handles deinitialization
 
 ✅ **State Binding:**
+
 - Use `@Binding` for reactive state management
 - Map updates automatically when SwiftUI state changes
 
 ✅ **Token Security:**
+
 - Token stored in `.xcconfig` (not in code)
 - `.xcconfig` added to `.gitignore`
 - Token accessed via `Info.plist` at runtime
 
 ✅ **Memory Management:**
+
 - No retain cycles - Coordinator pattern properly manages references
 - SwiftUI handles map view deallocation automatically
 
@@ -198,6 +208,7 @@ struct MapView: UIViewRepresentable {
 ### Testing
 
 Run your app and you should see:
+
 - Map loads immediately
 - Pan and zoom gestures work smoothly
 - No memory leaks (verify in Instruments)
@@ -206,6 +217,7 @@ Run your app and you should see:
 ### Next Steps
 
 Based on your needs, you might want to add:
+
 - **Offline maps** - See offline patterns in mapbox-ios-patterns skill
 - **Turn-by-turn navigation** - Navigation SDK integration patterns
 - **Custom styles** - Use mapbox-cartography and mapbox-style-patterns skills
@@ -227,6 +239,7 @@ Does this help? Let me know if you need to add any specific features!
 ### Without the skill:
 
 An AI assistant without the skill might:
+
 - Suggest outdated patterns or deprecated APIs
 - Hardcode the access token in source code (security risk)
 - Not explain lifecycle management properly

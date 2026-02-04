@@ -41,7 +41,9 @@ async function validateSkills() {
         // Extract frontmatter
         const frontmatterEnd = content.indexOf('\n---\n', 4);
         if (frontmatterEnd === -1) {
-          console.error(`  ❌ Malformed YAML frontmatter (missing closing ---)`);
+          console.error(
+            `  ❌ Malformed YAML frontmatter (missing closing ---)`
+          );
           hasErrors = true;
           continue;
         }

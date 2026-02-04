@@ -5,6 +5,7 @@ Quick reference for optimizing Mapbox GL JS applications. Prioritized by impact:
 ## 🔴 Critical Performance Patterns (Fix First)
 
 ### 1. Eliminate Initialization Waterfalls
+
 **Impact:** Saves 500ms-2s on initial load
 
 **Problem:** Sequential loading (map → data → render)
@@ -27,9 +28,11 @@ map.on('load', async () => {
 **Key principle:** Start all data fetches immediately, don't wait for map load.
 
 ### 2. Bundle Size Optimization
+
 **Impact:** 200-500KB savings, faster load times
 
 **Critical actions:**
+
 - Use dynamic imports for large features: `const geocoder = await import('mapbox-gl-geocoder')`
 - Code-split by route/feature
 - Avoid importing entire Mapbox GL JS if only using specific features
@@ -40,9 +43,11 @@ map.on('load', async () => {
 ## 🟡 High Impact Patterns
 
 ### 3. Marker Performance
+
 **Impact:** Smooth rendering with 100+ markers
 
 **Decision tree:**
+
 - **< 50 markers:** HTML markers (`new mapboxgl.Marker()`) - OK for small counts
 - **50-500 markers:** Canvas markers or Symbol layers - Much faster
 - **500+ markers:** Symbol layers + clustering - Required for performance
@@ -67,28 +72,33 @@ map.addSource('points', {
 ```
 
 ### 4. Data Loading Strategy
+
 **Impact:** Faster rendering, lower memory
 
 **Decision tree:**
+
 - **< 5MB GeoJSON:** Load directly as GeoJSON source
 - **> 5MB GeoJSON:** Use vector tiles instead
 - **Dynamic data:** Implement viewport-based loading
 - **Static data:** Embed small datasets, fetch large ones
 
 **Viewport-based loading pattern:**
+
 ```javascript
 map.on('moveend', () => {
   const bounds = map.getBounds();
-  fetchDataInBounds(bounds).then(data => {
+  fetchDataInBounds(bounds).then((data) => {
     map.getSource('data').setData(data);
   });
 });
 ```
 
 ### 5. Event Handler Optimization
+
 **Impact:** Prevents jank during interactions
 
 **Rules:**
+
 - Debounce search/geocoding: 300ms minimum
 - Throttle move/zoom events: 100ms for analytics, 16ms for UI updates
 - Use `once()` for one-time events
@@ -109,9 +119,11 @@ const throttledUpdate = throttle(() => {
 ## 🟢 Optimization Patterns
 
 ### 6. Memory Management
+
 **Critical for SPAs and long-running apps**
 
 **Always cleanup on unmount:**
+
 ```javascript
 // ✅ Remove map and all resources
 map.remove(); // Removes all event listeners, sources, layers
@@ -120,19 +132,23 @@ map.remove(); // Removes all event listeners, sources, layers
 controller.abort();
 
 // ✅ Clear references
-markers.forEach(m => m.remove());
+markers.forEach((m) => m.remove());
 markers = [];
 ```
 
 ### 7. Layer Management
+
 **Rules:**
+
 - Use feature state instead of removing/re-adding layers
 - Batch style changes: Use `map.once('idle', callback)` after multiple changes
 - Hide layers with visibility: 'none' instead of removing
 - Minimize layer count: Combine similar layers where possible
 
 ### 8. Rendering Optimization
+
 **Key patterns:**
+
 - Use `generateId: true` for better feature state performance
 - Set `maxzoom` on sources to avoid over-fetching
 - Use `promoteId` to avoid style mutations
@@ -150,6 +166,7 @@ markers = [];
 ## Performance Testing
 
 **Measure what matters:**
+
 - Time to Interactive (TTI): < 2s on 3G
 - First Contentful Paint (FCP): < 1s
 - Bundle size: < 500KB initial

@@ -5,6 +5,7 @@ Quick reference for style validation, accessibility, performance optimization, a
 ## Style Validation Rules
 
 ### Required Elements
+
 ✅ Valid version 8 style specification
 ✅ At least one source defined
 ✅ At least one layer defined
@@ -12,6 +13,7 @@ Quick reference for style validation, accessibility, performance optimization, a
 ✅ Proper source references in layers
 
 ### Common Errors
+
 ```javascript
 // ❌ Layer references non-existent source
 {
@@ -40,7 +42,9 @@ Quick reference for style validation, accessibility, performance optimization, a
 ## Accessibility Standards
 
 ### Color Contrast (WCAG 2.1)
+
 **Requirements:**
+
 - Normal text: 4.5:1 contrast ratio
 - Large text (18pt+): 3:1 contrast ratio
 - UI components: 3:1 contrast ratio
@@ -54,19 +58,24 @@ Quick reference for style validation, accessibility, performance optimization, a
 ```
 
 ### Colorblind Accessibility
+
 **Test for:**
+
 - Deuteranopia (red-green, 8% of males)
 - Protanopia (red-green, 1% of males)
 - Tritanopia (blue-yellow, rare)
 
 **Rules:**
+
 - ❌ Don't rely on color alone
 - ✅ Add patterns, labels, or symbols
 - ✅ Use colorblind-safe palettes
 - ✅ Test with colorblind simulators
 
 ### Touch Targets
+
 **Mobile requirements:**
+
 - Minimum: 44x44 pixels (iOS)
 - Recommended: 48x48 pixels (Material Design)
 
@@ -80,12 +89,15 @@ Quick reference for style validation, accessibility, performance optimization, a
 ## Performance Optimization
 
 ### Layer Count
+
 **Rule:** Minimize layer count
+
 - **Good:** < 50 layers
 - **Warning:** 50-100 layers
 - **Problem:** > 100 layers
 
 **Optimization:**
+
 ```javascript
 // ❌ Multiple layers for categories
 map.addLayer({ id: 'parks', filter: ['==', 'type', 'park'] });
@@ -95,17 +107,13 @@ map.addLayer({ id: 'water', filter: ['==', 'type', 'water'] });
 map.addLayer({
   id: 'features',
   paint: {
-    'fill-color': [
-      'match', ['get', 'type'],
-      'park', '#90EE90',
-      'water', '#87CEEB',
-      '#CCCCCC'
-    ]
+    'fill-color': ['match', ['get', 'type'], 'park', '#90EE90', 'water', '#87CEEB', '#CCCCCC']
   }
 });
 ```
 
 ### Source Optimization
+
 ```javascript
 // ✅ Set appropriate zoom ranges
 {
@@ -124,6 +132,7 @@ map.addLayer({
 ```
 
 ### Paint Properties
+
 ```javascript
 // ✅ Use data-driven expressions efficiently
 'circle-radius': [
@@ -142,6 +151,7 @@ map.addLayer({
 ## Style Testing Checklist
 
 ### Visual Testing
+
 ✅ Test at multiple zoom levels (0, 5, 10, 15, 20)
 ✅ Test with different data densities
 ✅ Check label collisions
@@ -150,6 +160,7 @@ map.addLayer({
 ✅ Check dark mode compatibility
 
 ### Functional Testing
+
 ```javascript
 // ✅ Validate style loads
 map.on('style.load', () => {
@@ -163,18 +174,19 @@ map.on('error', (e) => {
 
 // ✅ Validate sources
 const sources = map.getStyle().sources;
-Object.keys(sources).forEach(id => {
+Object.keys(sources).forEach((id) => {
   console.log('Source:', id, sources[id]);
 });
 
 // ✅ Validate layers
 const layers = map.getStyle().layers;
-layers.forEach(layer => {
+layers.forEach((layer) => {
   console.log('Layer:', layer.id, 'Type:', layer.type);
 });
 ```
 
 ### Performance Testing
+
 ```javascript
 // ✅ Measure style load time
 const startTime = performance.now();
@@ -185,7 +197,7 @@ map.once('idle', () => {
 
 // ✅ Monitor frame rate
 const fps = map.getFPS();
-console.log('FPS:', fps);  // Should be close to 60
+console.log('FPS:', fps); // Should be close to 60
 
 // ✅ Check layer count
 console.log('Layer count:', map.getStyle().layers.length);
@@ -194,6 +206,7 @@ console.log('Layer count:', map.getStyle().layers.length);
 ## Common Quality Issues
 
 ### 1. Label Collisions
+
 ```javascript
 // ❌ Overlapping labels
 'text-allow-overlap': true  // Bad for readability
@@ -205,6 +218,7 @@ console.log('Layer count:', map.getStyle().layers.length);
 ```
 
 ### 2. Inconsistent Styling
+
 ```javascript
 // ❌ Different styles for similar features
 layer1: { 'line-width': 2 }
@@ -220,6 +234,7 @@ layer2: { 'line-width': 3 }  // Inconsistent
 ```
 
 ### 3. Missing Error Handling
+
 ```javascript
 // ❌ No error handling
 map.addSource('source', sourceData);
@@ -231,13 +246,16 @@ if (!map.getSource('source')) {
 ```
 
 ### 4. Poor Mobile Performance
+
 **Issues:**
+
 - Too many layers
 - Large GeoJSON files
 - High-resolution images
 - Complex expressions
 
 **Solutions:**
+
 - Simplify geometry
 - Use vector tiles
 - Optimize images
@@ -276,15 +294,18 @@ if (!map.getSource('source')) {
 ## Tools & Resources
 
 **Validation:**
+
 - Mapbox Style Specification: <https://docs.mapbox.com/mapbox-gl-js/style-spec/>
 - JSON Schema validators
 
 **Accessibility:**
+
 - WebAIM Contrast Checker
 - Coblis Color Blindness Simulator
 - WAVE Accessibility Evaluation Tool
 
 **Performance:**
+
 - Chrome DevTools Performance tab
 - Mapbox GL JS Performance metrics
 - Bundle size analyzers

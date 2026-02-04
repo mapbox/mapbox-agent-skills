@@ -8,6 +8,7 @@ description: Integration patterns for Mapbox Maps SDK on iOS with Swift, SwiftUI
 Official integration patterns for Mapbox Maps SDK on iOS. Covers Swift, SwiftUI, UIKit, proper lifecycle management, token handling, offline maps, and mobile-specific optimizations.
 
 **Use this skill when:**
+
 - Setting up Mapbox Maps SDK for iOS in a new or existing project
 - Integrating maps with SwiftUI or UIKit
 - Implementing proper lifecycle management and cleanup
@@ -71,6 +72,7 @@ struct ContentView: View {
 ```
 
 **Key points:**
+
 - Use `UIViewRepresentable` to wrap MapView
 - Bind SwiftUI state to map properties
 - Handle updates in `updateUIView`
@@ -127,6 +129,7 @@ class MapViewController: UIViewController {
 ```
 
 **Key points:**
+
 - Initialize in `viewDidLoad()`
 - Use `weak self` in closures to prevent retain cycles
 - Wait for `.mapLoaded` event before adding layers
@@ -165,6 +168,7 @@ Config/Secrets.xcconfig
 ```
 
 **Why this pattern:**
+
 - Token not in source code
 - Automatically injected at build time
 - Works with Xcode Cloud and CI/CD
@@ -308,6 +312,7 @@ class OfflineManager {
 ```
 
 **Key considerations:**
+
 - **Battery impact:** Downloading uses significant battery
 - **Storage limits:** Monitor available disk space
 - **Zoom levels:** Higher zoom = more tiles = more storage
@@ -435,6 +440,7 @@ extension NavigationViewController: RouteControllerDelegate {
 ```
 
 **Navigation SDK features:**
+
 - Turn-by-turn guidance
 - Voice instructions
 - Route progress tracking
@@ -763,6 +769,7 @@ mapView.accessibilityIdentifier = "mapView"
 ### Map Not Displaying
 
 **Checklist:**
+
 1. ✅ Token configured in Info.plist?
 2. ✅ Bundle ID matches token restrictions?
 3. ✅ MapboxMaps framework imported?
@@ -772,6 +779,7 @@ mapView.accessibilityIdentifier = "mapView"
 ### Memory Leaks
 
 **Use Instruments:**
+
 1. Xcode → Product → Profile → Leaks
 2. Look for retain cycles in map event handlers
 3. Ensure `[weak self]` in all closures
@@ -780,6 +788,7 @@ mapView.accessibilityIdentifier = "mapView"
 ### Slow Performance
 
 **Common causes:**
+
 - Too many markers (use clustering or symbols)
 - Large GeoJSON sources (use vector tiles)
 - High-frequency camera updates

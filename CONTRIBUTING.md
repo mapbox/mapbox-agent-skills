@@ -45,6 +45,7 @@ description: Brief one-line description of what this skill covers
 ```
 
 **Requirements:**
+
 - `name` must match the directory name exactly
 - `description` should be concise (1-2 sentences)
 - Content must include actionable guidance, not just information
@@ -70,7 +71,7 @@ description: Brief one-line description of what this skill covers
 
 ### 4. Example Template
 
-```markdown
+````markdown
 ---
 name: mapbox-example-skill
 description: Expert guidance on [specific domain] for Mapbox applications
@@ -79,6 +80,7 @@ description: Expert guidance on [specific domain] for Mapbox applications
 # Mapbox [Domain] Skill
 
 Expert guidance on [what this covers]. Use this skill when:
+
 - [Specific use case 1]
 - [Specific use case 2]
 
@@ -89,12 +91,15 @@ Expert guidance on [what this covers]. Use this skill when:
 [Why this matters]
 
 **Anti-pattern:**
+
 ```javascript
 // ❌ BAD: [Why this is wrong]
 code example
 ```
+````
 
 **Solution:**
+
 ```javascript
 // ✅ GOOD: [Why this is better]
 code example
@@ -104,10 +109,10 @@ code example
 
 ### Decision Matrix
 
-| Scenario | Use Approach A | Use Approach B |
-|----------|---------------|----------------|
-| < 1000 items | ✅ | ❌ |
-| 1000-10000 | ⚠️ | ✅ |
+| Scenario     | Use Approach A | Use Approach B |
+| ------------ | -------------- | -------------- |
+| < 1000 items | ✅             | ❌             |
+| 1000-10000   | ⚠️             | ✅             |
 
 ## Common Scenarios
 
@@ -119,7 +124,8 @@ code example
 
 - [Link to official docs]
 - [Link to examples]
-```
+
+````
 
 ## Testing Your Skill
 
@@ -129,9 +135,10 @@ Before submitting:
    ```bash
    npm install
    npm run validate:skills
-   ```
+````
 
 2. **Check spelling:**
+
    ```bash
    npm run spellcheck
    ```
@@ -139,11 +146,13 @@ Before submitting:
    If you have domain-specific terms, add them to `cspell.config.json`.
 
 3. **Lint markdown:**
+
    ```bash
    npm run lint:markdown
    ```
 
 4. **Run all checks:**
+
    ```bash
    npm run check
    ```
@@ -156,6 +165,7 @@ Before submitting:
 ## Pull Request Process
 
 1. **Create a branch:**
+
    ```bash
    git checkout -b add-your-skill-name
    ```
@@ -165,11 +175,13 @@ Before submitting:
    - Add any additional resources
 
 3. **Run checks:**
+
    ```bash
    npm run check
    ```
 
 4. **Commit with clear message:**
+
    ```bash
    git commit -m "Add [skill-name] skill
 
@@ -178,6 +190,7 @@ Before submitting:
    ```
 
 5. **Push and create PR:**
+
    ```bash
    git push -u origin add-your-skill-name
    ```

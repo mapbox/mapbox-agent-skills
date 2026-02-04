@@ -12,6 +12,7 @@ This conversation demonstrates how the **mapbox-web-performance-patterns** skill
 ## Conversation
 
 ### User
+
 > I have a Mapbox map showing 5,000 restaurant locations and it's really slow. The markers take forever to load and the map is janky when I pan around. How do I fix this?
 
 ### AI Assistant
@@ -19,6 +20,7 @@ This conversation demonstrates how the **mapbox-web-performance-patterns** skill
 I can help optimize your map performance. Based on the **mapbox-web-performance-patterns** skill, 5,000 markers falls into a critical performance range that requires specific optimization.
 
 **Performance Threshold Analysis:**
+
 - **< 500 markers**: HTML markers (Marker class) - OK
 - **500-100,000 markers**: Symbol layers or clustering - **← You are here**
 - **100,000-250,000 markers**: Clustering required
@@ -32,10 +34,8 @@ Symbol layers use Canvas rendering which is much faster than HTML markers:
 
 ```javascript
 // ❌ BAD: HTML markers (current approach)
-restaurants.forEach(restaurant => {
-  new mapboxgl.Marker()
-    .setLngLat([restaurant.lng, restaurant.lat])
-    .addTo(map);
+restaurants.forEach((restaurant) => {
+  new mapboxgl.Marker().setLngLat([restaurant.lng, restaurant.lat]).addTo(map);
 });
 
 // ✅ GOOD: Symbol layer with GeoJSON
@@ -43,7 +43,7 @@ map.addSource('restaurants', {
   type: 'geojson',
   data: {
     type: 'FeatureCollection',
-    features: restaurants.map(r => ({
+    features: restaurants.map((r) => ({
       type: 'Feature',
       geometry: {
         type: 'Point',
@@ -93,20 +93,8 @@ map.addLayer({
   source: 'restaurants',
   filter: ['has', 'point_count'],
   paint: {
-    'circle-color': [
-      'step',
-      ['get', 'point_count'],
-      '#51bbd6',
-      100, '#f1f075',
-      750, '#f28cb1'
-    ],
-    'circle-radius': [
-      'step',
-      ['get', 'point_count'],
-      20,
-      100, 30,
-      750, 40
-    ]
+    'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
+    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
   }
 });
 
@@ -142,9 +130,10 @@ map.addLayer({
 From the performance skill, I'd also recommend:
 
 **1. Parallel Data Loading** (eliminate waterfalls):
+
 ```javascript
 // ✅ Start data fetch immediately, don't wait for map
-const restaurantsPromise = fetch('/api/restaurants').then(r => r.json());
+const restaurantsPromise = fetch('/api/restaurants').then((r) => r.json());
 
 const map = new mapboxgl.Map({
   container: 'map',
@@ -158,6 +147,7 @@ map.on('load', async () => {
 ```
 
 **2. Event Throttling** (reduce jank during pan):
+
 ```javascript
 import { throttle } from 'lodash';
 
@@ -167,12 +157,16 @@ map.on('move', () => {
 });
 
 // ✅ GOOD: Fires at most 10 times per second
-map.on('move', throttle(() => {
-  updateVisibleRestaurants();
-}, 100));
+map.on(
+  'move',
+  throttle(() => {
+    updateVisibleRestaurants();
+  }, 100)
+);
 ```
 
 **Expected Results:**
+
 - Initial load time: 2-5 seconds → **< 1 second**
 - Time to interactive: 5+ seconds → **< 2 seconds**
 - FPS during pan: 15-30 → **50-60 FPS**
@@ -194,6 +188,7 @@ Which approach fits your use case better - static symbol layers or interactive c
 ### Without the skill:
 
 An AI assistant without the skill might:
+
 - Suggest generic "try clustering" without specific thresholds
 - Not know when symbol layers vs clustering is appropriate
 - Miss critical optimizations like parallel data loading

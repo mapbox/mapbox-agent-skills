@@ -800,24 +800,8 @@ This skill provides battle-tested style patterns and layer configurations for co
   "minzoom": 15,
   "paint": {
     "fill-extrusion-color": "#aaa",
-    "fill-extrusion-height": [
-      "interpolate",
-      ["linear"],
-      ["zoom"],
-      15,
-      0,
-      15.05,
-      ["get", "height"]
-    ],
-    "fill-extrusion-base": [
-      "interpolate",
-      ["linear"],
-      ["zoom"],
-      15,
-      0,
-      15.05,
-      ["get", "min_height"]
-    ],
+    "fill-extrusion-height": ["interpolate", ["linear"], ["zoom"], 15, 0, 15.05, ["get", "height"]],
+    "fill-extrusion-base": ["interpolate", ["linear"], ["zoom"], 15, 0, 15.05, ["get", "min_height"]],
     "fill-extrusion-opacity": 0.6
   }
 }

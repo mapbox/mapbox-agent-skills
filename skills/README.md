@@ -17,6 +17,7 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 | [mapbox-style-patterns](./mapbox-style-patterns/) | Common style patterns and layer configurations |
 | [mapbox-style-quality](./mapbox-style-quality/) | Style validation, accessibility, optimization |
 | [mapbox-token-security](./mapbox-token-security/) | Security best practices for access tokens |
+| [mapbox-data-visualization-patterns](./mapbox-data-visualization-patterns/) | Data visualization patterns including choropleth, heat maps, 3D, and animated data |
 
 ## Documentation
 

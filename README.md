@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**10 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
+**11 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
 
 ## Quick Start
 
@@ -324,6 +324,63 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 - Incident response plans
 
 [View skill →](./skills/mapbox-token-security/SKILL.md)
+
+---
+
+### 📊 mapbox-data-visualization-patterns
+
+**Patterns for visualizing data on maps including choropleth maps, heat maps, 3D visualizations, and animated data.**
+
+Comprehensive guide covering all major data visualization techniques with Mapbox GL JS. Perfect for building statistical maps, dashboards, and data-driven applications.
+
+**Use when:**
+- Visualizing statistical data on maps (population, sales, demographics)
+- Creating choropleth maps with color-coded regions
+- Building heat maps for density visualization
+- Adding 3D visualizations (building heights, terrain)
+- Implementing data-driven styling based on properties
+- Animating time-series or real-time data
+- Working with large datasets that require optimization
+
+**Key topics:**
+- Visualization type selection (choropleth, heat map, bubble, 3D, line)
+- Data-driven styling with Mapbox expressions
+- Color scales and accessibility (ColorBrewer)
+- Animation patterns (time-series, real-time updates)
+- Performance optimization (vector tiles, feature state, filtering)
+- Interactive legends and data inspectors
+
+**Covers all visualization types:**
+- **Choropleth Maps** - Regional data with color-coded polygons (elections, demographics)
+- **Heat Maps** - Point density visualization (crime, incidents, events)
+- **Bubble Maps** - Circles sized by magnitude (earthquakes, sales, metrics)
+- **3D Extrusions** - Height-based visualization (buildings, elevation, volume)
+- **Line Visualization** - Flow and network data (traffic, routes, connections)
+
+**Advanced techniques:**
+- Data-driven expressions (interpolate, step, match, case)
+- Feature state for dynamic styling without geometry updates
+- Client-side filtering for interactive controls
+- Progressive loading for large datasets
+- Smooth transitions and animations
+- Real-time data updates via WebSocket or polling
+
+**Performance patterns:**
+- Vector tiles for datasets > 10 MB
+- Feature state for hover/selection effects
+- Client-side filtering without data reloading
+- Viewport-based progressive loading
+- Debounced updates for smooth interactions
+
+**Common use cases:**
+- Election results maps
+- COVID-19 case tracking
+- Real estate price visualization
+- Traffic flow analysis
+- Weather data visualization
+- Sales territory analysis
+
+[View skill →](./skills/mapbox-data-visualization-patterns/SKILL.md)
 
 ---
 

@@ -111,9 +111,5 @@
     "yourusername",
     "zoomend"
   ],
-  "ignorePaths": [
-    "node_modules",
-    "package-lock.json",
-    ".git"
-  ]
+  "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

@@ -8,6 +8,7 @@ description: Integration patterns for Mapbox Maps SDK on Android with Kotlin, Je
 Official integration patterns for Mapbox Maps SDK on Android. Covers Kotlin, Jetpack Compose, View system, proper lifecycle management, token handling, offline maps, and mobile-specific optimizations.
 
 **Use this skill when:**
+
 - Setting up Mapbox Maps SDK for Android in a new or existing project
 - Integrating maps with Jetpack Compose or View system
 - Implementing proper lifecycle management and cleanup
@@ -103,6 +104,7 @@ fun MapScreen() {
 ```
 
 **Key points:**
+
 - Use `AndroidView` to integrate MapView in Compose
 - Use `remember` to preserve MapView across recompositions
 - Use `DisposableEffect` for proper lifecycle cleanup
@@ -190,6 +192,7 @@ class MapActivity : AppCompatActivity() {
 ```
 
 **Key points:**
+
 - Call `mapView.onStart()`, `onStop()`, `onDestroy()`, `onLowMemory()` in corresponding Activity methods
 - Wait for style to load before adding layers
 - Store MapView reference as lateinit var (will be initialized in onCreate)
@@ -251,6 +254,7 @@ class MapFragment : Fragment() {
 ```
 
 **Key points:**
+
 - Set `mapView` to null in `onDestroyView()` to prevent leaks
 - Use nullable `mapView?` for safety
 - Call lifecycle methods appropriately
@@ -316,6 +320,7 @@ val token = BuildConfig.MAPBOX_ACCESS_TOKEN
 ```
 
 **Why this pattern:**
+
 - Token not in source code or version control
 - Works in local development and CI/CD (via environment variables)
 - Automatically injected at build time
@@ -424,6 +429,7 @@ class MapViewModel : ViewModel() {
 ```
 
 **Benefits:**
+
 - State survives configuration changes
 - Separates business logic from UI
 - Lifecycle-aware
@@ -526,6 +532,7 @@ class OfflineManager(private val context: Context) {
 ```
 
 **Key considerations:**
+
 - **Battery impact:** Downloading uses significant battery
 - **Storage limits:** Monitor available disk space
 - **Zoom levels:** Higher zoom = more tiles = more storage
@@ -662,6 +669,7 @@ class NavigationActivity : AppCompatActivity() {
 ```
 
 **Navigation SDK features:**
+
 - Turn-by-turn guidance
 - Voice instructions
 - Route progress tracking
@@ -1035,6 +1043,7 @@ class MapActivityTest {
 ### Map Not Displaying
 
 **Checklist:**
+
 1. ✅ Token configured in string resources?
 2. ✅ Correct package name in token restrictions?
 3. ✅ MapboxMaps dependency added to build.gradle?
@@ -1048,6 +1057,7 @@ class MapActivityTest {
 ### Memory Leaks
 
 **Use Android Studio Profiler:**
+
 1. Run → Profile 'app' → Memory
 2. Look for MapView instances not being garbage collected
 3. Ensure `mapView.onDestroy()` is called
@@ -1056,6 +1066,7 @@ class MapActivityTest {
 ### Slow Performance
 
 **Common causes:**
+
 - Too many markers (use clustering or symbols)
 - Large GeoJSON sources (use vector tiles)
 - Not handling lifecycle properly

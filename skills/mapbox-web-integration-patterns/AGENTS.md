@@ -5,6 +5,7 @@ Quick reference for integrating Mapbox GL JS with React, Vue, Svelte, Angular, a
 ## Critical Integration Rules
 
 ### 1. Map Lifecycle Management
+
 **Must properly initialize and cleanup in all frameworks:**
 
 ```javascript
@@ -17,6 +18,7 @@ useEffect(() => {
 ```
 
 ### 2. Never Re-initialize Map
+
 **Problem:** Creating new map instances causes memory leaks
 **Solution:** Initialize once with empty dependency array
 
@@ -38,6 +40,7 @@ useEffect(() => {
 ```
 
 ### 3. Wait for Map Load
+
 **All map operations must wait for 'load' event:**
 
 ```javascript
@@ -51,6 +54,7 @@ map.on('load', () => {
 ## Framework-Specific Patterns
 
 ### React
+
 ```javascript
 import { useEffect, useRef } from 'react';
 
@@ -82,6 +86,7 @@ function MapComponent() {
 ```
 
 ### Next.js (with SSR)
+
 ```javascript
 'use client'; // Mark as client component
 
@@ -99,6 +104,7 @@ useEffect(() => {
 ```
 
 ### Vue 3 (Composition API)
+
 ```javascript
 import { onMounted, onUnmounted, ref } from 'vue';
 
@@ -124,6 +130,7 @@ export default {
 ```
 
 ### Svelte
+
 ```javascript
 <script>
   import { onMount, onDestroy } from 'svelte';
@@ -148,6 +155,7 @@ export default {
 ```
 
 ### Angular
+
 ```typescript
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import mapboxgl from 'mapbox-gl';
@@ -176,6 +184,7 @@ export class MapComponent implements OnInit, OnDestroy {
 ## State Management Patterns
 
 ### Updating Map from State
+
 ```javascript
 // ✅ Separate effects for different updates
 useEffect(() => {
@@ -195,6 +204,7 @@ useEffect(() => {
 ```
 
 ### Extracting State from Map
+
 ```javascript
 // ✅ Update component state from map events
 useEffect(() => {
@@ -213,6 +223,7 @@ useEffect(() => {
 ## Common Issues
 
 ### Issue: Map Not Visible
+
 ```javascript
 // ❌ Container has no height
 <div ref={mapContainer}></div>
@@ -222,6 +233,7 @@ useEffect(() => {
 ```
 
 ### Issue: Map Renders Before Container
+
 ```javascript
 // ❌ Map created before DOM ready
 const map = new mapboxgl.Map({...}); // Too early!
@@ -233,6 +245,7 @@ useEffect(() => {
 ```
 
 ### Issue: Memory Leaks in SPA
+
 ```javascript
 // ❌ No cleanup
 useEffect(() => {
@@ -248,6 +261,7 @@ useEffect(() => {
 ```
 
 ### Issue: "Container is already initialized"
+
 ```javascript
 // ❌ Multiple initializations
 useEffect(() => {
@@ -264,6 +278,7 @@ useEffect(() => {
 ## SSR/Hydration Considerations
 
 ### Next.js App Router
+
 ```javascript
 // Mark component as client-only
 'use client';
@@ -273,6 +288,7 @@ const Map = dynamic(() => import('./Map'), { ssr: false });
 ```
 
 ### Next.js Pages Router
+
 ```javascript
 // Disable SSR for map component
 import dynamic from 'next/dynamic';
@@ -281,6 +297,7 @@ const Map = dynamic(() => import('./Map'), { ssr: false });
 ```
 
 ### Check for Browser Environment
+
 ```javascript
 useEffect(() => {
   // Only runs in browser
@@ -300,10 +317,7 @@ useEffect(() => {
 
 ```javascript
 // ✅ Debounce state updates
-const debouncedSearch = useMemo(
-  () => debounce((query) => updateMap(query), 300),
-  []
-);
+const debouncedSearch = useMemo(() => debounce((query) => updateMap(query), 300), []);
 ```
 
 ## Integration Checklist

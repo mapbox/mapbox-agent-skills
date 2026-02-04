@@ -37,12 +37,14 @@
 <!-- Describe how you tested this change -->
 
 **Local validation:**
+
 - [ ] `npm run check` passes
 - [ ] Spell check passes
 - [ ] Markdown linting passes
 - [ ] Skills validation passes
 
 **AI assistant testing:**
+
 - [ ] Tested with Claude Code / Cursor / other AI assistant
 - [ ] Verified skill activates in relevant scenarios
 - [ ] Confirmed guidance is actionable and accurate

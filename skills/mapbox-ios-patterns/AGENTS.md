@@ -5,6 +5,7 @@ Quick reference for Mapbox Maps SDK for iOS with Swift, SwiftUI, and UIKit.
 ## Setup
 
 ### Installation (SPM)
+
 ```swift
 dependencies: [
   .package(url: "https://github.com/mapbox/mapbox-maps-ios.git", from: "11.0.0")
@@ -12,6 +13,7 @@ dependencies: [
 ```
 
 ### Configuration
+
 ```swift
 // Info.plist or code
 MapboxOptions.accessToken = "pk.your_token_here"
@@ -20,6 +22,7 @@ MapboxOptions.accessToken = "pk.your_token_here"
 ## SwiftUI Integration
 
 ### Basic Map
+
 ```swift
 import SwiftUI
 import MapboxMaps
@@ -38,6 +41,7 @@ struct MapView: View {
 ```
 
 ### With Annotations
+
 ```swift
 struct MapView: View {
   var body: some View {
@@ -55,6 +59,7 @@ struct MapView: View {
 ## UIKit Integration
 
 ### Basic Map
+
 ```swift
 import UIKit
 import MapboxMaps
@@ -81,6 +86,7 @@ class MapViewController: UIViewController {
 ## Common Patterns
 
 ### 1. Camera Control
+
 ```swift
 // Fly to location
 mapView.camera.fly(to: CameraOptions(
@@ -102,6 +108,7 @@ mapView.mapboxMap.setCamera(to: CameraOptions(
 ```
 
 ### 2. Annotations
+
 ```swift
 // Point annotation
 var pointAnnotation = PointAnnotation(coordinate: coordinate)
@@ -119,6 +126,7 @@ polygonAnnotation.fillColor = StyleColor(.blue.withAlphaComponent(0.5))
 ```
 
 ### 3. Adding Layers
+
 ```swift
 // GeoJSON source
 var source = GeoJSONSource(id: "source-id")
@@ -133,6 +141,7 @@ try? mapView.mapboxMap.addLayer(layer)
 ```
 
 ### 4. Event Handling
+
 ```swift
 // Map tap
 mapView.gestures.onMapTap.observe { context in
@@ -152,6 +161,7 @@ mapView.mapboxMap.onCameraChanged.observe { event in
 ```
 
 ### 5. User Location
+
 ```swift
 // Enable location
 mapView.location.options.puckType = .puck2D()
@@ -173,6 +183,7 @@ mapView.camera.ease(to: CameraOptions(
 ## Performance Optimization
 
 ### 1. Reuse Annotation Managers
+
 ```swift
 // ❌ Creating new manager each time
 func updateMarkers() {
@@ -193,6 +204,7 @@ func updateMarkers() {
 ```
 
 ### 2. Batch Updates
+
 ```swift
 // ✅ Update all annotations at once
 annotationManager.annotations = newAnnotations
@@ -204,6 +216,7 @@ newAnnotations.forEach { annotation in
 ```
 
 ### 3. Layer Management
+
 ```swift
 // ✅ Update layer properties
 try? mapView.mapboxMap.updateLayer(
@@ -221,6 +234,7 @@ try? mapView.mapboxMap.removeLayer(withId: "layer-id")
 ## Common Issues
 
 ### 1. Map Not Displaying
+
 ```swift
 // ❌ No access token
 // Fix: Set MapboxOptions.accessToken
@@ -236,6 +250,7 @@ NSLayoutConstraint.activate([
 ```
 
 ### 2. Memory Leaks
+
 ```swift
 // ✅ Use weak self in closures
 mapView.gestures.onMapTap.observe { [weak self] context in
@@ -249,6 +264,7 @@ deinit {
 ```
 
 ### 3. Location Permissions
+
 ```swift
 // ✅ Add to Info.plist
 <key>NSLocationWhenInUseUsageDescription</key>
@@ -261,6 +277,7 @@ locationManager.requestWhenInUseAuthorization()
 ## SwiftUI Best Practices
 
 ### State Management
+
 ```swift
 struct MapView: View {
   @State private var viewport: Viewport = .camera(...)
@@ -283,6 +300,7 @@ struct MapView: View {
 ```
 
 ### Combine with Other Views
+
 ```swift
 struct ContentView: View {
   var body: some View {
@@ -301,6 +319,7 @@ struct ContentView: View {
 ## Platform-Specific Considerations
 
 ### Dark Mode
+
 ```swift
 // Auto-adjust for dark mode
 .mapStyle(
@@ -309,6 +328,7 @@ struct ContentView: View {
 ```
 
 ### iPad Support
+
 ```swift
 // Handle larger screens
 if UIDevice.current.userInterfaceIdiom == .pad {
@@ -317,6 +337,7 @@ if UIDevice.current.userInterfaceIdiom == .pad {
 ```
 
 ### Safe Areas
+
 ```swift
 // Respect safe areas
 Map(viewport: $viewport)
@@ -326,6 +347,7 @@ Map(viewport: $viewport)
 ## Testing
 
 ### Unit Tests
+
 ```swift
 func testCameraPosition() {
   let mapView = MapView(frame: .zero)

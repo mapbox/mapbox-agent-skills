@@ -1,11 +1,11 @@
 ---
 name: mapbox-web-integration-patterns
-description: Official integration patterns for Mapbox GL JS across popular web frameworks. Covers setup, lifecycle management, token handling, search integration, and common pitfalls. Based on Mapbox's create-web-app scaffolding tool.
+description: Official integration patterns for Mapbox GL JS across popular web frameworks and Web Components. Covers setup, lifecycle management, token handling, search integration, and common pitfalls. Based on Mapbox's create-web-app scaffolding tool.
 ---
 
 # Mapbox Integration Patterns Skill
 
-This skill provides official patterns for integrating Mapbox GL JS into web applications across different frameworks. These patterns are based on Mapbox's `create-web-app` scaffolding tool and represent production-ready best practices.
+This skill provides official patterns for integrating Mapbox GL JS into web applications across different frameworks and as framework-agnostic Web Components. These patterns are based on Mapbox's `create-web-app` scaffolding tool and represent production-ready best practices.
 
 ## Version Requirements
 
@@ -530,6 +530,316 @@ initMap();
 
 ---
 
+### Web Components (Custom Elements)
+
+**Pattern: Standard Custom Element with lifecycle callbacks**
+
+Web Components provide a framework-agnostic way to encapsulate Mapbox maps. They work in vanilla JavaScript, React, Vue, Svelte, Angular, and any other framework without modification.
+
+**Basic Web Component:**
+
+```javascript
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+class MapboxMap extends HTMLElement {
+  constructor() {
+    super();
+    this.map = null;
+  }
+
+  connectedCallback() {
+    // Get configuration from attributes
+    const token = this.getAttribute('access-token') ||
+                  import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+    const style = this.getAttribute('style') || 'mapbox://styles/mapbox/standard';
+    const center = this.getAttribute('center')?.split(',').map(Number) || [-71.05953, 42.3629];
+    const zoom = parseFloat(this.getAttribute('zoom')) || 13;
+
+    // Initialize map
+    mapboxgl.accessToken = token;
+
+    this.map = new mapboxgl.Map({
+      container: this,
+      style: style,
+      center: center,
+      zoom: zoom
+    });
+
+    // Dispatch custom event when map loads
+    this.map.on('load', () => {
+      this.dispatchEvent(new CustomEvent('mapload', {
+        detail: { map: this.map }
+      }));
+    });
+  }
+
+  // CRITICAL: Clean up when element is removed
+  disconnectedCallback() {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+  }
+
+  // Expose map instance to JavaScript
+  getMap() {
+    return this.map;
+  }
+}
+
+// Register the custom element
+customElements.define('mapbox-map', MapboxMap);
+```
+
+**Usage in HTML:**
+
+```html
+<!-- Basic usage -->
+<mapbox-map
+  access-token="pk.YOUR_TOKEN"
+  style="mapbox://styles/mapbox/dark-v11"
+  center="-122.4194,37.7749"
+  zoom="12"
+></mapbox-map>
+
+<style>
+  mapbox-map {
+    display: block;
+    height: 100vh;
+    width: 100%;
+  }
+</style>
+```
+
+**Usage in React:**
+
+```jsx
+import './mapbox-map-component'; // Import to register element
+
+function App() {
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    const handleMapLoad = (e) => {
+      const map = e.detail.map;
+      // Add markers, layers, etc.
+      new mapboxgl.Marker()
+        .setLngLat([-122.4194, 37.7749])
+        .addTo(map);
+    };
+
+    mapRef.current?.addEventListener('mapload', handleMapLoad);
+
+    return () => {
+      mapRef.current?.removeEventListener('mapload', handleMapLoad);
+    };
+  }, []);
+
+  return (
+    <mapbox-map
+      ref={mapRef}
+      access-token={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
+      style="mapbox://styles/mapbox/standard"
+      center="-122.4194,37.7749"
+      zoom="12"
+    />
+  );
+}
+```
+
+**Usage in Vue:**
+
+```vue
+<template>
+  <mapbox-map
+    ref="map"
+    :access-token="token"
+    style="mapbox://styles/mapbox/streets-v12"
+    center="-71.05953,42.3629"
+    zoom="13"
+    @mapload="handleMapLoad"
+  />
+</template>
+
+<script>
+import './mapbox-map-component';
+
+export default {
+  data() {
+    return {
+      token: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
+    };
+  },
+  methods: {
+    handleMapLoad(event) {
+      const map = event.detail.map;
+      // Interact with map
+    }
+  }
+};
+</script>
+```
+
+**Usage in Svelte:**
+
+```svelte
+<script>
+  import './mapbox-map-component';
+
+  let mapElement;
+
+  function handleMapLoad(event) {
+    const map = event.detail.map;
+    // Interact with map
+  }
+</script>
+
+<mapbox-map
+  bind:this={mapElement}
+  access-token={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
+  style="mapbox://styles/mapbox/standard"
+  center="-71.05953,42.3629"
+  zoom="13"
+  on:mapload={handleMapLoad}
+/>
+```
+
+**Advanced: Web Component with Shadow DOM:**
+
+```javascript
+class MapboxMapShadow extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.map = null;
+  }
+
+  connectedCallback() {
+    // Create container in shadow DOM
+    const container = document.createElement('div');
+    container.style.cssText = 'width: 100%; height: 100%;';
+
+    // Import styles into shadow DOM
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = 'https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css';
+
+    this.shadowRoot.appendChild(style);
+    this.shadowRoot.appendChild(container);
+
+    // Wait for styles to load
+    style.onload = () => {
+      const token = this.getAttribute('access-token');
+      mapboxgl.accessToken = token;
+
+      this.map = new mapboxgl.Map({
+        container: container,
+        style: this.getAttribute('style') || 'mapbox://styles/mapbox/standard',
+        center: this.getAttribute('center')?.split(',').map(Number) || [0, 0],
+        zoom: parseFloat(this.getAttribute('zoom')) || 9
+      });
+    };
+  }
+
+  disconnectedCallback() {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+  }
+}
+
+customElements.define('mapbox-map-shadow', MapboxMapShadow);
+```
+
+**Reactive Attributes Pattern:**
+
+```javascript
+class MapboxMapReactive extends HTMLElement {
+  static get observedAttributes() {
+    return ['center', 'zoom', 'style'];
+  }
+
+  constructor() {
+    super();
+    this.map = null;
+  }
+
+  connectedCallback() {
+    mapboxgl.accessToken = this.getAttribute('access-token');
+
+    this.map = new mapboxgl.Map({
+      container: this,
+      style: this.getAttribute('style') || 'mapbox://styles/mapbox/standard',
+      center: this.getAttribute('center')?.split(',').map(Number) || [0, 0],
+      zoom: parseFloat(this.getAttribute('zoom')) || 9
+    });
+  }
+
+  disconnectedCallback() {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+  }
+
+  // React to attribute changes
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (!this.map || oldValue === newValue) return;
+
+    switch (name) {
+      case 'center':
+        const center = newValue.split(',').map(Number);
+        this.map.setCenter(center);
+        break;
+      case 'zoom':
+        this.map.setZoom(parseFloat(newValue));
+        break;
+      case 'style':
+        this.map.setStyle(newValue);
+        break;
+    }
+  }
+}
+
+customElements.define('mapbox-map-reactive', MapboxMapReactive);
+```
+
+**Key points:**
+
+- Use `connectedCallback()` for initialization (equivalent to mount/ngOnInit)
+- **Always implement `disconnectedCallback()`** to call `map.remove()` (equivalent to cleanup/unmount/ngOnDestroy)
+- Read configuration from HTML attributes
+- Works in any framework without modification
+- Dispatch custom events for map interactions
+- Use `observedAttributes` + `attributeChangedCallback` for reactive updates
+- Shadow DOM encapsulates styles (optional, more complex)
+
+**Benefits of Web Components:**
+
+- ✅ **Framework-agnostic** - works everywhere
+- ✅ **Encapsulation** - clear API through attributes
+- ✅ **Reusability** - use same component across projects
+- ✅ **Standard** - no framework lock-in
+- ✅ **Future-proof** - web platform standard
+
+**When to use:**
+
+- Building component libraries used across multiple frameworks
+- Need maximum portability and reusability
+- Working with micro-frontends
+- Want to avoid framework-specific code
+
+**When to use framework components instead:**
+
+- Already committed to a specific framework
+- Need deep framework integration (state management, routing)
+- Team familiar with framework patterns
+- Using framework-specific features (React hooks, Vue Composition API)
+
+---
+
 ## Token Management Patterns
 
 ### Environment Variables (Recommended)
@@ -949,7 +1259,9 @@ vi.mock('mapbox-gl', () => ({
 Invoke this skill when:
 
 - Setting up Mapbox GL JS in a new project
-- Integrating Mapbox into a specific framework
+- Integrating Mapbox into a specific framework (React, Vue, Svelte, Angular, Next.js)
+- Building framework-agnostic Web Components
+- Creating reusable map components for component libraries
 - Debugging map initialization issues
 - Adding Mapbox Search functionality
 - Implementing proper cleanup and lifecycle management

@@ -270,6 +270,50 @@ map.addLayer({
 });
 ```
 
+### Delivery Tracking
+```javascript
+// Delivery zones with status colors
+map.addLayer({
+  id: 'delivery-zones',
+  type: 'fill',
+  source: 'zones',
+  paint: {
+    'fill-color': [
+      'match',
+      ['get', 'status'],
+      'available', '#4caf50',
+      'busy', '#ff9800',
+      'unavailable', '#f44336',
+      '#9e9e9e'
+    ],
+    'fill-opacity': 0.15
+  }
+});
+
+// Driver markers with status
+map.addLayer({
+  id: 'drivers',
+  type: 'circle',
+  source: 'drivers',
+  paint: {
+    'circle-radius': 14,
+    'circle-color': [
+      'match',
+      ['get', 'status'],
+      'picking_up', '#ff9800',
+      'en_route', '#2196f3',
+      'delivered', '#4caf50',
+      '#9e9e9e'
+    ],
+    'circle-stroke-color': '#ffffff',
+    'circle-stroke-width': 3
+  }
+});
+
+// Update driver location (real-time)
+map.getSource('drivers').setData(driversGeoJSON);
+```
+
 ## Quick Reference: Expression Types
 
 | Type | Function | Example |

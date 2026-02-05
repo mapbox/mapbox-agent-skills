@@ -169,13 +169,15 @@ Covers initialization waterfalls, bundle size, rendering performance, memory man
 
 ### 🔧 mapbox-web-integration-patterns
 
-**Official integration patterns for Mapbox GL JS across popular web frameworks.**
+**Official integration patterns for Mapbox GL JS across popular web frameworks and Web Components.**
 
-Covers React, Vue, Svelte, Angular, and Next.js with proper lifecycle management, token handling, and search integration. Based on Mapbox's `create-web-app` scaffolding tool.
+Covers React, Vue, Svelte, Angular, Next.js, and framework-agnostic Web Components (Custom Elements) with proper lifecycle management, token handling, and search integration. Based on Mapbox's `create-web-app` scaffolding tool.
 
 **Use when:**
 - Setting up Mapbox GL JS in a new web project
 - Integrating Mapbox into a specific web framework
+- Building framework-agnostic Web Components
+- Creating reusable component libraries
 - Adding Mapbox Search functionality
 - Implementing proper cleanup and lifecycle management
 - Debugging map initialization issues in web apps
@@ -183,11 +185,13 @@ Covers React, Vue, Svelte, Angular, and Next.js with proper lifecycle management
 
 **Key topics:**
 - Framework-specific patterns (React hooks, Vue composition API, Svelte stores, Angular services)
+- Web Components (Custom Elements, Shadow DOM, reactive attributes)
 - Token management (environment variables across frameworks)
 - Lifecycle management and cleanup (preventing memory leaks)
 - Mapbox Search JS integration
 - Common mistakes and how to avoid them
 - SSR handling (Angular Universal, Next.js)
+- Framework-agnostic patterns for maximum portability
 
 [View skill →](./skills/mapbox-web-integration-patterns/SKILL.md)
 

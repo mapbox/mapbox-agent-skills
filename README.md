@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**10 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
+**11 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
 
 ## Quick Start
 
@@ -324,6 +324,56 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 - Incident response plans
 
 [View skill →](./skills/mapbox-token-security/SKILL.md)
+
+---
+
+### 📍 mapbox-store-locator-patterns
+
+**Common patterns for building store locators, restaurant finders, and location-based search applications.**
+
+Comprehensive guide covering marker display strategies, filtering, distance calculation, interactive lists synced with maps, and directions integration. Perfect for building any location-based finder application.
+
+**Use when:**
+- Building store locator or restaurant finder applications
+- Displaying multiple locations on a map with interactive lists
+- Need filtering by category, distance, or search term
+- Calculate distances from user location
+- Show location details in popups or panels
+- Integrate directions to selected locations
+
+**Key topics:**
+- Marker strategies (HTML markers, symbol layers, clustering) based on location count
+- Interactive list/map synchronization
+- Search and category filtering
+- User location and distance calculation (Haversine formula)
+- Directions API integration
+- Performance optimization (debouncing, lazy loading, virtual scrolling)
+- Layout patterns (sidebar, overlay, mobile-responsive)
+
+**Covers all marker strategies:**
+- **< 100 locations**: HTML Markers with `mapboxgl.Marker()`
+- **100-1000 locations**: Symbol layers with GeoJSON
+- **> 1000 locations**: Clustering with aggregation
+
+**Common use cases:**
+- Store locators for retail chains
+- Restaurant finders with category filters
+- Office location directories
+- Real estate property search
+- Event venue finders
+- Service provider locators
+
+**Complete implementation:**
+- GeoJSON data structure
+- Map initialization and marker display
+- Interactive listing component
+- Search/filter functionality
+- Distance calculation and sorting
+- Popup/detail views
+- Directions integration
+- Responsive layouts
+
+[View skill →](./skills/mapbox-store-locator-patterns/SKILL.md)
 
 ---
 

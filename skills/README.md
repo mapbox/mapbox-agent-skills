@@ -20,6 +20,7 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 | [mapbox-style-patterns](./mapbox-style-patterns/) | Common style patterns and layer configurations |
 | [mapbox-style-quality](./mapbox-style-quality/) | Style validation, accessibility, optimization |
 | [mapbox-token-security](./mapbox-token-security/) | Security best practices for access tokens |
+| [mapbox-store-locator-patterns](./mapbox-store-locator-patterns/) | Store locator and location finder patterns with markers, filtering, and distance calculation |
 
 ## Documentation
 

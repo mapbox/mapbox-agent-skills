@@ -76,6 +76,8 @@ export MAPBOX_ACCESS_TOKEN="your_token_here"
 
 ## Integration Patterns
 
+## Python Frameworks
+
 ### Pattern 1: Pydantic AI Integration
 
 **Use case:** Building AI agents with type-safe tools in Python
@@ -169,28 +171,451 @@ class MapboxMCPLocal:
 - Seamless MCP integration
 - Python-native development
 
-### Pattern 2: Mastra Integration
+### Pattern 2: CrewAI Integration
 
-**Use case:** Building multi-agent systems with geospatial capabilities
+**Use case:** Multi-agent orchestration with geospatial capabilities
+
+CrewAI enables building autonomous agent crews with specialized roles. Integration with Mapbox MCP adds geospatial intelligence to your crew.
+
+```python
+from crewai import Agent, Task, Crew
+from crewai.tools import BaseTool
+import requests
+import os
+from typing import Type
+from pydantic import BaseModel, Field
+
+class MapboxMCP:
+    """Mapbox MCP connector."""
+
+    def __init__(self, token: str = None):
+        self.url = 'https://mcp.mapbox.com/mcp'
+        token = token or os.getenv('MAPBOX_ACCESS_TOKEN')
+        self.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+
+    def call_tool(self, tool_name: str, params: dict) -> dict:
+        request = {
+            'jsonrpc': '2.0',
+            'id': 1,
+            'method': 'tools/call',
+            'params': {'name': tool_name, 'arguments': params}
+        }
+        response = requests.post(self.url, headers=self.headers, json=request)
+        return response.json()['result']
+
+# Create Mapbox tools for CrewAI
+class DirectionsTool(BaseTool):
+    name: str = "get_directions"
+    description: str = "Get driving directions between two locations"
+
+    class InputSchema(BaseModel):
+        origin: list = Field(description="Origin [lng, lat]")
+        destination: list = Field(description="Destination [lng, lat]")
+
+    args_schema: Type[BaseModel] = InputSchema
+
+    def __init__(self):
+        super().__init__()
+        self.mcp = MapboxMCP()
+
+    def _run(self, origin: list, destination: list) -> str:
+        result = self.mcp.call_tool('get_directions', {
+            'origin': origin,
+            'destination': destination,
+            'profile': 'driving-traffic'
+        })
+        data = result['content'][0]['text']
+        return f"Directions: {data}"
+
+class GeocodeTool(BaseTool):
+    name: str = "reverse_geocode"
+    description: str = "Convert coordinates to human-readable address"
+
+    class InputSchema(BaseModel):
+        coordinates: list = Field(description="Coordinates [lng, lat]")
+
+    args_schema: Type[BaseModel] = InputSchema
+
+    def __init__(self):
+        super().__init__()
+        self.mcp = MapboxMCP()
+
+    def _run(self, coordinates: list) -> str:
+        result = self.mcp.call_tool('reverse_geocode', {
+            'coordinates': coordinates
+        })
+        return result['content'][0]['text']
+
+class SearchPOITool(BaseTool):
+    name: str = "search_poi"
+    description: str = "Find points of interest by category near a location"
+
+    class InputSchema(BaseModel):
+        category: str = Field(description="POI category (restaurant, hotel, etc.)")
+        location: list = Field(description="Search center [lng, lat]")
+
+    args_schema: Type[BaseModel] = InputSchema
+
+    def __init__(self):
+        super().__init__()
+        self.mcp = MapboxMCP()
+
+    def _run(self, category: str, location: list) -> str:
+        result = self.mcp.call_tool('category_search', {
+            'category': category,
+            'proximity': location
+        })
+        return result['content'][0]['text']
+
+# Create specialized agents with geospatial tools
+location_analyst = Agent(
+    role='Location Analyst',
+    goal='Analyze geographic locations and provide insights',
+    backstory='Expert in geographic analysis and location intelligence',
+    tools=[GeocodeTool(), SearchPOITool()],
+    verbose=True
+)
+
+route_planner = Agent(
+    role='Route Planner',
+    goal='Plan optimal routes and provide travel time estimates',
+    backstory='Experienced logistics coordinator specializing in route optimization',
+    tools=[DirectionsTool()],
+    verbose=True
+)
+
+# Create tasks
+find_restaurants_task = Task(
+    description="""
+    Find the top 5 restaurants near coordinates [-73.9857, 40.7484] (Times Square).
+    Provide their names and approximate distances.
+    """,
+    agent=location_analyst,
+    expected_output="List of 5 restaurants with distances"
+)
+
+plan_route_task = Task(
+    description="""
+    Plan a route from [-74.0060, 40.7128] (downtown NYC) to [-73.9857, 40.7484] (Times Square).
+    Provide driving time considering current traffic.
+    """,
+    agent=route_planner,
+    expected_output="Route with estimated driving time"
+)
+
+# Create and run crew
+crew = Crew(
+    agents=[location_analyst, route_planner],
+    tasks=[find_restaurants_task, plan_route_task],
+    verbose=True
+)
+
+result = crew.kickoff()
+print(result)
+```
+
+**Real-world example - Restaurant finder crew:**
+
+```python
+# Define crew for restaurant recommendation system
+class RestaurantCrew:
+    def __init__(self):
+        self.mcp = MapboxMCP()
+
+        # Location specialist agent
+        self.location_agent = Agent(
+            role='Location Specialist',
+            goal='Find and analyze restaurant locations',
+            tools=[SearchPOITool(), GeocodeTool()],
+            backstory='Expert in finding the best dining locations'
+        )
+
+        # Logistics agent
+        self.logistics_agent = Agent(
+            role='Logistics Coordinator',
+            goal='Calculate travel times and optimal routes',
+            tools=[DirectionsTool()],
+            backstory='Specialist in urban navigation and time optimization'
+        )
+
+    def find_restaurants_with_commute(self, user_location: list, max_minutes: int):
+        # Task 1: Find nearby restaurants
+        search_task = Task(
+            description=f"Find restaurants near {user_location}",
+            agent=self.location_agent,
+            expected_output="List of restaurants with coordinates"
+        )
+
+        # Task 2: Calculate travel times
+        route_task = Task(
+            description=f"Calculate travel time to each restaurant from {user_location}",
+            agent=self.logistics_agent,
+            expected_output="Travel times to each restaurant",
+            context=[search_task]  # Depends on search results
+        )
+
+        crew = Crew(
+            agents=[self.location_agent, self.logistics_agent],
+            tasks=[search_task, route_task],
+            verbose=True
+        )
+
+        return crew.kickoff()
+
+# Usage
+restaurant_crew = RestaurantCrew()
+results = restaurant_crew.find_restaurants_with_commute(
+    user_location=[-73.9857, 40.7484],
+    max_minutes=15
+)
+```
+
+**Benefits:**
+- Multi-agent orchestration with geospatial tools
+- Task dependencies and context passing
+- Role-based agent specialization
+- Autonomous crew execution
+
+### Pattern 3: Smolagents Integration
+
+**Use case:** Lightweight agents with geospatial capabilities (Hugging Face)
+
+Smolagents is Hugging Face's simple, efficient agent framework. Perfect for deploying geospatial agents with minimal overhead.
+
+```python
+from smolagents import CodeAgent, Tool, HfApiModel
+import requests
+import os
+
+class MapboxMCP:
+    """Mapbox MCP connector."""
+
+    def __init__(self, token: str = None):
+        self.url = 'https://mcp.mapbox.com/mcp'
+        token = token or os.getenv('MAPBOX_ACCESS_TOKEN')
+        self.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+
+    def call_tool(self, tool_name: str, params: dict) -> str:
+        request = {
+            'jsonrpc': '2.0',
+            'id': 1,
+            'method': 'tools/call',
+            'params': {'name': tool_name, 'arguments': params}
+        }
+        response = requests.post(self.url, headers=self.headers, json=request)
+        result = response.json()['result']
+        return result['content'][0]['text']
+
+# Create Mapbox tools for Smolagents
+class DirectionsTool(Tool):
+    name = "get_directions"
+    description = """
+    Get driving directions between two locations.
+
+    Args:
+        origin: Origin coordinates as [longitude, latitude]
+        destination: Destination coordinates as [longitude, latitude]
+
+    Returns:
+        Directions with distance and travel time
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mcp = MapboxMCP()
+
+    def forward(self, origin: list, destination: list) -> str:
+        return self.mcp.call_tool('get_directions', {
+            'origin': origin,
+            'destination': destination,
+            'profile': 'driving-traffic'
+        })
+
+class CalculateDistanceTool(Tool):
+    name = "calculate_distance"
+    description = """
+    Calculate distance between two points (offline, instant).
+
+    Args:
+        from_coords: Start coordinates [longitude, latitude]
+        to_coords: End coordinates [longitude, latitude]
+        units: 'miles' or 'kilometers'
+
+    Returns:
+        Distance as a number
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mcp = MapboxMCP()
+
+    def forward(self, from_coords: list, to_coords: list, units: str = 'miles') -> str:
+        return self.mcp.call_tool('calculate_distance', {
+            'from': from_coords,
+            'to': to_coords,
+            'units': units
+        })
+
+class SearchPOITool(Tool):
+    name = "search_poi"
+    description = """
+    Search for points of interest by category.
+
+    Args:
+        category: POI category (restaurant, hotel, gas_station, etc.)
+        location: Search center [longitude, latitude]
+
+    Returns:
+        List of nearby POIs with names and coordinates
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mcp = MapboxMCP()
+
+    def forward(self, category: str, location: list) -> str:
+        return self.mcp.call_tool('category_search', {
+            'category': category,
+            'proximity': location
+        })
+
+class IsochroneTool(Tool):
+    name = "get_isochrone"
+    description = """
+    Calculate reachable area within time limit (isochrone).
+
+    Args:
+        location: Center point [longitude, latitude]
+        minutes: Time limit in minutes
+        profile: 'driving', 'walking', or 'cycling'
+
+    Returns:
+        GeoJSON polygon of reachable area
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mcp = MapboxMCP()
+
+    def forward(self, location: list, minutes: int, profile: str = 'driving') -> str:
+        return self.mcp.call_tool('get_isochrone', {
+            'coordinates': location,
+            'contours_minutes': [minutes],
+            'profile': profile
+        })
+
+# Create agent with Mapbox tools
+model = HfApiModel()
+
+agent = CodeAgent(
+    tools=[
+        DirectionsTool(),
+        CalculateDistanceTool(),
+        SearchPOITool(),
+        IsochroneTool()
+    ],
+    model=model
+)
+
+# Use agent
+result = agent.run(
+    "Find restaurants within 10 minutes walking from Times Square NYC "
+    "(coordinates: -73.9857, 40.7484). Calculate distances to each."
+)
+
+print(result)
+```
+
+**Real-world example - Property search agent:**
+
+```python
+class PropertySearchAgent:
+    def __init__(self):
+        self.mcp = MapboxMCP()
+
+        # Create specialized tools
+        tools = [
+            IsochroneTool(),
+            SearchPOITool(),
+            CalculateDistanceTool()
+        ]
+
+        self.agent = CodeAgent(
+            tools=tools,
+            model=HfApiModel()
+        )
+
+    def find_properties_near_work(
+        self,
+        work_location: list,
+        max_commute_minutes: int,
+        property_locations: list[dict]
+    ):
+        """Find properties within commute time of work."""
+
+        prompt = f"""
+        I need to find properties within {max_commute_minutes} minutes
+        driving of my work at {work_location}.
+
+        Property locations to check:
+        {property_locations}
+
+        For each property:
+        1. Calculate if it's within the commute time
+        2. Find nearby amenities (grocery stores, restaurants)
+        3. Calculate distances to key locations
+
+        Return a ranked list of properties with commute time and nearby amenities.
+        """
+
+        return self.agent.run(prompt)
+
+# Usage
+property_agent = PropertySearchAgent()
+
+properties = [
+    {'id': 1, 'address': '123 Main St', 'coords': [-122.4194, 37.7749]},
+    {'id': 2, 'address': '456 Oak Ave', 'coords': [-122.4094, 37.7849]},
+]
+
+results = property_agent.find_properties_near_work(
+    work_location=[-122.4, 37.79],  # Downtown SF
+    max_commute_minutes=30,
+    property_locations=properties
+)
+```
+
+**Benefits:**
+- Lightweight and efficient
+- Simple tool definition
+- Code-based agent execution
+- Great for production deployment
+
+## JavaScript/TypeScript Frameworks
+
+### Pattern 4: Mastra Integration
+
+**Use case:** Building multi-agent systems with geospatial workflows
 
 ```typescript
 import { Mastra } from '@mastra/core';
-import { spawn } from 'child_process';
 
-class MapboxMCPIntegration {
-  private mcpProcess: any;
+class MapboxMCP {
+  private url = 'https://mcp.mapbox.com/mcp';
+  private headers: Record<string, string>;
 
-  async initialize() {
-    // Start MCP server
-    this.mcpProcess = spawn('npx', ['@mapbox/mcp-server'], {
-      env: {
-        ...process.env,
-        MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN
-      }
-    });
-
-    // Wait for server ready
-    await this.waitForReady();
+  constructor(token?: string) {
+    const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
+    this.headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${mapboxToken}`
+    };
   }
 
   async callTool(toolName: string, params: any): Promise<any> {
@@ -198,20 +623,17 @@ class MapboxMCPIntegration {
       jsonrpc: '2.0',
       id: Date.now(),
       method: 'tools/call',
-      params: {
-        name: toolName,
-        arguments: params
-      }
+      params: { name: toolName, arguments: params }
     };
 
-    return new Promise((resolve, reject) => {
-      this.mcpProcess.stdin.write(JSON.stringify(request) + '\n');
-
-      this.mcpProcess.stdout.once('data', (data: Buffer) => {
-        const response = JSON.parse(data.toString());
-        resolve(response.result);
-      });
+    const response = await fetch(this.url, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(request)
     });
+
+    const data = await response.json();
+    return JSON.parse(data.result.content[0].text);
   }
 }
 
@@ -252,7 +674,7 @@ const mastra = new Mastra({
 - Agent orchestration
 - State management
 
-### Pattern 3: LangChain Integration
+### Pattern 5: LangChain Integration
 
 **Use case:** Building conversational AI with geospatial tools
 
@@ -260,27 +682,41 @@ const mastra = new Mastra({
 import { ChatOpenAI } from '@langchain/openai';
 import { initializeAgentExecutorWithOptions } from 'langchain/agents';
 import { DynamicTool } from '@langchain/core/tools';
-import { spawn } from 'child_process';
 
-// MCP Server wrapper
-class MapboxMCPServer {
-  private process: any;
+// MCP Server wrapper for hosted server
+class MapboxMCP {
+  private url = 'https://mcp.mapbox.com/mcp';
+  private headers: Record<string, string>;
 
-  async start() {
-    this.process = spawn('npx', ['@mapbox/mcp-server'], {
-      env: { MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN }
-    });
+  constructor(token?: string) {
+    const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
+    this.headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${mapboxToken}`
+    };
   }
 
   async callTool(name: string, args: any): Promise<string> {
-    // ... MCP call implementation
-    return JSON.stringify(result);
+    const request = {
+      jsonrpc: '2.0',
+      id: Date.now(),
+      method: 'tools/call',
+      params: { name, arguments: args }
+    };
+
+    const response = await fetch(this.url, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(request)
+    });
+
+    const data = await response.json();
+    return data.result.content[0].text;
   }
 }
 
 // Create LangChain tools from MCP
-const mcpServer = new MapboxMCPServer();
-await mcpServer.start();
+const mcp = new MapboxMCP();
 
 const tools = [
   new DynamicTool({
@@ -288,10 +724,10 @@ const tools = [
     description: 'Get driving directions between two locations',
     func: async (input: string) => {
       const { origin, destination } = JSON.parse(input);
-      return await mcpServer.callTool('get_directions', {
+      return await mcp.callTool('get_directions', {
         origin,
         destination,
-        profile: 'driving'
+        profile: 'driving-traffic'
       });
     }
   }),
@@ -301,7 +737,7 @@ const tools = [
     description: 'Find points of interest by category',
     func: async (input: string) => {
       const { category, location } = JSON.parse(input);
-      return await mcpServer.callTool('category_search', {
+      return await mcp.callTool('category_search', {
         category,
         proximity: location
       });
@@ -313,9 +749,23 @@ const tools = [
     description: 'Calculate reachable area within time limit',
     func: async (input: string) => {
       const { location, minutes } = JSON.parse(input);
-      return await mcpServer.callTool('get_isochrone', {
+      return await mcp.callTool('get_isochrone', {
         coordinates: location,
-        contours_minutes: [minutes]
+        contours_minutes: [minutes],
+        profile: 'walking'
+      });
+    }
+  }),
+
+  new DynamicTool({
+    name: 'calculate_distance',
+    description: 'Calculate distance between two points (offline, free)',
+    func: async (input: string) => {
+      const { from, to } = JSON.parse(input);
+      return await mcp.callTool('calculate_distance', {
+        from,
+        to,
+        units: 'miles'
       });
     }
   })
@@ -343,13 +793,11 @@ const result = await executor.invoke({
 - Tool chaining
 - Memory and context management
 
-### Pattern 4: Custom Agent Integration
+### Pattern 6: Custom Agent Integration
 
 **Use case:** Building domain-specific AI applications (Zillow-style, TripAdvisor-style)
 
 ```typescript
-import { spawn, ChildProcess } from 'child_process';
-
 interface MCPTool {
   name: string;
   description: string;
@@ -357,18 +805,20 @@ interface MCPTool {
 }
 
 class CustomMapboxAgent {
-  private mcpProcess: ChildProcess;
+  private url = 'https://mcp.mapbox.com/mcp';
+  private headers: Record<string, string>;
   private tools: Map<string, MCPTool> = new Map();
 
-  async initialize() {
-    // Start MCP server
-    this.mcpProcess = spawn('npx', ['@mapbox/mcp-server'], {
-      env: {
-        MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN
-      }
-    });
+  constructor(token?: string) {
+    const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
+    this.headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${mapboxToken}`
+    };
+  }
 
-    // Discover available tools
+  async initialize() {
+    // Discover available tools from MCP server
     await this.discoverTools();
   }
 
@@ -379,7 +829,6 @@ class CustomMapboxAgent {
       method: 'tools/list'
     };
 
-    // Send request and parse tools
     const response = await this.sendMCPRequest(request);
     response.result.tools.forEach((tool: MCPTool) => {
       this.tools.set(tool.name, tool);
@@ -391,10 +840,7 @@ class CustomMapboxAgent {
       jsonrpc: '2.0',
       id: Date.now(),
       method: 'tools/call',
-      params: {
-        name: toolName,
-        arguments: params
-      }
+      params: { name: toolName, arguments: params }
     };
 
     const response = await this.sendMCPRequest(request);
@@ -402,27 +848,19 @@ class CustomMapboxAgent {
   }
 
   private async sendMCPRequest(request: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.mcpProcess.stdin.write(JSON.stringify(request) + '\n');
-
-      const timeout = setTimeout(() => {
-        reject(new Error('MCP request timeout'));
-      }, 10000);
-
-      this.mcpProcess.stdout.once('data', (data: Buffer) => {
-        clearTimeout(timeout);
-        try {
-          const response = JSON.parse(data.toString());
-          if (response.error) {
-            reject(new Error(response.error.message));
-          } else {
-            resolve(response);
-          }
-        } catch (e) {
-          reject(e);
-        }
-      });
+    const response = await fetch(this.url, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(request)
     });
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+
+    return data;
   }
 
   // Domain-specific methods

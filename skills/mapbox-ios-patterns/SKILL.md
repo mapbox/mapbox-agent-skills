@@ -21,64 +21,63 @@ Official integration patterns for Mapbox Maps SDK on iOS. Covers Swift, SwiftUI,
 
 ## Core Integration Patterns
 
-### SwiftUI Pattern (iOS 13+)
+### SwiftUI Pattern (Maps SDK v11+)
 
-**Modern approach using SwiftUI and Combine**
+**Native SwiftUI integration with declarative API**
 
 ```swift
 import SwiftUI
 import MapboxMaps
 
-struct MapView: UIViewRepresentable {
-    @Binding var coordinate: CLLocationCoordinate2D
-    @Binding var zoom: CGFloat
-
-    func makeUIView(context: Context) -> MapboxMap.MapView {
-        let mapView = MapboxMap.MapView(frame: .zero)
-
-        // Configure map
-        mapView.mapboxMap.setCamera(
-            to: CameraOptions(
-                center: coordinate,
-                zoom: zoom
-            )
-        )
-
-        return mapView
-    }
-
-    func updateUIView(_ mapView: MapboxMap.MapView, context: Context) {
-        // Update camera when SwiftUI state changes
-        mapView.mapboxMap.setCamera(
-            to: CameraOptions(
-                center: coordinate,
-                zoom: zoom
-            )
-        )
-    }
-}
-
-// Usage in SwiftUI view
 struct ContentView: View {
-    @State private var coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-    @State private var zoom: CGFloat = 12
+    @State private var viewport: Viewport = .camera(
+        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        zoom: 12
+    )
 
     var body: some View {
-        MapView(coordinate: $coordinate, zoom: $zoom)
-            .edgesIgnoringSafeArea(.all)
+        Map(viewport: $viewport)
+            .mapStyle(.streets)
+            .ignoresSafeArea()
+    }
+}
+```
+
+**With annotations:**
+
+```swift
+struct MapWithAnnotationsView: View {
+    @State private var viewport: Viewport = .camera(
+        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        zoom: 12
+    )
+
+    let markers: [Marker] = [
+        Marker(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)),
+        Marker(coordinate: CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094))
+    ]
+
+    var body: some View {
+        Map(viewport: $viewport) {
+            ForEach(markers) { marker in
+                PointAnnotation(coordinate: marker.coordinate)
+                    .iconImage("custom-marker")
+            }
+        }
+        .mapStyle(.streets)
     }
 }
 ```
 
 **Key points:**
-- Use `UIViewRepresentable` to wrap MapView
-- Bind SwiftUI state to map properties
-- Handle updates in `updateUIView`
-- No manual cleanup needed (SwiftUI handles it)
+- Use native `Map` view (not `UIViewRepresentable`)
+- State-driven with `@State` and `Viewport`
+- Declarative annotations inside `Map { }` builder
+- Maps SDK v11+ only
 
-### UIKit Pattern (Classic)
+### UIKit Pattern (All iOS Versions)
 
-**Traditional UIKit integration with proper lifecycle**
+**UIKit integration with MapView for traditional view controller apps**
 
 ```swift
 import UIKit
@@ -136,7 +135,23 @@ class MapViewController: UIViewController {
 
 ## Token Management
 
-### ✅ Recommended: Info.plist Configuration
+### Option 1: Info.plist (Recommended)
+
+**Simplest approach - directly in Info.plist:**
+
+```xml
+<!-- Info.plist -->
+<key>MBXAccessToken</key>
+<string>pk.your_mapbox_token_here</string>
+```
+
+**Pros:** Simple, works immediately
+**Cons:** Token visible in source code
+**Use when:** Prototyping, internal apps, token restrictions handle security
+
+### Option 2: Build Configuration (.xcconfig)
+
+**Secure approach - keep token out of source control:**
 
 ```xml
 <!-- Info.plist -->
@@ -164,17 +179,30 @@ Config/Secrets.xcconfig
 *.xcconfig
 ```
 
-**Why this pattern:**
-- Token not in source code
-- Automatically injected at build time
-- Works with Xcode Cloud and CI/CD
-- No hardcoded secrets
+**Pros:** Token not in source code, works with CI/CD
+**Cons:** Requires build configuration setup
+**Use when:** Open source projects, team development
 
-### ❌ Anti-Pattern: Hardcoded Tokens
+### Option 3: Runtime Configuration (Advanced)
+
+**For server-managed tokens:**
 
 ```swift
-// ❌ NEVER DO THIS - Token in source code
-MapboxOptions.accessToken = "pk.YOUR_MAPBOX_TOKEN_HERE"
+// Set before creating MapView
+MapboxOptions.accessToken = fetchTokenFromServer()
+```
+
+**Pros:** Server-side token management, can rotate without app update
+**Cons:** More complex, requires backend infrastructure
+**Use when:** Enterprise apps, need dynamic token management
+
+### ⚠️ What to Avoid
+
+```swift
+// ❌ DON'T: Hardcode token directly in source code
+MapboxOptions.accessToken = "pk.YOUR_TOKEN_HERE" // Visible in git history
+
+// ✅ DO: Use one of the three options above
 ```
 
 ---
@@ -344,6 +372,36 @@ func hasEnoughStorage(requiredBytes: Int64) -> Bool {
 ---
 
 ## Navigation SDK Integration
+
+### Understanding Maps SDK vs Navigation SDK
+
+**Two Separate Products:**
+
+| SDK | Purpose | Dependency |
+|-----|---------|------------|
+| **Maps SDK** | Display maps, add markers, show routes, customize styles | Standalone |
+| **Navigation SDK** | Turn-by-turn navigation, voice guidance, route progress | Requires Maps SDK |
+
+**When to use each:**
+
+- **Maps SDK only:** Displaying maps, location markers, static routes, custom visualizations
+- **Navigation SDK:** Active turn-by-turn navigation, voice instructions, live routing
+
+**Installation:**
+
+```swift
+// Maps SDK only
+dependencies: [
+    .package(url: "https://github.com/mapbox/mapbox-maps-ios.git", from: "11.0.0")
+]
+
+// Navigation SDK (includes Maps SDK as dependency)
+dependencies: [
+    .package(url: "https://github.com/mapbox/mapbox-navigation-ios.git", from: "3.0.0")
+]
+```
+
+**Note:** Navigation SDK automatically includes Maps SDK - you don't need to install both separately.
 
 ### Basic Navigation Setup
 
@@ -659,46 +717,29 @@ class MapViewController: UIViewController, CLLocationManagerDelegate {
 <string>We need your location to show you on the map</string>
 ```
 
-### ❌ Mistake 4: Not Handling Camera State in SwiftUI
+### ❌ Mistake 4: Not Using Proper State Management (SwiftUI v11)
 
 ```swift
-// ❌ BAD: No way to read camera state changes
-struct MapView: UIViewRepresentable {
-    @Binding var coordinate: CLLocationCoordinate2D
-
-    func makeUIView(context: Context) -> MapboxMap.MapView {
-        let mapView = MapboxMap.MapView(frame: .zero)
-        // User pans map, but coordinate binding never updates!
-        return mapView
+// ❌ BAD: Creating viewport without @State
+struct MapView: View {
+    var body: some View {
+        // Viewport created inline - no way to update or observe changes
+        Map(viewport: .camera(
+            center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+            zoom: 12
+        ))
     }
 }
 
-// ✅ GOOD: Use Coordinator to sync camera state
-struct MapView: UIViewRepresentable {
-    @Binding var coordinate: CLLocationCoordinate2D
-    @Binding var zoom: CGFloat
+// ✅ GOOD: Use @State for viewport binding
+struct MapView: View {
+    @State private var viewport: Viewport = .camera(
+        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        zoom: 12
+    )
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(coordinate: $coordinate, zoom: $zoom)
-    }
-
-    func makeUIView(context: Context) -> MapboxMap.MapView {
-        let mapView = MapboxMap.MapView(frame: .zero)
-
-        // Listen to camera changes
-        mapView.mapboxMap.onEvery(.cameraChanged) { _ in
-            context.coordinator.updateFromMap(mapView.mapboxMap)
-        }
-
-        return mapView
-    }
-
-    class Coordinator {
-        @Binding var coordinate: CLLocationCoordinate2D
-        @Binding var zoom: CGFloat
-
-        init(coordinate: Binding<CLLocationCoordinate2D>, zoom: Binding<CGFloat>) {
-            _coordinate = coordinate
+    var body: some View {
+        Map(viewport: $viewport) // Binding allows updates in both directions
             _zoom = zoom
         }
 

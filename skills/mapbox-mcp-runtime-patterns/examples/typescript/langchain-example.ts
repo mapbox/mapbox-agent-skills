@@ -51,7 +51,7 @@ class MapboxMCP {
       throw new Error(`MCP request failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (data.error) {
       throw new Error(`MCP error: ${data.error.message}`);
@@ -71,8 +71,8 @@ const getDirectionsTool = new DynamicStructuredTool({
   schema: z.object({
     origin: z.tuple([z.number(), z.number()]).describe('Origin coordinates [longitude, latitude]'),
     destination: z.tuple([z.number(), z.number()]).describe('Destination coordinates [longitude, latitude]'),
-  }),
-  func: async ({ origin, destination }) => {
+  }) as any,
+  func: async ({ origin, destination }: any) => {
     const result = await mcp.callTool('get_directions', {
       origin: Array.from(origin),
       destination: Array.from(destination),
@@ -88,8 +88,8 @@ const searchPOITool = new DynamicStructuredTool({
   schema: z.object({
     category: z.string().describe('POI category: restaurant, hotel, coffee, gas_station, etc.'),
     location: z.tuple([z.number(), z.number()]).describe('Search center [longitude, latitude]'),
-  }),
-  func: async ({ category, location }) => {
+  }) as any,
+  func: async ({ category, location }: any) => {
     const result = await mcp.callTool('category_search', {
       category,
       proximity: Array.from(location)
@@ -105,8 +105,8 @@ const calculateDistanceTool = new DynamicStructuredTool({
     from: z.tuple([z.number(), z.number()]).describe('Start coordinates [longitude, latitude]'),
     to: z.tuple([z.number(), z.number()]).describe('End coordinates [longitude, latitude]'),
     units: z.enum(['miles', 'kilometers']).optional()
-  }),
-  func: async ({ from, to, units }) => {
+  }) as any,
+  func: async ({ from, to, units }: any) => {
     const result = await mcp.callTool('calculate_distance', {
       from: Array.from(from),
       to: Array.from(to),
@@ -123,8 +123,8 @@ const getIsochroneTool = new DynamicStructuredTool({
     location: z.tuple([z.number(), z.number()]).describe('Center point [longitude, latitude]'),
     minutes: z.number().describe('Time limit in minutes'),
     profile: z.enum(['driving', 'walking', 'cycling']).optional()
-  }),
-  func: async ({ location, minutes, profile }) => {
+  }) as any,
+  func: async ({ location, minutes, profile }: any) => {
     const result = await mcp.callTool('get_isochrone', {
       coordinates: Array.from(location),
       contours_minutes: [minutes],
@@ -160,6 +160,7 @@ Always provide clear, specific information with times and distances.`],
     new MessagesPlaceholder('agent_scratchpad')
   ]);
 
+  // @ts-ignore - Zod tuple schemas cause deep type recursion
   const agent = await createOpenAIFunctionsAgent({
     llm,
     tools,

@@ -120,7 +120,13 @@ class MapboxMCP:
             headers=self.headers,
             json=request
         )
-        return response.json()['result']
+        response.raise_for_status()
+        data = response.json()
+
+        if 'error' in data:
+            raise RuntimeError(f"MCP error: {data['error']['message']}")
+
+        return data['result']['content'][0]['text']
 
 # Create agent with Mapbox tools
 # Pass token directly or set MAPBOX_ACCESS_TOKEN env var
@@ -196,7 +202,7 @@ class MapboxMCP:
             'Authorization': f'Bearer {token}'
         }
 
-    def call_tool(self, tool_name: str, params: dict) -> dict:
+    def call_tool(self, tool_name: str, params: dict) -> str:
         request = {
             'jsonrpc': '2.0',
             'id': 1,
@@ -204,7 +210,13 @@ class MapboxMCP:
             'params': {'name': tool_name, 'arguments': params}
         }
         response = requests.post(self.url, headers=self.headers, json=request)
-        return response.json()['result']
+        response.raise_for_status()
+        data = response.json()
+
+        if 'error' in data:
+            raise RuntimeError(f"MCP error: {data['error']['message']}")
+
+        return data['result']['content'][0]['text']
 
 # Create Mapbox tools for CrewAI
 class DirectionsTool(BaseTool):
@@ -227,8 +239,7 @@ class DirectionsTool(BaseTool):
             'destination': destination,
             'profile': 'driving-traffic'
         })
-        data = result['content'][0]['text']
-        return f"Directions: {data}"
+        return f"Directions: {result}"
 
 class GeocodeTool(BaseTool):
     name: str = "reverse_geocode"
@@ -247,7 +258,7 @@ class GeocodeTool(BaseTool):
         result = self.mcp.call_tool('reverse_geocode', {
             'coordinates': coordinates
         })
-        return result['content'][0]['text']
+        return result
 
 class SearchPOITool(BaseTool):
     name: str = "search_poi"
@@ -268,7 +279,7 @@ class SearchPOITool(BaseTool):
             'category': category,
             'proximity': location
         })
-        return result['content'][0]['text']
+        return result
 
 # Create specialized agents with geospatial tools
 location_analyst = Agent(
@@ -792,6 +803,31 @@ const result = await executor.invoke({
 - Conversational interface
 - Tool chaining
 - Memory and context management
+
+**TypeScript Type Considerations:**
+
+When using `DynamicStructuredTool` with Zod schemas (especially `z.tuple()`), TypeScript may encounter deep type recursion errors. This is a known limitation with complex Zod generic types. The minimal fix is to add `as any` type assertions:
+
+```typescript
+const tool = new DynamicStructuredTool({
+  name: 'my_tool',
+  schema: z.object({
+    coords: z.tuple([z.number(), z.number()])
+  }) as any,  // ← Add 'as any' to prevent type recursion
+  func: async ({ coords }: any) => {  // ← Type parameters as 'any'
+    // Implementation
+  }
+});
+
+// For JSON responses from external APIs
+const data = await response.json() as any;
+
+// For createOpenAIFunctionsAgent with complex tool types
+// @ts-ignore - Zod tuple schemas cause deep type recursion
+const agent = await createOpenAIFunctionsAgent({ llm, tools, prompt });
+```
+
+This doesn't affect runtime validation (Zod still validates at runtime) - it only helps TypeScript's type checker avoid infinite recursion during compilation.
 
 ### Pattern 6: Custom Agent Integration
 

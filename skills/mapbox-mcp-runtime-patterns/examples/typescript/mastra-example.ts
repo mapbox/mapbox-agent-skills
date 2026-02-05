@@ -49,7 +49,7 @@ class MapboxMCP {
       throw new Error(`MCP request failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (data.error) {
       throw new Error(`MCP error: ${data.error.message}`);

@@ -21,92 +21,78 @@ Official integration patterns for Mapbox Maps SDK on Android. Covers Kotlin, Jet
 
 ## Core Integration Patterns
 
-### Jetpack Compose Pattern (Modern)
+### Jetpack Compose Pattern (Modern - Native Compose Extension)
 
-**Modern approach using Jetpack Compose and Kotlin**
+**Native Compose API using Mapbox Compose Extension**
 
+**Gradle dependency:**
+```kotlin
+dependencies {
+    implementation("com.mapbox.maps:android:11.0.0")
+    implementation("com.mapbox.extension:maps-compose:11.0.0")
+}
+```
+
+**Basic map:**
 ```kotlin
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
-import com.mapbox.maps.MapView
+import androidx.compose.foundation.layout.fillMaxSize
+import com.mapbox.maps.extension.compose.*
 import com.mapbox.maps.Style
-import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.geojson.Point
 
 @Composable
-fun MapboxMap(
-    modifier: Modifier = Modifier,
-    center: Point,
-    zoom: Double,
-    onMapReady: (MapView) -> Unit = {}
-) {
-    val mapView = rememberMapViewWithLifecycle()
-
-    AndroidView(
-        modifier = modifier,
-        factory = { mapView },
-        update = { view ->
-            // Update camera when state changes
-            view.getMapboxMap().apply {
-                setCamera(
-                    CameraOptions.Builder()
-                        .center(center)
-                        .zoom(zoom)
-                        .build()
-                )
-            }
-        }
-    )
-
-    LaunchedEffect(mapView) {
-        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) {
-            onMapReady(mapView)
-        }
-    }
-}
-
-@Composable
-fun rememberMapViewWithLifecycle(): MapView {
-    val context = LocalContext.current
-    val mapView = remember {
-        MapView(context).apply {
-            id = View.generateViewId()
-        }
-    }
-
-    // Lifecycle-aware cleanup
-    DisposableEffect(mapView) {
-        onDispose {
-            mapView.onDestroy()
-        }
-    }
-
-    return mapView
-}
-
-// Usage in Composable
-@Composable
 fun MapScreen() {
-    var center by remember { mutableStateOf(Point.fromLngLat(-122.4194, 37.7749)) }
-    var zoom by remember { mutableStateOf(12.0) }
+    val cameraState = rememberCameraState {
+        position = CameraPosition(
+            center = Point.fromLngLat(-122.4194, 37.7749),
+            zoom = 12.0
+        )
+    }
 
     MapboxMap(
         modifier = Modifier.fillMaxSize(),
-        center = center,
-        zoom = zoom,
-        onMapReady = { mapView ->
-            // Add sources and layers
-        }
+        mapViewportState = cameraState,
+        style = Style.STREETS
     )
 }
 ```
 
+**With annotations:**
+```kotlin
+@Composable
+fun MapWithMarkers() {
+    MapboxMap(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        PointAnnotation(
+            point = Point.fromLngLat(-122.4194, 37.7749)
+        ) {
+            iconImage = "marker-icon"
+        }
+
+        CircleAnnotation(
+            point = Point.fromLngLat(-122.4, 37.78)
+        ) {
+            circleRadius = 10.0
+            circleColor = "#FF0000"
+        }
+    }
+}
+```
+
 **Key points:**
-- Use `AndroidView` to integrate MapView in Compose
-- Use `remember` to preserve MapView across recompositions
-- Use `DisposableEffect` for proper lifecycle cleanup
-- Handle state updates in `update` block
+- Use native `MapboxMap` composable (not `AndroidView`)
+- State-driven with `rememberCameraState`
+- Declarative annotations inside `MapboxMap { }` builder
+- Requires `maps-compose` extension library
+- Automatic lifecycle management
+
+**Sources:**
+- [Jetpack Compose Guide](https://docs.mapbox.com/android/maps/guides/using-jetpack-compose/)
+- [Compose Extension API](https://docs.mapbox.com/android/maps/api/11.2.2/mapbox-maps-android/com.mapbox.maps.extension.compose/)
+- [Compose Examples](https://docs.mapbox.com/android/maps/examples/compose/)
 
 ### View System Pattern (Classic)
 
@@ -315,17 +301,45 @@ import com.yourapp.BuildConfig
 val token = BuildConfig.MAPBOX_ACCESS_TOKEN
 ```
 
-**Why this pattern:**
-- Token not in source code or version control
-- Works in local development and CI/CD (via environment variables)
-- Automatically injected at build time
-- No hardcoded secrets
+**Pros:** Token not in source code, works in CI/CD
+**Cons:** Requires build configuration setup
+**Use when:** Team development, open source projects
 
-### ❌ Anti-Pattern: Hardcoded Tokens
+### Option 2: String Resources (Simple)
+
+**Direct configuration in strings.xml:**
+
+```xml
+<!-- res/values/strings.xml -->
+<resources>
+    <string name="mapbox_access_token">pk.your_token_here</string>
+</resources>
+```
+
+**Pros:** Simple, works immediately
+**Cons:** Token visible in source code
+**Use when:** Prototyping, internal apps, token restrictions handle security
+
+### Option 3: Runtime Configuration (Advanced)
+
+**For server-managed tokens:**
 
 ```kotlin
-// ❌ NEVER DO THIS - Token in source code
-MapboxOptions.accessToken = "pk.YOUR_MAPBOX_TOKEN_HERE"
+// Set before creating MapView
+MapboxOptions.accessToken = fetchTokenFromServer()
+```
+
+**Pros:** Server-side token management, can rotate without app update
+**Cons:** More complex, requires backend infrastructure
+**Use when:** Enterprise apps, need dynamic token management
+
+### ⚠️ What to Avoid
+
+```kotlin
+// ❌ DON'T: Hardcode token directly in source code
+MapboxOptions.accessToken = "pk.YOUR_TOKEN_HERE" // Visible in git history
+
+// ✅ DO: Use one of the three options above
 ```
 
 ---
@@ -551,6 +565,36 @@ fun hasEnoughStorage(requiredBytes: Long): Boolean {
 ---
 
 ## Navigation SDK Integration
+
+### Understanding Maps SDK vs Navigation SDK
+
+**Two Separate Products:**
+
+| SDK | Purpose | Dependency |
+|-----|---------|------------|
+| **Maps SDK** | Display maps, add markers, show routes, customize styles | Standalone |
+| **Navigation SDK** | Turn-by-turn navigation, voice guidance, route progress | Requires Maps SDK |
+
+**When to use each:**
+
+- **Maps SDK only:** Displaying maps, location markers, static routes, custom visualizations
+- **Navigation SDK:** Active turn-by-turn navigation, voice instructions, live routing
+
+**Installation:**
+
+```kotlin
+// Maps SDK only
+dependencies {
+    implementation("com.mapbox.maps:android:11.0.0")
+}
+
+// Navigation SDK (includes Maps SDK as dependency)
+dependencies {
+    implementation("com.mapbox.navigation:android:3.0.0")
+}
+```
+
+**Note:** Navigation SDK automatically includes Maps SDK - you don't need to add both separately.
 
 ### Basic Navigation Setup
 

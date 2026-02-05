@@ -339,7 +339,10 @@ class SearchPOITool(BaseTool):
 location_analyst = Agent(
     role='Location Analyst',
     goal='Analyze geographic locations and provide insights',
-    backstory='Expert in geographic analysis and location intelligence',
+    backstory="""Expert in geographic analysis and location intelligence.
+
+    Use search_poi for finding types of places (restaurants, hotels).
+    Use reverse_geocode for converting coordinates to addresses.""",
     tools=[GeocodeTool(), SearchPOITool()],
     verbose=True
 )
@@ -347,7 +350,10 @@ location_analyst = Agent(
 route_planner = Agent(
     role='Route Planner',
     goal='Plan optimal routes and provide travel time estimates',
-    backstory='Experienced logistics coordinator specializing in route optimization',
+    backstory="""Experienced logistics coordinator specializing in route optimization.
+
+    Use get_directions for route distance along roads with traffic.
+    Always use when traffic-aware travel time is needed.""",
     tools=[DirectionsTool()],
     verbose=True
 )
@@ -786,7 +792,7 @@ const mcp = new MapboxMCP();
 const tools = [
   new DynamicTool({
     name: 'get_directions',
-    description: 'Get driving directions between two locations',
+    description: 'Get turn-by-turn driving directions with traffic-aware route distance along roads. Use when you need the actual driving route or traffic-aware duration.',
     func: async (input: string) => {
       const { origin, destination } = JSON.parse(input);
       return await mcp.callTool('get_directions', {
@@ -799,7 +805,7 @@ const tools = [
 
   new DynamicTool({
     name: 'find_pois',
-    description: 'Find points of interest by category',
+    description: 'Find ALL places of a specific category type near a location. Use when user wants to browse places by type (restaurants, hotels, coffee, etc.).',
     func: async (input: string) => {
       const { category, location } = JSON.parse(input);
       return await mcp.callTool('category_search', {
@@ -811,7 +817,7 @@ const tools = [
 
   new DynamicTool({
     name: 'calculate_isochrone',
-    description: 'Calculate reachable area within time limit',
+    description: 'Calculate the AREA reachable within a time limit from a starting point. Use for "What can I reach in X minutes?" questions.',
     func: async (input: string) => {
       const { location, minutes } = JSON.parse(input);
       return await mcp.callTool('get_isochrone', {

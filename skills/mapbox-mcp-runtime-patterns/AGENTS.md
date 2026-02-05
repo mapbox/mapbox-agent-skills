@@ -1,0 +1,398 @@
+# Mapbox MCP Runtime Patterns
+
+Quick reference for integrating Mapbox MCP Server into AI applications for production use.
+
+## What is MCP Server?
+
+Runtime server providing geospatial tools to AI agents via Model Context Protocol.
+
+**Repo:** <https://github.com/mapbox/mcp-server>
+
+## Tools Available
+
+| Category | Tools | Cost |
+|----------|-------|------|
+| **Offline (Turf.js)** | distance, bearing, midpoint, point-in-polygon, area, buffer, centroid | Free, instant |
+| **Mapbox APIs** | directions, geocoding, category search, isochrone, matrix, static maps | API costs apply |
+
+## Installation
+
+```bash
+npm install @mapbox/mcp-server
+
+# Or use directly
+npx @mapbox/mcp-server
+
+# Set token
+export MAPBOX_ACCESS_TOKEN="your_token"
+```
+
+## Framework Integration
+
+### Pydantic AI
+
+```python
+from pydantic_ai import Agent
+import subprocess
+
+# Start MCP server
+mcp = subprocess.Popen(['npx', '@mapbox/mcp-server'],
+                       env={'MAPBOX_ACCESS_TOKEN': token})
+
+agent = Agent(
+    model='gpt-4',
+    tools=[
+        lambda from_loc, to_loc: call_mcp('get_directions', {
+            'origin': from_loc,
+            'destination': to_loc
+        })
+    ]
+)
+```
+
+### Mastra
+
+```typescript
+import { spawn } from 'child_process';
+
+const mcp = spawn('npx', ['@mapbox/mcp-server'], {
+  env: { MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN }
+});
+
+const mastra = new Mastra({
+  workflows: {
+    findRestaurants: {
+      steps: [
+        { tool: 'mapbox.category_search', input: {...} },
+        { tool: 'mapbox.matrix', input: {...} }
+      ]
+    }
+  }
+});
+```
+
+### LangChain
+
+```typescript
+import { DynamicTool } from '@langchain/core/tools';
+
+const tools = [
+  new DynamicTool({
+    name: 'get_directions',
+    description: 'Get driving directions',
+    func: async (input) => {
+      const { origin, destination } = JSON.parse(input);
+      return await callMCP('get_directions', { origin, destination });
+    }
+  })
+];
+```
+
+### Custom Agent
+
+```typescript
+class MapboxAgent {
+  private mcpProcess: ChildProcess;
+
+  async initialize() {
+    this.mcpProcess = spawn('npx', ['@mapbox/mcp-server'], {
+      env: { MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN }
+    });
+  }
+
+  async callTool(name: string, params: any): Promise<any> {
+    const request = {
+      jsonrpc: '2.0',
+      id: Date.now(),
+      method: 'tools/call',
+      params: { name, arguments: params }
+    };
+
+    this.mcpProcess.stdin.write(JSON.stringify(request) + '\n');
+
+    return new Promise((resolve) => {
+      this.mcpProcess.stdout.once('data', (data) => {
+        const response = JSON.parse(data.toString());
+        resolve(response.result);
+      });
+    });
+  }
+}
+```
+
+## Common Use Cases
+
+### Real Estate (Zillow-style)
+
+```typescript
+// Find properties with good commute
+async findByCommute(home: Point, work: Point, maxMinutes: number) {
+  // 1. Get reachable area from work
+  const isochrone = await mcp.call('get_isochrone', {
+    coordinates: work,
+    contours_minutes: [maxMinutes]
+  });
+
+  // 2. Check if home is within range
+  const inRange = await mcp.call('point_in_polygon', {
+    point: home,
+    polygon: isochrone
+  });
+
+  // 3. Get exact commute time
+  if (inRange) {
+    const route = await mcp.call('get_directions', {
+      origin: home,
+      destination: work
+    });
+    return { commuteMinutes: route.duration / 60 };
+  }
+}
+```
+
+### Food Delivery (DoorDash-style)
+
+```typescript
+// Check delivery availability
+async canDeliver(restaurant: Point, address: Point, maxTime: number) {
+  // 1. Calculate delivery zone
+  const zone = await mcp.call('get_isochrone', {
+    coordinates: restaurant,
+    contours_minutes: [maxTime],
+    profile: 'driving'
+  });
+
+  // 2. Check if address is in zone
+  const canDeliver = await mcp.call('point_in_polygon', {
+    point: address,
+    polygon: zone
+  });
+
+  // 3. Get delivery time with traffic
+  if (canDeliver) {
+    const route = await mcp.call('get_directions', {
+      origin: restaurant,
+      destination: address,
+      profile: 'driving-traffic'
+    });
+    return { eta: route.duration / 60, distance: route.distance };
+  }
+}
+```
+
+### Travel Planning (TripAdvisor-style)
+
+```typescript
+// Find nearby attractions with travel times
+async findAttractions(hotel: Point, category: string) {
+  // 1. Search nearby
+  const places = await mcp.call('category_search', {
+    category,
+    proximity: hotel
+  });
+
+  // 2. Calculate distances (offline, free)
+  const withDistances = await Promise.all(
+    places.map(async (place) => ({
+      ...place,
+      distance: await mcp.call('calculate_distance', {
+        from: hotel,
+        to: place.coordinates,
+        units: 'miles'
+      })
+    }))
+  );
+
+  // 3. Get travel times (batch API call)
+  const matrix = await mcp.call('get_matrix', {
+    origins: [hotel],
+    destinations: places.map(p => p.coordinates),
+    profile: 'walking'
+  });
+
+  return withDistances.map((place, i) => ({
+    ...place,
+    walkingMinutes: matrix.durations[0][i] / 60
+  }));
+}
+```
+
+## Architecture Pattern
+
+```
+Application Layer
+      ↓
+AI Agent Layer (pydantic-ai, mastra, custom)
+      ↓
+MCP Server (geospatial tools)
+      ↓
+   ↙     ↘
+Turf.js   Mapbox APIs
+(free)    (API costs)
+```
+
+## Tool Selection Strategy
+
+| Need | Use | Reason |
+|------|-----|--------|
+| Distance calculation | Offline tool | Free, instant |
+| Point in polygon | Offline tool | Free, instant |
+| Directions with traffic | API tool | Real-time data |
+| Geocoding | API tool | Requires database |
+| Isochrones | API tool | Complex calculation |
+| Bearing/midpoint | Offline tool | Free, instant |
+
+## Performance Optimization
+
+### Caching
+
+```typescript
+class CachedMCP {
+  private cache = new Map();
+  private offlineTools = ['calculate_distance', 'point_in_polygon'];
+
+  async callTool(name: string, params: any) {
+    // Cache offline tools forever (deterministic)
+    const ttl = this.offlineTools.includes(name) ? Infinity : 3600000;
+
+    const key = JSON.stringify({name, params});
+    const cached = this.cache.get(key);
+
+    if (cached && Date.now() - cached.timestamp < ttl) {
+      return cached.result;
+    }
+
+    const result = await this.mcp.callTool(name, params);
+    this.cache.set(key, { result, timestamp: Date.now() });
+    return result;
+  }
+}
+```
+
+### Batching
+
+```typescript
+// ❌ Bad: Sequential calls
+for (const location of locations) {
+  await mcp.call('calculate_distance', {from: user, to: location});
+}
+
+// ✅ Good: Parallel
+await Promise.all(
+  locations.map(loc => mcp.call('calculate_distance', {from: user, to: loc}))
+);
+
+// ✅ Better: Use matrix tool
+await mcp.call('get_matrix', {
+  origins: [user],
+  destinations: locations
+});
+```
+
+## Error Handling
+
+```typescript
+class RobustMCP {
+  async callWithRetry(name: string, params: any, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await this.mcp.callTool(name, params);
+      } catch (error) {
+        if (error.code === 'RATE_LIMIT') {
+          await this.sleep(Math.pow(2, i) * 1000); // Exponential backoff
+          continue;
+        }
+        throw error; // Non-retryable
+      }
+    }
+  }
+}
+```
+
+## Security
+
+```typescript
+// ✅ Good: Environment variables
+const token = process.env.MAPBOX_ACCESS_TOKEN;
+
+// ✅ Good: Scoped tokens (minimal permissions)
+// directions:read, geocoding:read only
+
+// ✅ Good: Rate limiting
+class RateLimitedMCP {
+  private requestsPerMinute = 300;
+  private requestCount = 0;
+
+  async callTool(name: string, params: any) {
+    if (this.requestCount >= this.requestsPerMinute) {
+      await this.waitForNextMinute();
+    }
+    this.requestCount++;
+    return await this.mcp.callTool(name, params);
+  }
+}
+```
+
+## Testing
+
+```typescript
+// Mock MCP for tests
+class MockMCP {
+  async callTool(name: string, params: any) {
+    const mocks = {
+      'calculate_distance': () => '2.5',
+      'get_directions': () => ({ duration: 1200, distance: 5000 }),
+      'point_in_polygon': () => true
+    };
+    return mocks[name]?.();
+  }
+}
+
+// Use in tests
+const agent = new MapboxAgent(new MockMCP());
+```
+
+## When to Use
+
+| Use MCP ✅ | Use Direct API ❌ |
+|-----------|------------------|
+| AI agent interactions | Simple operations |
+| Complex workflows | Performance-critical |
+| Offline calculations | Client-side rendering |
+| Multi-step geospatial logic | Map display |
+| Prototyping | Production maps |
+
+## Cost Optimization
+
+```typescript
+// Prefer offline tools (free)
+const freeOps = [
+  'calculate_distance',
+  'point_in_polygon',
+  'calculate_bearing',
+  'calculate_area',
+  'calculate_centroid'
+];
+
+// Use API tools only when necessary
+const apiOps = [
+  'get_directions',      // Need traffic data
+  'reverse_geocode',     // Need address database
+  'get_isochrone',       // Complex calculation
+  'category_search'      // Need POI database
+];
+
+function chooseTool(operation: string, needsRealtime: boolean) {
+  if (needsRealtime) return apiOps[operation];
+  return freeOps.includes(operation) ? operation : apiOps[operation];
+}
+```
+
+## Resources
+
+- [MCP Server](https://github.com/mapbox/mcp-server)
+- [MCP Protocol](https://modelcontextprotocol.io)
+- [Pydantic AI](https://ai.pydantic.dev/)
+- [Mastra](https://mastra.ai/)
+- [LangChain](https://js.langchain.com/)
+- [Mapbox APIs](https://docs.mapbox.com/api/)

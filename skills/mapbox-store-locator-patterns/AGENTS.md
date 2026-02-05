@@ -80,10 +80,21 @@ map.on('load', () => {
     }
   });
 
-  map.on('click', 'stores', (e) => {
-    const store = e.features[0];
-    showStoreDetails(store);
+  // Using Interactions API (recommended)
+  map.addInteraction('store-click', {
+    type: 'click',
+    target: { layerId: 'stores' },
+    handler: (e) => {
+      const store = e.feature;
+      showStoreDetails(store);
+    }
   });
+
+  // Or using traditional event listener
+  // map.on('click', 'stores', (e) => {
+  //   const store = e.features[0];
+  //   showStoreDetails(store);
+  // });
 });
 ```
 
@@ -196,22 +207,17 @@ function filterByCategory(category) {
 
 ## Distance Calculation
 
+**Using Turf.js (recommended):**
+
 ```javascript
-// Haversine formula (distance in miles)
+import * as turf from '@turf/turf';
+
+// Calculate distance between two points
 function calculateDistance(from, to) {
-  const R = 3958.8;
-  const lat1 = from[1] * Math.PI / 180;
-  const lat2 = to[1] * Math.PI / 180;
-  const dLat = (to[1] - from[1]) * Math.PI / 180;
-  const dLon = (to[0] - from[0]) * Math.PI / 180;
-
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1) * Math.cos(lat2) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-  return (R * c).toFixed(1);
+  const fromPoint = turf.point(from);
+  const toPoint = turf.point(to);
+  const distance = turf.distance(fromPoint, toPoint, { units: 'miles' });
+  return distance.toFixed(1);
 }
 
 // Get user location
@@ -309,17 +315,6 @@ function debounce(func, wait) {
 }
 
 const debouncedSearch = debounce(filterStores, 300);
-
-// Load only visible stores
-function loadVisibleStores() {
-  const bounds = map.getBounds();
-  const visible = stores.features.filter(s =>
-    bounds.contains(s.geometry.coordinates)
-  );
-  map.getSource('stores').setData({ type: 'FeatureCollection', features: visible });
-}
-
-map.on('moveend', loadVisibleStores);
 ```
 
 ## Geolocation Control
@@ -374,6 +369,7 @@ map.addControl(
 
 ## Resources
 
+- [Turf.js](https://turfjs.org/) - Spatial analysis (distance, area, etc.)
+- [Interactions API](https://docs.mapbox.com/mapbox-gl-js/guides/user-interactions/interactions/) - Modern event handling
 - [Store Locator Tutorial](https://docs.mapbox.com/help/tutorials/building-a-store-locator/)
 - [Directions API](https://docs.mapbox.com/api/navigation/directions/)
-- [Turf.js](https://turfjs.org/) for advanced spatial operations

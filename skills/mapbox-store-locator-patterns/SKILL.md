@@ -17,6 +17,17 @@ Use this skill when building applications that:
 - Show location details in popups or side panels
 - Integrate directions to selected locations
 
+## Dependencies
+
+**Required:**
+- Mapbox GL JS v3.x
+- [@turf/turf](https://turfjs.org/) - For spatial calculations (distance, area, etc.)
+
+**Installation:**
+```bash
+npm install mapbox-gl @turf/turf
+```
+
 ## Core Architecture
 
 ### Pattern Overview
@@ -181,12 +192,23 @@ map.on('load', () => {
     });
   });
 
-  // Handle marker clicks
-  map.on('click', 'stores-layer', (e) => {
-    const store = e.features[0];
-    flyToStore(store);
-    createPopup(store);
+  // Handle marker clicks using Interactions API (recommended)
+  map.addInteraction('store-click', {
+    type: 'click',
+    target: { layerId: 'stores-layer' },
+    handler: (e) => {
+      const store = e.feature;
+      flyToStore(store);
+      createPopup(store);
+    }
   });
+
+  // Or using traditional event listener:
+  // map.on('click', 'stores-layer', (e) => {
+  //   const store = e.features[0];
+  //   flyToStore(store);
+  //   createPopup(store);
+  // });
 
   // Change cursor on hover
   map.on('mouseenter', 'stores-layer', () => {
@@ -497,21 +519,14 @@ navigator.geolocation.getCurrentPosition(
   }
 );
 
-// Calculate distance between two points (Haversine formula)
+// Calculate distance using Turf.js (recommended)
+import * as turf from '@turf/turf';
+
 function calculateDistance(from, to) {
-  const R = 3958.8; // Earth's radius in miles
-  const lat1 = from[1] * Math.PI / 180;
-  const lat2 = to[1] * Math.PI / 180;
-  const dLat = (to[1] - from[1]) * Math.PI / 180;
-  const dLon = (to[0] - from[0]) * Math.PI / 180;
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return (R * c).toFixed(1); // Distance in miles
+  const fromPoint = turf.point(from);
+  const toPoint = turf.point(to);
+  const distance = turf.distance(fromPoint, toPoint, { units: 'miles' });
+  return distance.toFixed(1); // Distance in miles
 }
 
 // Update listing to show distance
@@ -853,31 +868,6 @@ function createPopup(store) {
 
 ## Performance Optimization
 
-### Lazy Loading Markers
-
-```javascript
-// Only load markers in viewport
-function loadVisibleStores() {
-  const bounds = map.getBounds();
-
-  const visibleStores = {
-    type: 'FeatureCollection',
-    features: stores.features.filter((store) => {
-      const coords = store.geometry.coordinates;
-      return bounds.contains(coords);
-    })
-  };
-
-  // Update source with visible stores only
-  if (map.getSource('stores')) {
-    map.getSource('stores').setData(visibleStores);
-  }
-}
-
-// Update on map move
-map.on('moveend', loadVisibleStores);
-```
-
 ### Debounced Search
 
 ```javascript
@@ -898,51 +888,6 @@ const debouncedFilter = debounce(filterStores, 300);
 document.getElementById('search-input').addEventListener('input', (e) => {
   debouncedFilter(e.target.value);
 });
-```
-
-### Virtual Scrolling for Large Lists
-
-```javascript
-// For 1000+ locations, use virtual scrolling library
-// Example: react-window, react-virtualized, or vanilla-js virtual scroller
-
-function buildVirtualList(stores) {
-  const container = document.getElementById('listings');
-  const itemHeight = 80; // px
-  const bufferSize = 5;
-
-  let scrollTop = 0;
-  let visibleStart = 0;
-  let visibleEnd = Math.ceil(container.clientHeight / itemHeight) + bufferSize;
-
-  function render() {
-    container.innerHTML = '';
-    container.style.height = stores.features.length * itemHeight + 'px';
-    container.style.position = 'relative';
-
-    for (let i = visibleStart; i < Math.min(visibleEnd, stores.features.length); i++) {
-      const store = stores.features[i];
-      const listing = document.createElement('div');
-      listing.className = 'listing';
-      listing.style.position = 'absolute';
-      listing.style.top = i * itemHeight + 'px';
-      listing.style.height = itemHeight + 'px';
-
-      // ... build listing content
-
-      container.appendChild(listing);
-    }
-  }
-
-  container.addEventListener('scroll', () => {
-    scrollTop = container.scrollTop;
-    visibleStart = Math.floor(scrollTop / itemHeight) - bufferSize;
-    visibleEnd = Math.ceil((scrollTop + container.clientHeight) / itemHeight) + bufferSize;
-    render();
-  });
-
-  render();
-}
 ```
 
 ## Best Practices
@@ -1184,8 +1129,9 @@ function StoreLocator({ stores }) {
 
 ## Resources
 
+- [Turf.js](https://turfjs.org/) - Spatial analysis library (recommended for distance calculations)
 - [Mapbox GL JS API](https://docs.mapbox.com/mapbox-gl-js/)
+- [Interactions API Guide](https://docs.mapbox.com/mapbox-gl-js/guides/user-interactions/interactions/)
 - [GeoJSON Specification](https://geojson.org/)
 - [Directions API](https://docs.mapbox.com/api/navigation/directions/)
-- [Turf.js](https://turfjs.org/) - Spatial analysis library
 - [Store Locator Tutorial](https://docs.mapbox.com/help/tutorials/building-a-store-locator/)

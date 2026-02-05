@@ -38,6 +38,7 @@
     "geolocation",
     "geojson",
     "geospatial",
+    "getenv",
     "googlemaps",
     "grayscale",
     "Haversine",

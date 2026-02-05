@@ -23,25 +23,19 @@ The [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) is a
 
 ### Prerequisites
 
-- Node.js 18+
 - Mapbox account with access token
 - AI coding assistant that supports MCP (Claude Code, Cursor, Windsurf, Cline, etc.)
 
-### Installation
+### Option 1: Hosted Server (Recommended)
 
-```bash
-# Clone the DevKit server
-git clone https://github.com/mapbox/mcp-devkit-server.git
-cd mcp-devkit-server
-
-# Install dependencies
-npm install
-
-# Build the server
-npm run build
+**Easiest setup** - Use Mapbox's hosted DevKit MCP server at:
+```
+https://mcp-devkit.mapbox.com/mcp
 ```
 
-### Configuration
+No installation required, just configure your AI assistant.
+
+**Authentication:** The hosted server supports OAuth, so no token configuration needed! Simply add the server URL:
 
 #### For Claude Code
 
@@ -51,10 +45,25 @@ Add to `~/.claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "mapbox-devkit": {
-      "command": "node",
-      "args": ["/path/to/mcp-devkit-server/build/index.js"],
-      "env": {
-        "MAPBOX_ACCESS_TOKEN": "your_token_here"
+      "url": "https://mcp-devkit.mapbox.com/mcp"
+    }
+  }
+}
+```
+
+You'll be prompted to authenticate via OAuth on first use.
+
+**Alternative - Token Authentication:**
+
+If you prefer to use an access token instead of OAuth:
+
+```json
+{
+  "mcpServers": {
+    "mapbox-devkit": {
+      "url": "https://mcp-devkit.mapbox.com/mcp",
+      "headers": {
+        "Authorization": "Bearer your_mapbox_token_here"
       }
     }
   }
@@ -70,20 +79,50 @@ Add to Cursor MCP settings:
   "mcp": {
     "servers": {
       "mapbox-devkit": {
-        "command": "node",
-        "args": ["/path/to/mcp-devkit-server/build/index.js"],
-        "env": {
-          "MAPBOX_ACCESS_TOKEN": "your_token_here"
-        }
+        "url": "https://mcp-devkit.mapbox.com/mcp"
       }
     }
   }
 }
 ```
 
+OAuth authentication will be handled automatically.
+
 #### For Windsurf/Cline
 
-Similar configuration in their respective MCP settings files.
+Similar configuration using the hosted URL with OAuth support.
+
+### Option 2: Self-Hosted (Advanced)
+
+For development, debugging, or customization:
+
+```bash
+# Clone the DevKit server
+git clone https://github.com/mapbox/mcp-devkit-server.git
+cd mcp-devkit-server
+
+# Install dependencies
+npm install
+
+# Build the server
+npm run build
+```
+
+**Configuration for self-hosted:**
+
+```json
+{
+  "mcpServers": {
+    "mapbox-devkit": {
+      "command": "node",
+      "args": ["/path/to/mcp-devkit-server/build/index.js"],
+      "env": {
+        "MAPBOX_ACCESS_TOKEN": "your_token_here"
+      }
+    }
+  }
+}
+```
 
 ### Verify Installation
 

@@ -17,13 +17,24 @@ Runtime server providing geospatial tools to AI agents via Model Context Protoco
 
 ## Installation
 
+### Hosted (Recommended)
+
+Use Mapbox's hosted server - no installation needed:
+
+```
+https://mcp.mapbox.com/mcp
+```
+
+Connect with your token in the `Authorization: Bearer <token>` header.
+
+**Note:** Hosted server supports OAuth for interactive flows (coding assistants), but use token auth for programmatic runtime access.
+
+### Self-Hosted
+
 ```bash
 npm install @mapbox/mcp-server
+# Or: npx @mapbox/mcp-server
 
-# Or use directly
-npx @mapbox/mcp-server
-
-# Set token
 export MAPBOX_ACCESS_TOKEN="your_token"
 ```
 

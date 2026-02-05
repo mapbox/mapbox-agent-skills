@@ -10,20 +10,47 @@ MCP server that gives AI assistants access to Mapbox developer APIs for style ma
 
 ## Setup
 
+### Hosted (Recommended)
+
+Use Mapbox's hosted server - no installation needed. Supports **OAuth** (no token config required):
+
+```json
+// Claude Code: ~/.claude/claude_desktop_config.json
+{
+  "mcpServers": {
+    "mapbox-devkit": {
+      "url": "https://mcp-devkit.mapbox.com/mcp"
+    }
+  }
+}
+```
+
+OAuth prompts on first use. Optionally use token auth:
+
+```json
+{
+  "mcpServers": {
+    "mapbox-devkit": {
+      "url": "https://mcp-devkit.mapbox.com/mcp",
+      "headers": {"Authorization": "Bearer your_token"}
+    }
+  }
+}
+```
+
+### Self-Hosted (Advanced)
+
 ```bash
-# Install
 git clone https://github.com/mapbox/mcp-devkit-server.git
 cd mcp-devkit-server && npm install && npm run build
 
-# Configure Claude Code (~/.claude/claude_desktop_config.json)
+# Configure
 {
   "mcpServers": {
     "mapbox-devkit": {
       "command": "node",
-      "args": ["/path/to/mcp-devkit-server/build/index.js"],
-      "env": {
-        "MAPBOX_ACCESS_TOKEN": "your_token"
-      }
+      "args": ["/path/to/build/index.js"],
+      "env": {"MAPBOX_ACCESS_TOKEN": "your_token"}
     }
   }
 }

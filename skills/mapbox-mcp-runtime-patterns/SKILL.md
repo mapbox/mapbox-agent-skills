@@ -27,7 +27,36 @@ The [Mapbox MCP Server](https://github.com/mapbox/mcp-server) is a Model Context
 
 **Key benefit:** Give your AI application geospatial superpowers without manually integrating multiple APIs.
 
-## Installation
+## Installation & Setup
+
+### Option 1: Hosted Server (Recommended)
+
+**Easiest integration** - Use Mapbox's hosted MCP server at:
+```
+https://mcp.mapbox.com/mcp
+```
+
+No installation required. Simply pass your Mapbox access token in the `Authorization` header.
+
+**Benefits:**
+- No server management
+- Always up-to-date
+- Production-ready
+- Lower latency (Mapbox infrastructure)
+
+**Authentication:**
+
+Use token-based authentication (standard for programmatic access):
+
+```
+Authorization: Bearer your_mapbox_token
+```
+
+**Note:** The hosted server also supports OAuth, but that's primarily for interactive flows (coding assistants, not production apps).
+
+### Option 2: Self-Hosted
+
+For custom deployments or development:
 
 ```bash
 npm install @mapbox/mcp-server
@@ -39,7 +68,7 @@ Or use directly via npx:
 npx @mapbox/mcp-server
 ```
 
-### Environment Setup
+**Environment setup:**
 
 ```bash
 export MAPBOX_ACCESS_TOKEN="your_token_here"
@@ -51,32 +80,29 @@ export MAPBOX_ACCESS_TOKEN="your_token_here"
 
 **Use case:** Building AI agents with type-safe tools in Python
 
+#### Using Hosted Server (Recommended)
+
 ```python
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
-import subprocess
+import requests
 import json
+import os
 
-class MapboxTools:
-    """Mapbox geospatial tools via MCP."""
+class MapboxMCP:
+    """Mapbox MCP via hosted server."""
 
-    def __init__(self, token: str):
-        self.token = token
-        self.mcp_process = None
+    def __init__(self, token: str = None):
+        self.url = 'https://mcp.mapbox.com/mcp'
+        self.headers = {'Content-Type': 'application/json'}
 
-    def start_mcp_server(self):
-        """Start Mapbox MCP server."""
-        env = {'MAPBOX_ACCESS_TOKEN': self.token}
-        self.mcp_process = subprocess.Popen(
-            ['npx', '@mapbox/mcp-server'],
-            env=env,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
+        # Use token from environment or parameter
+        token = token or os.getenv('MAPBOX_ACCESS_TOKEN')
+        if token:
+            self.headers['Authorization'] = f'Bearer {token}'
 
     def call_tool(self, tool_name: str, params: dict) -> dict:
-        """Call MCP tool and return result."""
+        """Call MCP tool via HTTPS."""
         request = {
             'jsonrpc': '2.0',
             'id': 1,
@@ -87,19 +113,16 @@ class MapboxTools:
             }
         }
 
-        self.mcp_process.stdin.write(
-            json.dumps(request).encode() + b'\n'
+        response = requests.post(
+            self.url,
+            headers=self.headers,
+            json=request
         )
-        self.mcp_process.stdin.flush()
-
-        response = json.loads(
-            self.mcp_process.stdout.readline()
-        )
-        return response['result']
+        return response.json()['result']
 
 # Create agent with Mapbox tools
-mapbox = MapboxTools(token='your_token')
-mapbox.start_mcp_server()
+# Pass token directly or set MAPBOX_ACCESS_TOKEN env var
+mapbox = MapboxMCP(token='your_token')
 
 agent = Agent(
     model=OpenAIModel('gpt-4'),
@@ -119,6 +142,26 @@ agent = Agent(
 result = agent.run_sync(
     "What's the driving time from Boston to NYC?"
 )
+```
+
+#### Using Self-Hosted Server
+
+```python
+import subprocess
+
+class MapboxMCPLocal:
+    def __init__(self, token: str):
+        self.token = token
+        self.mcp_process = subprocess.Popen(
+            ['npx', '@mapbox/mcp-server'],
+            env={'MAPBOX_ACCESS_TOKEN': token},
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE
+        )
+
+    def call_tool(self, tool_name: str, params: dict) -> dict:
+        # ... similar to hosted but via subprocess
+        pass
 ```
 
 **Benefits:**

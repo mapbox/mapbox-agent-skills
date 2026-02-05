@@ -1,0 +1,220 @@
+/**
+ * LangChain + Mapbox MCP Integration Example
+ *
+ * This example shows how to integrate Mapbox MCP Server with LangChain agents.
+ *
+ * Prerequisites:
+ * - npm install langchain @langchain/core @langchain/openai
+ * - Set MAPBOX_ACCESS_TOKEN and OPENAI_API_KEY environment variables
+ *
+ * Usage:
+ * - ts-node langchain-example.ts
+ */
+
+import { ChatOpenAI } from '@langchain/openai';
+import { AgentExecutor, createOpenAIFunctionsAgent } from 'langchain/agents';
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
+import { z } from 'zod';
+
+// Mapbox MCP Client (hosted server)
+class MapboxMCP {
+  private url = 'https://mcp.mapbox.com/mcp';
+  private headers: Record<string, string>;
+
+  constructor(token?: string) {
+    const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
+    if (!mapboxToken) {
+      throw new Error('MAPBOX_ACCESS_TOKEN is required');
+    }
+    this.headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${mapboxToken}`
+    };
+  }
+
+  async callTool(name: string, args: any): Promise<string> {
+    const request = {
+      jsonrpc: '2.0',
+      id: Date.now(),
+      method: 'tools/call',
+      params: { name, arguments: args }
+    };
+
+    const response = await fetch(this.url, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(request)
+    });
+
+    if (!response.ok) {
+      throw new Error(`MCP request failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(`MCP error: ${data.error.message}`);
+    }
+
+    return data.result.content[0].text;
+  }
+}
+
+// Initialize MCP client
+const mcp = new MapboxMCP();
+
+// Create LangChain tools from Mapbox MCP
+const getDirectionsTool = new DynamicStructuredTool({
+  name: 'get_directions',
+  description: 'Get driving directions between two locations with current traffic. Returns duration and distance.',
+  schema: z.object({
+    origin: z.tuple([z.number(), z.number()]).describe('Origin coordinates [longitude, latitude]'),
+    destination: z.tuple([z.number(), z.number()]).describe('Destination coordinates [longitude, latitude]'),
+  }),
+  func: async ({ origin, destination }) => {
+    const result = await mcp.callTool('get_directions', {
+      origin: Array.from(origin),
+      destination: Array.from(destination),
+      profile: 'driving-traffic'
+    });
+    return result;
+  }
+});
+
+const searchPOITool = new DynamicStructuredTool({
+  name: 'search_poi',
+  description: 'Find points of interest (restaurants, hotels, coffee shops, etc.) near a location',
+  schema: z.object({
+    category: z.string().describe('POI category: restaurant, hotel, coffee, gas_station, etc.'),
+    location: z.tuple([z.number(), z.number()]).describe('Search center [longitude, latitude]'),
+  }),
+  func: async ({ category, location }) => {
+    const result = await mcp.callTool('category_search', {
+      category,
+      proximity: Array.from(location)
+    });
+    return result;
+  }
+});
+
+const calculateDistanceTool = new DynamicStructuredTool({
+  name: 'calculate_distance',
+  description: 'Calculate distance between two points (offline, instant, free)',
+  schema: z.object({
+    from: z.tuple([z.number(), z.number()]).describe('Start coordinates [longitude, latitude]'),
+    to: z.tuple([z.number(), z.number()]).describe('End coordinates [longitude, latitude]'),
+    units: z.enum(['miles', 'kilometers']).optional()
+  }),
+  func: async ({ from, to, units }) => {
+    const result = await mcp.callTool('calculate_distance', {
+      from: Array.from(from),
+      to: Array.from(to),
+      units: units || 'miles'
+    });
+    return result;
+  }
+});
+
+const getIsochroneTool = new DynamicStructuredTool({
+  name: 'get_isochrone',
+  description: 'Calculate reachable area within a time limit. Returns GeoJSON polygon.',
+  schema: z.object({
+    location: z.tuple([z.number(), z.number()]).describe('Center point [longitude, latitude]'),
+    minutes: z.number().describe('Time limit in minutes'),
+    profile: z.enum(['driving', 'walking', 'cycling']).optional()
+  }),
+  func: async ({ location, minutes, profile }) => {
+    const result = await mcp.callTool('get_isochrone', {
+      coordinates: Array.from(location),
+      contours_minutes: [minutes],
+      profile: profile || 'walking'
+    });
+    return result;
+  }
+});
+
+// Create the agent
+async function createLocationAgent() {
+  const tools = [
+    getDirectionsTool,
+    searchPOITool,
+    calculateDistanceTool,
+    getIsochroneTool
+  ];
+
+  const llm = new ChatOpenAI({
+    modelName: 'gpt-4o',
+    temperature: 0
+  });
+
+  const prompt = ChatPromptTemplate.fromMessages([
+    ['system', `You are a location intelligence assistant. You help users with:
+- Finding places (restaurants, hotels, coffee shops, etc.)
+- Planning routes with traffic
+- Calculating distances and travel times
+- Analyzing reachable areas
+
+Always provide clear, specific information with times and distances.`],
+    ['human', '{input}'],
+    new MessagesPlaceholder('agent_scratchpad')
+  ]);
+
+  const agent = await createOpenAIFunctionsAgent({
+    llm,
+    tools,
+    prompt
+  });
+
+  return new AgentExecutor({
+    agent,
+    tools,
+    verbose: true
+  });
+}
+
+// Example usage
+async function main() {
+  try {
+    const executor = await createLocationAgent();
+
+    // Example 1: Find coffee shops
+    console.log('Example 1: Finding coffee shops near Union Square\n');
+
+    const result1 = await executor.invoke({
+      input: 'Find coffee shops within 10 minutes walking from Union Square NYC (coordinates: -73.9908, 40.7360). Tell me their names and how far each is.'
+    });
+
+    console.log('\nResult:', result1.output);
+    console.log('\n---\n');
+
+    // Example 2: Route planning
+    console.log('Example 2: Planning route with traffic\n');
+
+    const result2 = await executor.invoke({
+      input: 'How long does it take to drive from San Francisco downtown (-122.4194, 37.7749) to Oakland (-122.2712, 37.8044) with current traffic?'
+    });
+
+    console.log('\nResult:', result2.output);
+    console.log('\n---\n');
+
+    // Example 3: Multi-step workflow
+    console.log('Example 3: Multi-step location analysis\n');
+
+    const result3 = await executor.invoke({
+      input: 'I work at -122.4, 37.79 in San Francisco. Find restaurants within 15 minutes walking, calculate the distance to each, and recommend the closest 3.'
+    });
+
+    console.log('\nResult:', result3.output);
+
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Run if executed directly
+if (require.main === module) {
+  main();
+}
+
+export { createLocationAgent, mcp };

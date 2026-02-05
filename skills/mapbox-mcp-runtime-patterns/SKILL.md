@@ -27,6 +27,60 @@ The [Mapbox MCP Server](https://github.com/mapbox/mcp-server) is a Model Context
 
 **Key benefit:** Give your AI application geospatial superpowers without manually integrating multiple APIs.
 
+## Understanding Tool Categories
+
+Before integrating, understand the key distinctions between tools to help your LLM choose correctly:
+
+### Distance: "As the Crow Flies" vs "Along Roads"
+
+**Straight-line distance** (offline, instant):
+- Tools: `calculate_distance`, `calculate_bearing`, `calculate_midpoint`
+- Use for: Proximity checks, "how far away is X?", comparing distances
+- Example: "Is this restaurant within 2 miles?" → `calculate_distance`
+
+**Route distance** (API, traffic-aware):
+- Tools: `get_directions`, `get_matrix`
+- Use for: Navigation, drive time, "how long to drive?"
+- Example: "How long to drive there?" → `get_directions`
+
+### Search: Type vs Specific Place
+
+**Category/type search**:
+- Tool: `category_search`
+- Use for: "Find coffee shops", "restaurants nearby", browsing by type
+- Example: "What hotels are near me?" → `category_search`
+
+**Specific place/address**:
+- Tool: `search_geocode`, `reverse_geocode`
+- Use for: Named places, street addresses, landmarks
+- Example: "Find 123 Main Street" → `search_geocode`
+
+### Travel Time: Area vs Route
+
+**Reachable area** (what's within reach):
+- Tool: `get_isochrone`
+- Returns: GeoJSON polygon of everywhere reachable
+- Example: "What can I reach in 15 minutes?" → `get_isochrone`
+
+**Specific route** (how to get there):
+- Tool: `get_directions`
+- Returns: Turn-by-turn directions to one destination
+- Example: "How do I get to the airport?" → `get_directions`
+
+### Cost & Performance
+
+**Offline tools** (free, instant):
+- No API calls, no token usage
+- Use whenever real-time data not needed
+- Examples: `calculate_distance`, `point_in_polygon`, `calculate_area`
+
+**API tools** (requires token, counts against usage):
+- Real-time traffic, live POI data, current conditions
+- Use when accuracy and freshness matter
+- Examples: `get_directions`, `category_search`, `get_isochrone`
+
+**Best practice:** Prefer offline tools when possible, use API tools when you need real-time data or routing.
+
 ## Installation & Setup
 
 ### Option 1: Hosted Server (Recommended)

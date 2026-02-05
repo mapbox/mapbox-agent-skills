@@ -67,7 +67,7 @@ const mcp = new MapboxMCP();
 // Create LangChain tools from Mapbox MCP
 const getDirectionsTool = new DynamicStructuredTool({
   name: 'get_directions',
-  description: 'Get driving directions between two locations with current traffic. Returns duration and distance.',
+  description: 'Get turn-by-turn driving directions with traffic-aware route distance and travel time along roads. Use when you need the actual driving route, navigation, or traffic-aware duration. Returns route distance and time.',
   schema: z.object({
     origin: z.tuple([z.number(), z.number()]).describe('Origin coordinates [longitude, latitude]'),
     destination: z.tuple([z.number(), z.number()]).describe('Destination coordinates [longitude, latitude]'),
@@ -84,7 +84,7 @@ const getDirectionsTool = new DynamicStructuredTool({
 
 const searchPOITool = new DynamicStructuredTool({
   name: 'search_poi',
-  description: 'Find points of interest (restaurants, hotels, coffee shops, etc.) near a location',
+  description: 'Find ALL places of a specific category type (restaurants, hotels, coffee shops, gas stations, etc.) near a location. Use when user wants to browse or discover places by type, not search for a specific named place.',
   schema: z.object({
     category: z.string().describe('POI category: restaurant, hotel, coffee, gas_station, etc.'),
     location: z.tuple([z.number(), z.number()]).describe('Search center [longitude, latitude]'),
@@ -100,7 +100,7 @@ const searchPOITool = new DynamicStructuredTool({
 
 const calculateDistanceTool = new DynamicStructuredTool({
   name: 'calculate_distance',
-  description: 'Calculate distance between two points (offline, instant, free)',
+  description: 'Calculate straight-line (great-circle) distance between two points. Use for quick "as the crow flies" distance, proximity checks, or when routing not needed. Works offline, instant, no API cost.',
   schema: z.object({
     from: z.tuple([z.number(), z.number()]).describe('Start coordinates [longitude, latitude]'),
     to: z.tuple([z.number(), z.number()]).describe('End coordinates [longitude, latitude]'),
@@ -118,7 +118,7 @@ const calculateDistanceTool = new DynamicStructuredTool({
 
 const getIsochroneTool = new DynamicStructuredTool({
   name: 'get_isochrone',
-  description: 'Calculate reachable area within a time limit. Returns GeoJSON polygon.',
+  description: 'Calculate the AREA reachable within a time limit from a starting point. Use for "What can I reach in X minutes?" questions, service areas, or delivery zones. Returns GeoJSON polygon of reachable area.',
   schema: z.object({
     location: z.tuple([z.number(), z.number()]).describe('Center point [longitude, latitude]'),
     minutes: z.number().describe('Time limit in minutes'),
@@ -154,6 +154,13 @@ async function createLocationAgent() {
 - Planning routes with traffic
 - Calculating distances and travel times
 - Analyzing reachable areas
+
+TOOL SELECTION RULES:
+- Use calculate_distance for straight-line distance ("as the crow flies")
+- Use get_directions for route distance along roads with traffic
+- Use search_poi for finding types of places ("coffee shops", "restaurants")
+- Use get_isochrone for "what can I reach in X minutes" questions
+- Prefer offline tools (calculate_distance) when real-time data is not needed
 
 Always provide clear, specific information with times and distances.`],
     ['human', '{input}'],

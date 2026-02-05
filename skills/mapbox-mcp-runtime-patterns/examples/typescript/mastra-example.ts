@@ -65,7 +65,7 @@ const mcp = new MapboxMCP();
 // Create Mapbox tools for Mastra
 const getDirectionsTool = createTool({
   id: 'get-directions',
-  description: 'Get driving directions between two locations with current traffic',
+  description: 'Get turn-by-turn driving directions with traffic-aware route distance and travel time along roads. Use when you need the actual driving route or traffic-aware duration.',
   inputSchema: z.object({
     origin: z.array(z.number()).length(2).describe('Origin coordinates [longitude, latitude]'),
     destination: z.array(z.number()).length(2).describe('Destination coordinates [longitude, latitude]'),
@@ -92,7 +92,7 @@ const getDirectionsTool = createTool({
 
 const searchPOITool = createTool({
   id: 'search-poi',
-  description: 'Find points of interest (restaurants, hotels, etc.) near a location',
+  description: 'Find ALL places of a specific category type near a location. Use when user wants to browse places by type (restaurants, hotels, coffee, etc.), not search for a specific named place.',
   inputSchema: z.object({
     category: z.string().describe('POI category: restaurant, hotel, coffee, gas_station, etc.'),
     location: z.array(z.number()).length(2).describe('Search center [longitude, latitude]'),
@@ -122,7 +122,7 @@ const searchPOITool = createTool({
 
 const calculateDistanceTool = createTool({
   id: 'calculate-distance',
-  description: 'Calculate distance between two points (offline, instant)',
+  description: 'Calculate straight-line (great-circle) distance between two points. Use for quick "as the crow flies" distance checks. Works offline, instant, no API cost.',
   inputSchema: z.object({
     from: z.array(z.number()).length(2).describe('Start coordinates [longitude, latitude]'),
     to: z.array(z.number()).length(2).describe('End coordinates [longitude, latitude]'),
@@ -146,7 +146,7 @@ const calculateDistanceTool = createTool({
 
 const getIsochroneTool = createTool({
   id: 'get-isochrone',
-  description: 'Calculate reachable area within a time limit (isochrone)',
+  description: 'Calculate the AREA reachable within a time limit from a starting point. Use for "What can I reach in X minutes?" questions or service area analysis.',
   inputSchema: z.object({
     location: z.array(z.number()).length(2).describe('Center point [longitude, latitude]'),
     minutes: z.number().describe('Time limit in minutes'),
@@ -177,6 +177,13 @@ const locationAgent = new Agent({
 - Planning routes with traffic
 - Calculating distances and travel times
 - Analyzing reachable areas
+
+TOOL SELECTION RULES:
+- Use calculate-distance for straight-line distance ("as the crow flies")
+- Use get-directions for route distance along roads with traffic
+- Use search-poi for finding types of places ("coffee shops", "restaurants")
+- Use get-isochrone for "what can I reach in X minutes" questions
+- Prefer offline tools (calculate-distance) when real-time data is not needed
 
 Always provide clear, actionable information with specific times and distances.`,
   model: 'openai/gpt-4o',

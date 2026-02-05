@@ -77,7 +77,7 @@ class DirectionsInput(BaseModel):
 
 class DirectionsTool(BaseTool):
     name: str = "get_directions"
-    description: str = "Get driving directions between two locations with current traffic. Returns duration and distance."
+    description: str = "Get turn-by-turn driving directions with traffic-aware route distance and travel time along roads. Use when you need the actual driving route or traffic-aware duration. Returns duration and distance."
     args_schema: Type[BaseModel] = DirectionsInput
 
     def _run(self, origin: list, destination: list) -> str:
@@ -97,7 +97,7 @@ class SearchPOIInput(BaseModel):
 
 class SearchPOITool(BaseTool):
     name: str = "search_poi"
-    description: str = "Find points of interest (restaurants, hotels, etc.) near a location. Returns names and addresses."
+    description: str = "Find ALL places of a specific category type near a location. Use when user wants to browse places by type (restaurants, hotels, coffee, etc.), not search for a specific named place. Returns names and addresses."
     args_schema: Type[BaseModel] = SearchPOIInput
 
     def _run(self, category: str, location: list) -> str:
@@ -117,7 +117,7 @@ class CalculateDistanceInput(BaseModel):
 
 class CalculateDistanceTool(BaseTool):
     name: str = "calculate_distance"
-    description: str = "Calculate distance between two points (offline, instant, free). Perfect for quick distance checks."
+    description: str = "Calculate straight-line (great-circle) distance between two points. Use for quick 'as the crow flies' distance checks. Works offline, instant, no API cost."
     args_schema: Type[BaseModel] = CalculateDistanceInput
 
     def _run(self, from_coords: list, to_coords: list, units: str = 'miles') -> str:
@@ -138,7 +138,7 @@ class IsochroneInput(BaseModel):
 
 class IsochroneTool(BaseTool):
     name: str = "get_isochrone"
-    description: str = "Calculate reachable area within a time limit. Returns GeoJSON polygon of reachable area."
+    description: str = "Calculate the AREA reachable within a time limit from a starting point. Use for 'What can I reach in X minutes?' questions or service area analysis. Returns GeoJSON polygon of reachable area."
     args_schema: Type[BaseModel] = IsochroneInput
 
     def _run(self, location: list, minutes: int, profile: str = 'driving') -> str:
@@ -155,7 +155,11 @@ class IsochroneTool(BaseTool):
 location_analyst = Agent(
     role='Location Intelligence Analyst',
     goal='Analyze geographic locations and find the best places for users',
-    backstory='Expert in geographic analysis with years of experience finding optimal locations',
+    backstory="""Expert in geographic analysis with years of experience finding optimal locations.
+
+    TOOL SELECTION: Use search_poi for finding types of places (restaurants, hotels),
+    calculate_distance for straight-line distance checks, and get_isochrone for
+    'what can I reach in X minutes' questions. Prefer offline tools when real-time data not needed.""",
     tools=[SearchPOITool(), CalculateDistanceTool(), IsochroneTool()],
     verbose=True
 )
@@ -163,7 +167,11 @@ location_analyst = Agent(
 route_planner = Agent(
     role='Route Planning Specialist',
     goal='Plan optimal routes and provide accurate travel time estimates',
-    backstory='Experienced logistics coordinator specializing in route optimization and traffic analysis',
+    backstory="""Experienced logistics coordinator specializing in route optimization and traffic analysis.
+
+    TOOL SELECTION: Use get_directions for route distance along roads with traffic,
+    calculate_distance for straight-line distance. Always use get_directions when
+    traffic-aware travel time is needed.""",
     tools=[DirectionsTool(), CalculateDistanceTool()],
     verbose=True
 )

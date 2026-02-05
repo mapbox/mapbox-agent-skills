@@ -1231,6 +1231,125 @@ const matrix = await mcp.callTool('get_matrix', {
 });
 ```
 
+### Writing Effective Tool Descriptions
+
+Clear, specific tool descriptions are critical for helping LLMs select the right tools. Poor descriptions lead to incorrect tool calls, wasted API requests, and user frustration.
+
+#### Common Confusion Points
+
+**Problem: "How far is it from A to B?"** - Could trigger either `get_directions` OR `calculate_distance`
+
+```typescript
+// ❌ Ambiguous descriptions
+{
+  name: 'get_directions',
+  description: 'Get directions between two locations'  // Could mean distance
+}
+{
+  name: 'calculate_distance',
+  description: 'Calculate distance between two points'  // Unclear what kind
+}
+
+// ✅ Clear, specific descriptions
+{
+  name: 'get_directions',
+  description: 'Get turn-by-turn driving directions with traffic-aware route distance and travel time. Use when you need the actual route, navigation instructions, or driving duration. Returns route geometry, distance along roads, and time estimate.'
+}
+{
+  name: 'calculate_distance',
+  description: 'Calculate straight-line (great-circle) distance between two points. Use for quick "as the crow flies" distance checks, proximity comparisons, or when routing is not needed. Works offline, instant, no API cost.'
+}
+```
+
+**Problem: "Find coffee shops nearby"** - Could trigger `category_search` OR `search_geocode`
+
+```typescript
+// ❌ Ambiguous
+{
+  name: 'search_poi',
+  description: 'Search for places'
+}
+
+// ✅ Clear when to use each
+{
+  name: 'category_search',
+  description: 'Find ALL places of a specific type/category (e.g., "all coffee shops", "restaurants", "gas stations") near a location. Use for browsing or discovering places by category. Returns multiple results.'
+}
+{
+  name: 'search_geocode',
+  description: 'Search for a SPECIFIC named place or address (e.g., "Starbucks on Main St", "123 Market St"). Use when the user provides a business name, street address, or landmark. Returns best match.'
+}
+```
+
+**Problem: "Where can I go in 15 minutes?"** - Could trigger `get_isochrone` OR `get_directions`
+
+```typescript
+// ❌ Confusing
+{
+  name: 'get_isochrone',
+  description: 'Calculate travel time area'
+}
+
+// ✅ Clear distinction
+{
+  name: 'get_isochrone',
+  description: 'Calculate the AREA reachable within a time limit from a starting point. Returns a GeoJSON polygon showing everywhere you can reach. Use for: "What can I reach in X minutes?", service area analysis, catchment zones, delivery zones.'
+}
+{
+  name: 'get_directions',
+  description: 'Get route from point A to specific point B. Returns turn-by-turn directions to ONE destination. Use for: "How do I get to X?", "Route from A to B", navigation to a known destination.'
+}
+```
+
+#### Best Practices for Tool Descriptions
+
+1. **Start with the primary use case** in simple terms
+2. **Explain WHEN to use this tool** vs alternatives
+3. **Include key distinguishing details**: Does it use traffic? Is it offline? Does it cost API calls?
+4. **Give concrete examples** of questions that should trigger this tool
+5. **Mention what it returns** so LLMs know if it fits the user's need
+
+```typescript
+// ✅ Complete example
+const searchPOITool = new DynamicStructuredTool({
+  name: 'category_search',
+  description: `Find places by category type (restaurants, hotels, coffee shops, gas stations, etc.) near a location.
+
+  Use when the user wants to:
+  - Browse places of a certain type: "coffee shops nearby", "find restaurants"
+  - Discover options: "what hotels are in this area?"
+  - Search by industry/amenity, not by specific name
+
+  Returns: List of matching places with names, addresses, and coordinates.
+
+  DO NOT use for:
+  - Specific named places (use search_geocode instead)
+  - Addresses (use search_geocode or reverse_geocode)`,
+  // ... schema and implementation
+});
+```
+
+#### System Prompt Guidance
+
+Add tool selection guidance to your agent's system prompt:
+
+```typescript
+const systemPrompt = `You are a location intelligence assistant.
+
+TOOL SELECTION RULES:
+- Use calculate_distance for straight-line distance ("as the crow flies")
+- Use get_directions for route distance along roads with traffic
+- Use category_search for finding types of places ("coffee shops")
+- Use search_geocode for specific addresses or named places ("123 Main St", "Starbucks downtown")
+- Use get_isochrone for "what can I reach in X minutes" questions
+- Use offline tools (calculate_distance, point_in_polygon) when real-time data is not needed
+
+When in doubt, prefer:
+1. Offline tools over API calls (faster, free)
+2. Specific tools over general ones
+3. Asking for clarification over guessing`;
+```
+
 ### Tool Selection
 
 ```typescript

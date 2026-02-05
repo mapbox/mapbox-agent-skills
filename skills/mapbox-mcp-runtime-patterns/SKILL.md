@@ -1073,29 +1073,38 @@ const restaurants = await agent.findRestaurantsNearby(
 
 ### Pattern: Hybrid Approach
 
+You can use MCP for AI agent features while using direct Mapbox APIs for other parts of your app.
+
 ```typescript
-class HybridGeospatialService {
+class GeospatialService {
   constructor(
-    private mcpServer: MapboxMCPServer,
-    private mapboxSdk: MapboxSDK
+    private mcpServer: MapboxMCPServer,  // For AI features
+    private mapboxSdk: MapboxSDK         // For direct app features
   ) {}
 
-  async getDirections(origin: Point, destination: Point) {
-    // Use MCP for AI agent calls
-    if (this.isAIAgentCall()) {
-      return await this.mcpServer.callTool('get_directions', {
-        origin, destination
-      });
-    }
-
-    // Use SDK for direct API calls (better performance)
-    return await this.mapboxSdk.directions.getDirections({
-      waypoints: [origin, destination]
-    });
+  // AI Agent Feature: Natural language search
+  async aiSearchNearby(userQuery: string): Promise<string> {
+    // Let AI agent use MCP tools to interpret query and find places
+    // Returns natural language response
+    return await this.agent.execute(userQuery, [
+      this.mcpServer.tools.category_search,
+      this.mcpServer.tools.get_directions
+    ]);
   }
 
-  async calculateDistance(from: Point, to: Point) {
-    // Always use offline tools (no API cost)
+  // Direct App Feature: Display route on map
+  async getRouteGeometry(origin: Point, dest: Point): Promise<LineString> {
+    // Direct API call for map rendering - returns GeoJSON
+    const result = await this.mapboxSdk.directions.getDirections({
+      waypoints: [origin, dest],
+      geometries: 'geojson'
+    });
+    return result.routes[0].geometry;
+  }
+
+  // Offline Feature: Distance calculations (always use MCP/Turf.js)
+  async calculateDistance(from: Point, to: Point): Promise<number> {
+    // No API cost, instant
     return await this.mcpServer.callTool('calculate_distance', {
       from, to, units: 'miles'
     });
@@ -1103,10 +1112,15 @@ class HybridGeospatialService {
 }
 ```
 
-**When to use:**
-- MCP: AI agent interactions, complex workflows
-- Direct API: Simple operations, performance-critical paths
-- Offline tools: Distance/area calculations, point-in-polygon
+**Architecture Decision Guide:**
+
+| Use Case | Use This | Why |
+|----------|----------|-----|
+| AI agent natural language features | MCP Server | Simplified tool interface, AI-friendly responses |
+| Map rendering, direct UI controls | Mapbox SDK | More control, better performance |
+| Distance/area calculations | MCP Server (offline tools) | Free, instant, no API calls |
+| Custom map styling | Mapbox SDK | Fine-grained style control |
+| Conversational geospatial queries | MCP Server | AI agent can chain tools |
 
 ## Use Cases by Application Type
 

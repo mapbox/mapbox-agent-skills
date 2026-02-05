@@ -12,8 +12,15 @@ dependencies: [
 ```
 
 ### Configuration
+
+**Option 1: Info.plist (Recommended)**
+```xml
+<key>MBXAccessToken</key>
+<string>pk.your_token_here</string>
+```
+
+**Option 2: Runtime (Advanced)**
 ```swift
-// Info.plist or code
 MapboxOptions.accessToken = "pk.your_token_here"
 ```
 

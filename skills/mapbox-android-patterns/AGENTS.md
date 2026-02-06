@@ -1,48 +1,49 @@
-# Mapbox Android Integration Guide
+# Mapbox Android Quick Reference
 
-Quick reference for Mapbox Maps SDK for Android with Kotlin, Jetpack Compose, and View system.
+Fast reference for Mapbox Maps SDK v11 on Android with Kotlin, Jetpack Compose, and View system.
 
 ## Setup
 
-### Gradle Configuration
+### Installation (Gradle)
 ```kotlin
-// build.gradle.kts (project)
-repositories {
-    google()
-    mavenCentral()
-    maven {
-        url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
-        credentials {
-            username = "mapbox"
-            password = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
         }
     }
 }
 
-// build.gradle.kts (app)
+// build.gradle.kts
 dependencies {
-    implementation("com.mapbox.maps:android:11.0.0")
+    implementation("com.mapbox.maps:android:11.18.1")
+    implementation("com.mapbox.extension:maps-compose:11.18.1") // For Compose
 }
 ```
 
 ### Access Token
-```kotlin
-// secrets.properties (add to .gitignore)
-MAPBOX_ACCESS_TOKEN=pk.your_token_here
-
-// AndroidManifest.xml
-<application>
-    <meta-data
-        android:name="MAPBOX_ACCESS_TOKEN"
-        android:value="${MAPBOX_ACCESS_TOKEN}" />
-</application>
+```xml
+<!-- app/res/values/mapbox_access_token.xml -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="mapbox_access_token" translatable="false"
+        tools:ignore="UnusedResources">YOUR_MAPBOX_ACCESS_TOKEN</string>
+</resources>
 ```
 
-## Jetpack Compose Integration
+## Jetpack Compose
 
 ### Basic Map
 ```kotlin
-import com.mapbox.maps.compose.*
+import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import com.mapbox.maps.extension.compose.*
+import com.mapbox.maps.Style
+import com.mapbox.geojson.Point
 
 @Composable
 fun MapScreen() {
@@ -61,41 +62,31 @@ fun MapScreen() {
 }
 ```
 
-### With Annotations
+### With Annotation
 ```kotlin
-@Composable
-fun MapWithMarkers() {
-    MapboxMap(
-        modifier = Modifier.fillMaxSize()
+MapboxMap(
+    modifier = Modifier.fillMaxSize(),
+    mapViewportState = cameraState,
+    style = Style.STREETS
+) {
+    PointAnnotation(
+        point = Point.fromLngLat(-122.4194, 37.7749)
     ) {
-        PointAnnotation(
-            point = Point.fromLngLat(-122.4194, 37.7749)
-        ) {
-            iconImage = "marker-icon"
-        }
-
-        CircleAnnotation(
-            point = Point.fromLngLat(-122.4, 37.78)
-        ) {
-            circleRadius = 10.0
-            circleColor = "#FF0000"
-        }
+        iconImage = "custom-marker"
     }
 }
 ```
 
-## View System Integration
+## View System
 
-### XML Layout
-```xml
-<com.mapbox.maps.MapView
-    android:id="@+id/mapView"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
-```
-
-### Activity Setup
+### Basic Map
 ```kotlin
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.mapbox.maps.MapView
+import com.mapbox.maps.Style
+import com.mapbox.geojson.Point
+
 class MapActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
 
@@ -104,15 +95,15 @@ class MapActivity : AppCompatActivity() {
         setContentView(R.layout.activity_map)
 
         mapView = findViewById(R.id.mapView)
-        mapView.mapboxMap.apply {
-            setCamera(
-                CameraOptions.Builder()
-                    .center(Point.fromLngLat(-122.4194, 37.7749))
-                    .zoom(12.0)
-                    .build()
-            )
-            loadStyle(Style.STREETS)
-        }
+
+        mapView.mapboxMap.setCamera(
+            CameraOptions.Builder()
+                .center(Point.fromLngLat(-122.4194, 37.7749))
+                .zoom(12.0)
+                .build()
+        )
+
+        mapView.mapboxMap.loadStyle(Style.STREETS)
     }
 
     override fun onStart() {
@@ -136,327 +127,159 @@ class MapActivity : AppCompatActivity() {
 
 ### 1. Camera Control
 ```kotlin
-// Fly to location
-mapView.mapboxMap.flyTo(
+// Fly animation
+mapView.camera.flyTo(
     CameraOptions.Builder()
-        .center(Point.fromLngLat(-122.4194, 37.7749))
-        .zoom(14.0)
-        .build(),
-    MapAnimationOptions.mapAnimationOptions {
-        duration(2000)
-    }
-)
-
-// Ease to location
-mapView.mapboxMap.easeTo(
-    CameraOptions.Builder()
-        .center(point)
+        .center(destination)
         .zoom(15.0)
         .build(),
-    MapAnimationOptions.mapAnimationOptions {
-        duration(1000)
-    }
+    MapAnimationOptions.Builder()
+        .duration(2000)
+        .build()
 )
 
-// Set immediately
-mapView.mapboxMap.setCamera(
+// Ease animation
+mapView.camera.easeTo(
     CameraOptions.Builder()
-        .center(point)
-        .zoom(12.0)
+        .center(destination)
+        .zoom(15.0)
+        .build(),
+    MapAnimationOptions.Builder()
+        .duration(1000)
         .build()
 )
 ```
 
-### 2. Annotations
+### 2. Point Annotations
 ```kotlin
-// Point annotation manager
-val annotationApi = mapView.annotations
-val pointAnnotationManager = annotationApi.createPointAnnotationManager()
+val pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
 
-val pointAnnotationOptions = PointAnnotationOptions()
+val pointAnnotation = PointAnnotationOptions()
     .withPoint(Point.fromLngLat(-122.4194, 37.7749))
-    .withIconImage("marker-icon")
+    .withIconImage("custom-marker")
 
-pointAnnotationManager.create(pointAnnotationOptions)
-
-// Circle annotation
-val circleAnnotationManager = annotationApi.createCircleAnnotationManager()
-val circleAnnotationOptions = CircleAnnotationOptions()
-    .withPoint(Point.fromLngLat(-122.4, 37.78))
-    .withCircleRadius(10.0)
-    .withCircleColor("#FF0000")
-
-circleAnnotationManager.create(circleAnnotationOptions)
+pointAnnotationManager.create(pointAnnotation)
 ```
 
-### 3. Adding Layers
+### 3. User Location
 ```kotlin
-// GeoJSON source
-val source = geoJsonSource("source-id") {
-    geometry(Point.fromLngLat(-122.4194, 37.7749))
-}
-mapView.mapboxMap.getStyle()?.addSource(source)
-
-// Circle layer
-val layer = circleLayer("layer-id", "source-id") {
-    circleRadius(8.0)
-    circleColor("#FF0000")
-}
-mapView.mapboxMap.getStyle()?.addLayer(layer)
-```
-
-### 4. Event Handling
-```kotlin
-// Map click
-mapView.mapboxMap.addOnMapClickListener { point ->
-    // Handle click at point
-    true // Return true if consumed
-}
-
-// Map long click
-mapView.mapboxMap.addOnMapLongClickListener { point ->
-    // Handle long click
-    true
-}
-
-// Camera change
-mapView.mapboxMap.addOnCameraChangeListener {
-    val cameraState = mapView.mapboxMap.cameraState
-    // Handle camera change
-}
-```
-
-### 5. User Location
-```kotlin
-// Add permissions to AndroidManifest.xml
+// Request permissions (add to AndroidManifest.xml)
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-// Enable location component
-val locationComponentPlugin = mapView.location
-locationComponentPlugin.updateSettings {
+// Show user location
+mapView.location.updateSettings {
     enabled = true
-    pulsingEnabled = true
-}
-
-// Request permissions (Activity)
-if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-    != PackageManager.PERMISSION_GRANTED) {
-    ActivityCompat.requestPermissions(
-        this,
-        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-        LOCATION_PERMISSION_REQUEST_CODE
-    )
+    puckBearingEnabled = true
 }
 ```
 
-## Performance Optimization
-
-### 1. Reuse Annotation Managers
+### 4. Map Tap Handling
 ```kotlin
-// ✅ Create once, reuse
-class MapViewModel {
-    private lateinit var pointAnnotationManager: PointAnnotationManager
-
-    fun setup(mapView: MapView) {
-        pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
-    }
-
-    fun updateMarkers(markers: List<Marker>) {
-        pointAnnotationManager.deleteAll()
-        markers.forEach { marker ->
-            pointAnnotationManager.create(
-                PointAnnotationOptions()
-                    .withPoint(marker.point)
-                    .withIconImage("marker")
-            )
-        }
-    }
+mapView.gestures.addOnMapClickListener { point ->
+    Log.d("MapClick", "Tapped at: ${point.latitude()}, ${point.longitude()}")
+    true // Consume event
 }
 ```
 
-### 2. Batch Operations
+### 5. Styles
 ```kotlin
-// ✅ Batch create annotations
-val options = markers.map { marker ->
-    PointAnnotationOptions()
-        .withPoint(marker.point)
-        .withIconImage("marker")
-}
-pointAnnotationManager.create(options)
+// Compose
+MapboxMap(style = Style.STREETS)
+MapboxMap(style = Style.DARK)
+MapboxMap(style = Style.SATELLITE)
 
-// ❌ Create one by one (slow)
-markers.forEach { marker ->
-    pointAnnotationManager.create(...)
-}
+// Views
+mapView.mapboxMap.loadStyle(Style.STREETS)
+mapView.mapboxMap.loadStyle(Style.DARK)
 ```
 
-### 3. Lifecycle Management
+### 6. Add GeoJSON Layer
 ```kotlin
-// ✅ Properly handle lifecycle
-class MapFragment : Fragment() {
-    private var _binding: FragmentMapBinding? = null
-    private val binding get() = _binding!!
+// Create GeoJSON source
+val geoJsonSource = geoJsonSource("route-source") {
+    geometry(LineString.fromLngLats(routeCoordinates))
+}
+mapView.mapboxMap.style?.addSource(geoJsonSource)
 
-    override fun onStart() {
-        super.onStart()
-        binding.mapView.onStart()
-    }
+// Create line layer
+val lineLayer = lineLayer("route-layer", "route-source") {
+    lineColor(Color.BLUE)
+    lineWidth(4.0)
+}
+mapView.mapboxMap.style?.addLayer(lineLayer)
+```
 
-    override fun onStop() {
-        super.onStop()
-        binding.mapView.onStop()
-    }
+### 7. Query Features
+```kotlin
+val screenCoordinate = ScreenCoordinate(x.toDouble(), y.toDouble())
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding.mapView.onDestroy()
-        _binding = null  // Prevent memory leak
+mapView.mapboxMap.queryRenderedFeatures(
+    RenderedQueryGeometry(screenCoordinate),
+    RenderedQueryOptions(listOf("poi-layer"), null)
+) { result ->
+    result.onSuccess { features ->
+        Log.d("Query", "Found ${features.size} features")
     }
 }
 ```
 
-## Common Issues
+## Performance Tips
 
-### 1. Map Not Displaying
+### Reuse Managers
 ```kotlin
-// ❌ Missing access token in AndroidManifest.xml
-// ❌ Wrong credentials in gradle.properties
-// ❌ MapView not properly sized
+// ✅ Create once
+val pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
 
-// ✅ Check manifest, credentials, and layout
-<MapView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+// ✅ Update many times
+fun updateMarkers() {
+    pointAnnotationManager.deleteAll()
+    pointAnnotationManager.create(markers)
+}
 ```
 
-### 2. Memory Leaks
+### Batch Updates
 ```kotlin
-// ✅ Clean up in onDestroy
-override fun onDestroyView() {
-    super.onDestroyView()
-    mapView.onDestroy()
-    _binding = null
+// ✅ Create all at once
+pointAnnotationManager.create(allAnnotations)
+
+// ❌ Don't create one by one
+allAnnotations.forEach { annotation ->
+    pointAnnotationManager.create(annotation)
+}
+```
+
+### Lifecycle Management
+```kotlin
+// Always call lifecycle methods
+override fun onStart() {
+    super.onStart()
+    mapView.onStart()
 }
 
-// ✅ Remove listeners
 override fun onStop() {
     super.onStop()
-    mapView.mapboxMap.removeOnMapClickListener(clickListener)
-}
-```
-
-### 3. Location Permissions
-```kotlin
-// ✅ Request runtime permissions (Android 6+)
-private fun checkLocationPermission() {
-    if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION)
-        != PERMISSION_GRANTED) {
-        requestPermissions(
-            arrayOf(ACCESS_FINE_LOCATION),
-            LOCATION_REQUEST_CODE
-        )
-    }
+    mapView.onStop()
 }
 
-override fun onRequestPermissionsResult(
-    requestCode: Int,
-    permissions: Array<String>,
-    grantResults: IntArray
-) {
-    if (requestCode == LOCATION_REQUEST_CODE) {
-        if (grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
-            enableLocation()
-        }
-    }
-}
-```
-
-## Jetpack Compose Best Practices
-
-### State Management
-```kotlin
-@Composable
-fun MapScreen(viewModel: MapViewModel = viewModel()) {
-    val markers by viewModel.markers.collectAsState()
-    val cameraState = rememberCameraState()
-
-    LaunchedEffect(markers) {
-        // Update camera when markers change
-        if (markers.isNotEmpty()) {
-            val bounds = markers.calculateBounds()
-            cameraState.flyTo(bounds)
-        }
-    }
-
-    MapboxMap(
-        mapViewportState = cameraState
-    ) {
-        markers.forEach { marker ->
-            PointAnnotation(point = marker.point)
-        }
-    }
-}
-```
-
-### Lifecycle Awareness
-```kotlin
-@Composable
-fun MapScreen() {
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_START -> {
-                    // Map started
-                }
-                Lifecycle.Event.ON_STOP -> {
-                    // Map stopped
-                }
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
-    MapboxMap(...)
-}
-```
-
-## Testing
-
-### Unit Tests
-```kotlin
-@Test
-fun testCameraPosition() {
-    val mapView = MapView(context)
-    val cameraOptions = CameraOptions.Builder()
-        .center(Point.fromLngLat(-122.4194, 37.7749))
-        .zoom(12.0)
-        .build()
-
-    mapView.mapboxMap.setCamera(cameraOptions)
-
-    val cameraState = mapView.mapboxMap.cameraState
-    assertEquals(-122.4194, cameraState.center.longitude(), 0.01)
-    assertEquals(37.7749, cameraState.center.latitude(), 0.01)
+override fun onDestroy() {
+    super.onDestroy()
+    mapView.onDestroy()
 }
 ```
 
 ## Quick Checklist
 
-✅ Access token in AndroidManifest.xml
-✅ Download token in gradle.properties
-✅ Location permissions requested
-✅ MapView lifecycle methods called
-✅ Listeners removed on destroy
-✅ View binding cleared
+✅ Token in `mapbox_access_token.xml`
+✅ Maven repository configured
+✅ MapboxMaps dependency added
+✅ Location permissions if needed
+✅ Lifecycle methods called
 ✅ Annotation managers reused
-✅ Batch operations for multiple items
-✅ Error handling implemented
-✅ Memory leaks prevented
+
+## Resources
+
+- [Android Maps Guides](https://docs.mapbox.com/android/maps/guides/)
+- [API Reference](https://docs.mapbox.com/android/maps/api-reference/)
+- [Jetpack Compose Guide](https://docs.mapbox.com/android/maps/guides/using-jetpack-compose/)
+- [Examples](https://github.com/mapbox/mapbox-maps-android/tree/main/Examples)

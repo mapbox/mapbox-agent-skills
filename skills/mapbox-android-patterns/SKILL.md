@@ -1,6 +1,6 @@
 ---
 name: mapbox-android-patterns
-description: Official integration patterns for Mapbox Maps SDK on Android. Covers installation, map initialization with Jetpack Compose/Views, styles, camera control, annotations, user interaction, and querying. Based on official Mapbox documentation.
+description: Official integration patterns for Mapbox Maps SDK on Android. Covers installation, adding markers, user location, custom data, styles, camera control, and featureset interactions. Based on official Mapbox documentation.
 ---
 
 # Mapbox Android Integration Patterns
@@ -9,9 +9,11 @@ Official patterns for integrating Mapbox Maps SDK v11 on Android with Kotlin, Je
 
 **Use this skill when:**
 - Installing and configuring Mapbox Maps SDK for Android
-- Creating maps with Jetpack Compose or View system
-- Working with map styles, camera, annotations, or user interaction
-- Querying map features or handling gestures
+- Adding markers and annotations to maps
+- Showing user location and tracking with camera
+- Adding custom data (GeoJSON) to maps
+- Working with map styles, camera, or user interaction
+- Handling feature interactions and taps
 
 **Official Resources:**
 - [Android Maps Guides](https://docs.mapbox.com/android/maps/guides/)
@@ -111,7 +113,7 @@ fun MapScreen() {
     MapboxMap(
         modifier = Modifier.fillMaxSize(),
         mapViewportState = cameraState,
-        style = Style.STREETS
+        style = Style.STANDARD
     )
 }
 ```
@@ -122,7 +124,7 @@ fun MapScreen() {
 MapboxMap(
     modifier = Modifier.fillMaxSize(),
     mapViewportState = cameraState,
-    style = Style.STREETS,
+    style = Style.STANDARD,
     scaleBar = {
         ScaleBar(
             enabled = true,
@@ -179,7 +181,7 @@ class MapActivity : AppCompatActivity() {
                 .build()
         )
 
-        mapView.mapboxMap.loadStyle(Style.STREETS)
+        mapView.mapboxMap.loadStyle(Style.STANDARD)
     }
 
     override fun onStart() {
@@ -201,111 +203,15 @@ class MapActivity : AppCompatActivity() {
 
 ---
 
-## Map Styles
+## Add Markers (Annotations)
 
-### Built-in Styles
+### Point Annotations (Markers)
 
-```kotlin
-// Compose
-MapboxMap(
-    style = Style.STREETS        // Mapbox Streets
-    style = Style.OUTDOORS       // Mapbox Outdoors
-    style = Style.LIGHT          // Mapbox Light
-    style = Style.DARK           // Mapbox Dark
-    style = Style.SATELLITE      // Satellite imagery
-    style = Style.SATELLITE_STREETS // Satellite + streets
-)
+Point annotations are the most common way to mark locations on the map.
 
-// Views
-mapView.mapboxMap.loadStyle(Style.STREETS)
-mapView.mapboxMap.loadStyle(Style.DARK)
-```
-
-### Custom Style URL
+**Jetpack Compose:**
 
 ```kotlin
-val customStyleUrl = "mapbox://styles/username/style-id"
-
-// Compose
-MapboxMap(style = customStyleUrl)
-
-// Views
-mapView.mapboxMap.loadStyle(customStyleUrl)
-```
-
----
-
-## Camera Control
-
-### Set Camera Position
-
-```kotlin
-// Compose - Update camera state
-cameraState.position = CameraPosition(
-    center = Point.fromLngLat(-74.0060, 40.7128),
-    zoom = 14.0,
-    bearing = 90.0,
-    pitch = 60.0
-)
-
-// Views - Immediate
-mapView.mapboxMap.setCamera(
-    CameraOptions.Builder()
-        .center(Point.fromLngLat(-74.0060, 40.7128))
-        .zoom(14.0)
-        .bearing(90.0)
-        .pitch(60.0)
-        .build()
-)
-```
-
-### Animated Camera Transitions
-
-```kotlin
-// Fly animation
-mapView.camera.flyTo(
-    CameraOptions.Builder()
-        .center(destination)
-        .zoom(15.0)
-        .build(),
-    MapAnimationOptions.Builder()
-        .duration(2000)
-        .build()
-)
-
-// Ease animation
-mapView.camera.easeTo(
-    CameraOptions.Builder()
-        .center(destination)
-        .zoom(15.0)
-        .build(),
-    MapAnimationOptions.Builder()
-        .duration(1000)
-        .build()
-)
-```
-
-### Fit to Coordinates
-
-```kotlin
-val coordinates = listOf(coord1, coord2, coord3)
-val camera = mapView.mapboxMap.cameraForCoordinates(
-    coordinates,
-    EdgeInsets(50.0, 50.0, 50.0, 50.0),
-    bearing = 0.0,
-    pitch = 0.0
-)
-mapView.camera.easeTo(camera)
-```
-
----
-
-## Annotations
-
-### Point Annotations
-
-```kotlin
-// Compose
 MapboxMap(modifier = Modifier.fillMaxSize()) {
     PointAnnotation(
         point = Point.fromLngLat(-122.4194, 37.7749)
@@ -313,15 +219,38 @@ MapboxMap(modifier = Modifier.fillMaxSize()) {
         iconImage = "custom-marker"
     }
 }
+```
 
-// Views
+**View System:**
+
+```kotlin
+// Create annotation manager (once, reuse for updates)
 val pointAnnotationManager = mapView.annotations.createPointAnnotationManager()
 
+// Create marker
 val pointAnnotation = PointAnnotationOptions()
     .withPoint(Point.fromLngLat(-122.4194, 37.7749))
     .withIconImage("custom-marker")
 
 pointAnnotationManager.create(pointAnnotation)
+```
+
+**Multiple markers:**
+
+```kotlin
+val locations = listOf(
+    Point.fromLngLat(-122.4194, 37.7749),
+    Point.fromLngLat(-122.4094, 37.7849),
+    Point.fromLngLat(-122.4294, 37.7649)
+)
+
+val annotations = locations.map { point ->
+    PointAnnotationOptions()
+        .withPoint(point)
+        .withIconImage("marker")
+}
+
+pointAnnotationManager.create(annotations)
 ```
 
 ### Circle Annotations
@@ -367,62 +296,18 @@ polygonAnnotationManager.create(polygon)
 
 ---
 
-## User Interaction
-
-### Handle Map Clicks
-
-```kotlin
-// Views
-mapView.gestures.addOnMapClickListener { point ->
-    Log.d("MapClick", "Tapped at: ${point.latitude()}, ${point.longitude()}")
-    true // Consume event
-}
-```
-
-### Query Features at Point
-
-```kotlin
-val screenCoordinate = ScreenCoordinate(x.toDouble(), y.toDouble())
-
-mapView.mapboxMap.queryRenderedFeatures(
-    RenderedQueryGeometry(screenCoordinate),
-    RenderedQueryOptions(listOf("poi-layer"), null)
-) { result ->
-    result.onSuccess { features ->
-        Log.d("Query", "Found ${features.size} features")
-    }
-}
-```
-
-### Gesture Configuration
-
-```kotlin
-// Disable specific gestures
-mapView.gestures.pitchEnabled = false
-mapView.gestures.rotateEnabled = false
-
-// Configure zoom limits
-mapView.mapboxMap.setCamera(
-    CameraOptions.Builder()
-        .zoom(12.0)
-        .build()
-)
-```
-
----
-
-## User Location
+## Show User Location
 
 ### Display User Location
 
-**Add permissions to AndroidManifest.xml:**
+**Step 1: Add permissions to AndroidManifest.xml:**
 
 ```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ```
 
-**Request permissions and show location:**
+**Step 2: Request permissions and show location:**
 
 ```kotlin
 // Request permissions first (use ActivityResultContracts)
@@ -434,27 +319,109 @@ mapView.location.updateSettings {
 }
 ```
 
-### Track User Location
+### Camera Follow User Location
+
+To make the camera follow the user's location as they move:
 
 ```kotlin
-mapView.location.addOnIndicatorPositionChangedListener { point ->
-    // Update camera to follow user
-    mapView.camera.easeTo(
-        CameraOptions.Builder()
-            .center(point)
-            .zoom(14.0)
-            .build()
-    )
+class MapActivity : AppCompatActivity() {
+    private lateinit var mapView: MapView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_map)
+
+        mapView = findViewById(R.id.mapView)
+        mapView.mapboxMap.loadStyle(Style.STANDARD)
+
+        setupLocationTracking()
+    }
+
+    private fun setupLocationTracking() {
+        // Request permissions first (use ActivityResultContracts)
+
+        // Show user location
+        mapView.location.updateSettings {
+            enabled = true
+            puckBearingEnabled = true
+        }
+
+        // Follow user location with camera
+        mapView.location.addOnIndicatorPositionChangedListener { point ->
+            mapView.camera.easeTo(
+                CameraOptions.Builder()
+                    .center(point)
+                    .zoom(15.0)
+                    .pitch(45.0)
+                    .build(),
+                MapAnimationOptions.Builder()
+                    .duration(1000)
+                    .build()
+            )
+        }
+
+        // Optional: Follow bearing (direction) as well
+        mapView.location.addOnIndicatorBearingChangedListener { bearing ->
+            mapView.camera.easeTo(
+                CameraOptions.Builder()
+                    .bearing(bearing)
+                    .build(),
+                MapAnimationOptions.Builder()
+                    .duration(1000)
+                    .build()
+            )
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mapView.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDestroy()
+    }
+}
+```
+
+### Get Current Location Once
+
+```kotlin
+mapView.location.getLastLocation { location ->
+    location?.let {
+        val point = Point.fromLngLat(it.longitude, it.latitude)
+        mapView.camera.easeTo(
+            CameraOptions.Builder()
+                .center(point)
+                .zoom(14.0)
+                .build()
+        )
+    }
 }
 ```
 
 ---
 
-## Runtime Styling
+## Add Custom Data (GeoJSON)
 
-### Add GeoJSON Source and Layer
+Add your own data to the map using GeoJSON sources and layers.
+
+### Add Line (Route, Path)
 
 ```kotlin
+// Create coordinates for the line
+val routeCoordinates = listOf(
+    Point.fromLngLat(-122.4194, 37.7749),
+    Point.fromLngLat(-122.4094, 37.7849),
+    Point.fromLngLat(-122.3994, 37.7949)
+)
+
 // Create GeoJSON source
 val geoJsonSource = geoJsonSource("route-source") {
     geometry(LineString.fromLngLats(routeCoordinates))
@@ -465,8 +432,64 @@ mapView.mapboxMap.style?.addSource(geoJsonSource)
 val lineLayer = lineLayer("route-layer", "route-source") {
     lineColor(Color.BLUE)
     lineWidth(4.0)
+    lineCap(LineCap.ROUND)
+    lineJoin(LineJoin.ROUND)
 }
 mapView.mapboxMap.style?.addLayer(lineLayer)
+```
+
+### Add Polygon (Area)
+
+```kotlin
+val polygonCoordinates = listOf(
+    listOf(coord1, coord2, coord3, coord1) // Close the polygon
+)
+
+val geoJsonSource = geoJsonSource("area-source") {
+    geometry(Polygon.fromLngLats(polygonCoordinates))
+}
+mapView.mapboxMap.style?.addSource(geoJsonSource)
+
+val fillLayer = fillLayer("area-fill", "area-source") {
+    fillColor(Color.parseColor("#0000FF"))
+    fillOpacity(0.3)
+    fillOutlineColor(Color.parseColor("#0000FF"))
+}
+mapView.mapboxMap.style?.addLayer(fillLayer)
+```
+
+### Add Points from GeoJSON
+
+```kotlin
+val geojsonString = """
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-122.4194, 37.7749]},
+      "properties": {"name": "Location 1"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-122.4094, 37.7849]},
+      "properties": {"name": "Location 2"}
+    }
+  ]
+}
+"""
+
+val geoJsonSource = geoJsonSource("points-source") {
+    data(geojsonString)
+}
+mapView.mapboxMap.style?.addSource(geoJsonSource)
+
+val symbolLayer = symbolLayer("points-layer", "points-source") {
+    iconImage("marker")
+    textField(Expression.get("name"))
+    textOffset(listOf(0.0, 1.5))
+}
+mapView.mapboxMap.style?.addLayer(symbolLayer)
 ```
 
 ### Update Layer Properties
@@ -487,39 +510,253 @@ mapView.mapboxMap.style?.removeStyleSource("route-source")
 
 ---
 
-## Querying the Map
+## Camera Control
 
-### Query Rendered Features
+### Set Camera Position
 
 ```kotlin
-val screenPoint = ScreenCoordinate(100.0, 100.0)
+// Compose - Update camera state
+cameraState.position = CameraPosition(
+    center = Point.fromLngLat(-74.0060, 40.7128),
+    zoom = 14.0,
+    bearing = 90.0,
+    pitch = 60.0
+)
 
-mapView.mapboxMap.queryRenderedFeatures(
-    RenderedQueryGeometry(screenPoint),
-    RenderedQueryOptions(listOf("poi-layer"), null)
-) { result ->
-    result.onSuccess { features ->
-        features.forEach { feature ->
-            Log.d("Feature", "Properties: ${feature.properties()}")
-        }
+// Views - Immediate
+mapView.mapboxMap.setCamera(
+    CameraOptions.Builder()
+        .center(Point.fromLngLat(-74.0060, 40.7128))
+        .zoom(14.0)
+        .bearing(90.0)
+        .pitch(60.0)
+        .build()
+)
+```
+
+### Animated Camera Transitions
+
+```kotlin
+// Fly animation (dramatic arc)
+mapView.camera.flyTo(
+    CameraOptions.Builder()
+        .center(destination)
+        .zoom(15.0)
+        .build(),
+    MapAnimationOptions.Builder()
+        .duration(2000)
+        .build()
+)
+
+// Ease animation (smooth)
+mapView.camera.easeTo(
+    CameraOptions.Builder()
+        .center(destination)
+        .zoom(15.0)
+        .build(),
+    MapAnimationOptions.Builder()
+        .duration(1000)
+        .build()
+)
+```
+
+### Fit Camera to Coordinates
+
+```kotlin
+val coordinates = listOf(coord1, coord2, coord3)
+val camera = mapView.mapboxMap.cameraForCoordinates(
+    coordinates,
+    EdgeInsets(50.0, 50.0, 50.0, 50.0),
+    bearing = 0.0,
+    pitch = 0.0
+)
+mapView.camera.easeTo(camera)
+```
+
+---
+
+## Map Styles
+
+### Built-in Styles
+
+```kotlin
+// Compose
+MapboxMap(
+    style = Style.STANDARD         // Mapbox Standard (recommended)
+    style = Style.STREETS          // Mapbox Streets
+    style = Style.OUTDOORS         // Mapbox Outdoors
+    style = Style.LIGHT            // Mapbox Light
+    style = Style.DARK             // Mapbox Dark
+    style = Style.SATELLITE        // Satellite imagery
+    style = Style.SATELLITE_STREETS // Satellite + streets
+)
+
+// Views
+mapView.mapboxMap.loadStyle(Style.STANDARD)
+mapView.mapboxMap.loadStyle(Style.DARK)
+```
+
+### Custom Style URL
+
+```kotlin
+val customStyleUrl = "mapbox://styles/username/style-id"
+
+// Compose
+MapboxMap(style = customStyleUrl)
+
+// Views
+mapView.mapboxMap.loadStyle(customStyleUrl)
+```
+
+---
+
+## User Interaction & Feature Taps
+
+### Featureset Interactions (Recommended)
+
+The modern Interactions API allows handling taps on map features with typed feature access. Works with Standard Style predefined featuresets like POIs, buildings, and place labels.
+
+**View System Pattern:**
+
+```kotlin
+import com.mapbox.maps.interactions.ClickInteraction
+
+class MapActivity : AppCompatActivity() {
+    private lateinit var mapView: MapView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_map)
+
+        mapView = findViewById(R.id.mapView)
+        mapView.mapboxMap.loadStyle(Style.STANDARD)
+
+        setupFeatureInteractions()
+    }
+
+    private fun setupFeatureInteractions() {
+        // Tap on POI features
+        mapView.mapboxMap.addInteraction(
+            ClickInteraction.standardPoi { poi, context ->
+                Log.d("MapTap", "Tapped POI: ${poi.name}")
+                true // Stop propagation
+            }
+        )
+
+        // Tap on buildings
+        mapView.mapboxMap.addInteraction(
+            ClickInteraction.standardBuildings { building, context ->
+                Log.d("MapTap", "Tapped building")
+
+                // Highlight the building
+                mapView.mapboxMap.setFeatureState(
+                    building,
+                    StandardBuildingsState {
+                        highlight(true)
+                    }
+                )
+                true
+            }
+        )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mapView.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDestroy()
     }
 }
 ```
 
-### Query Source Features
+**Jetpack Compose Pattern:**
 
 ```kotlin
-mapView.mapboxMap.querySourceFeatures(
-    "composite",
-    SourceQueryOptions(
-        sourceLayerIds = listOf("building"),
-        filter = null
-    )
-) { result ->
-    result.onSuccess { features ->
-        Log.d("Query", "Found ${features.size} buildings")
+@Composable
+fun MapScreen() {
+    val cameraState = rememberCameraState {
+        position = CameraPosition(
+            center = Point.fromLngLat(-122.4194, 37.7749),
+            zoom = 12.0
+        )
     }
+
+    MapboxMap(
+        modifier = Modifier.fillMaxSize(),
+        style = MapboxStandardStyleExperimental(
+            experimentalStandardStyleState = rememberExperimentalStandardStyleState {
+                interactionsState.onPoiClicked { poi, context ->
+                    Log.d("MapTap", "Tapped POI: ${poi.name}")
+                    true
+                }
+
+                interactionsState.onBuildingsClicked { building, context ->
+                    Log.d("MapTap", "Tapped building")
+                    building.setStandardBuildingsState {
+                        highlight(true)
+                    }
+                    true
+                }
+            }
+        )
+    )
 }
+```
+
+### Tap on Custom Layers
+
+```kotlin
+mapView.mapboxMap.addInteraction(
+    ClickInteraction.layer("custom-layer-id") { feature, context ->
+        Log.d("MapTap", "Feature properties: ${feature.properties()}")
+        true
+    }
+)
+```
+
+### Long Press Interactions
+
+```kotlin
+import com.mapbox.maps.interactions.LongClickInteraction
+
+mapView.mapboxMap.addInteraction(
+    LongClickInteraction.standardPoi { poi, context ->
+        Log.d("MapTap", "Long pressed POI: ${poi.name}")
+        true
+    }
+)
+```
+
+### Handle Map Clicks (Empty Space)
+
+```kotlin
+mapView.gestures.addOnMapClickListener { point ->
+    Log.d("MapClick", "Tapped at: ${point.latitude()}, ${point.longitude()}")
+    true // Consume event
+}
+```
+
+### Gesture Configuration
+
+```kotlin
+// Disable specific gestures
+mapView.gestures.pitchEnabled = false
+mapView.gestures.rotateEnabled = false
+
+// Configure zoom limits
+mapView.mapboxMap.setCamera(
+    CameraOptions.Builder()
+        .zoom(12.0)
+        .build()
+)
 ```
 
 ---
@@ -576,6 +813,17 @@ override fun onDestroy() {
 }
 ```
 
+### Use Standard Style
+
+```kotlin
+// ✅ Standard style is optimized and recommended
+Style.STANDARD
+
+// Use other styles only when needed for specific use cases
+Style.SATELLITE         // Imagery-focused apps
+Style.SATELLITE_STREETS // Heavier, use sparingly
+```
+
 ---
 
 ## Troubleshooting
@@ -600,11 +848,12 @@ mapView.mapboxMap.subscribeStyleLoaded { _ ->
 
 ### Performance Issues
 
-- Use `Style.STREETS` instead of `Style.SATELLITE_STREETS` when possible
+- Use `Style.STANDARD` (recommended and optimized)
 - Limit visible annotations to viewport
 - Reuse annotation managers
 - Avoid frequent style reloads
 - Call lifecycle methods (onStart, onStop, onDestroy)
+- Batch annotation updates
 
 ---
 
@@ -612,6 +861,7 @@ mapView.mapboxMap.subscribeStyleLoaded { _ ->
 
 - [Android Maps Guides](https://docs.mapbox.com/android/maps/guides/)
 - [API Reference](https://docs.mapbox.com/android/maps/api/11.18.1/)
+- [Interactions Guide](https://docs.mapbox.com/android/maps/guides/user-interaction/interactions/)
 - [Jetpack Compose Guide](https://docs.mapbox.com/android/maps/guides/using-jetpack-compose/)
 - [Example Apps](https://github.com/mapbox/mapbox-maps-android/tree/main/Examples)
 - [Migration Guide (v10 → v11)](https://docs.mapbox.com/android/maps/guides/migrate-to-v11/)

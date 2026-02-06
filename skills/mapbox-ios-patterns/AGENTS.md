@@ -33,7 +33,7 @@ struct MapView: View {
 
     var body: some View {
         Map(viewport: $viewport)
-            .mapStyle(.streets)
+            .mapStyle(.standard)
     }
 }
 ```
@@ -47,6 +47,7 @@ Map(viewport: $viewport) {
     ))
     .iconImage("custom-marker")
 }
+.mapStyle(.standard)
 ```
 
 ## UIKit
@@ -72,13 +73,63 @@ class MapViewController: UIViewController {
         mapView = MapView(frame: view.bounds, mapInitOptions: options)
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(mapView)
+
+        mapView.mapboxMap.loadStyle(.standard)
     }
 }
 ```
 
 ## Common Patterns
 
-### 1. Camera Control
+### 1. Add Markers
+```swift
+var manager = mapView.annotations.makePointAnnotationManager()
+
+var annotation = PointAnnotation(coordinate: coordinate)
+annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
+
+manager.annotations = [annotation]
+```
+
+### 2. User Location with Camera Follow
+```swift
+import Combine
+
+var cancelables = Set<AnyCancellable>()
+
+// Request permission (add to Info.plist)
+let locationManager = CLLocationManager()
+locationManager.requestWhenInUseAuthorization()
+
+// Show user location
+mapView.location.options.puckType = .puck2D()
+mapView.location.options.puckBearingEnabled = true
+
+// Follow user location
+mapView.location.onLocationChange.observe { [weak self] locations in
+    guard let self = self, let location = locations.last else { return }
+
+    self.mapView.camera.ease(to: CameraOptions(
+        center: location.coordinate,
+        zoom: 15,
+        bearing: location.course >= 0 ? location.course : nil
+    ), duration: 1.0)
+}.store(in: &cancelables)
+```
+
+### 3. Add Custom Data (GeoJSON)
+```swift
+var source = GeoJSONSource(id: "route-source")
+source.data = .geometry(.lineString(LineString(coordinates)))
+try? mapView.mapboxMap.addSource(source)
+
+var layer = LineLayer(id: "route-layer", source: "route-source")
+layer.lineColor = .constant(StyleColor(.blue))
+layer.lineWidth = .constant(4)
+try? mapView.mapboxMap.addLayer(layer)
+```
+
+### 4. Camera Control
 ```swift
 // Fly animation
 mapView.camera.fly(to: CameraOptions(
@@ -93,27 +144,34 @@ mapView.camera.ease(to: CameraOptions(
 ), duration: 1.0)
 ```
 
-### 2. Point Annotations
+### 5. Featureset Interactions
 ```swift
-var manager = mapView.annotations.makePointAnnotationManager()
+// Tap on POI features
+let token = mapView.mapboxMap.addInteraction(
+    TapInteraction(.featureset(.standardPoi)) { feature, context in
+        guard let poi = feature as? StandardPoiFeature else { return false }
+        print("Tapped POI: \(poi.name ?? "Unknown")")
+        return true
+    }
+)
 
-var annotation = PointAnnotation(coordinate: coordinate)
-annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
-
-manager.annotations = [annotation]
+// Tap on buildings
+let buildingToken = mapView.mapboxMap.addInteraction(
+    TapInteraction(.featureset(.standardBuildings)) { feature, context in
+        guard let building = feature as? StandardBuildingsFeature else { return false }
+        // Highlight the building
+        self.mapView.mapboxMap.setFeatureState(
+            building,
+            StandardBuildingsState { state in
+                state.select(true)
+            }
+        )
+        return true
+    }
+)
 ```
 
-### 3. User Location
-```swift
-// Request permission (add to Info.plist)
-let locationManager = CLLocationManager()
-locationManager.requestWhenInUseAuthorization()
-
-// Show user location
-mapView.location.options.puckType = .puck2D()
-```
-
-### 4. Map Tap Handling
+### 6. Map Tap Handling
 ```swift
 mapView.gestures.onMapTap.observe { [weak self] context in
     let coordinate = context.coordinate
@@ -121,40 +179,17 @@ mapView.gestures.onMapTap.observe { [weak self] context in
 }.store(in: &cancelables)
 ```
 
-### 5. Styles
+### 7. Styles
 ```swift
 // SwiftUI
+.mapStyle(.standard)    // Recommended
 .mapStyle(.streets)
 .mapStyle(.dark)
 .mapStyle(.satellite)
 
 // UIKit
-mapView.mapboxMap.loadStyle(.streets)
+mapView.mapboxMap.loadStyle(.standard)
 mapView.mapboxMap.loadStyle(.dark)
-```
-
-### 6. Add GeoJSON Layer
-```swift
-var source = GeoJSONSource(id: "route-source")
-source.data = .geometry(.lineString(LineString(coordinates)))
-try? mapView.mapboxMap.addSource(source)
-
-var layer = LineLayer(id: "route-layer", source: "route-source")
-layer.lineColor = .constant(StyleColor(.blue))
-layer.lineWidth = .constant(4)
-try? mapView.mapboxMap.addLayer(layer)
-```
-
-### 7. Query Features
-```swift
-mapView.mapboxMap.queryRenderedFeatures(
-    with: screenPoint,
-    options: RenderedQueryOptions(layerIds: ["poi-layer"], filter: nil)
-) { result in
-    if case .success(let features) = result {
-        print("Found \(features.count) features")
-    }
-}
 ```
 
 ## Performance Tips
@@ -187,11 +222,21 @@ mapView.gestures.onMapTap.observe { [weak self] context in
 }.store(in: &cancelables)
 ```
 
+### Use Standard Style
+```swift
+// ✅ Recommended
+.mapStyle(.standard)
+
+// Use others only when needed
+.mapStyle(.satellite)
+```
+
 ## Quick Checklist
 
 ✅ MBXAccessToken in Info.plist
 ✅ MapboxMaps imported
 ✅ Location permissions if needed
+✅ Use .standard style (recommended)
 ✅ Weak self in closures
 ✅ Cancelables stored and cancelled
 ✅ Annotation managers reused
@@ -200,4 +245,5 @@ mapView.gestures.onMapTap.observe { [weak self] context in
 
 - [iOS Maps Guides](https://docs.mapbox.com/ios/maps/guides/)
 - [API Reference](https://docs.mapbox.com/ios/maps/api-reference/)
+- [Interactions Guide](https://docs.mapbox.com/ios/maps/guides/user-interaction/Interactions/)
 - [Examples](https://github.com/mapbox/mapbox-maps-ios/tree/main/Sources/Examples)

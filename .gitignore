@@ -1,2 +1,8 @@
 node_modules/
 demos/ios-demo/.build/
+
+# Xcode user state
+*.xcuserstate
+*.xcuserdatad
+.swiftpm/xcode/
+

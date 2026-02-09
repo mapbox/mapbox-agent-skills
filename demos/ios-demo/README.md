@@ -17,7 +17,7 @@ This app demonstrates key patterns using **SwiftUI only** (the modern, recommend
 
 ### Prerequisites
 - Xcode 15+
-- iOS 13+
+- iOS 14+
 - Swift 5.9+
 - Mapbox account (free)
 
@@ -43,7 +43,7 @@ This app demonstrates key patterns using **SwiftUI only** (the modern, recommend
    ```
 
 5. **Run the app:**
-   - Select a simulator or device (iOS 13+)
+   - Select a simulator or device (iOS 14+)
    - Press Cmd+R to build and run
 
 ## Code Structure
@@ -111,7 +111,7 @@ All code follows patterns from: `skills/mapbox-ios-patterns/SKILL.md`
 **Build errors:**
 - ✅ Run `swift package resolve`
 - ✅ Clean build folder: Product → Clean Build Folder (Shift+Cmd+K)
-- ✅ Minimum iOS 13 required
+- ✅ Minimum iOS 14 required (for SwiftUI Map with Viewport)
 
 **Markers not showing:**
 - ✅ Default "marker" icon is used - may need custom images for visibility

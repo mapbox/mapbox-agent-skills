@@ -184,7 +184,7 @@ Both demos use **only the modern, declarative frameworks**:
 **Build errors**
 - iOS: Run `swift package resolve`
 - Android: Sync Gradle files in Android Studio
-- Check minimum SDK versions (iOS 13+, Android 21+)
+- Check minimum SDK versions (iOS 14+, Android 21+)
 
 ## Resources
 

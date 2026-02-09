@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**10 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search patterns, and security best practices.
+**12 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
 
 ## Quick Start
 
@@ -36,6 +36,46 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 - 🌐 **Web**: React, Vue, Svelte, Angular, Next.js (Mapbox GL JS)
 - 📱 **iOS**: Swift, SwiftUI, UIKit (Maps SDK for iOS)
 - 📱 **Android**: Kotlin, Jetpack Compose, View system (Maps SDK for Android)
+
+---
+
+### 🔍 mapbox-search-integration
+
+**Complete workflow for implementing Mapbox search in applications from discovery to production.**
+
+Guides AI assistants through the entire search integration process: asking discovery questions, selecting the right product, implementing with best practices, and avoiding common pitfalls. Embodies collective knowledge from the Mapbox search team and customer learnings.
+
+**Use when:**
+- User needs to add search to their app
+- Implementing location search or geocoding
+- Need to ask the right questions about requirements
+- Want production-ready search implementation
+- Avoiding common integration mistakes
+
+**Key workflow:**
+1. **Discovery questions** - What to ask users (POIs? Addresses? Geographic scope? Platform?)
+2. **Product selection** - Search Box API vs Geocoding API, SDK vs direct API
+3. **Implementation patterns** - Complete code examples for web, iOS, Android
+4. **Best practices** - Debouncing, session tokens, error handling, UX patterns
+5. **Common pitfalls** - What goes wrong and how to avoid it
+
+**Covers all platforms:**
+- Web (Mapbox Search JS React/Web/Core, Vue, Angular, Next.js)
+- iOS (Search SDK for iOS with UISearchController integration)
+- Android (Search SDK for Android with SearchView integration)
+- Node.js (Mapbox Search JS Core)
+
+**Best practices from "the good parts":**
+- ✅ Debouncing (prevent API spam)
+- ✅ Session token management (cost optimization)
+- ✅ Geographic filtering (better results)
+- ✅ Error handling (all failure cases)
+- ✅ Mobile UX (touch targets, keyboards)
+- ✅ Accessibility (keyboard nav, ARIA)
+- ✅ Caching strategies (high-volume apps)
+- ✅ Token security (proper scoping)
+
+[View skill →](./skills/mapbox-search-integration/SKILL.md)
 
 ---
 
@@ -315,6 +355,56 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 - Incident response plans
 
 [View skill →](./skills/mapbox-token-security/SKILL.md)
+
+---
+
+### 📍 mapbox-store-locator-patterns
+
+**Common patterns for building store locators, restaurant finders, and location-based search applications.**
+
+Comprehensive guide covering marker display strategies, filtering, distance calculation, interactive lists synced with maps, and directions integration. Perfect for building any location-based finder application.
+
+**Use when:**
+- Building store locator or restaurant finder applications
+- Displaying multiple locations on a map with interactive lists
+- Need filtering by category, distance, or search term
+- Calculate distances from user location
+- Show location details in popups or panels
+- Integrate directions to selected locations
+
+**Key topics:**
+- Marker strategies (HTML markers, symbol layers, clustering) based on location count
+- Interactive list/map synchronization
+- Search and category filtering
+- User location and distance calculation (Haversine formula)
+- Directions API integration
+- Performance optimization (debouncing, lazy loading, virtual scrolling)
+- Layout patterns (sidebar, overlay, mobile-responsive)
+
+**Covers all marker strategies:**
+- **< 100 locations**: HTML Markers with `mapboxgl.Marker()`
+- **100-1000 locations**: Symbol layers with GeoJSON
+- **> 1000 locations**: Clustering with aggregation
+
+**Common use cases:**
+- Store locators for retail chains
+- Restaurant finders with category filters
+- Office location directories
+- Real estate property search
+- Event venue finders
+- Service provider locators
+
+**Complete implementation:**
+- GeoJSON data structure
+- Map initialization and marker display
+- Interactive listing component
+- Search/filter functionality
+- Distance calculation and sorting
+- Popup/detail views
+- Directions integration
+- Responsive layouts
+
+[View skill →](./skills/mapbox-store-locator-patterns/SKILL.md)
 
 ---
 

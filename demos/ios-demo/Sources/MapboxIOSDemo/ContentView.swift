@@ -13,8 +13,9 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            // Demonstrate: Map with Standard style (recommended)
             Map(viewport: $viewport) {
-                // Demonstrate: Add Markers
+                // Demonstrate: Add Markers - Multiple point annotations
                 PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194))
                     .iconImage("marker")
 
@@ -24,7 +25,7 @@ struct ContentView: View {
                 PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: 37.7649, longitude: -122.4294))
                     .iconImage("marker")
 
-                // Demonstrate: Featureset Interactions
+                // Demonstrate: Featureset Interactions - Tap on POIs
                 TapInteraction(.featureset(.standardPoi)) { feature, context in
                     if let poi = feature as? StandardPoiFeature {
                         selectedFeature = "Tapped POI: \(poi.name ?? "Unknown")"
@@ -32,9 +33,11 @@ struct ContentView: View {
                     return true
                 }
 
+                // Demonstrate: Featureset Interactions - Tap on buildings
                 TapInteraction(.featureset(.standardBuildings)) { feature, context in
                     if let building = feature as? StandardBuildingsFeature {
                         selectedFeature = "Tapped Building"
+                        // Demonstrate: Feature state management
                         building.setFeatureState(StandardBuildingsState { state in
                             state.select(true)
                         })
@@ -45,36 +48,49 @@ struct ContentView: View {
             .mapStyle(.standard) // Demonstrate: Standard style (recommended)
             .ignoresSafeArea()
 
-            // Info panel
+            // UI Controls
             VStack(spacing: 12) {
+                // Show selected feature info
                 if !selectedFeature.isEmpty {
                     Text(selectedFeature)
+                        .font(.headline)
                         .padding()
-                        .background(Color.white)
+                        .background(Color.white.opacity(0.9))
                         .cornerRadius(8)
                         .shadow(radius: 4)
                 }
 
-                HStack {
+                // Control buttons
+                HStack(spacing: 12) {
+                    // User location button
                     Button(action: {
                         followUserLocation.toggle()
+                        if followUserLocation {
+                            // Demonstrate: Move camera to user location
+                            // Note: In a full implementation, observe location updates
+                            // and update viewport state
+                        }
                     }) {
                         Label(
                             followUserLocation ? "Stop Following" : "Follow Location",
                             systemImage: followUserLocation ? "location.fill" : "location"
                         )
                         .padding()
-                        .background(Color.blue)
+                        .background(followUserLocation ? Color.blue : Color.gray)
                         .foregroundColor(.white)
                         .cornerRadius(8)
                     }
 
+                    // Reset view button
                     Button(action: {
-                        // Demonstrate: Fit camera to coordinates
+                        // Demonstrate: Animated camera transition
                         viewport = .camera(
                             center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-                            zoom: 13
+                            zoom: 13,
+                            bearing: 0,
+                            pitch: 0
                         )
+                        selectedFeature = ""
                     }) {
                         Label("Reset View", systemImage: "arrow.counterclockwise")
                             .padding()
@@ -83,138 +99,20 @@ struct ContentView: View {
                             .cornerRadius(8)
                     }
                 }
+
+                // Instructions
+                Text("Tap on map POIs or buildings to interact")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
             }
             .padding()
         }
         .onAppear {
-            // Request location permissions
+            // Demonstrate: Request location permissions
             let locationManager = CLLocationManager()
             locationManager.requestWhenInUseAuthorization()
         }
-    }
-}
-
-// For UIKit version with more features (user location follow, custom data)
-class MapViewController: UIViewController {
-    private var mapView: MapView!
-    private var cancelables = Set<AnyCancellable>()
-    private var pointAnnotationManager: PointAnnotationManager!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        setupMap()
-        setupMarkers()
-        setupCustomData()
-        setupLocationTracking()
-        setupFeatureInteractions()
-    }
-
-    private func setupMap() {
-        // Demonstrate: Map initialization
-        let options = MapInitOptions(
-            cameraOptions: CameraOptions(
-                center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-                zoom: 12
-            )
-        )
-
-        mapView = MapView(frame: view.bounds, mapInitOptions: options)
-        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(mapView)
-
-        mapView.mapboxMap.loadStyle(.standard) // Demonstrate: Standard style
-    }
-
-    private func setupMarkers() {
-        // Demonstrate: Add multiple markers
-        pointAnnotationManager = mapView.annotations.makePointAnnotationManager()
-
-        let locations = [
-            CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-            CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094),
-            CLLocationCoordinate2D(latitude: 37.7649, longitude: -122.4294)
-        ]
-
-        let annotations = locations.map { coordinate in
-            var annotation = PointAnnotation(coordinate: coordinate)
-            // Note: In a real app, add custom marker image
-            return annotation
-        }
-
-        pointAnnotationManager.annotations = annotations
-    }
-
-    private func setupCustomData() {
-        // Demonstrate: Add custom GeoJSON data (route line)
-        mapView.mapboxMap.onStyleLoaded.observe { [weak self] _ in
-            guard let self = self else { return }
-
-            let routeCoordinates = [
-                CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-                CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094),
-                CLLocationCoordinate2D(latitude: 37.7949, longitude: -122.3994)
-            ]
-
-            var source = GeoJSONSource(id: "route-source")
-            source.data = .geometry(.lineString(LineString(routeCoordinates)))
-
-            try? self.mapView.mapboxMap.addSource(source)
-
-            var layer = LineLayer(id: "route-layer", source: "route-source")
-            layer.lineColor = .constant(StyleColor(.blue))
-            layer.lineWidth = .constant(4)
-            layer.lineCap = .constant(.round)
-            layer.lineJoin = .constant(.round)
-
-            try? self.mapView.mapboxMap.addLayer(layer)
-        }.store(in: &cancelables)
-    }
-
-    private func setupLocationTracking() {
-        // Demonstrate: User location with camera follow
-        let locationManager = CLLocationManager()
-        locationManager.requestWhenInUseAuthorization()
-
-        mapView.location.options.puckType = .puck2D()
-        mapView.location.options.puckBearingEnabled = true
-
-        mapView.location.onLocationChange.observe { [weak self] locations in
-            guard let self = self, let location = locations.last else { return }
-
-            self.mapView.camera.ease(to: CameraOptions(
-                center: location.coordinate,
-                zoom: 15,
-                bearing: location.course >= 0 ? location.course : nil,
-                pitch: 45
-            ), duration: 1.0)
-        }.store(in: &cancelables)
-    }
-
-    private func setupFeatureInteractions() {
-        // Demonstrate: Featureset interactions
-        let poiToken = mapView.mapboxMap.addInteraction(
-            TapInteraction(.featureset(.standardPoi)) { [weak self] feature, context in
-                guard let poi = feature as? StandardPoiFeature else { return false }
-                print("Tapped POI: \(poi.name ?? "Unknown")")
-                return true
-            }
-        )
-
-        let buildingToken = mapView.mapboxMap.addInteraction(
-            TapInteraction(.featureset(.standardBuildings)) { [weak self] feature, context in
-                guard let building = feature as? StandardBuildingsFeature else { return false }
-                print("Tapped building")
-
-                self?.mapView.mapboxMap.setFeatureState(
-                    building,
-                    StandardBuildingsState { state in
-                        state.select(true)
-                    }
-                )
-                return true
-            }
-        )
     }
 }
 

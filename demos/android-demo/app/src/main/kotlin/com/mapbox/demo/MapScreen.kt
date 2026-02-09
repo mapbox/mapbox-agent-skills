@@ -2,12 +2,12 @@ package com.mapbox.demo
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,13 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.MapAnimationOptions
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.*
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 
 @Composable
 fun MapScreen() {
@@ -44,7 +40,7 @@ fun MapScreen() {
         hasLocationPermission = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
     }
 
-    // Demonstrate: Map initialization
+    // Demonstrate: Camera state management
     val cameraState = rememberCameraState {
         position = CameraPosition(
             center = Point.fromLngLat(-122.4194, 37.7749),
@@ -70,7 +66,7 @@ fun MapScreen() {
             mapViewportState = cameraState,
             style = Style.STANDARD
         ) {
-            // Demonstrate: Add markers
+            // Demonstrate: Add Markers - Multiple point annotations
             PointAnnotation(
                 point = Point.fromLngLat(-122.4194, 37.7749)
             ) {
@@ -89,8 +85,10 @@ fun MapScreen() {
                 iconImage = "marker"
             }
 
-            // Note: Featureset interactions in Compose require MapboxStandardStyleExperimental
-            // See MapActivityView.kt for View system implementation with full feature set
+            // Note: Featureset interactions in Compose require MapboxStandardStyle
+            // with experimental interactions state. This demonstrates the declarative
+            // approach with basic features. For full featureset interaction examples,
+            // see the skills documentation.
         }
 
         // UI Controls
@@ -101,15 +99,26 @@ fun MapScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Show selected feature info
             if (selectedFeature.isNotEmpty()) {
-                Text(
-                    text = selectedFeature,
-                    modifier = Modifier
-                        .padding(8.dp)
-                )
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 4.dp,
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(
+                        text = selectedFeature,
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Control buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // User location button
                 Button(
                     onClick = {
                         if (!hasLocationPermission) {
@@ -119,24 +128,42 @@ fun MapScreen() {
                                     Manifest.permission.ACCESS_COARSE_LOCATION
                                 )
                             )
+                        } else {
+                            followLocation = !followLocation
+                            if (followLocation) {
+                                // Demonstrate: In a full implementation, observe location
+                                // updates and animate camera to follow user
+                                selectedFeature = "Location tracking ${if (followLocation) "enabled" else "disabled"}"
+                            }
                         }
-                        followLocation = !followLocation
                     }
                 ) {
                     Text(if (followLocation) "Stop Following" else "Follow Location")
                 }
 
+                // Reset view button
                 Button(
                     onClick = {
+                        // Demonstrate: Animated camera transition
                         cameraState.position = CameraPosition(
                             center = Point.fromLngLat(-122.4194, 37.7749),
-                            zoom = 13.0
+                            zoom = 13.0,
+                            bearing = 0.0,
+                            pitch = 0.0
                         )
+                        selectedFeature = ""
                     }
                 ) {
                     Text("Reset View")
                 }
             }
+
+            // Instructions
+            Text(
+                text = "Map shows Standard style with 3 markers",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -1,17 +1,17 @@
 # Mapbox iOS Demo App
 
-Demo iOS app showcasing integration patterns from the `mapbox-ios-patterns` skill.
+Pure SwiftUI demo app showcasing modern integration patterns from the `mapbox-ios-patterns` skill.
 
 ## Features Demonstrated
 
-This app demonstrates all the key patterns from the iOS skill:
+This app demonstrates key patterns using **SwiftUI only** (the modern, recommended approach):
 
-1. ✅ **Map Initialization** - SwiftUI Map with Standard style (recommended)
-2. ✅ **Add Markers** - Multiple point annotations on the map
-3. ✅ **User Location with Camera Follow** - Real-time location tracking with camera following user movement and bearing
-4. ✅ **Add Custom Data** - GeoJSON route line visualization
-5. ✅ **Featureset Interactions** - Tap handling for POIs and buildings with feature state management
-6. ✅ **Camera Control** - Animated transitions and viewport management
+1. ✅ **Map Initialization** - Native SwiftUI Map with Standard style
+2. ✅ **Add Markers** - Declarative PointAnnotation components
+3. ✅ **Featureset Interactions** - TapInteraction for POIs and buildings
+4. ✅ **Feature State Management** - Building highlighting on tap
+5. ✅ **Camera Control** - Viewport state management with animations
+6. ✅ **Location Permissions** - Proper iOS permission handling
 
 ## Setup
 
@@ -25,7 +25,7 @@ This app demonstrates all the key patterns from the iOS skill:
 
 1. **Get your Mapbox access token:**
    - Sign in at [mapbox.com](https://account.mapbox.com/access-tokens/)
-   - Copy your public token (starts with `pk.`)
+   - Copy your **public token** (starts with `pk.`)
 
 2. **Configure the token:**
    - Open `Sources/MapboxIOSDemo/Info.plist`
@@ -43,69 +43,84 @@ This app demonstrates all the key patterns from the iOS skill:
    ```
 
 5. **Run the app:**
-   - Select a simulator or device
+   - Select a simulator or device (iOS 13+)
    - Press Cmd+R to build and run
 
 ## Code Structure
 
-- `MapboxIOSDemoApp.swift` - App entry point
-- `ContentView.swift` - Main map view with all features:
-  - SwiftUI implementation with basic features
-  - UIKit `MapViewController` class with comprehensive examples
+```
+Sources/MapboxIOSDemo/
+├── MapboxIOSDemoApp.swift    # App entry point
+├── ContentView.swift          # Main map view (Pure SwiftUI)
+└── Info.plist                 # Token configuration
+```
 
-## Implementation Notes
+## Implementation Details
 
-### SwiftUI Implementation
-The SwiftUI version demonstrates:
-- Basic map setup with Standard style
-- Adding markers declaratively
-- Featureset interactions (POI and building taps)
-- Simple UI controls
+### Pure SwiftUI Approach
+This demo uses **only SwiftUI** - the modern, declarative approach for iOS:
 
-### UIKit Implementation
-The `MapViewController` class demonstrates:
-- Complete map setup with lifecycle
-- Multiple markers with batch creation
-- Custom GeoJSON data (route line)
-- User location with camera follow (position + bearing)
-- Featureset interactions with feature state management
+```swift
+Map(viewport: $viewport) {
+    PointAnnotation(coordinate: location)
+        .iconImage("marker")
+
+    TapInteraction(.featureset(.standardPoi)) { poi, context in
+        // Handle POI taps
+        return true
+    }
+}
+.mapStyle(.standard)
+```
+
+**Why SwiftUI?**
+- ✅ Modern, declarative API (v11+)
+- ✅ Simpler code, less boilerplate
+- ✅ Better integration with iOS ecosystem
+- ✅ Recommended by Apple and Mapbox
 
 ## Patterns from Skill
 
-All code follows the patterns documented in:
-`skills/mapbox-ios-patterns/SKILL.md`
+All code follows patterns from: `skills/mapbox-ios-patterns/SKILL.md`
 
-Key patterns used:
-- ✅ Style.STANDARD (recommended)
-- ✅ Native SwiftUI Map view with Viewport
-- ✅ TapInteraction with .featureset() for typed feature access
-- ✅ onLocationChange observer for camera following
-- ✅ GeoJSON sources and LineLayer for custom data
-- ✅ Batch annotation updates for performance
+| Pattern | Implementation |
+|---------|----------------|
+| Standard Style | `.mapStyle(.standard)` |
+| Native Map | `Map(viewport: $viewport)` |
+| Markers | `PointAnnotation(coordinate:)` |
+| Featureset Interactions | `TapInteraction(.featureset())` |
+| Feature State | `setFeatureState()` |
+| Camera Control | Viewport state binding |
+| Permissions | CLLocationManager |
 
 ## Testing
 
-1. **Map displays correctly** - Standard style loads
-2. **Markers visible** - Three markers appear on San Francisco
-3. **POI taps work** - Tap on map POIs shows info
-4. **Building taps work** - Tap on buildings highlights them
-5. **Location tracking** - Tap "Follow Location" to enable tracking
-6. **Custom route** - Blue route line visible connecting points
+1. **Map displays** - Standard style loads with San Francisco view
+2. **Markers visible** - Three markers at different locations
+3. **POI taps** - Tap on restaurants, shops, etc. Shows name
+4. **Building taps** - Tap on buildings, they highlight
+5. **Reset button** - Returns to initial view with animation
 
 ## Troubleshooting
 
 **Map not displaying:**
-- ✅ Check MBXAccessToken in Info.plist
+- ✅ Check `MBXAccessToken` in Info.plist is a valid **public token** (pk.*)
 - ✅ Token must be valid (test at mapbox.com)
 - ✅ Check internet connection
 
-**Location not working:**
-- ✅ Grant location permission when prompted
-- ✅ Check Info.plist has NSLocationWhenInUseUsageDescription
-- ✅ Test on device or enable location in simulator
+**Build errors:**
+- ✅ Run `swift package resolve`
+- ✅ Clean build folder: Product → Clean Build Folder (Shift+Cmd+K)
+- ✅ Minimum iOS 13 required
+
+**Markers not showing:**
+- ✅ Default "marker" icon is used - may need custom images for visibility
+- ✅ Zoom in to see markers better
 
 ## Resources
 
+- [iOS Skill Documentation](../../skills/mapbox-ios-patterns/SKILL.md)
 - [iOS Maps Guides](https://docs.mapbox.com/ios/maps/guides/)
-- [API Reference](https://docs.mapbox.com/ios/maps/api-reference/)
+- [SwiftUI User Guide](https://docs.mapbox.com/ios/maps/api/11.18.1/documentation/mapboxmaps/swiftui-user-guide)
 - [Interactions Guide](https://docs.mapbox.com/ios/maps/guides/user-interaction/Interactions/)
+- [API Reference](https://docs.mapbox.com/ios/maps/api-reference/)

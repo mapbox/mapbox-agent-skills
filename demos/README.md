@@ -16,13 +16,13 @@ These demo apps showcase all the key integration patterns documented in the skil
 ## Demo Apps
 
 ### [iOS Demo](./ios-demo/)
-SwiftUI + UIKit implementations demonstrating iOS Maps SDK v11 patterns.
+**Pure SwiftUI** implementation demonstrating iOS Maps SDK v11 modern patterns.
 
 **Technologies:**
-- SwiftUI Map view (native v11 API)
-- UIKit MapView with comprehensive examples
+- SwiftUI Map view (native v11 API, declarative)
 - Swift Package Manager for dependencies
 - Standard style with featureset interactions
+- Modern, streamlined codebase
 
 **Quick Start:**
 ```bash
@@ -35,13 +35,13 @@ open Package.swift
 [Full iOS Setup Guide →](./ios-demo/README.md)
 
 ### [Android Demo](./android-demo/)
-Jetpack Compose + View system implementations demonstrating Android Maps SDK v11 patterns.
+**Pure Jetpack Compose** implementation demonstrating Android Maps SDK v11 modern patterns.
 
 **Technologies:**
-- Jetpack Compose MapboxMap (native v11 API)
-- View system with comprehensive examples
+- Jetpack Compose MapboxMap (native v11 API, declarative)
 - Gradle with Maven repository configuration
-- Standard style with featureset interactions
+- Standard style with Material3 UI
+- Modern, streamlined codebase
 
 **Quick Start:**
 ```bash
@@ -145,15 +145,27 @@ Both demos require a Mapbox access token:
 
 ## Implementation Notes
 
-### iOS
-- **SwiftUI version**: Basic features, declarative UI
-- **UIKit version**: Full feature set with lifecycle management
+### Modern Frameworks Only
 
-### Android
-- **Compose version**: Basic features, modern declarative UI
-- **View system version**: Full feature set with comprehensive examples
+Both demos use **only the modern, declarative frameworks**:
 
-Both platforms provide complete working examples that can be used as reference implementations.
+**iOS - Pure SwiftUI:**
+- ✅ Native Map view with Viewport binding
+- ✅ Declarative PointAnnotation components
+- ✅ TapInteraction for featureset interactions
+- ✅ Clean, concise code following modern iOS patterns
+
+**Android - Pure Jetpack Compose:**
+- ✅ Native MapboxMap composable
+- ✅ rememberCameraState for state management
+- ✅ Declarative PointAnnotation components
+- ✅ Material3 UI components
+
+**Why modern frameworks only?**
+- Simpler, cleaner code
+- Less confusing for developers learning Mapbox
+- Recommended approach by both Apple/Google and Mapbox
+- The skills documentation covers both approaches in detail
 
 ## Troubleshooting
 

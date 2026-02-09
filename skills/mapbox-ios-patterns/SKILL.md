@@ -498,27 +498,26 @@ struct MapView: View {
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         zoom: 12
     )
+    @State private var selectedBuildings = [StandardBuildingsFeature]()
 
     var body: some View {
         Map(viewport: $viewport) {
             // Tap on POI features
-            TapInteraction(.featureset(.standardPoi)) { feature, context in
-                if let poi = feature as? StandardPoiFeature {
-                    print("Tapped POI: \(poi.name ?? "Unknown")")
-                }
+            TapInteraction(.standardPoi) { poi, context in
+                print("Tapped POI: \(poi.name ?? "Unknown")")
                 return true // Stop propagation
             }
 
-            // Tap on buildings
-            TapInteraction(.featureset(.standardBuildings)) { feature, context in
-                if let building = feature as? StandardBuildingsFeature {
-                    print("Tapped building")
-                    // Highlight the building
-                    building.setFeatureState(StandardBuildingsState { state in
-                        state.select(true)
-                    })
-                }
+            // Tap on buildings and collect selected buildings
+            TapInteraction(.standardBuildings) { building, context in
+                print("Tapped building")
+                selectedBuildings.append(building)
                 return true
+            }
+
+            // Apply feature state to selected buildings (highlighting)
+            ForEvery(selectedBuildings, id: \.id) { building in
+                FeatureState(building, .init(select: true))
             }
         }
         .mapStyle(.standard)
@@ -545,8 +544,7 @@ class MapViewController: UIViewController {
     func setupInteractions() {
         // Tap on POI features
         let poiToken = mapView.mapboxMap.addInteraction(
-            TapInteraction(.featureset(.standardPoi)) { [weak self] feature, context in
-                guard let poi = feature as? StandardPoiFeature else { return false }
+            TapInteraction(.standardPoi) { [weak self] poi, context in
                 print("Tapped POI: \(poi.name ?? "Unknown")")
                 return true
             }
@@ -554,16 +552,13 @@ class MapViewController: UIViewController {
 
         // Tap on buildings
         let buildingToken = mapView.mapboxMap.addInteraction(
-            TapInteraction(.featureset(.standardBuildings)) { [weak self] feature, context in
-                guard let building = feature as? StandardBuildingsFeature else { return false }
+            TapInteraction(.standardBuildings) { [weak self] building, context in
                 print("Tapped building")
 
-                // Highlight the building
+                // Highlight the building using feature state
                 self?.mapView.mapboxMap.setFeatureState(
                     building,
-                    StandardBuildingsState { state in
-                        state.select(true)
-                    }
+                    state: ["select": true]
                 )
                 return true
             }
@@ -592,8 +587,7 @@ let token = mapView.mapboxMap.addInteraction(
 
 ```swift
 let token = mapView.mapboxMap.addInteraction(
-    LongPressInteraction(.featureset(.standardPoi)) { feature, context in
-        guard let poi = feature as? StandardPoiFeature else { return false }
+    LongPressInteraction(.standardPoi) { poi, context in
         print("Long pressed POI: \(poi.name ?? "Unknown")")
         return true
     }

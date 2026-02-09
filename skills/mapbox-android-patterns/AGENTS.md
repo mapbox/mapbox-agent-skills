@@ -47,22 +47,35 @@ import com.mapbox.geojson.Point
 
 @Composable
 fun MapScreen() {
-    val cameraState = rememberCameraState {
-        position = CameraPosition(
-            center = Point.fromLngLat(-122.4194, 37.7749),
-            zoom = 12.0
-        )
+    MapboxMap(modifier = Modifier.fillMaxSize()) {
+        MapEffect(Unit) { mapView ->
+            mapView.mapboxMap.loadStyle(Style.STANDARD)
+            mapView.mapboxMap.setCamera(
+                CameraOptions.Builder()
+                    .center(Point.fromLngLat(-122.4194, 37.7749))
+                    .zoom(12.0)
+                    .build()
+            )
+        }
     }
-
-    MapboxMap(
-        modifier = Modifier.fillMaxSize(),
-        mapViewportState = cameraState,
-        style = Style.STANDARD
-    )
 }
 ```
 
 ### With Annotation
+```kotlin
+MapboxMap(modifier = Modifier.fillMaxSize()) {
+    MapEffect(Unit) { mapView ->
+        mapView.mapboxMap.loadStyle(Style.STANDARD)
+        val annotationManager = mapView.annotations.createPointAnnotationManager()
+        val pointAnnotation = PointAnnotationOptions()
+            .withPoint(Point.fromLngLat(-122.4194, 37.7749))
+            .withIconImage("marker")
+        annotationManager.create(pointAnnotation)
+    }
+}
+```
+
+### Previous pattern (annotations must use MapEffect, not declarative)
 ```kotlin
 MapboxMap(modifier = Modifier.fillMaxSize()) {
     PointAnnotation(

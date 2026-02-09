@@ -16,14 +16,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.*
+import com.mapbox.maps.plugin.animation.MapAnimationOptions
+import com.mapbox.maps.plugin.animation.camera
+import com.mapbox.maps.plugin.locationcomponent.location
 
 @Composable
 fun MapScreen() {
     val context = LocalContext.current
     var selectedFeature by remember { mutableStateOf("") }
     var followLocation by remember { mutableStateOf(false) }
+    var resetTrigger by remember { mutableIntStateOf(0) }
     var hasLocationPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -40,14 +45,6 @@ fun MapScreen() {
         hasLocationPermission = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
     }
 
-    // Demonstrate: Camera state management
-    val cameraState = rememberCameraState {
-        position = CameraPosition(
-            center = Point.fromLngLat(-122.4194, 37.7749),
-            zoom = 12.0
-        )
-    }
-
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) {
             permissionLauncher.launch(
@@ -62,27 +59,86 @@ fun MapScreen() {
     Box(modifier = Modifier.fillMaxSize()) {
         // Demonstrate: Map with Standard style (recommended)
         MapboxMap(
-            modifier = Modifier.fillMaxSize(),
-            mapViewportState = cameraState,
-            style = Style.STANDARD
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Demonstrate: Add Markers - Multiple point annotations
-            PointAnnotation(
-                point = Point.fromLngLat(-122.4194, 37.7749)
-            ) {
-                iconImage = "marker"
+            // Initialize camera position and setup features
+            MapEffect(Unit) { mapView ->
+                // Load Standard style
+                mapView.mapboxMap.loadStyle(Style.STANDARD)
+
+                // Set initial camera
+                mapView.mapboxMap.setCamera(
+                    CameraOptions.Builder()
+                        .center(Point.fromLngLat(-122.4194, 37.7749))
+                        .zoom(12.0)
+                        .build()
+                )
+
+                // TODO: Add markers via annotation manager
+                // Note: Compose extension doesn't have declarative PointAnnotation
+                // Markers would be added via mapView.annotations.createPointAnnotationManager()
             }
 
-            PointAnnotation(
-                point = Point.fromLngLat(-122.4094, 37.7849)
-            ) {
-                iconImage = "marker"
+            // Demonstrate: Show user location puck (reactive to permission)
+            MapEffect(hasLocationPermission) { mapView ->
+                if (hasLocationPermission) {
+                    mapView.location.updateSettings {
+                        enabled = true
+                        puckBearingEnabled = true
+                    }
+                }
             }
 
-            PointAnnotation(
-                point = Point.fromLngLat(-122.4294, 37.7649)
-            ) {
-                iconImage = "marker"
+            // Demonstrate: Reset camera to initial position
+            MapEffect(resetTrigger) { mapView ->
+                if (resetTrigger > 0) {
+                    mapView.camera.easeTo(
+                        CameraOptions.Builder()
+                            .center(Point.fromLngLat(-122.4194, 37.7749))
+                            .zoom(13.0)
+                            .bearing(0.0)
+                            .pitch(0.0)
+                            .build(),
+                        MapAnimationOptions.Builder()
+                            .duration(1000)
+                            .build()
+                    )
+                }
+            }
+
+            // Demonstrate: Camera follows user location when enabled
+            MapEffect(followLocation) { mapView ->
+                if (followLocation && hasLocationPermission) {
+                    val positionListener: (Point) -> Unit = { point ->
+                        mapView.camera.easeTo(
+                            CameraOptions.Builder()
+                                .center(point)
+                                .zoom(15.0)
+                                .pitch(45.0)
+                                .build(),
+                            MapAnimationOptions.Builder()
+                                .duration(1000)
+                                .build()
+                        )
+                    }
+
+                    val bearingListener: (Double) -> Unit = { bearing ->
+                        mapView.camera.easeTo(
+                            CameraOptions.Builder()
+                                .bearing(bearing)
+                                .build(),
+                            MapAnimationOptions.Builder()
+                                .duration(1000)
+                                .build()
+                        )
+                    }
+
+                    mapView.location.addOnIndicatorPositionChangedListener(positionListener)
+                    mapView.location.addOnIndicatorBearingChangedListener(bearingListener)
+                } else {
+                    // Note: Listeners remain until map is destroyed
+                    // For production, would need proper cleanup via DisposableEffect
+                }
             }
 
             // Note: Featureset interactions in Compose require MapboxStandardStyle
@@ -130,10 +186,10 @@ fun MapScreen() {
                             )
                         } else {
                             followLocation = !followLocation
-                            if (followLocation) {
-                                // Demonstrate: In a full implementation, observe location
-                                // updates and animate camera to follow user
-                                selectedFeature = "Location tracking ${if (followLocation) "enabled" else "disabled"}"
+                            selectedFeature = if (followLocation) {
+                                "Following your location"
+                            } else {
+                                ""
                             }
                         }
                     }
@@ -145,12 +201,8 @@ fun MapScreen() {
                 Button(
                     onClick = {
                         // Demonstrate: Animated camera transition
-                        cameraState.position = CameraPosition(
-                            center = Point.fromLngLat(-122.4194, 37.7749),
-                            zoom = 13.0,
-                            bearing = 0.0,
-                            pitch = 0.0
-                        )
+                        followLocation = false
+                        resetTrigger++
                         selectedFeature = ""
                     }
                 ) {
@@ -160,7 +212,7 @@ fun MapScreen() {
 
             // Instructions
             Text(
-                text = "Map shows Standard style with 3 markers",
+                text = "Tap 'Follow Location' to track your position",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

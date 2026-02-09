@@ -148,8 +148,7 @@ mapView.camera.ease(to: CameraOptions(
 ```swift
 // Tap on POI features
 let token = mapView.mapboxMap.addInteraction(
-    TapInteraction(.featureset(.standardPoi)) { feature, context in
-        guard let poi = feature as? StandardPoiFeature else { return false }
+    TapInteraction(.standardPoi) { poi, context in
         print("Tapped POI: \(poi.name ?? "Unknown")")
         return true
     }
@@ -157,14 +156,11 @@ let token = mapView.mapboxMap.addInteraction(
 
 // Tap on buildings
 let buildingToken = mapView.mapboxMap.addInteraction(
-    TapInteraction(.featureset(.standardBuildings)) { feature, context in
-        guard let building = feature as? StandardBuildingsFeature else { return false }
-        // Highlight the building
+    TapInteraction(.standardBuildings) { building, context in
+        // Highlight the building using feature state
         self.mapView.mapboxMap.setFeatureState(
             building,
-            StandardBuildingsState { state in
-                state.select(true)
-            }
+            state: ["select": true]
         )
         return true
     }

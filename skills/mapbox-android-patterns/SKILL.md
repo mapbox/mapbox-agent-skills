@@ -103,18 +103,23 @@ import com.mapbox.geojson.Point
 
 @Composable
 fun MapScreen() {
-    val cameraState = rememberCameraState {
-        position = CameraPosition(
-            center = Point.fromLngLat(-122.4194, 37.7749),
-            zoom = 12.0
-        )
-    }
-
     MapboxMap(
-        modifier = Modifier.fillMaxSize(),
-        mapViewportState = cameraState,
-        style = Style.STANDARD
-    )
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Initialize map style and camera via MapEffect
+        MapEffect(Unit) { mapView ->
+            // Load Standard style
+            mapView.mapboxMap.loadStyle(Style.STANDARD)
+
+            // Set initial camera position
+            mapView.mapboxMap.setCamera(
+                CameraOptions.Builder()
+                    .center(Point.fromLngLat(-122.4194, 37.7749))
+                    .zoom(12.0)
+                    .build()
+            )
+        }
+    }
 }
 ```
 
@@ -123,8 +128,6 @@ fun MapScreen() {
 ```kotlin
 MapboxMap(
     modifier = Modifier.fillMaxSize(),
-    mapViewportState = cameraState,
-    style = Style.STANDARD,
     scaleBar = {
         ScaleBar(
             enabled = true,
@@ -134,7 +137,11 @@ MapboxMap(
     compass = {
         Compass(enabled = true)
     }
-)
+) {
+    MapEffect(Unit) { mapView ->
+        mapView.mapboxMap.loadStyle(Style.STANDARD)
+    }
+}
 ```
 
 ### View System Pattern
@@ -213,12 +220,21 @@ Point annotations are the most common way to mark locations on the map.
 
 ```kotlin
 MapboxMap(modifier = Modifier.fillMaxSize()) {
-    PointAnnotation(
-        point = Point.fromLngLat(-122.4194, 37.7749)
-    ) {
-        iconImage = "custom-marker"
+    MapEffect(Unit) { mapView ->
+        // Load style first
+        mapView.mapboxMap.loadStyle(Style.STANDARD)
+
+        // Create annotation manager and add markers
+        val annotationManager = mapView.annotations.createPointAnnotationManager()
+        val pointAnnotation = PointAnnotationOptions()
+            .withPoint(Point.fromLngLat(-122.4194, 37.7749))
+            .withIconImage("custom-marker")
+        annotationManager.create(pointAnnotation)
     }
 }
+
+// Note: Compose doesn't have declarative PointAnnotation component
+// Markers must be added imperatively via MapEffect
 ```
 
 **View System:**
@@ -580,16 +596,18 @@ mapView.camera.easeTo(camera)
 ### Built-in Styles
 
 ```kotlin
-// Compose
-MapboxMap(
-    style = Style.STANDARD         // Mapbox Standard (recommended)
-    style = Style.STREETS          // Mapbox Streets
-    style = Style.OUTDOORS         // Mapbox Outdoors
-    style = Style.LIGHT            // Mapbox Light
-    style = Style.DARK             // Mapbox Dark
-    style = Style.SATELLITE        // Satellite imagery
-    style = Style.SATELLITE_STREETS // Satellite + streets
-)
+// Compose - load style via MapEffect
+MapboxMap(modifier = Modifier.fillMaxSize()) {
+    MapEffect(Unit) { mapView ->
+        mapView.mapboxMap.loadStyle(Style.STANDARD)         // Mapbox Standard (recommended)
+        // mapView.mapboxMap.loadStyle(Style.STREETS)       // Mapbox Streets
+        // mapView.mapboxMap.loadStyle(Style.OUTDOORS)      // Mapbox Outdoors
+        // mapView.mapboxMap.loadStyle(Style.LIGHT)         // Mapbox Light
+        // mapView.mapboxMap.loadStyle(Style.DARK)          // Mapbox Dark
+        // mapView.mapboxMap.loadStyle(Style.SATELLITE)     // Satellite imagery
+        // mapView.mapboxMap.loadStyle(Style.SATELLITE_STREETS) // Satellite + streets
+    }
+}
 
 // Views
 mapView.mapboxMap.loadStyle(Style.STANDARD)
@@ -602,7 +620,11 @@ mapView.mapboxMap.loadStyle(Style.DARK)
 val customStyleUrl = "mapbox://styles/username/style-id"
 
 // Compose
-MapboxMap(style = customStyleUrl)
+MapboxMap(modifier = Modifier.fillMaxSize()) {
+    MapEffect(Unit) { mapView ->
+        mapView.mapboxMap.loadStyle(customStyleUrl)
+    }
+}
 
 // Views
 mapView.mapboxMap.loadStyle(customStyleUrl)
@@ -682,34 +704,35 @@ class MapActivity : AppCompatActivity() {
 ```kotlin
 @Composable
 fun MapScreen() {
-    val cameraState = rememberCameraState {
-        position = CameraPosition(
-            center = Point.fromLngLat(-122.4194, 37.7749),
-            zoom = 12.0
-        )
-    }
+    MapboxMap(modifier = Modifier.fillMaxSize()) {
+        MapEffect(Unit) { mapView ->
+            // Load Standard style
+            mapView.mapboxMap.loadStyle(Style.STANDARD)
 
-    MapboxMap(
-        modifier = Modifier.fillMaxSize(),
-        style = MapboxStandardStyleExperimental(
-            experimentalStandardStyleState = rememberExperimentalStandardStyleState {
-                interactionsState.onPoiClicked { poi, context ->
+            // Add featureset interactions using View system API
+            mapView.mapboxMap.addInteraction(
+                ClickInteraction.standardPoi { poi, context ->
                     Log.d("MapTap", "Tapped POI: ${poi.name}")
                     true
                 }
+            )
 
-                interactionsState.onBuildingsClicked { building, context ->
+            mapView.mapboxMap.addInteraction(
+                ClickInteraction.standardBuildings { building, context ->
                     Log.d("MapTap", "Tapped building")
-                    building.setStandardBuildingsState {
-                        highlight(true)
-                    }
+                    mapView.mapboxMap.setFeatureState(
+                        building,
+                        state = mapOf("select" to true)
+                    )
                     true
                 }
-            }
-        )
-    )
+            )
+        }
+    }
 }
-```
+
+// Note: Featureset interactions in Compose use MapEffect to access
+// the underlying MapView and use the View system interaction API
 
 ### Tap on Custom Layers
 

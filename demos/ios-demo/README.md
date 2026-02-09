@@ -2,6 +2,8 @@
 
 Pure SwiftUI demo app showcasing modern integration patterns from the `mapbox-ios-patterns` skill.
 
+This is a **proper Xcode project** (not a Swift Package) that can be opened and run directly in Xcode.
+
 ## Features Demonstrated
 
 This app demonstrates key patterns using **SwiftUI only** (the modern, recommended approach):
@@ -17,43 +19,46 @@ This app demonstrates key patterns using **SwiftUI only** (the modern, recommend
 
 ### Prerequisites
 - Xcode 15+
-- iOS 14+
-- Swift 5.9+
-- Mapbox account (free)
+- iOS 14+ device or simulator
+- Swift 5.0+
+- Mapbox account (free tier available)
 
-### Installation
+### Quick Start
 
 1. **Get your Mapbox access token:**
    - Sign in at [mapbox.com](https://account.mapbox.com/access-tokens/)
    - Copy your **public token** (starts with `pk.`)
 
-2. **Configure the token:**
-   - Open `Sources/MapboxIOSDemo/Info.plist`
+2. **Configure your token:**
+   - Open `MapboxIOSDemo/Info.plist`
    - Replace `YOUR_MAPBOX_ACCESS_TOKEN` with your actual token
 
-3. **Install dependencies:**
+3. **Open the project in Xcode:**
    ```bash
    cd demos/ios-demo
-   swift package resolve
+   open MapboxIOSDemo.xcodeproj
    ```
 
-4. **Open in Xcode:**
-   ```bash
-   open Package.swift
-   ```
-
-5. **Run the app:**
-   - Select a simulator or device (iOS 14+)
+4. **Run the app:**
+   - Select an iOS simulator or device (iOS 14+)
    - Press Cmd+R to build and run
+   - Xcode will automatically resolve and download Swift Package dependencies
 
-## Code Structure
+## Project Structure
 
 ```
-Sources/MapboxIOSDemo/
-├── MapboxIOSDemoApp.swift    # App entry point
-├── ContentView.swift          # Main map view (Pure SwiftUI)
-└── Info.plist                 # Token configuration
+MapboxIOSDemo.xcodeproj/       # Xcode project file
+MapboxIOSDemo/
+├── MapboxIOSDemoApp.swift     # App entry point
+├── ContentView.swift           # Main map view (Pure SwiftUI)
+├── Info.plist                  # App configuration & Mapbox token
+└── Assets.xcassets/            # App assets
+    ├── AppIcon.appiconset/
+    └── AccentColor.colorset/
 ```
+
+### Legacy Swift Package Structure
+The `Sources/` and `Package.swift` files from the old Swift Package structure are kept for reference but are not used by the Xcode project.
 
 ## Implementation Details
 

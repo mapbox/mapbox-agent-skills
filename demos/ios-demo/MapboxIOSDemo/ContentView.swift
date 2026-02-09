@@ -10,11 +10,14 @@ struct ContentView: View {
 
     @State private var selectedFeature: String = ""
     @State private var followUserLocation: Bool = false
+    @State private var selectedBuildings = [StandardBuildingsFeature]()
 
     var body: some View {
         ZStack(alignment: .bottom) {
             // Demonstrate: Map with Standard style (recommended)
             Map(viewport: $viewport) {
+                // Demonstrate: Show user location puck
+                Puck2D()
                 // Demonstrate: Add Markers - Multiple point annotations
                 PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194))
                     .iconImage("marker")
@@ -26,23 +29,22 @@ struct ContentView: View {
                     .iconImage("marker")
 
                 // Demonstrate: Featureset Interactions - Tap on POIs
-                TapInteraction(.featureset(.standardPoi)) { feature, context in
-                    if let poi = feature as? StandardPoiFeature {
-                        selectedFeature = "Tapped POI: \(poi.name ?? "Unknown")"
-                    }
+                TapInteraction(.standardPoi) { poi, context in
+                    selectedFeature = "Tapped POI: \(poi.name ?? "Unknown")"
                     return true
                 }
 
                 // Demonstrate: Featureset Interactions - Tap on buildings
-                TapInteraction(.featureset(.standardBuildings)) { feature, context in
-                    if let building = feature as? StandardBuildingsFeature {
-                        selectedFeature = "Tapped Building"
-                        // Demonstrate: Feature state management
-                        building.setFeatureState(StandardBuildingsState { state in
-                            state.select(true)
-                        })
-                    }
+                TapInteraction(.standardBuildings) { building, context in
+                    selectedFeature = "Tapped Building"
+                    // Demonstrate: Feature state management - highlight selected buildings
+                    selectedBuildings.append(building)
                     return true
+                }
+
+                // Demonstrate: Feature State Management - Apply selection state to buildings
+                ForEvery(selectedBuildings, id: \.id) { building in
+                    FeatureState(building, .init(select: true))
                 }
             }
             .mapStyle(.standard) // Demonstrate: Standard style (recommended)
@@ -66,9 +68,14 @@ struct ContentView: View {
                     Button(action: {
                         followUserLocation.toggle()
                         if followUserLocation {
-                            // Demonstrate: Move camera to user location
-                            // Note: In a full implementation, observe location updates
-                            // and update viewport state
+                            // Demonstrate: Camera follows user location with bearing
+                            viewport = .followPuck(zoom: 15, bearing: .heading, pitch: 45)
+                        } else {
+                            // Stop following and return to default view
+                            viewport = .camera(
+                                center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+                                zoom: 12
+                            )
                         }
                     }) {
                         Label(
@@ -84,6 +91,7 @@ struct ContentView: View {
                     // Reset view button
                     Button(action: {
                         // Demonstrate: Animated camera transition
+                        followUserLocation = false
                         viewport = .camera(
                             center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
                             zoom: 13,
@@ -91,6 +99,7 @@ struct ContentView: View {
                             pitch: 0
                         )
                         selectedFeature = ""
+                        selectedBuildings = []
                     }) {
                         Label("Reset View", systemImage: "arrow.counterclockwise")
                             .padding()

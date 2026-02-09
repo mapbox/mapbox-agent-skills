@@ -15,9 +15,9 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 **Use when query contains:**
 - Specific names: "Starbucks on 5th Avenue", "Empire State Building"
 - Brand names: "McDonald's", "Whole Foods"
-- Addresses: "123 Main Street, Seattle", "Times Square"
-- Chain stores: "Target near me"
-- Cities/places: "San Francisco", "Central Park"
+- Addresses: "123 Main Street, Seattle", "1 Times Square"
+- Chain stores: "Target"
+- Cities/places: "San Francisco", "Portland"
 
 **Don't use for:** Generic categories ("coffee shops", "museums")
 
@@ -33,7 +33,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 **Don't use for:** Specific names or brands
 
 ### 3. reverse_geocode_tool
-**Best for:** Converting coordinates to addresses
+**Best for:** Converting coordinates to addresses, cities, towns, postcodes
 
 **Use when:**
 - Have GPS coordinates, need human-readable address
@@ -47,7 +47,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 | "Find Starbucks on Main Street" | search_and_geocode_tool | Specific brand name |
 | "Find coffee shops nearby" | category_search_tool | Generic category, plural |
 | "What's at 37.7749, -122.4194?" | reverse_geocode_tool | Coordinates to address |
-| "Empire State Building" | search_and_geocode_tool | Specific named place |
+| "Empire State Building" | search_and_geocode_tool | Specific named POI |
 | "hotels in downtown Seattle" | category_search_tool | Generic type + location |
 | "Target store locations" | search_and_geocode_tool | Brand name (even plural) |
 | "any restaurant near me" | category_search_tool | Generic + "any" phrase |
@@ -114,6 +114,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 - User specifies country: "restaurants in France"
 - Building country-specific features
 - Need to respect regional boundaries
+- Or it is otherwise clear they want results within a specific country
 
 **Example:**
 ```json
@@ -125,7 +126,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 
 **Why this works:** Finds Paris, France (not Paris, Texas)
 
-**Can combine:** `proximity` + `country` = "Near SF but only in USA"
+**Can combine:** `proximity` + `country` + `bbox` or any combination of the three
 
 ### Decision Matrix: Spatial Filters
 
@@ -158,13 +159,13 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 
 | Type | What It Includes | Use When |
 |------|------------------|----------|
-| `poi` | Points of interest (businesses, landmarks) | Looking for places, not addresses |
+| `poi` | Points of interest (businesses, landmarks) | Looking for POIs, not addresses |
 | `address` | Street addresses | Need specific address |
 | `place` | Cities, neighborhoods, regions | Looking for area/region |
 | `street` | Street names without numbers | Need street, not specific address |
 | `postcode` | Postal codes | Searching by ZIP/postal code |
 | `district` | Districts, neighborhoods | Area-based search |
-| `locality` | Cities, towns, villages | Municipality search |
+| `locality` | Towns, villages | Municipality search |
 | `country` | Country names | Country-level search |
 
 **Example combinations:**
@@ -338,7 +339,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 ```
 1. Get user's location (from app/browser)
 2. Use category_search_tool:
-   - category: "cafe" or "coffee_shop"
+   - category: "coffee_shop"
    - proximity: user's coordinates
    - limit: 10
 ```
@@ -400,7 +401,7 @@ Use search_and_geocode_tool:
 Use reverse_geocode_tool:
 - longitude: -122.4194
 - latitude: 37.7749
-- types: ["address", "poi"]  // Get both address and POI if available
+- types: ["address"]  // Get address (can also use place, locality, postcode, etc.)
 ```
 
 **Why:** Coordinates → address is exactly what reverse geocoding does
@@ -456,7 +457,7 @@ search_and_geocode_tool({q: "coffee shops"})
 // Less precise, may return unrelated results
 
 // GOOD
-category_search_tool({category: "cafe"})
+category_search_tool({category: "coffee_shop"})
 ```
 
 ### ❌ Don't: Forget proximity for local searches

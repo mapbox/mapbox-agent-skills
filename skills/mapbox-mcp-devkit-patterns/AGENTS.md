@@ -45,12 +45,11 @@ Use Mapbox's hosted server - no installation needed.
 **Cursor:**
 
 ```json
-// Cursor MCP settings (Settings > Features > MCP)
+// .cursor/mcp.json or ~/.cursor/mcp.json
 {
   "mcpServers": {
-    "mapbox-devkit-mcp": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
+    "mapbox-devkit": {
+      "url": "https://mcp-devkit.mapbox.com/mcp"
     }
   }
 }
@@ -59,12 +58,12 @@ Use Mapbox's hosted server - no installation needed.
 **VS Code with Copilot:**
 
 ```json
-// .vscode/settings.json or User settings
+// mcp.json
 {
-  "mcp.servers": {
-    "mapbox-devkit-mcp": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
+  "servers": {
+    "mapbox-devkit": {
+      "type": "http",
+      "url": "https://mcp-devkit.mapbox.com/mcp"
     }
   }
 }

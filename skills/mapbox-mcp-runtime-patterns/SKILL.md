@@ -41,21 +41,21 @@ Before integrating, understand the key distinctions between tools to help your L
 ### Distance: "As the Crow Flies" vs "Along Roads"
 
 **Straight-line distance** (offline, instant):
-- Tools: `calculate_distance`, `calculate_bearing`, `calculate_midpoint`
+- Tools: `distance_tool`, `calculate_bearing`, `calculate_midpoint`
 - Use for: Proximity checks, "how far away is X?", comparing distances
-- Example: "Is this restaurant within 2 miles?" → `calculate_distance`
+- Example: "Is this restaurant within 2 miles?" → `distance_tool`
 
 **Route distance** (API, traffic-aware):
-- Tools: `get_directions`, `get_matrix`
+- Tools: `directions_tool`, `matrix_tool`
 - Use for: Navigation, drive time, "how long to drive?"
-- Example: "How long to drive there?" → `get_directions`
+- Example: "How long to drive there?" → `directions_tool`
 
 ### Search: Type vs Specific Place
 
 **Category/type search**:
-- Tool: `category_search`
+- Tool: `category_search_tool`
 - Use for: "Find coffee shops", "restaurants nearby", browsing by type
-- Example: "What hotels are near me?" → `category_search`
+- Example: "What hotels are near me?" → `category_search_tool`
 
 **Specific place/address**:
 - Tool: `search_geocode`, `reverse_geocode`
@@ -65,26 +65,26 @@ Before integrating, understand the key distinctions between tools to help your L
 ### Travel Time: Area vs Route
 
 **Reachable area** (what's within reach):
-- Tool: `get_isochrone`
+- Tool: `isochrone_tool`
 - Returns: GeoJSON polygon of everywhere reachable
-- Example: "What can I reach in 15 minutes?" → `get_isochrone`
+- Example: "What can I reach in 15 minutes?" → `isochrone_tool`
 
 **Specific route** (how to get there):
-- Tool: `get_directions`
+- Tool: `directions_tool`
 - Returns: Turn-by-turn directions to one destination
-- Example: "How do I get to the airport?" → `get_directions`
+- Example: "How do I get to the airport?" → `directions_tool`
 
 ### Cost & Performance
 
 **Offline tools** (free, instant):
 - No API calls, no token usage
 - Use whenever real-time data not needed
-- Examples: `calculate_distance`, `point_in_polygon`, `calculate_area`
+- Examples: `distance_tool`, `point_in_polygon`, `calculate_area`
 
 **API tools** (requires token, counts against usage):
 - Real-time traffic, live POI data, current conditions
 - Use when accuracy and freshness matter
-- Examples: `get_directions`, `category_search`, `get_isochrone`
+- Examples: `directions_tool`, `category_search_tool`, `isochrone_tool`
 
 **Best practice:** Prefer offline tools when possible, use API tools when you need real-time data or routing.
 
@@ -1345,7 +1345,7 @@ Clear, specific tool descriptions are critical for helping LLMs select the right
 
 #### Common Confusion Points
 
-**Problem: "How far is it from A to B?"** - Could trigger either `get_directions` OR `calculate_distance`
+**Problem: "How far is it from A to B?"** - Could trigger either `directions_tool` OR `distance_tool`
 
 ```typescript
 // ❌ Ambiguous descriptions
@@ -1369,7 +1369,7 @@ Clear, specific tool descriptions are critical for helping LLMs select the right
 }
 ```
 
-**Problem: "Find coffee shops nearby"** - Could trigger `category_search` OR `search_geocode`
+**Problem: "Find coffee shops nearby"** - Could trigger `category_search_tool` OR `search_geocode`
 
 ```typescript
 // ❌ Ambiguous
@@ -1389,7 +1389,7 @@ Clear, specific tool descriptions are critical for helping LLMs select the right
 }
 ```
 
-**Problem: "Where can I go in 15 minutes?"** - Could trigger `get_isochrone` OR `get_directions`
+**Problem: "Where can I go in 15 minutes?"** - Could trigger `isochrone_tool` OR `directions_tool`
 
 ```typescript
 // ❌ Confusing

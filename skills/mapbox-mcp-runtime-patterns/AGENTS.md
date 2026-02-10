@@ -154,8 +154,11 @@ async findByCommute(home: Point, work: Point, maxMinutes: number) {
   // 3. Get exact commute time
   if (inRange) {
     const route = await mcp.call('directions_tool', {
-      origin: home,
-      destination: work
+      coordinates: [
+        { longitude: home[0], latitude: home[1] },
+        { longitude: work[0], latitude: work[1] }
+      ],
+      routing_profile: 'mapbox/driving-traffic'
     });
     return { commuteMinutes: route.duration / 60 };
   }
@@ -171,7 +174,7 @@ async canDeliver(restaurant: Point, address: Point, maxTime: number) {
   const zone = await mcp.call('isochrone_tool', {
     coordinates: restaurant,
     contours_minutes: [maxTime],
-    profile: 'driving'
+    profile: 'mapbox/driving'
   });
 
   // 2. Check if address is in zone
@@ -183,9 +186,11 @@ async canDeliver(restaurant: Point, address: Point, maxTime: number) {
   // 3. Get delivery time with traffic
   if (canDeliver) {
     const route = await mcp.call('directions_tool', {
-      origin: restaurant,
-      destination: address,
-      profile: 'driving-traffic'
+      coordinates: [
+        { longitude: restaurant[0], latitude: restaurant[1] },
+        { longitude: address[0], latitude: address[1] }
+      ],
+      routing_profile: 'mapbox/driving-traffic'
     });
     return { eta: route.duration / 60, distance: route.distance };
   }
@@ -219,7 +224,7 @@ async findAttractions(hotel: Point, category: string) {
   const matrix = await mcp.call('matrix_tool', {
     origins: [hotel],
     destinations: places.map(p => p.coordinates),
-    profile: 'walking'
+    profile: 'mapbox/walking'
   });
 
   return withDistances.map((place, i) => ({

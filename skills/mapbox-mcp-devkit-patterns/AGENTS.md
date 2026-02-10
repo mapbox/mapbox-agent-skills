@@ -31,8 +31,19 @@ Use Mapbox's hosted server - no installation needed.
 
 **Claude Code:**
 
+User-level (all projects) in `~/.claude.json`:
 ```json
-// ~/.claude.json (macOS/Linux)
+{
+  "mcpServers": {
+    "mapbox-devkit": {
+      "url": "https://mcp-devkit.mapbox.com/mcp"
+    }
+  }
+}
+```
+
+Or project-level (specific project) in `.mcp.json`:
+```json
 {
   "mcpServers": {
     "mapbox-devkit": {

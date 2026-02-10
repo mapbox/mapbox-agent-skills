@@ -56,8 +56,9 @@ You'll be prompted to authenticate via OAuth on first use.
 
 #### For Claude Code
 
-Add to `~/.claude.json` (macOS/Linux):
+Claude Code supports both user-level and project-level MCP configuration:
 
+**User-level** (applies to all projects) - `~/.claude.json`:
 ```json
 {
   "mcpServers": {
@@ -67,6 +68,19 @@ Add to `~/.claude.json` (macOS/Linux):
   }
 }
 ```
+
+**Project-level** (specific project, can commit to git) - `.mcp.json` in repository root:
+```json
+{
+  "mcpServers": {
+    "mapbox-devkit": {
+      "url": "https://mcp-devkit.mapbox.com/mcp"
+    }
+  }
+}
+```
+
+See [Claude Code settings documentation](https://code.claude.com/docs/en/settings) for more details on configuration scopes.
 
 #### For Cursor
 

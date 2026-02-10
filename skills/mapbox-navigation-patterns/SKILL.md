@@ -339,8 +339,8 @@ async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
   const coordinates = waypoints.map((wp) => `${wp[0]},${wp[1]}`).join(';');
 
   // Build waypoint indices for source and destination
-  const source = startIndex === 'first' ? 'first' : startIndex;
-  const destination = endIndex === null ? 'any' : endIndex === 'last' ? 'last' : endIndex;
+  const source = startIndex === 'first' ? 'first' : 'any';
+  const destination = endIndex === 'last' ? 'last' : 'any';
 
   const query = await fetch(
     `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coordinates}?` +
@@ -431,6 +431,8 @@ async function getTrafficRoute(start, end) {
         '#FF5722', // Orange - heavy traffic
         'severe',
         '#F44336', // Red - severe congestion
+        'unknown',
+        '#3b9ddd', // Blue - unknown congestion
         '#3b9ddd' // Default blue
       ],
       'line-width': 8
@@ -446,79 +448,78 @@ async function getTrafficRoute(start, end) {
 ### Basic Turn-by-Turn Navigation
 
 ```swift
-import MapboxNavigation
-import MapboxDirections
-import MapboxCoreNavigation
-import MapboxMaps
+import MapboxNavigationCore
+import MapboxNavigationUIKit
+import CoreLocation
 
-class NavigationViewController: UIViewController {
-    var navigationMapView: NavigationMapView!
+class NavigationManager: UIViewController {
+    // Maintain strong reference to provider
+    private let mapboxNavigationProvider: MapboxNavigationProvider
+    private var navigationViewController: NavigationViewController?
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        setupMapView()
-        startNavigation()
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        // Initialize provider with configuration
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
+            coreConfig: CoreConfig(
+                locationSource: .live,
+                ttsConfig: .default  // Voice guidance enabled
+            )
+        )
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
 
-    func setupMapView() {
-        navigationMapView = NavigationMapView(frame: view.bounds)
-        view.addSubview(navigationMapView)
+    required init?(coder: NSCoder) {
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
+            coreConfig: CoreConfig()
+        )
+        super.init(coder: coder)
     }
 
     func startNavigation() {
         // Define origin and destination
-        let origin = Waypoint(
-            coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-            name: "San Francisco"
-        )
+        let origin = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+        let destination = CLLocationCoordinate2D(latitude: 37.8044, longitude: -122.2711)
 
-        let destination = Waypoint(
-            coordinate: CLLocationCoordinate2D(latitude: 37.8044, longitude: -122.2711),
-            name: "Oakland"
-        )
+        Task {
+            do {
+                // Build route options
+                let routeOptions = NavigationRouteOptions(
+                    coordinates: [origin, destination]
+                )
 
-        // Build route options
-        let routeOptions = NavigationRouteOptions(waypoints: [origin, destination])
+                // Calculate routes using async/await
+                let navigationRoutes = try await mapboxNavigationProvider
+                    .mapboxNavigation
+                    .routingProvider()
+                    .calculateRoutes(options: routeOptions)
+                    .value
 
-        // Request route
-        Directions.shared.calculate(routeOptions) { [weak self] (session, result) in
-            switch result {
-            case .success(let response):
-                guard let route = response.routes?.first else { return }
-                self?.showNavigationUI(for: route, routeOptions: routeOptions)
+                await showNavigationUI(with: navigationRoutes)
 
-            case .failure(let error):
-                print("Error calculating route: \(error)")
+            } catch {
+                print("Error calculating route: \(error.localizedDescription)")
             }
         }
     }
 
-    func showNavigationUI(for route: Route, routeOptions: RouteOptions) {
-        // Create navigation view controller with full UI
-        let navigationViewController = NavigationViewController(
-            for: route,
-            routeIndex: 0,
-            routeOptions: routeOptions
+    @MainActor
+    func showNavigationUI(with navigationRoutes: NavigationRoutes) {
+        // Configure navigation options
+        let navigationOptions = NavigationOptions(
+            mapboxNavigation: mapboxNavigationProvider.mapboxNavigation,
+            voiceController: mapboxNavigationProvider.routeVoiceController,
+            eventsManager: mapboxNavigationProvider.eventsManager(),
+            predictiveCacheManager: mapboxNavigationProvider.predictiveCacheManager
         )
 
-        navigationViewController.modalPresentationStyle = .fullScreen
-        navigationViewController.delegate = self
+        // Create navigation view controller with full UI
+        navigationViewController = NavigationViewController(
+            navigationRoutes: navigationRoutes,
+            navigationOptions: navigationOptions
+        )
 
-        present(navigationViewController, animated: true, completion: nil)
-    }
-}
-
-extension NavigationViewController: NavigationViewControllerDelegate {
-    func navigationViewController(_ navigationViewController: NavigationViewController,
-                                 didArriveAt waypoint: Waypoint) -> Bool {
-        print("Arrived at destination")
-        return true
-    }
-
-    func navigationViewControllerDidDismiss(_ navigationViewController: NavigationViewController,
-                                           byCanceling canceled: Bool) {
-        dismiss(animated: true, completion: nil)
+        navigationViewController?.modalPresentationStyle = .fullScreen
+        present(navigationViewController!, animated: true)
     }
 }
 ```
@@ -526,24 +527,42 @@ extension NavigationViewController: NavigationViewControllerDelegate {
 ### Custom Navigation UI
 
 ```swift
-import MapboxNavigation
-import MapboxCoreNavigation
+import MapboxNavigationCore
+import MapboxMaps
+import Combine
+import CoreLocation
 
 class CustomNavigationViewController: UIViewController {
-    var navigationMapView: NavigationMapView!
-    var routeProgress: RouteProgress?
-    var navigationService: NavigationService?
+    private let mapboxNavigationProvider: MapboxNavigationProvider
+    private var mapView: MapView!
+    private var subscriptions = Set<AnyCancellable>()
 
     // Custom UI elements
     var instructionLabel: UILabel!
     var distanceLabel: UILabel!
     var etaLabel: UILabel!
 
+    init() {
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
+            coreConfig: CoreConfig(
+                locationSource: .live
+            )
+        )
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
+            coreConfig: CoreConfig()
+        )
+        super.init(coder: coder)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        setupMapView()
         setupCustomUI()
-        setupNavigationMapView()
     }
 
     func setupCustomUI() {
@@ -570,55 +589,92 @@ class CustomNavigationViewController: UIViewController {
         etaLabel.frame = CGRect(x: 20, y: 210, width: view.bounds.width - 40, height: 30)
     }
 
-    func setupNavigationMapView() {
-        navigationMapView = NavigationMapView(frame: view.bounds)
-        view.insertSubview(navigationMapView, at: 0)
+    func setupMapView() {
+        mapView = MapView(frame: view.bounds)
+        view.insertSubview(mapView, at: 0)
     }
 
-    func startCustomNavigation(route: Route, routeOptions: RouteOptions) {
-        // Create navigation service (core navigation without UI)
-        navigationService = MapboxNavigationService(
-            routeResponse: RouteResponse(
-                httpResponse: nil,
-                routes: [route],
-                waypoints: routeOptions.waypoints,
-                options: routeOptions,
-                credentials: Directions.shared.credentials
-            ),
-            routeIndex: 0,
-            routeOptions: routeOptions,
-            routingProvider: MapboxRoutingProvider(),
-            credentials: Directions.shared.credentials
-        )
+    func startCustomNavigation(to destination: CLLocationCoordinate2D) {
+        Task {
+            do {
+                // Get current location
+                guard let origin = mapboxNavigationProvider
+                    .mapboxNavigation
+                    .navigation()
+                    .currentLocationMatching?.location.coordinate else {
+                    print("No current location")
+                    return
+                }
 
-        navigationService?.delegate = self
-        navigationService?.start()
+                // Calculate routes
+                let routeOptions = NavigationRouteOptions(
+                    coordinates: [origin, destination]
+                )
 
-        // Show route on map
-        navigationMapView.showcase([route])
+                let navigationRoutes = try await mapboxNavigationProvider
+                    .mapboxNavigation
+                    .routingProvider()
+                    .calculateRoutes(options: routeOptions)
+                    .value
+
+                // Start navigation and setup subscriptions
+                await setupNavigationSubscriptions()
+
+            } catch {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
     }
-}
 
-extension CustomNavigationViewController: NavigationServiceDelegate {
-    func navigationService(_ service: NavigationService,
-                          didUpdate progress: RouteProgress,
-                          with location: CLLocation,
-                          rawLocation: CLLocation) {
-        // Update custom UI with progress
-        let currentStep = progress.currentLegProgress.currentStepProgress.step
+    @MainActor
+    func setupNavigationSubscriptions() {
+        let navigation = mapboxNavigationProvider.mapboxNavigation.navigation()
 
-        instructionLabel.text = currentStep.instructions
+        // Subscribe to route progress updates
+        navigation.routeProgress
+            .sink { [weak self] progressState in
+                guard let progress = progressState?.routeProgress else { return }
+                self?.updateProgress(progress)
+            }
+            .store(in: &subscriptions)
 
-        let distanceRemaining = progress.currentLegProgress.currentStepProgress.distanceRemaining
+        // Subscribe to location updates
+        navigation.locationMatching
+            .sink { [weak self] matchingState in
+                guard let location = matchingState?.enhancedLocation else { return }
+                self?.updateCamera(location)
+            }
+            .store(in: &subscriptions)
+
+        // Subscribe to banner instructions
+        navigation.bannerInstructions
+            .removeDuplicates()
+            .sink { [weak self] state in
+                guard let instruction = state.visualInstruction else { return }
+                self?.instructionLabel.text = instruction.primaryInstruction.text
+            }
+            .store(in: &subscriptions)
+
+        // Subscribe to waypoint arrivals
+        navigation.waypointsArrival
+            .sink { [weak self] _ in
+                print("Arrived!")
+            }
+            .store(in: &subscriptions)
+    }
+
+    private func updateProgress(_ progress: RouteProgress) {
+        let distanceRemaining = progress.currentLegProgress?.currentStepProgress.distanceRemaining ?? 0
         distanceLabel.text = "In \(Int(distanceRemaining)) meters"
 
         let eta = Date().addingTimeInterval(progress.durationRemaining)
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         etaLabel.text = "Arrival: \(formatter.string(from: eta))"
+    }
 
-        // Update map camera to follow user
-        navigationMapView.mapView.camera.ease(
+    private func updateCamera(_ location: CLLocation) {
+        mapView.camera.ease(
             to: CameraOptions(
                 center: location.coordinate,
                 zoom: 15,
@@ -627,39 +683,44 @@ extension CustomNavigationViewController: NavigationServiceDelegate {
             duration: 1.0
         )
     }
-
-    func navigationService(_ service: NavigationService, didArriveAt waypoint: Waypoint) -> Bool {
-        print("Arrived!")
-        return true
-    }
 }
 ```
 
 ### Voice Guidance Configuration
 
 ```swift
-import MapboxCoreNavigation
+import MapboxNavigationCore
 
-func configureVoiceGuidance(navigationService: NavigationService) {
-    // Configure voice controller
-    let voiceController = navigationService.voiceController
+// Configure voice guidance when creating the provider
 
-    // Set voice language
-    voiceController.locale = Locale(identifier: "en-US")
+// Option 1: Default (Mapbox Voice API with AVSpeechSynthesizer fallback)
+let provider = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        ttsConfig: .default
+    )
+)
 
-    // Enable/disable voice guidance
-    voiceController.volume = .normal // or .muted, or .custom(0.5)
+// Option 2: Local-only (AVSpeechSynthesizer, no internet required)
+let providerLocal = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        ttsConfig: .localOnly
+    )
+)
 
-    // Customize voice instructions
-    voiceController.instructionFormatter = CustomInstructionFormatter()
-}
+// Option 3: Custom speech synthesizer
+let customSynthesizer = MyCustomSpeechSynthesizer()
+let providerCustom = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        ttsConfig: .custom(customSynthesizer)
+    )
+)
 
-class CustomInstructionFormatter: InstructionFormatter {
-    override func string(for instruction: SpokenInstruction) -> String {
-        // Customize spoken instructions
-        return "Custom: \(instruction.text)"
-    }
-}
+// Set voice language via route options
+var routeOptions = NavigationRouteOptions(
+    coordinates: [origin, destination]
+)
+routeOptions.locale = Locale(identifier: "es-ES")  // Spanish voice
+routeOptions.distanceMeasurementSystem = .metric   // Metric distances
 ```
 
 ## Android: Navigation SDK Patterns
@@ -670,32 +731,64 @@ class CustomInstructionFormatter: InstructionFormatter {
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.MapboxNavigationProvider
-import com.mapbox.navigation.core.directions.session.RoutesObserver
-import com.mapbox.navigation.ui.maps.NavigationStyles
-import com.mapbox.navigation.dropin.NavigationView
+import com.mapbox.navigation.base.route.NavigationRouterCallback
+import com.mapbox.navigation.base.route.RouterOrigin
+import com.mapbox.navigation.base.route.RouterFailure
+import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.geojson.Point
 
 class NavigationActivity : AppCompatActivity() {
-    private lateinit var navigationView: NavigationView
+    private lateinit var mapboxNavigation: MapboxNavigation
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_navigation)
 
-        navigationView = findViewById(R.id.navigationView)
+        // Initialize MapboxNavigation
+        mapboxNavigation = MapboxNavigationProvider.create(
+            NavigationOptions.Builder(this).build()
+        )
 
-        // NavigationView provides complete UI automatically
-        navigationView.api.routeReplayEnabled(true) // For testing
-        navigationView.api.startArrival(
-            Waypoint.builder()
-                .coordinate(Point.fromLngLat(-122.2711, 37.8044))
-                .name("Oakland")
-                .build()
+        // Define origin and destination
+        val origin = Point.fromLngLat(-122.4194, 37.7749)
+        val destination = Point.fromLngLat(-122.2711, 37.8044)
+
+        // Request routes
+        mapboxNavigation.requestRoutes(
+            RouteOptions.builder()
+                .applyDefaultNavigationOptions()
+                .coordinatesList(listOf(origin, destination))
+                .build(),
+            object : NavigationRouterCallback {
+                override fun onRoutesReady(
+                    routes: List<NavigationRoute>,
+                    @RouterOrigin routerOrigin: String
+                ) {
+                    // Set routes and start navigation
+                    mapboxNavigation.setNavigationRoutes(routes)
+                    mapboxNavigation.startTripSession()
+                }
+
+                override fun onFailure(
+                    reasons: List<RouterFailure>,
+                    routeOptions: RouteOptions
+                ) {
+                    // Handle failure
+                }
+
+                override fun onCanceled(
+                    routeOptions: RouteOptions,
+                    @RouterOrigin routerOrigin: String
+                ) {
+                    // Handle cancellation
+                }
+            }
         )
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        navigationView.api.routeReplayEnabled(false)
+        MapboxNavigationProvider.destroy()
     }
 }
 ```
@@ -730,10 +823,10 @@ class CustomNavigationActivity : AppCompatActivity() {
 
     private fun setupNavigation() {
         // Initialize MapboxNavigation
+        // Note: Access token is configured via MapboxOptions.accessToken
+        // or from mapbox_access_token string resource
         mapboxNavigation = MapboxNavigationProvider.create(
-            NavigationOptions.Builder(this)
-                .accessToken(getString(R.string.mapbox_access_token))
-                .build()
+            NavigationOptions.Builder(this).build()
         )
 
         // Request route
@@ -818,7 +911,7 @@ class CustomNavigationActivity : AppCompatActivity() {
         super.onDestroy()
         mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
         mapboxNavigation.unregisterLocationObserver(locationObserver)
-        mapboxNavigation.onDestroy()
+        MapboxNavigationProvider.destroy()
     }
 }
 ```

@@ -105,30 +105,44 @@ steps.forEach((step) => {
 ### Basic Navigation
 
 ```swift
-import MapboxNavigation
+import MapboxNavigationCore
+import MapboxNavigationUIKit
 
-// Define waypoints
-let origin = Waypoint(coordinate: start, name: "Start")
-let destination = Waypoint(coordinate: end, name: "End")
+// Initialize provider
+let mapboxNavigationProvider = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        locationSource: .live,
+        ttsConfig: .default  // Voice guidance enabled
+    )
+)
 
-// Request route
-let options = NavigationRouteOptions(waypoints: [origin, destination])
+// Calculate routes with async/await
+Task {
+    do {
+        let options = NavigationRouteOptions(
+            coordinates: [start, end]
+        )
 
-Directions.shared.calculate(options) { (_, result) in
-    switch result {
-    case .success(let response):
-        let route = response.routes!.first!
+        let navigationRoutes = try await mapboxNavigationProvider
+            .mapboxNavigation
+            .routingProvider()
+            .calculateRoutes(options: options)
+            .value
 
         // Show full navigation UI
-        let navVC = NavigationViewController(
-            for: route,
-            routeIndex: 0,
-            routeOptions: options
+        let navigationOptions = NavigationOptions(
+            mapboxNavigation: mapboxNavigationProvider.mapboxNavigation,
+            voiceController: mapboxNavigationProvider.routeVoiceController,
+            eventsManager: mapboxNavigationProvider.eventsManager()
         )
-        navVC.delegate = self
+
+        let navVC = NavigationViewController(
+            navigationRoutes: navigationRoutes,
+            navigationOptions: navigationOptions
+        )
         present(navVC, animated: true)
 
-    case .failure(let error):
+    } catch {
         print("Error: \(error)")
     }
 }
@@ -137,39 +151,64 @@ Directions.shared.calculate(options) { (_, result) in
 ### Custom Navigation UI
 
 ```swift
-import MapboxCoreNavigation
+import MapboxNavigationCore
+import Combine
 
-// Core navigation without UI
-let service = MapboxNavigationService(
-    routeResponse: response,
-    routeIndex: 0,
-    routeOptions: options
-)
+class CustomNavigation {
+    private let provider: MapboxNavigationProvider
+    private var subscriptions = Set<AnyCancellable>()
 
-service.delegate = self
-service.start()
+    init() {
+        provider = MapboxNavigationProvider(coreConfig: CoreConfig())
+        setupSubscriptions()
+    }
 
-// Implement NavigationServiceDelegate
-func navigationService(_ service: NavigationService,
-                      didUpdate progress: RouteProgress,
-                      with location: CLLocation,
-                      rawLocation: CLLocation) {
-    // Update your custom UI
-    let instruction = progress.currentLegProgress.currentStepProgress.step.instructions
-    let distance = progress.currentLegProgress.currentStepProgress.distanceRemaining
+    func setupSubscriptions() {
+        let navigation = provider.mapboxNavigation.navigation()
+
+        // Subscribe to route progress
+        navigation.routeProgress
+            .sink { [weak self] progressState in
+                guard let progress = progressState?.routeProgress else { return }
+                self?.updateUI(progress)
+            }
+            .store(in: &subscriptions)
+
+        // Subscribe to banner instructions
+        navigation.bannerInstructions
+            .removeDuplicates()
+            .sink { [weak self] state in
+                guard let instruction = state.visualInstruction else { return }
+                self?.showInstruction(instruction.primaryInstruction.text)
+            }
+            .store(in: &subscriptions)
+    }
+
+    func updateUI(_ progress: RouteProgress) {
+        let distance = progress.currentLegProgress?.currentStepProgress.distanceRemaining
+        // Update your custom UI
+    }
+
+    func showInstruction(_ text: String) {
+        // Display instruction in custom UI
+    }
 }
 ```
 
 ### Voice Guidance
 
 ```swift
-let voiceController = navigationService.voiceController
+// Configure voice via CoreConfig when creating provider
+let provider = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        ttsConfig: .default  // or .localOnly, .custom(synthesizer)
+    )
+)
 
-// Configure language
-voiceController.locale = Locale(identifier: "en-US")
-
-// Control volume
-voiceController.volume = .normal // or .muted, .custom(0.5)
+// Set language via route options
+var options = NavigationRouteOptions(coordinates: [start, end])
+options.locale = Locale(identifier: "es-ES")  // Spanish
+options.distanceMeasurementSystem = .metric
 ```
 
 ## Navigation SDK for Android
@@ -177,51 +216,80 @@ voiceController.volume = .normal // or .muted, .custom(0.5)
 ### Basic Navigation
 
 ```kotlin
-import com.mapbox.navigation.dropin.NavigationView
+import com.mapbox.navigation.core.MapboxNavigationProvider
+import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.base.route.NavigationRouterCallback
+import com.mapbox.geojson.Point
 
-// NavigationView provides complete UI
-val navigationView = findViewById<NavigationView>(R.id.navigationView)
-
-navigationView.api.startArrival(
-    Waypoint.builder()
-        .coordinate(Point.fromLngLat(lng, lat))
-        .name("Destination")
-        .build()
-)
-```
-
-### Custom Navigation UI
-
-```kotlin
-import com.mapbox.navigation.core.MapboxNavigation
-
-// Core navigation
+// Initialize MapboxNavigation
 val mapboxNavigation = MapboxNavigationProvider.create(
-    NavigationOptions.Builder(context)
-        .accessToken(token)
-        .build()
+    NavigationOptions.Builder(context).build()
 )
 
 // Request route
 val routeOptions = RouteOptions.builder()
     .applyDefaultNavigationOptions()
-    .coordinatesList(listOf(origin, destination))
+    .coordinatesList(listOf(
+        Point.fromLngLat(originLng, originLat),
+        Point.fromLngLat(destLng, destLat)
+    ))
     .build()
 
-mapboxNavigation.requestRoutes(routeOptions, callback)
+mapboxNavigation.requestRoutes(
+    routeOptions,
+    object : NavigationRouterCallback {
+        override fun onRoutesReady(
+            routes: List<NavigationRoute>,
+            routerOrigin: String
+        ) {
+            mapboxNavigation.setNavigationRoutes(routes)
+            mapboxNavigation.startTripSession()
+        }
 
-// Start navigation
-mapboxNavigation.registerRouteProgressObserver { routeProgress ->
-    // Update UI
+        override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {
+            // Handle failure
+        }
+
+        override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {
+            // Handle cancellation
+        }
+    }
+)
+
+// Cleanup
+override fun onDestroy() {
+    super.onDestroy()
+    MapboxNavigationProvider.destroy()
+}
+```
+
+### Custom Navigation UI
+
+```kotlin
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+
+// Register route progress observer
+private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+    // Update custom UI
     val instruction = routeProgress.currentLegProgress
         ?.currentStepProgress?.step
         ?.bannerInstructions?.firstOrNull()?.primary?.text
 
     val distanceRemaining = routeProgress.currentLegProgress
         ?.currentStepProgress?.distanceRemaining
+
+    val durationRemaining = routeProgress.durationRemaining
 }
 
-mapboxNavigation.startTripSession()
+override fun onStart() {
+    super.onStart()
+    mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+}
+
+override fun onStop() {
+    super.onStop()
+    mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
+}
 ```
 
 ## Routing Profiles
@@ -240,7 +308,7 @@ mapboxNavigation.startTripSession()
 ```javascript
 const cache = new Map();
 
-function getCachedRoute(start, end) {
+async function getCachedRoute(start, end) {
   const key = `${start}-${end}`;
   const cached = cache.get(key);
 
@@ -324,12 +392,12 @@ const url = `https://api.mapbox.com/directions/v5/mapbox/cycling/${coords}?...`;
 
 ## API Limits
 
-| Feature                | Limit                                  |
-| ---------------------- | -------------------------------------- |
-| **Waypoints**          | 25 max (including start/end)           |
-| **Alternative routes** | Up to 3                                |
-| **Optimization**       | 12 waypoints (free tier), 25 (premium) |
-| **Rate limit**         | 300 requests/minute (default)          |
+| Feature                | Limit                                         |
+| ---------------------- | --------------------------------------------- |
+| **Waypoints**          | 25 max (including start/end)                  |
+| **Alternative routes** | Max 2 alternatives (3 total routes)           |
+| **Optimization**       | 12 waypoints (v1 API hard limit)              |
+| **Rate limit**         | 300 requests/minute (default)                 |
 
 ## Quick Decisions
 

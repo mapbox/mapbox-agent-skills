@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**Comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, geospatial operations, and security best practices.
+**Comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, geospatial operations, and security best practices.
 
 ## Quick Start
 
@@ -39,6 +39,7 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 
 ---
 
+<<<<<<< HEAD
 ### 🗺️ mapbox-geospatial-operations
 
 **Expert guidance on choosing between offline geometric tools and routing APIs for geospatial operations.**
@@ -69,6 +70,76 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 - Routing APIs: directions, matrix, optimization, isochrone, map matching
 
 [View skill →](./skills/mapbox-geospatial-operations/SKILL.md)
+=======
+### 🔍 mapbox-search-integration
+
+**Complete workflow for implementing Mapbox search in applications from discovery to production.**
+
+Guides AI assistants through the entire search integration process: asking discovery questions, selecting the right product, implementing with best practices, and avoiding common pitfalls. Embodies collective knowledge from the Mapbox search team and customer learnings.
+
+**Use when:**
+- User needs to add search to their app
+- Implementing location search or geocoding
+- Need to ask the right questions about requirements
+- Want production-ready search implementation
+- Avoiding common integration mistakes
+
+**Key workflow:**
+1. **Discovery questions** - What to ask users (POIs? Addresses? Geographic scope? Platform?)
+2. **Product selection** - Search Box API vs Geocoding API, SDK vs direct API
+3. **Implementation patterns** - Complete code examples for web, iOS, Android
+4. **Best practices** - Debouncing, session tokens, error handling, UX patterns
+5. **Common pitfalls** - What goes wrong and how to avoid it
+
+**Covers all platforms:**
+- Web (Mapbox Search JS React/Web/Core, Vue, Angular, Next.js)
+- iOS (Search SDK for iOS with UISearchController integration)
+- Android (Search SDK for Android with SearchView integration)
+- Node.js (Mapbox Search JS Core)
+
+**Best practices from "the good parts":**
+- ✅ Debouncing (prevent API spam)
+- ✅ Session token management (cost optimization)
+- ✅ Geographic filtering (better results)
+- ✅ Error handling (all failure cases)
+- ✅ Mobile UX (touch targets, keyboards)
+- ✅ Accessibility (keyboard nav, ARIA)
+- ✅ Caching strategies (high-volume apps)
+- ✅ Token security (proper scoping)
+
+[View skill →](./skills/mapbox-search-integration/SKILL.md)
+
+---
+
+### 🔍 mapbox-search-patterns
+
+**Expert guidance on choosing the right search tool and parameters for geocoding, POI search, and location discovery.**
+
+Helps AI assistants select between search_and_geocode, category_search, and reverse_geocode tools, and optimize parameters like proximity, bbox, country, limit, and more.
+
+**Use when:**
+- Choosing between search tools (specific names vs categories)
+- Setting up geocoding or POI search
+- Optimizing search parameters for accuracy
+- Implementing "near me" searches
+- Building autocomplete functionality
+- Troubleshooting search results
+
+**Key topics:**
+- Tool selection decision matrix (brands vs categories vs coordinates)
+- Parameter guidance (proximity, bbox, country, limit, types, ETA)
+- Common patterns ("near me", route-based search, multilingual)
+- Anti-patterns to avoid (missing proximity, wrong tool choice)
+- Performance optimization (minimizing API calls, appropriate limits)
+- Combining search with geospatial operations
+
+**Search tools covered:**
+- search_and_geocode_tool: Specific places, addresses, brands
+- category_search_tool: Generic categories, plural queries
+- reverse_geocode_tool: Coordinates to addresses
+
+[View skill →](./skills/mapbox-search-patterns/SKILL.md)
+>>>>>>> origin/main
 
 ---
 
@@ -317,6 +388,56 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 - Incident response plans
 
 [View skill →](./skills/mapbox-token-security/SKILL.md)
+
+---
+
+### 📍 mapbox-store-locator-patterns
+
+**Common patterns for building store locators, restaurant finders, and location-based search applications.**
+
+Comprehensive guide covering marker display strategies, filtering, distance calculation, interactive lists synced with maps, and directions integration. Perfect for building any location-based finder application.
+
+**Use when:**
+- Building store locator or restaurant finder applications
+- Displaying multiple locations on a map with interactive lists
+- Need filtering by category, distance, or search term
+- Calculate distances from user location
+- Show location details in popups or panels
+- Integrate directions to selected locations
+
+**Key topics:**
+- Marker strategies (HTML markers, symbol layers, clustering) based on location count
+- Interactive list/map synchronization
+- Search and category filtering
+- User location and distance calculation (Haversine formula)
+- Directions API integration
+- Performance optimization (debouncing, lazy loading, virtual scrolling)
+- Layout patterns (sidebar, overlay, mobile-responsive)
+
+**Covers all marker strategies:**
+- **< 100 locations**: HTML Markers with `mapboxgl.Marker()`
+- **100-1000 locations**: Symbol layers with GeoJSON
+- **> 1000 locations**: Clustering with aggregation
+
+**Common use cases:**
+- Store locators for retail chains
+- Restaurant finders with category filters
+- Office location directories
+- Real estate property search
+- Event venue finders
+- Service provider locators
+
+**Complete implementation:**
+- GeoJSON data structure
+- Map initialization and marker display
+- Interactive listing component
+- Search/filter functionality
+- Distance calculation and sorting
+- Popup/detail views
+- Directions integration
+- Responsive layouts
+
+[View skill →](./skills/mapbox-store-locator-patterns/SKILL.md)
 
 ---
 

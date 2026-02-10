@@ -937,10 +937,10 @@ This skill provides battle-tested style patterns and layer configurations for co
 ```javascript
 // Load custom arrow icon for driver direction indicator
 // Note: 'arrow' is not a standard Maki icon and must be loaded manually
-map.on('load', () => {
-  map.loadImage('path/to/arrow-icon.png', (error, image) => {
+map.on("load", () => {
+  map.loadImage("path/to/arrow-icon.png", (error, image) => {
     if (error) throw error;
-    map.addImage('arrow', image);
+    map.addImage("arrow", image);
   });
 });
 ```
@@ -949,31 +949,31 @@ map.on('load', () => {
 
 ```javascript
 // Update driver location (call on GPS update)
-map.getSource('driver-locations').setData({
-  type: 'FeatureCollection',
-  features: drivers.map(driver => ({
-    type: 'Feature',
+map.getSource("driver-locations").setData({
+  type: "FeatureCollection",
+  features: drivers.map((driver) => ({
+    type: "Feature",
     geometry: {
-      type: 'Point',
-      coordinates: driver.location
+      type: "Point",
+      coordinates: driver.location,
     },
     properties: {
       id: driver.id,
       status: driver.status,
       bearing: driver.bearing,
-      eta: driver.eta
-    }
-  }))
+      eta: driver.eta,
+    },
+  })),
 });
 
 // Animate route progress
 function updateRouteProgress(completedCoordinates) {
-  map.getSource('route-progress').setData({
-    type: 'Feature',
+  map.getSource("route-progress").setData({
+    type: "Feature",
     geometry: {
-      type: 'LineString',
-      coordinates: completedCoordinates
-    }
+      type: "LineString",
+      coordinates: completedCoordinates,
+    },
   });
 }
 
@@ -987,10 +987,10 @@ function pulseCustomerMarker() {
     const phase = (elapsed % duration) / duration;
 
     // Update radius (12 to 24 pixels)
-    map.setPaintProperty('customer-pulse', 'circle-radius', 12 + phase * 12);
+    map.setPaintProperty("customer-pulse", "circle-radius", 12 + phase * 12);
 
     // Update opacity (fade from 0.3 to 0)
-    map.setPaintProperty('customer-pulse', 'circle-opacity', 0.3 * (1 - phase));
+    map.setPaintProperty("customer-pulse", "circle-opacity", 0.3 * (1 - phase));
 
     requestAnimationFrame(animate);
   }

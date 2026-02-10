@@ -4,19 +4,20 @@ Quick reference for common style patterns, layer configurations, and data-driven
 
 ## Layer Types Quick Reference
 
-| Layer Type | Use For | Key Properties |
-|------------|---------|----------------|
-| **fill** | Polygons (countries, parks) | `fill-color`, `fill-opacity` |
-| **line** | Roads, boundaries | `line-color`, `line-width` |
-| **symbol** | Labels, icons | `text-field`, `icon-image` |
-| **circle** | Points (markers, heatmap) | `circle-radius`, `circle-color` |
-| **heatmap** | Density visualization | `heatmap-intensity`, `heatmap-color` |
-| **fill-extrusion** | 3D buildings | `fill-extrusion-height` |
-| **raster** | Satellite, aerial imagery | `raster-opacity` |
+| Layer Type         | Use For                     | Key Properties                       |
+| ------------------ | --------------------------- | ------------------------------------ |
+| **fill**           | Polygons (countries, parks) | `fill-color`, `fill-opacity`         |
+| **line**           | Roads, boundaries           | `line-color`, `line-width`           |
+| **symbol**         | Labels, icons               | `text-field`, `icon-image`           |
+| **circle**         | Points (markers, heatmap)   | `circle-radius`, `circle-color`      |
+| **heatmap**        | Density visualization       | `heatmap-intensity`, `heatmap-color` |
+| **fill-extrusion** | 3D buildings                | `fill-extrusion-height`              |
+| **raster**         | Satellite, aerial imagery   | `raster-opacity`                     |
 
 ## Data-Driven Styling Patterns
 
 ### Based on Property Value
+
 ```javascript
 // ✅ Color by category
 'fill-color': [
@@ -38,6 +39,7 @@ Quick reference for common style patterns, layer configurations, and data-driven
 ```
 
 ### Based on Zoom Level
+
 ```javascript
 // ✅ Show/hide by zoom
 'visibility': [
@@ -59,6 +61,7 @@ Quick reference for common style patterns, layer configurations, and data-driven
 ## Common Patterns
 
 ### 1. Clustering
+
 ```javascript
 map.addSource('points', {
   type: 'geojson',
@@ -75,25 +78,14 @@ map.addLayer({
   source: 'points',
   filter: ['has', 'point_count'],
   paint: {
-    'circle-color': [
-      'step',
-      ['get', 'point_count'],
-      '#51bbd6', 100,
-      '#f1f075', 750,
-      '#f28cb1'
-    ],
-    'circle-radius': [
-      'step',
-      ['get', 'point_count'],
-      20, 100,
-      30, 750,
-      40
-    ]
+    'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
+    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
   }
 });
 ```
 
 ### 2. Feature State (Hover/Selection)
+
 ```javascript
 // ✅ Hover effect without modifying data
 map.on('mousemove', 'layer', (e) => {
@@ -120,26 +112,20 @@ map.on('mousemove', 'layer', (e) => {
 ```
 
 ### 3. Filters
+
 ```javascript
 // ✅ Filter by property
 map.setFilter('layer', ['==', ['get', 'type'], 'restaurant']);
 
 // ✅ Filter by multiple conditions
-map.setFilter('layer', [
-  'all',
-  ['==', ['get', 'type'], 'restaurant'],
-  ['>', ['get', 'rating'], 4]
-]);
+map.setFilter('layer', ['all', ['==', ['get', 'type'], 'restaurant'], ['>', ['get', 'rating'], 4]]);
 
 // ✅ Filter by zoom
-map.setFilter('layer', [
-  'all',
-  ['>=', ['zoom'], 10],
-  ['<', ['zoom'], 14]
-]);
+map.setFilter('layer', ['all', ['>=', ['zoom'], 10], ['<', ['zoom'], 14]]);
 ```
 
 ### 4. Expressions
+
 ```javascript
 // ✅ Conditional styling
 'circle-color': [
@@ -163,23 +149,27 @@ map.setFilter('layer', [
 ## Performance Patterns
 
 ### Vector Tiles vs GeoJSON
+
 **Use vector tiles when:**
+
 - Large datasets (>5MB)
 - Need different zoom levels
 - Want server-side updates
 
 **Use GeoJSON when:**
+
 - Small datasets (<5MB)
 - Frequent client-side updates
 - Simple implementation needed
 
 ### Layer Optimization
+
 ```javascript
 // ✅ Set minzoom/maxzoom
 map.addLayer({
   id: 'layer',
-  minzoom: 10,  // Only show zoom 10+
-  maxzoom: 16   // Hide above zoom 16
+  minzoom: 10, // Only show zoom 10+
+  maxzoom: 16 // Hide above zoom 16
 });
 
 // ✅ Use feature state instead of removing/re-adding
@@ -194,6 +184,7 @@ map.addLayer({
 ## Style Management
 
 ### Dynamic Style Updates
+
 ```javascript
 // ✅ Update paint property
 map.setPaintProperty('layer', 'fill-color', '#ff0000');
@@ -211,36 +202,37 @@ map.once('idle', () => {
 ```
 
 ### Before Layers
+
 ```javascript
 // ✅ Insert layer at specific position
-map.addLayer({
-  id: 'new-layer',
-  type: 'fill',
-  source: 'source'
-}, 'existing-layer-id'); // Insert before this layer
+map.addLayer(
+  {
+    id: 'new-layer',
+    type: 'fill',
+    source: 'source'
+  },
+  'existing-layer-id'
+); // Insert before this layer
 ```
 
 ## Common Use Cases
 
 ### Choropleth Map
+
 ```javascript
 map.addLayer({
   id: 'choropleth',
   type: 'fill',
   source: 'counties',
   paint: {
-    'fill-color': [
-      'interpolate', ['linear'],
-      ['get', 'density'],
-      0, '#f7fbff',
-      100, '#08519c'
-    ],
+    'fill-color': ['interpolate', ['linear'], ['get', 'density'], 0, '#f7fbff', 100, '#08519c'],
     'fill-opacity': 0.7
   }
 });
 ```
 
 ### Route Visualization
+
 ```javascript
 map.addLayer({
   id: 'route',
@@ -255,6 +247,7 @@ map.addLayer({
 ```
 
 ### 3D Buildings
+
 ```javascript
 map.addLayer({
   id: 'buildings',
@@ -272,14 +265,14 @@ map.addLayer({
 
 ## Quick Reference: Expression Types
 
-| Type | Function | Example |
-|------|----------|---------|
-| **Decision** | match, case | Color by category |
-| **Ramp** | interpolate, step | Size by value |
-| **Math** | +, -, *, /, % | Calculate values |
-| **String** | concat, upcase, downcase | Format labels |
-| **Lookup** | get, has, at | Access properties |
-| **Zoom** | zoom | Zoom-based styling |
+| Type         | Function                 | Example            |
+| ------------ | ------------------------ | ------------------ |
+| **Decision** | match, case              | Color by category  |
+| **Ramp**     | interpolate, step        | Size by value      |
+| **Math**     | +, -, \*, /, %           | Calculate values   |
+| **String**   | concat, upcase, downcase | Format labels      |
+| **Lookup**   | get, has, at             | Access properties  |
+| **Zoom**     | zoom                     | Zoom-based styling |
 
 ## Debugging Tips
 

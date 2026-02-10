@@ -33,6 +33,7 @@ This example demonstrates the **fundamental pattern** for integrating Mapbox Map
 This project uses Swift Package Manager. Dependencies will be fetched automatically when you open the project in Xcode.
 
 Or manually add:
+
 ```
 https://github.com/mapbox/mapbox-maps-ios.git
 Version: 11.0.0 or later
@@ -43,20 +44,24 @@ Version: 11.0.0 or later
 Following **mapbox-token-security** skill:
 
 **Create `Config/Secrets.xcconfig`:**
+
 ```bash
 MAPBOX_ACCESS_TOKEN = pk.your_actual_token_here
 ```
 
 **Add to `.gitignore`:**
+
 ```
 Config/Secrets.xcconfig
 ```
 
 **Link in Xcode:**
+
 1. Select project → Info tab → Configurations
 2. Set `Secrets` for Debug and Release configurations
 
 **Update `Info.plist`:**
+
 ```xml
 <key>MBXAccessToken</key>
 <string>$(MAPBOX_ACCESS_TOKEN)</string>
@@ -173,21 +178,25 @@ struct ContentView: View {
 ## Key Points from mapbox-ios-patterns
 
 ✅ **Lifecycle Management:**
+
 - SwiftUI automatically manages MapView lifecycle
 - No manual deinitialization needed
 - UIViewRepresentable handles creation and cleanup
 
 ✅ **Token Security:**
+
 - Token in `.xcconfig` (not in code)
 - `.xcconfig` in `.gitignore`
 - Accessed via `Info.plist` at runtime
 
 ✅ **State Management:**
+
 - Use `@Binding` for reactive updates
 - Camera updates when SwiftUI state changes
 - No manual observer patterns needed
 
 ✅ **Memory Safety:**
+
 - Coordinator pattern prevents retain cycles
 - SwiftUI handles deallocation automatically
 - No weak/unowned references needed in basic usage
@@ -263,12 +272,14 @@ To verify proper implementation:
 ## Skills Reference
 
 This example follows patterns from:
+
 - **mapbox-ios-patterns** - SwiftUI integration patterns
 - **mapbox-token-security** - Secure token storage
 
 ## Next Steps
 
 Once you have this basic pattern working:
+
 - Add **offline maps** - Download regions for offline use
 - Add **navigation** - Integrate Navigation SDK
 - Custom **styling** - Use mapbox-cartography patterns
@@ -279,21 +290,25 @@ See **mapbox-ios-patterns** skill for implementation details.
 ## Troubleshooting
 
 **Map not showing?**
+
 - Verify `MAPBOX_ACCESS_TOKEN` is set in `Config/Secrets.xcconfig`
 - Check `Info.plist` has `MBXAccessToken` key
 - Verify token has required scopes
 - Check Xcode console for errors
 
 **Token not found?**
+
 - Ensure `Secrets.xcconfig` is linked in Project Settings → Configurations
 - Clean build folder (⇧⌘K) and rebuild
 
 **Memory issues?**
+
 - SwiftUI handles cleanup automatically
 - Check for strong reference cycles in Coordinator
 - Use Instruments → Leaks to diagnose
 
 **Build errors?**
+
 - Update to Xcode 15+
 - Verify iOS deployment target is 14.0+
 - Clean derived data: `rm -rf ~/Library/Developer/Xcode/DerivedData`

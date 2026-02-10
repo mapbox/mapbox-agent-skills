@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**11 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, and security best practices.
+**Comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, geospatial operations, and security best practices.
 
 ## Quick Start
 
@@ -33,9 +33,43 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 ## Available Skills
 
 **Platform Coverage:**
+
 - 🌐 **Web**: React, Vue, Svelte, Angular, Next.js (Mapbox GL JS)
 - 📱 **iOS**: Swift, SwiftUI, UIKit (Maps SDK for iOS)
 - 📱 **Android**: Kotlin, Jetpack Compose, View system (Maps SDK for Android)
+
+---
+
+### 🗺️ mapbox-geospatial-operations
+
+**Expert guidance on choosing between offline geometric tools and routing APIs for geospatial operations.**
+
+Helps AI assistants select the right tool based on problem type (geometric vs routing), accuracy requirements, and performance needs. Features the "as the crow flies" vs "as the crow drives" decision framework.
+
+**Use when:**
+- Deciding between offline calculations and API calls
+- Calculating distances (straight-line vs road distance)
+- Checking if points are within an area
+- Creating travel-time zones vs distance buffers
+- Optimizing geospatial operations for performance
+- Understanding when to use routing vs geometry
+
+**Key topics:**
+- Decision framework: geometric operations vs routing APIs
+- Distance calculations (crow flies vs crow drives)
+- Proximity and containment checks
+- Area and shape operations
+- Routing and navigation patterns
+- Clustering and optimization
+- Hybrid approaches (combining tools)
+- Common anti-patterns to avoid
+- Performance and scale considerations
+
+**Tool categories covered:**
+- Offline geometric: distance, bearing, buffer, centroid, area, containment
+- Routing APIs: directions, matrix, optimization, isochrone, map matching
+
+[View skill →](./skills/mapbox-geospatial-operations/SKILL.md)
 
 ---
 
@@ -46,6 +80,7 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 Guides AI assistants through the entire search integration process: asking discovery questions, selecting the right product, implementing with best practices, and avoiding common pitfalls. Embodies collective knowledge from the Mapbox search team and customer learnings.
 
 **Use when:**
+
 - User needs to add search to their app
 - Implementing location search or geocoding
 - Need to ask the right questions about requirements
@@ -53,6 +88,7 @@ Guides AI assistants through the entire search integration process: asking disco
 - Avoiding common integration mistakes
 
 **Key workflow:**
+
 1. **Discovery questions** - What to ask users (POIs? Addresses? Geographic scope? Platform?)
 2. **Product selection** - Search Box API vs Geocoding API, SDK vs direct API
 3. **Implementation patterns** - Complete code examples for web, iOS, Android
@@ -60,12 +96,14 @@ Guides AI assistants through the entire search integration process: asking disco
 5. **Common pitfalls** - What goes wrong and how to avoid it
 
 **Covers all platforms:**
+
 - Web (Mapbox Search JS React/Web/Core, Vue, Angular, Next.js)
 - iOS (Search SDK for iOS with UISearchController integration)
 - Android (Search SDK for Android with SearchView integration)
 - Node.js (Mapbox Search JS Core)
 
 **Best practices from "the good parts":**
+
 - ✅ Debouncing (prevent API spam)
 - ✅ Session token management (cost optimization)
 - ✅ Geographic filtering (better results)
@@ -79,6 +117,37 @@ Guides AI assistants through the entire search integration process: asking disco
 
 ---
 
+### 🔍 mapbox-search-patterns
+
+**Expert guidance on choosing the right search tool and parameters for geocoding, POI search, and location discovery.**
+
+Helps AI assistants select between search_and_geocode, category_search, and reverse_geocode tools, and optimize parameters like proximity, bbox, country, limit, and more.
+
+**Use when:**
+- Choosing between search tools (specific names vs categories)
+- Setting up geocoding or POI search
+- Optimizing search parameters for accuracy
+- Implementing "near me" searches
+- Building autocomplete functionality
+- Troubleshooting search results
+
+**Key topics:**
+- Tool selection decision matrix (brands vs categories vs coordinates)
+- Parameter guidance (proximity, bbox, country, limit, types, ETA)
+- Common patterns ("near me", route-based search, multilingual)
+- Anti-patterns to avoid (missing proximity, wrong tool choice)
+- Performance optimization (minimizing API calls, appropriate limits)
+- Combining search with geospatial operations
+
+**Search tools covered:**
+- search_and_geocode_tool: Specific places, addresses, brands
+- category_search_tool: Generic categories, plural queries
+- reverse_geocode_tool: Coordinates to addresses
+
+[View skill →](./skills/mapbox-search-patterns/SKILL.md)
+
+---
+
 ### 🔄 mapbox-maplibre-migration
 
 **Migration guide between Mapbox GL JS and MapLibre GL JS in both directions.**
@@ -86,6 +155,7 @@ Guides AI assistants through the entire search integration process: asking disco
 Covers the fork history, API compatibility (~95% identical), token handling, style differences, and feature parity. Helps developers migrate in either direction or use both libraries together.
 
 **Use when:**
+
 - Migrating from Mapbox to MapLibre (or vice versa)
 - Evaluating which library to use
 - Understanding API compatibility
@@ -93,6 +163,7 @@ Covers the fork history, API compatibility (~95% identical), token handling, sty
 - Combining MapLibre rendering with Mapbox APIs
 
 **Key topics:**
+
 - Fork history and license differences
 - Package and import changes
 - Token handling (Mapbox token vs no token)
@@ -104,6 +175,7 @@ Covers the fork history, API compatibility (~95% identical), token handling, sty
 - Using both together
 
 **Covers:**
+
 - Step-by-step migration guides (both directions)
 - API compatibility matrix (100% compatible vs minor differences)
 - Common migration issues and solutions
@@ -121,6 +193,7 @@ Covers the fork history, API compatibility (~95% identical), token handling, sty
 Covers initialization waterfalls, bundle size, rendering performance, memory management, and web optimization. Patterns are prioritized by impact on user experience (Critical → High Impact → Optimization).
 
 **Use when:**
+
 - Optimizing map load time and time-to-interactive
 - Reducing bundle size or implementing code splitting
 - Debugging slow rendering or janky interactions
@@ -129,6 +202,7 @@ Covers initialization waterfalls, bundle size, rendering performance, memory man
 - Preventing memory leaks in long-running applications
 
 **Key topics:**
+
 - Eliminating initialization waterfalls (parallel loading, data fetching)
 - Bundle size optimization (code splitting)
 - Marker performance (HTML vs Canvas vs Symbol layers, clustering)
@@ -148,6 +222,7 @@ Covers initialization waterfalls, bundle size, rendering performance, memory man
 **Expert guidance on map design principles, color theory, visual hierarchy, typography, and cartographic best practices.**
 
 **Use when:**
+
 - Designing a new map style
 - Choosing colors for map elements
 - Making decisions about visual hierarchy
@@ -156,6 +231,7 @@ Covers initialization waterfalls, bundle size, rendering performance, memory man
 - Creating themed maps (dark mode, vintage, etc.)
 
 **Key topics:**
+
 - Core cartographic principles (visual hierarchy, color theory)
 - Typography best practices for maps
 - Map context considerations (audience, platform, use case)
@@ -174,6 +250,7 @@ Covers initialization waterfalls, bundle size, rendering performance, memory man
 Covers React, Vue, Svelte, Angular, and Next.js with proper lifecycle management, token handling, and search integration. Based on Mapbox's `create-web-app` scaffolding tool.
 
 **Use when:**
+
 - Setting up Mapbox GL JS in a new web project
 - Integrating Mapbox into a specific web framework
 - Adding Mapbox Search functionality
@@ -182,6 +259,7 @@ Covers React, Vue, Svelte, Angular, and Next.js with proper lifecycle management
 - Converting between frameworks
 
 **Key topics:**
+
 - Framework-specific patterns (React hooks, Vue composition API, Svelte stores, Angular services)
 - Token management (environment variables across frameworks)
 - Lifecycle management and cleanup (preventing memory leaks)
@@ -200,6 +278,7 @@ Covers React, Vue, Svelte, Angular, and Next.js with proper lifecycle management
 Covers Swift/SwiftUI integration, lifecycle management, token handling, offline maps, Navigation SDK, and battery/memory optimization for iOS devices.
 
 **Use when:**
+
 - Setting up Mapbox Maps SDK for iOS
 - Integrating maps with SwiftUI or UIKit
 - Managing token security in iOS apps
@@ -209,6 +288,7 @@ Covers Swift/SwiftUI integration, lifecycle management, token handling, offline 
 - Debugging crashes or performance issues on iOS
 
 **Key topics:**
+
 - SwiftUI UIViewRepresentable pattern
 - UIKit lifecycle management (viewDidLoad, deinit)
 - Token management (Info.plist, .xcconfig)
@@ -229,6 +309,7 @@ Covers Swift/SwiftUI integration, lifecycle management, token handling, offline 
 Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling, offline maps, Navigation SDK, and battery/memory optimization for Android devices.
 
 **Use when:**
+
 - Setting up Mapbox Maps SDK for Android
 - Integrating maps with Jetpack Compose or View system
 - Managing token security in Android apps
@@ -238,6 +319,7 @@ Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling,
 - Debugging crashes or performance issues on Android
 
 **Key topics:**
+
 - Jetpack Compose AndroidView pattern
 - Activity/Fragment lifecycle management
 - Token management (BuildConfig, local.properties)
@@ -256,6 +338,7 @@ Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling,
 **Common style patterns, layer configurations, and recipes for typical mapping scenarios.**
 
 **Use when:**
+
 - Starting a new map style for a specific use case
 - Looking for layer configuration examples
 - Implementing common mapping patterns
@@ -263,6 +346,7 @@ Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling,
 - Need proven recipes for typical scenarios
 
 **Key topics:**
+
 - Restaurant/POI finder pattern
 - Real estate map pattern
 - Data visualization base map pattern
@@ -282,6 +366,7 @@ Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling,
 Covers validation, accessibility checks, and optimization techniques for production-ready styles.
 
 **Use when:**
+
 - Validating styles before production deployment
 - Checking accessibility compliance (WCAG)
 - Optimizing style file size and complexity
@@ -289,6 +374,7 @@ Covers validation, accessibility checks, and optimization techniques for product
 - Setting up quality gates in CI/CD pipelines
 
 **Key topics:**
+
 - Style validation patterns
 - Expression validation
 - GeoJSON validation
@@ -307,6 +393,7 @@ Covers validation, accessibility checks, and optimization techniques for product
 Covers scope management, URL restrictions, rotation strategies, and incident response.
 
 **Use when:**
+
 - Creating new tokens
 - Deciding between public vs secret tokens
 - Setting up token restrictions
@@ -315,6 +402,7 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 - Conducting security audits
 
 **Key topics:**
+
 - Token types and when to use them (public, secret, temporary)
 - Scope management (principle of least privilege)
 - URL restrictions and patterns
@@ -327,60 +415,53 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 
 ---
 
-### 📊 mapbox-data-visualization-patterns
+### 📍 mapbox-store-locator-patterns
 
-**Patterns for visualizing data on maps including choropleth maps, heat maps, 3D visualizations, and animated data.**
+**Common patterns for building store locators, restaurant finders, and location-based search applications.**
 
-Comprehensive guide covering all major data visualization techniques with Mapbox GL JS. Perfect for building statistical maps, dashboards, and data-driven applications.
+Comprehensive guide covering marker display strategies, filtering, distance calculation, interactive lists synced with maps, and directions integration. Perfect for building any location-based finder application.
 
 **Use when:**
-- Visualizing statistical data on maps (population, sales, demographics)
-- Creating choropleth maps with color-coded regions
-- Building heat maps for density visualization
-- Adding 3D visualizations (building heights, terrain)
-- Implementing data-driven styling based on properties
-- Animating time-series or real-time data
-- Working with large datasets that require optimization
+- Building store locator or restaurant finder applications
+- Displaying multiple locations on a map with interactive lists
+- Need filtering by category, distance, or search term
+- Calculate distances from user location
+- Show location details in popups or panels
+- Integrate directions to selected locations
 
 **Key topics:**
-- Visualization type selection (choropleth, heat map, bubble, 3D, line)
-- Data-driven styling with Mapbox expressions
-- Color scales and accessibility (ColorBrewer)
-- Animation patterns (time-series, real-time updates)
-- Performance optimization (vector tiles, feature state, filtering)
-- Interactive legends and data inspectors
+- Marker strategies (HTML markers, symbol layers, clustering) based on location count
+- Interactive list/map synchronization
+- Search and category filtering
+- User location and distance calculation (Haversine formula)
+- Directions API integration
+- Performance optimization (debouncing, lazy loading, virtual scrolling)
+- Layout patterns (sidebar, overlay, mobile-responsive)
 
-**Covers all visualization types:**
-- **Choropleth Maps** - Regional data with color-coded polygons (elections, demographics)
-- **Heat Maps** - Point density visualization (crime, incidents, events)
-- **Bubble Maps** - Circles sized by magnitude (earthquakes, sales, metrics)
-- **3D Extrusions** - Height-based visualization (buildings, elevation, volume)
-- **Line Visualization** - Flow and network data (traffic, routes, connections)
-
-**Advanced techniques:**
-- Data-driven expressions (interpolate, step, match, case)
-- Feature state for dynamic styling without geometry updates
-- Client-side filtering for interactive controls
-- Progressive loading for large datasets
-- Smooth transitions and animations
-- Real-time data updates via WebSocket or polling
-
-**Performance patterns:**
-- Vector tiles for datasets > 10 MB
-- Feature state for hover/selection effects
-- Client-side filtering without data reloading
-- Viewport-based progressive loading
-- Debounced updates for smooth interactions
+**Covers all marker strategies:**
+- **< 100 locations**: HTML Markers with `mapboxgl.Marker()`
+- **100-1000 locations**: Symbol layers with GeoJSON
+- **> 1000 locations**: Clustering with aggregation
 
 **Common use cases:**
-- Election results maps
-- COVID-19 case tracking
-- Real estate price visualization
-- Traffic flow analysis
-- Weather data visualization
-- Sales territory analysis
+- Store locators for retail chains
+- Restaurant finders with category filters
+- Office location directories
+- Real estate property search
+- Event venue finders
+- Service provider locators
 
-[View skill →](./skills/mapbox-data-visualization-patterns/SKILL.md)
+**Complete implementation:**
+- GeoJSON data structure
+- Map initialization and marker display
+- Interactive listing component
+- Search/filter functionality
+- Distance calculation and sorting
+- Popup/detail views
+- Directions integration
+- Responsive layouts
+
+[View skill →](./skills/mapbox-store-locator-patterns/SKILL.md)
 
 ---
 
@@ -391,6 +472,7 @@ Comprehensive guide covering all major data visualization techniques with Mapbox
 Covers API equivalents, coordinate order gotchas, pattern translations, and step-by-step migration strategies with side-by-side code examples.
 
 **Use when:**
+
 - Migrating an existing Google Maps application to Mapbox
 - Evaluating Mapbox as a Google Maps alternative
 - Learning Mapbox with Google Maps background
@@ -398,6 +480,7 @@ Covers API equivalents, coordinate order gotchas, pattern translations, and step
 - Troubleshooting migration issues
 
 **Key topics:**
+
 - API equivalents (Map, Marker, Polygon, InfoWindow, etc.)
 - Critical differences (lng,lat vs lat,lng coordinate order)
 - Event mapping and handling changes
@@ -409,6 +492,7 @@ Covers API equivalents, coordinate order gotchas, pattern translations, and step
 - When NOT to migrate guidance
 
 **Covers all major features:**
+
 - Map initialization and configuration
 - Markers (individual and data-driven)
 - Popups/info windows
@@ -468,6 +552,7 @@ Once installed, skills activate automatically when relevant:
 🤖 Claude: [Uses mapbox-web-performance-patterns skill]
 
 "Based on the marker performance thresholds:
+
 - < 100 markers: HTML markers OK
 - 100-1,000: Use Symbol layers (GeoJSON)
 - 1,000-10,000: Clustering required
@@ -512,6 +597,7 @@ function MapComponent() {
 ```
 
 Key points:
+
 - Use useRef for both map instance and container
 - Initialize in useEffect with empty deps []
 - Always return cleanup function that calls map.remove()
@@ -526,6 +612,7 @@ Key points:
 "For a restaurant finder, you need:
 
 Design (from cartography skill):
+
 - High contrast for restaurant markers
 - Muted background (food photos will overlay)
 - Clear street labels for navigation
@@ -533,21 +620,22 @@ Design (from cartography skill):
 
 Style pattern (from style-patterns skill):
 I'll apply the POI Finder pattern:
+
 - Desaturated base map (#f5f5f5 background)
 - Orange markers (#FF6B35) for visibility
 - White roads on light gray background
 - Simplified labels (only major streets)
-..."
+  ..."
 
 ## How Skills Complement Mapbox MCP Server
 
 These Agent Skills work together with the [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server):
 
-| Component | Purpose | Example |
-|-----------|---------|---------|
-| **Agent Skills** (this repo) | Provide expertise | Performance patterns, design principles |
-| **MCP Tools** | Execute actions | `create_style_tool`, `list_tokens_tool` |
-| **MCP Prompts** | Orchestrate workflows | `create-and-preview-style` workflow |
+| Component                    | Purpose               | Example                                 |
+| ---------------------------- | --------------------- | --------------------------------------- |
+| **Agent Skills** (this repo) | Provide expertise     | Performance patterns, design principles |
+| **MCP Tools**                | Execute actions       | `create_style_tool`, `list_tokens_tool` |
+| **MCP Prompts**              | Orchestrate workflows | `create-and-preview-style` workflow     |
 
 **Example workflow:**
 
@@ -581,16 +669,20 @@ Realistic conversation transcripts showing how AI assistants use the skills:
 Complete, runnable applications following skill patterns:
 
 **Web:**
+
 - [react-map-basic](./examples/web/react-map-basic/) - Basic React integration with proper lifecycle management
 - [performance-optimized](./examples/web/performance-optimized/) - Advanced patterns: clustering, parallel loading, throttling
 
 **iOS:**
+
 - [SwiftUIMapExample](./examples/ios/SwiftUIMapExample/) - SwiftUI integration with UIViewRepresentable pattern
 
 **Android:**
+
 - [ComposeMapExample](./examples/android/ComposeMapExample/) - Jetpack Compose integration with AndroidView pattern
 
 Each example includes:
+
 - ✅ Complete, working code
 - ✅ Detailed README explaining patterns
 - ✅ Comments highlighting key practices
@@ -621,6 +713,7 @@ skill-name/
 5. Submit a pull request
 
 **Guidelines:**
+
 - Keep instructions clear and actionable
 - Provide concrete examples
 - Include decision trees when applicable
@@ -647,18 +740,21 @@ ln -s $(pwd)/skills .claude/skills
 Test with prompts like:
 
 **Web:**
+
 - "How do I optimize a Mapbox map with 50,000 markers?"
 - "What's the best way to load large GeoJSON files?"
 - "Set up Mapbox in my React app with proper cleanup"
 - "Create a dark mode map style"
 
 **iOS:**
+
 - "Add Mapbox to my SwiftUI app"
 - "How do I prevent memory leaks in my iOS map?"
 - "Download offline maps for iOS"
 - "Integrate Navigation SDK in my iOS app"
 
 **Android:**
+
 - "Integrate Mapbox with Jetpack Compose"
 - "Handle lifecycle properly in my Android map Fragment"
 - "Optimize battery usage for Android maps"
@@ -667,11 +763,13 @@ Test with prompts like:
 ## Resources
 
 **Agent Skills:**
+
 - [Agent Skills Overview](https://agentskills.io)
 - [Agent Skills Specification](https://github.com/anthropics/skills)
 - [add-skill CLI Tool](https://add-skill.org/)
 
 **Mapbox Documentation:**
+
 - [Mapbox Documentation](https://docs.mapbox.com)
 - [Mapbox GL JS (Web)](https://docs.mapbox.com/mapbox-gl-js/guides/)
 - [Maps SDK for iOS](https://docs.mapbox.com/ios/maps/guides/)
@@ -680,6 +778,7 @@ Test with prompts like:
 - [Mapbox Tutorials](https://docs.mapbox.com/help/tutorials/)
 
 **Related Tools:**
+
 - [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server)
 
 ## Contributing
@@ -695,6 +794,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ---
 
 **Related Projects:**
+
 - [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) - MCP server with tools for Mapbox development
 - [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js) - JavaScript library for interactive web maps
 - [Maps SDK for iOS](https://docs.mapbox.com/ios/maps/guides/) - Native iOS mapping SDK

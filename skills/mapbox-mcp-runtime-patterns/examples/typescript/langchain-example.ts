@@ -12,7 +12,7 @@
  */
 
 import { ChatOpenAI } from '@langchain/openai';
-import { AgentExecutor, createOpenAIFunctionsAgent } from 'langchain/agents';
+import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { z } from 'zod';
@@ -146,7 +146,7 @@ async function createLocationAgent() {
   ];
 
   const llm = new ChatOpenAI({
-    modelName: 'gpt-4o',
+    model: 'gpt-4o',
     temperature: 0
   });
 
@@ -170,7 +170,7 @@ Always provide clear, specific information with times and distances.`],
   ]);
 
   // @ts-ignore - Zod tuple schemas cause deep type recursion
-  const agent = await createOpenAIFunctionsAgent({
+  const agent = await createToolCallingAgent({
     llm,
     tools,
     prompt

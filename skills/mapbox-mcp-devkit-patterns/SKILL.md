@@ -11,11 +11,13 @@ This skill provides patterns for integrating the Mapbox MCP DevKit Server into A
 
 The [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) is a Model Context Protocol (MCP) server that gives AI assistants direct access to Mapbox developer APIs:
 
-- **Style management** - Create, update, validate styles conversationally
-- **Token management** - Generate and configure access tokens
-- **Validation** - Validate GeoJSON, expressions, coordinates
+- **Style management** - Create, list, update, delete, preview, validate, compare, and optimize styles
+- **Token management** - Generate and list access tokens with scopes
+- **Validation** - Validate GeoJSON, expressions, styles, and coordinates
+- **Geographic utilities** - Calculate bounding boxes, convert coordinates, query tiles
+- **Color tools** - Check WCAG contrast ratios for accessibility
+- **Feedback** - Access user feedback and reports
 - **Documentation** - Access latest Mapbox docs and references
-- **Developer tools** - Preview styles, convert coordinates, calculate bounds
 
 **Key benefit:** Build Mapbox applications faster by letting AI handle developer API operations.
 
@@ -160,7 +162,12 @@ Ask your AI assistant:
 "List the available Mapbox DevKit tools"
 ```
 
-You should see tools like `create_style_tool`, `list_tokens_tool`, `validate_geojson_tool`, etc.
+You should see 30+ tools including:
+- **Style tools**: `create_style_tool`, `list_styles_tool`, `update_style_tool`, `delete_style_tool`, `preview_style_tool`, etc.
+- **Token tools**: `create_token_tool`, `list_tokens_tool`
+- **Validation tools**: `validate_geojson_tool`, `validate_style_tool`, `validate_expression_tool`
+- **Geographic tools**: `bounding_box_tool`, `coordinate_conversion_tool`, `tilequery_tool`
+- **Documentation**: `get_latest_mapbox_docs_tool`
 
 ## Core Workflows
 

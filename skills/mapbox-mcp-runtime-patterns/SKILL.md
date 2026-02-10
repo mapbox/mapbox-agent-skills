@@ -15,6 +15,7 @@ The [Mapbox MCP Server](https://github.com/mapbox/mcp-server) is a Model Context
 - Distance, bearing, midpoint calculations
 - Point-in-polygon tests
 - Area, buffer, centroid operations
+- Bounding box, geometry simplification
 - No API calls, instant results
 
 **Mapbox API Tools:**
@@ -24,6 +25,12 @@ The [Mapbox MCP Server](https://github.com/mapbox/mcp-server) is a Model Context
 - Isochrones (reachability)
 - Travel time matrices
 - Static map images
+- GPS trace map matching
+- Multi-stop route optimization
+
+**Utility Tools:**
+- Server version info
+- POI category list
 
 **Key benefit:** Give your AI application geospatial superpowers without manually integrating multiple APIs.
 
@@ -708,36 +715,63 @@ class MapboxMCP {
   }
 }
 
-// Create Mastra workflow with Mapbox
-const mastra = new Mastra({
-  workflows: {
-    findNearbyRestaurants: {
-      steps: [
-        {
-          name: 'geocode',
-          tool: 'mapbox.reverse_geocode',
-          input: (context) => context.userLocation
-        },
-        {
-          name: 'search',
-          tool: 'mapbox.category_search',
-          input: (context) => ({
-            category: 'restaurant',
-            proximity: context.geocode.coordinates
-          })
-        },
-        {
-          name: 'calculate_times',
-          tool: 'mapbox.matrix',
-          input: (context) => ({
-            origins: [context.userLocation],
-            destinations: context.search.results.map(r => r.coordinates)
-          })
-        }
-      ]
-    }
+// Create Mastra agent with Mapbox tools
+import { Agent } from '@mastra/core/agent';
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
+
+const mcp = new MapboxMCP();
+
+// Create Mapbox tools
+const searchPOITool = createTool({
+  id: 'search-poi',
+  description: 'Find places of a specific category near a location',
+  inputSchema: z.object({
+    category: z.string(),
+    location: z.array(z.number()).length(2)
+  }),
+  execute: async ({ category, location }) => {
+    return await mcp.callTool('category_search_tool', {
+      category,
+      proximity: { longitude: location[0], latitude: location[1] }
+    });
   }
 });
+
+const getDirectionsTool = createTool({
+  id: 'get-directions',
+  description: 'Get driving directions with traffic',
+  inputSchema: z.object({
+    origin: z.array(z.number()).length(2),
+    destination: z.array(z.number()).length(2)
+  }),
+  execute: async ({ origin, destination }) => {
+    return await mcp.callTool('directions_tool', {
+      coordinates: [
+        { longitude: origin[0], latitude: origin[1] },
+        { longitude: destination[0], latitude: destination[1] }
+      ],
+      routing_profile: 'mapbox/driving-traffic'
+    });
+  }
+});
+
+// Create location agent
+const locationAgent = new Agent({
+  id: 'location-agent',
+  name: 'Location Intelligence Agent',
+  instructions: 'You help users find places and plan routes with geospatial tools.',
+  model: 'openai/gpt-4o',
+  tools: {
+    searchPOITool,
+    getDirectionsTool
+  }
+});
+
+// Use agent
+const result = await locationAgent.generate([
+  { role: 'user', content: 'Find restaurants near Times Square NYC (-73.9857, 40.7484)' }
+]);
 ```
 
 **Benefits:**
@@ -1590,7 +1624,7 @@ describe('Property search', () => {
 - [Model Context Protocol](https://modelcontextprotocol.io)
 - [Pydantic AI](https://ai.pydantic.dev/)
 - [Mastra](https://mastra.ai/)
-- [LangChain](https://js.langchain.com/)
+- [LangChain](https://docs.langchain.com/oss/javascript/langchain/overview/)
 - [Mapbox API Documentation](https://docs.mapbox.com/api/)
 
 ## When to Use This Skill

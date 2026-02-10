@@ -4,7 +4,7 @@ Working, compilable examples showing how to integrate Mapbox MCP Server with pop
 
 ## Prerequisites
 
-1. **Mapbox Access Token**: Get one at [mapbox.com/account/access-tokens](https://account.mapbox.com/access-tokens/)
+1. **Mapbox Access Token**: Get one at [mapbox.com/account/access-tokens](https://console.mapbox.com/account/access-tokens/)
 2. **OpenAI API Key** (or other LLM provider)
 3. **HuggingFace Token** (for smolagents)
 
@@ -126,7 +126,7 @@ npm run build  # TypeScript type-check
 
 ### 2. LangChain Example
 
-**Framework**: [LangChain](https://js.langchain.com/) - Conversational AI framework
+**Framework**: [LangChain](https://docs.langchain.com/oss/javascript/langchain/overview/) - Conversational AI framework
 
 ```bash
 npm run langchain
@@ -185,21 +185,29 @@ Find properties with good commute:
 All examples connect to the hosted Mapbox MCP Server at `https://mcp.mapbox.com/mcp`.
 
 **API Tools** (require Mapbox token):
-- `get_directions`: Driving directions with traffic
-- `category_search`: Find POIs by category
-- `reverse_geocode`: Coordinates to address
-- `get_isochrone`: Reachable area within time
-- `get_matrix`: Travel time matrix
-- `get_static_image`: Static map images
+- `directions_tool`: Driving directions with traffic
+- `category_search_tool`: Find POIs by category
+- `reverse_geocode_tool`: Coordinates to address
+- `isochrone_tool`: Reachable area within time
+- `matrix_tool`: Travel time matrix
+- `static_map_image_tool`: Static map images
+- `map_matching_tool`: Match GPS traces to roads
+- `optimization_tool`: Optimize multi-stop routes
 
 **Offline Tools** (free, instant):
-- `calculate_distance`: Distance between points
-- `calculate_bearing`: Compass direction
-- `calculate_midpoint`: Midpoint between points
-- `point_in_polygon`: Point containment test
-- `calculate_area`: Polygon area
-- `calculate_centroid`: Polygon center
-- `buffer`: Create buffer zones
+- `distance_tool`: Distance between points
+- `bearing_tool`: Compass direction
+- `midpoint_tool`: Midpoint between points
+- `point_in_polygon_tool`: Point containment test
+- `area_tool`: Polygon area
+- `centroid_tool`: Polygon center
+- `buffer_tool`: Create buffer zones
+- `bbox_tool`: Calculate bounding boxes
+- `simplify_tool`: Simplify geometries
+
+**Utility Tools**:
+- `version_tool`: Get MCP server version
+- `category_list_tool`: List available POI categories
 
 ## Testing Examples
 
@@ -244,7 +252,7 @@ export MAPBOX_ACCESS_TOKEN="pk.ey..."
 Error: MCP request failed: Unauthorized
 ```
 
-**Solution**: Check your token has proper scopes at [mapbox.com/account/access-tokens](https://account.mapbox.com/access-tokens/)
+**Solution**: Check your token has proper scopes at [mapbox.com/account/access-tokens](https://console.mapbox.com/account/access-tokens/)
 
 ### Import Errors (Python)
 
@@ -277,7 +285,7 @@ npm install
 - [CrewAI Docs](https://docs.crewai.com/)
 - [Smolagents Docs](https://huggingface.co/docs/smolagents)
 - [Mastra Docs](https://mastra.ai/docs)
-- [LangChain Docs](https://js.langchain.com/)
+- [LangChain Docs](https://docs.langchain.com/oss/javascript/langchain/overview/)
 
 ## Contributing
 

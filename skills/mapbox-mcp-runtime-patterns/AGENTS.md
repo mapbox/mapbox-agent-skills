@@ -12,8 +12,9 @@ Runtime server providing geospatial tools to AI agents via Model Context Protoco
 
 | Category | Tools | Cost |
 |----------|-------|------|
-| **Offline (Turf.js)** | distance, bearing, midpoint, point-in-polygon, area, buffer, centroid | Free, instant |
-| **Mapbox APIs** | directions, geocoding, category search, isochrone, matrix, static maps | API costs apply |
+| **Offline (Turf.js)** | distance, bearing, midpoint, point-in-polygon, area, buffer, centroid, bbox, simplify | Free, instant |
+| **Mapbox APIs** | directions, geocoding, category search, isochrone, matrix, static maps, map matching, optimization | API costs apply |
+| **Utility** | version, category list | Free |
 
 ## Installation
 
@@ -246,12 +247,17 @@ Turf.js   Mapbox APIs
 
 | Need | Use | Reason |
 |------|-----|--------|
-| Distance calculation | Offline tool | Free, instant |
-| Point in polygon | Offline tool | Free, instant |
-| Directions with traffic | API tool | Real-time data |
-| Geocoding | API tool | Requires database |
-| Isochrones | API tool | Complex calculation |
-| Bearing/midpoint | Offline tool | Free, instant |
+| Distance calculation | distance_tool (offline) | Free, instant |
+| Point in polygon | point_in_polygon_tool (offline) | Free, instant |
+| Bounding box | bbox_tool (offline) | Free, instant |
+| Simplify geometry | simplify_tool (offline) | Free, instant |
+| Directions with traffic | directions_tool (API) | Real-time data |
+| Geocoding | reverse_geocode_tool (API) | Requires database |
+| Isochrones | isochrone_tool (API) | Complex calculation |
+| Multi-stop optimization | optimization_tool (API) | Complex calculation |
+| GPS trace matching | map_matching_tool (API) | Requires routing data |
+| Bearing/midpoint | bearing_tool/midpoint_tool (offline) | Free, instant |
+| POI categories | category_list_tool (utility) | Metadata lookup |
 
 ## Performance Optimization
 
@@ -382,7 +388,11 @@ const freeOps = [
   'point_in_polygon_tool',
   'bearing_tool',
   'area_tool',
-  'centroid_tool'
+  'centroid_tool',
+  'bbox_tool',
+  'simplify_tool',
+  'midpoint_tool',
+  'buffer_tool'
 ];
 
 // Use API tools only when necessary
@@ -390,7 +400,17 @@ const apiOps = [
   'directions_tool',      // Need traffic data
   'reverse_geocode_tool',     // Need address database
   'isochrone_tool',       // Complex calculation
-  'category_search_tool'      // Need POI database
+  'category_search_tool',     // Need POI database
+  'matrix_tool',          // Travel time matrix
+  'static_map_image_tool',    // Static map generation
+  'map_matching_tool',    // GPS trace matching
+  'optimization_tool'     // Route optimization
+];
+
+// Utility tools
+const utilityOps = [
+  'version_tool',         // Server version info
+  'category_list_tool'    // Available POI categories
 ];
 
 function chooseTool(operation: string, needsRealtime: boolean) {
@@ -405,5 +425,5 @@ function chooseTool(operation: string, needsRealtime: boolean) {
 - [MCP Protocol](https://modelcontextprotocol.io)
 - [Pydantic AI](https://ai.pydantic.dev/)
 - [Mastra](https://mastra.ai/)
-- [LangChain](https://js.langchain.com/)
+- [LangChain](https://docs.langchain.com/oss/javascript/langchain/overview/)
 - [Mapbox APIs](https://docs.mapbox.com/api/)

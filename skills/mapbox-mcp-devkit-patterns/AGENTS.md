@@ -105,15 +105,57 @@ Configure in Claude Desktop config:
 
 ## Core Tools
 
+### Style Management
+
 | Tool | Purpose | Example Use |
 |------|---------|-------------|
 | **create_style_tool** | Create new style | "Create dark mode style with 3D buildings" |
+| **list_styles_tool** | List all styles | "Show my styles" |
+| **retrieve_style_tool** | Get style details | "Show details of my light style" |
 | **update_style_tool** | Modify existing style | "Make roads more prominent" |
+| **delete_style_tool** | Delete a style | "Delete my test style" |
+| **preview_style_tool** | Generate preview URL | "Preview this style at downtown SF" |
+| **style_builder_tool** | Build style from template | "Create a style for navigation" |
 | **validate_style_tool** | Check style JSON | "Validate this style" |
+| **compare_styles_tool** | Compare two styles | "Compare light vs dark style" |
+| **optimize_style_tool** | Optimize style JSON | "Optimize this style for performance" |
+
+### Token Management
+
+| Tool | Purpose | Example Use |
+|------|---------|-------------|
 | **create_token_tool** | Generate access token | "Create token for localhost" |
 | **list_tokens_tool** | Show all tokens | "List my tokens and scopes" |
+
+### Validation & Analysis
+
+| Tool | Purpose | Example Use |
+|------|---------|-------------|
 | **validate_geojson_tool** | Check GeoJSON | "Validate this GeoJSON" |
 | **validate_expression_tool** | Check expression | "Is this expression valid?" |
+| **geojson_preview_tool** | Preview GeoJSON on map | "Preview this GeoJSON" |
+| **check_color_contrast_tool** | Check WCAG contrast | "Check if #FF0000 on #FFFFFF passes WCAG" |
+
+### Geographic Utilities
+
+| Tool | Purpose | Example Use |
+|------|---------|-------------|
+| **bounding_box_tool** | Get bounding box for area | "Get bbox for San Francisco" |
+| **country_bounding_box_tool** | Get country bounds | "Get bounding box for France" |
+| **coordinate_conversion_tool** | Convert coordinate systems | "Convert lat/lng to Web Mercator" |
+| **tilequery_tool** | Query tile data at point | "What features at this coordinate?" |
+
+### Feedback & Data
+
+| Tool | Purpose | Example Use |
+|------|---------|-------------|
+| **get_feedback_tool** | Get feedback item | "Get feedback #12345" |
+| **list_feedback_tool** | List user feedback | "Show recent feedback" |
+
+### Documentation
+
+| Tool | Purpose | Example Use |
+|------|---------|-------------|
 | **get_latest_mapbox_docs_tool** | Access Mapbox docs | "What are fill layer properties?" |
 
 ## Common Workflows

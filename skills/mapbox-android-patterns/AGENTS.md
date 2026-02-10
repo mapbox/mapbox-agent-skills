@@ -5,6 +5,7 @@ Quick reference for Mapbox Maps SDK for Android with Kotlin, Jetpack Compose, an
 ## Setup
 
 ### Gradle Configuration
+
 ```kotlin
 // build.gradle.kts (project)
 repositories {
@@ -26,6 +27,7 @@ dependencies {
 ```
 
 ### Access Token
+
 ```kotlin
 // secrets.properties (add to .gitignore)
 MAPBOX_ACCESS_TOKEN=pk.your_token_here
@@ -41,6 +43,7 @@ MAPBOX_ACCESS_TOKEN=pk.your_token_here
 ## Jetpack Compose Integration
 
 ### Basic Map
+
 ```kotlin
 import com.mapbox.maps.compose.*
 
@@ -62,6 +65,7 @@ fun MapScreen() {
 ```
 
 ### With Annotations
+
 ```kotlin
 @Composable
 fun MapWithMarkers() {
@@ -87,6 +91,7 @@ fun MapWithMarkers() {
 ## View System Integration
 
 ### XML Layout
+
 ```xml
 <com.mapbox.maps.MapView
     android:id="@+id/mapView"
@@ -95,6 +100,7 @@ fun MapWithMarkers() {
 ```
 
 ### Activity Setup
+
 ```kotlin
 class MapActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
@@ -135,6 +141,7 @@ class MapActivity : AppCompatActivity() {
 ## Common Patterns
 
 ### 1. Camera Control
+
 ```kotlin
 // Fly to location
 mapView.mapboxMap.flyTo(
@@ -168,6 +175,7 @@ mapView.mapboxMap.setCamera(
 ```
 
 ### 2. Annotations
+
 ```kotlin
 // Point annotation manager
 val annotationApi = mapView.annotations
@@ -190,6 +198,7 @@ circleAnnotationManager.create(circleAnnotationOptions)
 ```
 
 ### 3. Adding Layers
+
 ```kotlin
 // GeoJSON source
 val source = geoJsonSource("source-id") {
@@ -206,6 +215,7 @@ mapView.mapboxMap.getStyle()?.addLayer(layer)
 ```
 
 ### 4. Event Handling
+
 ```kotlin
 // Map click
 mapView.mapboxMap.addOnMapClickListener { point ->
@@ -227,6 +237,7 @@ mapView.mapboxMap.addOnCameraChangeListener {
 ```
 
 ### 5. User Location
+
 ```kotlin
 // Add permissions to AndroidManifest.xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -253,6 +264,7 @@ if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCA
 ## Performance Optimization
 
 ### 1. Reuse Annotation Managers
+
 ```kotlin
 // ✅ Create once, reuse
 class MapViewModel {
@@ -276,6 +288,7 @@ class MapViewModel {
 ```
 
 ### 2. Batch Operations
+
 ```kotlin
 // ✅ Batch create annotations
 val options = markers.map { marker ->
@@ -292,6 +305,7 @@ markers.forEach { marker ->
 ```
 
 ### 3. Lifecycle Management
+
 ```kotlin
 // ✅ Properly handle lifecycle
 class MapFragment : Fragment() {
@@ -319,6 +333,7 @@ class MapFragment : Fragment() {
 ## Common Issues
 
 ### 1. Map Not Displaying
+
 ```kotlin
 // ❌ Missing access token in AndroidManifest.xml
 // ❌ Wrong credentials in gradle.properties
@@ -331,6 +346,7 @@ class MapFragment : Fragment() {
 ```
 
 ### 2. Memory Leaks
+
 ```kotlin
 // ✅ Clean up in onDestroy
 override fun onDestroyView() {
@@ -347,6 +363,7 @@ override fun onStop() {
 ```
 
 ### 3. Location Permissions
+
 ```kotlin
 // ✅ Request runtime permissions (Android 6+)
 private fun checkLocationPermission() {
@@ -375,6 +392,7 @@ override fun onRequestPermissionsResult(
 ## Jetpack Compose Best Practices
 
 ### State Management
+
 ```kotlin
 @Composable
 fun MapScreen(viewModel: MapViewModel = viewModel()) {
@@ -400,6 +418,7 @@ fun MapScreen(viewModel: MapViewModel = viewModel()) {
 ```
 
 ### Lifecycle Awareness
+
 ```kotlin
 @Composable
 fun MapScreen() {
@@ -431,6 +450,7 @@ fun MapScreen() {
 ## Testing
 
 ### Unit Tests
+
 ```kotlin
 @Test
 fun testCameraPosition() {

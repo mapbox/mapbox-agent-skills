@@ -4,23 +4,22 @@ Quick reference for securing Mapbox access tokens. Critical security rules for t
 
 ## Token Types - Quick Reference
 
-| Type | Format | Use | Can Expose? |
-|------|--------|-----|-------------|
-| **Public** | `pk.*` | Client-side, mobile apps | ✅ Yes (with URL restrictions) |
-| **Secret** | `sk.*` | Server-side only | ❌ NEVER expose |
-| **Temporary** | `tk.*` | One-time operations | ✅ Yes (expires in 1hr) |
+| Type          | Format | Use                      | Can Expose?                    |
+| ------------- | ------ | ------------------------ | ------------------------------ |
+| **Public**    | `pk.*` | Client-side, mobile apps | ✅ Yes (with URL restrictions) |
+| **Secret**    | `sk.*` | Server-side only         | ❌ NEVER expose                |
+| **Temporary** | `tk.*` | One-time operations      | ✅ Yes (expires in 1hr)        |
 
 ## Critical Security Rules
 
 ### ❌ Never Do This
+
 ```javascript
 // ❌ NEVER commit tokens
 const MAPBOX_TOKEN = 'pk.eyJ1...'; // Don't hardcode!
 
 // ❌ NEVER use secret tokens client-side
-<script>
-  mapboxgl.accessToken = 'sk.eyJ1...'; // Exposed to users!
-</script>
+<script>mapboxgl.accessToken = 'sk.eyJ1...'; // Exposed to users!</script>;
 
 // ❌ NEVER log tokens
 console.log('Token:', token); // Shows in browser console
@@ -30,6 +29,7 @@ console.log('Token:', token); // Shows in browser console
 ```
 
 ### ✅ Always Do This
+
 ```javascript
 // ✅ Use environment variables
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -49,11 +49,13 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 ## Token Selection Decision Tree
 
 **Question 1: Where will this token be used?**
-- Client-side (browser/mobile) → Use **public token** (pk.*)
-- Server-side (API/backend) → Use **secret token** (sk.*)
-- One-time operation → Use **temporary token** (tk.*)
+
+- Client-side (browser/mobile) → Use **public token** (pk.\*)
+- Server-side (API/backend) → Use **secret token** (sk.\*)
+- One-time operation → Use **temporary token** (tk.\*)
 
 **Question 2: What operations are needed?**
+
 - Display maps only → Public token with `styles:tiles, styles:read`
 - Upload/modify data → Secret token with write scopes
 - Administrative tasks → Secret token with admin scopes
@@ -61,6 +63,7 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 ## Scope Management
 
 ### Public Token Scopes (Most Common)
+
 ```
 ✅ styles:tiles    - Display raster style tiles
 ✅ styles:read     - Read style specifications
@@ -69,6 +72,7 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 ```
 
 ### Secret Token Scopes (Server-Side Only)
+
 ```
 ⚠️  styles:write   - Create/modify styles
 ⚠️  styles:list    - List all styles
@@ -96,6 +100,7 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 ## Environment Variable Setup
 
 ### Web Applications
+
 ```bash
 # .env.local (Next.js, Vite)
 NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here
@@ -106,15 +111,17 @@ REACT_APP_MAPBOX_TOKEN=pk.your_token_here
 ```
 
 ### Mobile Applications
+
 ```javascript
 // iOS (Config.xcconfig)
-MAPBOX_TOKEN = pk.your_token_here
+MAPBOX_TOKEN = pk.your_token_here;
 
 // Android (gradle.properties)
-MAPBOX_TOKEN=pk.your_token_here
+MAPBOX_TOKEN = pk.your_token_here;
 ```
 
 **Always add to .gitignore:**
+
 ```
 .env
 .env.local
@@ -124,12 +131,14 @@ MAPBOX_TOKEN=pk.your_token_here
 ## Token Rotation
 
 **When to rotate:**
+
 - 🔴 Immediately if token exposed publicly (GitHub, logs, etc.)
 - 🟡 Every 90 days for secret tokens (best practice)
 - 🟡 When team member leaves with access
 - 🟡 After security incident
 
 **How to rotate safely:**
+
 1. Create new token with same scopes
 2. Update environment variables
 3. Deploy new code
@@ -139,18 +148,22 @@ MAPBOX_TOKEN=pk.your_token_here
 ## Common Vulnerabilities
 
 ### 1. Token in Public Repository
+
 **Risk:** Anyone can use your token, rack up charges
 **Fix:** Immediately rotate token, add to .gitignore, use git history rewrite if needed
 
 ### 2. No URL Restrictions
+
 **Risk:** Token can be used on any domain
 **Fix:** Add URL restrictions in dashboard immediately
 
 ### 3. Secret Token in Frontend
+
 **Risk:** Full API access exposed to all users
 **Fix:** Move to server-side, rotate token immediately
 
 ### 4. Overly Permissive Scopes
+
 **Risk:** Token can do more than needed
 **Fix:** Create new token with minimum required scopes
 
@@ -170,11 +183,11 @@ MAPBOX_TOKEN=pk.your_token_here
 
 ## Quick Security Checklist
 
-✅ Using public tokens (pk.*) for client-side?
+✅ Using public tokens (pk._) for client-side?
 ✅ URL restrictions added to all public tokens?
 ✅ No tokens hardcoded in source code?
 ✅ .env files in .gitignore?
-✅ Secret tokens (sk.*) only used server-side?
+✅ Secret tokens (sk._) only used server-side?
 ✅ Minimum scopes granted per token?
 ✅ Tokens rotated regularly (90 days)?
 ✅ No tokens in logs or console output?
@@ -184,6 +197,7 @@ MAPBOX_TOKEN=pk.your_token_here
 ## Framework-Specific Patterns
 
 ### Next.js
+
 ```javascript
 // Public token (client-side)
 const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -193,12 +207,14 @@ const secretToken = process.env.MAPBOX_SECRET_TOKEN;
 ```
 
 ### React
+
 ```javascript
 // Must use REACT_APP_ prefix
 const token = process.env.REACT_APP_MAPBOX_TOKEN;
 ```
 
 ### Vue/Vite
+
 ```javascript
 // Must use VITE_ prefix
 const token = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -207,10 +223,12 @@ const token = import.meta.env.VITE_MAPBOX_TOKEN;
 ## Rate Limiting
 
 **Free tier limits:**
+
 - 50,000 map loads/month
 - 100,000 API requests/month
 
 **Best practices:**
+
 - Cache tiles in CDN
 - Implement client-side caching
 - Monitor usage in dashboard

@@ -15,6 +15,7 @@
     "cartography",
     "choropleth",
     "chromedevtools",
+    "classyrew",
     "CMYK",
     "Coblis",
     "codex",
@@ -99,6 +100,7 @@
     "searchbox",
     "smolagents",
     "Smolagents",
+    "sqft",
     "streamable",
     "subview",
     "swiftui",
@@ -127,9 +129,5 @@
     "yourusername",
     "zoomend"
   ],
-  "ignorePaths": [
-    "node_modules",
-    "package-lock.json",
-    ".git"
-  ]
+  "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

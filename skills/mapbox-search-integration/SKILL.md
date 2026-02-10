@@ -10,6 +10,7 @@ Expert guidance for implementing Mapbox search functionality in applications. Co
 ## Use This Skill When
 
 User says things like:
+
 - "I need to add search to my map"
 - "I need a search bar for my mapping app"
 - "How do I implement location search?"
@@ -17,6 +18,7 @@ User says things like:
 - "I need geocoding in my application"
 
 **This skill complements `mapbox-search-patterns`:**
+
 - `mapbox-search-patterns` = Tool and parameter selection
 - `mapbox-search-integration` = Complete implementation workflow
 
@@ -29,6 +31,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Ask:** "What do you want users to search for?"
 
 **Common answers and implications:**
+
 - **"Addresses"** → Focus on address geocoding, consider Search Box API or Geocoding API
 - **"Points of interest / businesses"** → POI search, use Search Box API with category search
 - **"Both addresses and POIs"** → Search Box API (unified search)
@@ -40,6 +43,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Ask:** "Where will users be searching?"
 
 **Common answers and implications:**
+
 - **"Single country"** (e.g., "only USA") → Use `country` parameter, better results, lower cost
 - **"Specific region"** → Use `bbox` parameter for bounding box constraint
 - **"Global"** → No country restriction, but may need language parameter
@@ -52,6 +56,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Ask:** "How will users interact with search?"
 
 **Common answers and implications:**
+
 - **"Search-as-you-type / autocomplete"** → Use Search Box API with `autocomplete: true`, implement debouncing
 - **"Search button / final query"** → Can use either API, no autocomplete needed
 - **"Both"** (autocomplete + refine) → Two-stage search, autocomplete then detailed results
@@ -62,6 +67,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Ask:** "What platform is this for?"
 
 **Common answers and implications:**
+
 - **"Web application"** → Mapbox Search JS (easiest), or direct API calls for advanced cases
 - **"iOS app"** → Search SDK for iOS (recommended), or direct API integration for advanced cases
 - **"Android app"** → Search SDK for Android (recommended), or direct API integration for advanced cases
@@ -74,6 +80,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Ask:** "What happens when a user selects a result?"
 
 **Common answers and implications:**
+
 - **"Fly to location on map"** → Need coordinates, map integration
 - **"Show details / info"** → Need to retrieve and display result properties
 - **"Fill form fields"** → Need to parse address components
@@ -85,6 +92,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Ask:** "How many searches do you expect per month?"
 
 **Implications:**
+
 - **Low volume** (< 10k) → Free tier sufficient, simple implementation
 - **Medium volume** (10k-100k) → Consider caching, optimize API calls
 - **High volume** (> 100k) → Implement debouncing, caching, batch operations, monitor costs
@@ -96,6 +104,7 @@ Based on discovery answers, recommend the right product:
 ### Recommended: Search Box API (Modern, Unified)
 
 **Use when:**
+
 - User needs both addresses AND POIs
 - Building a modern web/mobile app
 - Want autocomplete functionality
@@ -103,6 +112,7 @@ Based on discovery answers, recommend the right product:
 - Want the simplest integration
 
 **Advantages:**
+
 - ✅ Unified search (addresses + POIs)
 - ✅ Session-based pricing (cheaper for autocomplete)
 - ✅ Modern API design
@@ -110,6 +120,7 @@ Based on discovery answers, recommend the right product:
 - ✅ Better POI coverage
 
 **Products:**
+
 - **Search Box API** (REST) - Direct API integration
 - **Mapbox Search JS** (SDK) - Web integration with three components:
   - **Search JS React** - Easy search integration via React library with UI
@@ -121,6 +132,7 @@ Based on discovery answers, recommend the right product:
 ### Geocoding API
 
 **Use when:**
+
 - Only need address geocoding (no POIs)
 - Existing integration to maintain
 - Need permanent geocoding (not search)
@@ -139,11 +151,13 @@ Based on discovery answers, recommend the right product:
 **When to use:** React application, want autocomplete UI component, fastest implementation
 
 **Installation:**
+
 ```bash
 npm install @mapbox/search-js-react
 ```
 
 **Complete implementation:**
+
 ```jsx
 import { SearchBox } from '@mapbox/search-js-react';
 import mapboxgl from 'mapbox-gl';
@@ -166,18 +180,12 @@ function App() {
     const [lng, lat] = result.features[0].geometry.coordinates;
     map.flyTo({ center: [lng, lat], zoom: 14 });
 
-    new mapboxgl.Marker()
-      .setLngLat([lng, lat])
-      .addTo(map);
+    new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
   };
 
   return (
     <div>
-      <SearchBox
-        accessToken="YOUR_MAPBOX_TOKEN"
-        onRetrieve={handleRetrieve}
-        placeholder="Search for places"
-      />
+      <SearchBox accessToken="YOUR_MAPBOX_TOKEN" onRetrieve={handleRetrieve} placeholder="Search for places" />
       <div id="map" style={{ height: '600px' }} />
     </div>
   );
@@ -193,68 +201,71 @@ function App() {
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <script src="https://api.mapbox.com/search-js/v1.0.0-beta.18/web.js"></script>
-  <link href="https://api.mapbox.com/search-js/v1.0.0-beta.18/web.css" rel="stylesheet">
-  <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js'></script>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css' rel='stylesheet' />
-</head>
-<body>
-  <div id="search"></div>
-  <div id="map" style="height: 600px;"></div>
+  <head>
+    <script src="https://api.mapbox.com/search-js/v1.0.0-beta.18/web.js"></script>
+    <link href="https://api.mapbox.com/search-js/v1.0.0-beta.18/web.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="search"></div>
+    <div id="map" style="height: 600px;"></div>
 
-  <script>
-    // Initialize map
-    mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-122.4194, 37.7749],
-      zoom: 12
-    });
-
-    // Initialize Search Box
-    const search = new MapboxSearchBox();
-    search.accessToken = 'YOUR_MAPBOX_TOKEN';
-
-    // CRITICAL: Set options based on discovery
-    search.options = {
-      language: 'en',
-      country: 'US', // If single-country (from Question 2)
-      proximity: 'ip', // Or specific coordinates
-      types: 'address,poi', // Based on Question 1
-    };
-
-    search.mapboxgl = mapboxgl;
-    search.marker = true; // Auto-add marker on result selection
-
-    // Handle result selection
-    search.addEventListener('retrieve', (event) => {
-      const result = event.detail;
-
-      // Fly to result
-      map.flyTo({
-        center: result.geometry.coordinates,
-        zoom: 15,
-        essential: true
+    <script>
+      // Initialize map
+      mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-122.4194, 37.7749],
+        zoom: 12
       });
 
-      // Optional: Show popup with details
-      new mapboxgl.Popup()
-        .setLngLat(result.geometry.coordinates)
-        .setHTML(`<h3>${result.properties.name}</h3>
-                  <p>${result.properties.full_address || ''}</p>`)
-        .addTo(map);
-    });
+      // Initialize Search Box
+      const search = new MapboxSearchBox();
+      search.accessToken = 'YOUR_MAPBOX_TOKEN';
 
-    // Attach to DOM
-    document.getElementById('search').appendChild(search);
-  </script>
-</body>
+      // CRITICAL: Set options based on discovery
+      search.options = {
+        language: 'en',
+        country: 'US', // If single-country (from Question 2)
+        proximity: 'ip', // Or specific coordinates
+        types: 'address,poi' // Based on Question 1
+      };
+
+      search.mapboxgl = mapboxgl;
+      search.marker = true; // Auto-add marker on result selection
+
+      // Handle result selection
+      search.addEventListener('retrieve', (event) => {
+        const result = event.detail;
+
+        // Fly to result
+        map.flyTo({
+          center: result.geometry.coordinates,
+          zoom: 15,
+          essential: true
+        });
+
+        // Optional: Show popup with details
+        new mapboxgl.Popup()
+          .setLngLat(result.geometry.coordinates)
+          .setHTML(
+            `<h3>${result.properties.name}</h3>
+                  <p>${result.properties.full_address || ''}</p>`
+          )
+          .addTo(map);
+      });
+
+      // Attach to DOM
+      document.getElementById('search').appendChild(search);
+    </script>
+  </body>
 </html>
 ```
 
 **Key implementation notes:**
+
 - ✅ Set `country` if single-country search (better results, lower cost)
 - ✅ Set `types` based on what users search for
 - ✅ Use `proximity` to bias results to user location
@@ -266,11 +277,13 @@ function App() {
 **When to use:** Need custom UI design, full control over UX, works in any framework or Node.js
 
 **Installation:**
+
 ```bash
 npm install @mapbox/search-js-core
 ```
 
 **Complete implementation:**
+
 ```javascript
 import { SearchSession } from '@mapbox/search-js-core';
 import mapboxgl from 'mapbox-gl';
@@ -310,12 +323,16 @@ searchInput.addEventListener('input', async (e) => {
   });
 
   // Render custom results UI
-  resultsContainer.innerHTML = response.suggestions.map(suggestion => `
+  resultsContainer.innerHTML = response.suggestions
+    .map(
+      (suggestion) => `
     <div class="result-item" data-id="${suggestion.mapbox_id}">
       <strong>${suggestion.name}</strong>
       <div>${suggestion.place_formatted}</div>
     </div>
-  `).join('');
+  `
+    )
+    .join('');
 });
 
 // Handle result selection
@@ -341,6 +358,7 @@ resultsContainer.addEventListener('click', async (e) => {
 ```
 
 **Key benefits:**
+
 - ✅ Full control over UI/UX
 - ✅ Search JS Core handles session tokens automatically
 - ✅ Works in any framework (React, Vue, Angular, etc.)
@@ -397,7 +415,7 @@ class MapboxSearch {
       access_token: this.accessToken,
       session_token: this.sessionToken,
       language: this.options.language,
-      limit: this.options.limit,
+      limit: this.options.limit
     });
 
     // Add optional parameters
@@ -414,9 +432,7 @@ class MapboxSearch {
     }
 
     try {
-      const response = await fetch(
-        `https://api.mapbox.com/search/searchbox/v1/suggest?${params}`
-      );
+      const response = await fetch(`https://api.mapbox.com/search/searchbox/v1/suggest?${params}`);
 
       if (!response.ok) {
         throw new Error(`Search API error: ${response.status}`);
@@ -433,13 +449,11 @@ class MapboxSearch {
   async retrieve(suggestionId) {
     const params = new URLSearchParams({
       access_token: this.accessToken,
-      session_token: this.sessionToken,
+      session_token: this.sessionToken
     });
 
     try {
-      const response = await fetch(
-        `https://api.mapbox.com/search/searchbox/v1/retrieve/${suggestionId}?${params}`
-      );
+      const response = await fetch(`https://api.mapbox.com/search/searchbox/v1/retrieve/${suggestionId}?${params}`);
 
       if (!response.ok) {
         throw new Error(`Retrieve API error: ${response.status}`);
@@ -478,15 +492,19 @@ input.addEventListener('input', (e) => {
 });
 
 function displayResults(results) {
-  resultsContainer.innerHTML = results.map(result => `
+  resultsContainer.innerHTML = results
+    .map(
+      (result) => `
     <div class="result" data-id="${result.mapbox_id}">
       <strong>${result.name}</strong>
       <p>${result.place_formatted || ''}</p>
     </div>
-  `).join('');
+  `
+    )
+    .join('');
 
   // Handle result selection
-  resultsContainer.querySelectorAll('.result').forEach(el => {
+  resultsContainer.querySelectorAll('.result').forEach((el) => {
     el.addEventListener('click', async () => {
       const feature = await search.retrieve(el.dataset.id);
       handleResultSelection(feature);
@@ -504,9 +522,7 @@ function handleResultSelection(feature) {
   });
 
   // Add marker
-  new mapboxgl.Marker()
-    .setLngLat([lng, lat])
-    .addTo(map);
+  new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
 
   // Close results
   resultsContainer.innerHTML = '';
@@ -515,6 +531,7 @@ function handleResultSelection(feature) {
 ```
 
 **Critical implementation details:**
+
 1. ✅ **Debouncing**: Wait 300ms after user stops typing before API call
 2. ✅ **Session tokens**: Use same token for suggest + retrieve, generate new after
 3. ✅ **Error handling**: Handle API errors gracefully
@@ -550,9 +567,7 @@ function MapboxSearchComponent() {
     const [lng, lat] = result.features[0].geometry.coordinates;
     map.flyTo({ center: [lng, lat], zoom: 14 });
 
-    new mapboxgl.Marker()
-      .setLngLat([lng, lat])
-      .addTo(map);
+    new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
   };
 
   return (
@@ -573,6 +588,7 @@ function MapboxSearchComponent() {
 ```
 
 **Benefits:**
+
 - ✅ Complete UI component provided
 - ✅ No manual debouncing needed
 - ✅ No manual session token management
@@ -651,11 +667,7 @@ function MapboxSearchComponent({ country, types = 'address,poi' }) {
       {results.length > 0 && (
         <div className="search-results">
           {results.map((result) => (
-            <div
-              key={result.mapbox_id}
-              className="search-result"
-              onClick={() => handleResultClick(result)}
-            >
+            <div key={result.mapbox_id} className="search-result" onClick={() => handleResultClick(result)}>
               <strong>{result.name}</strong>
               {result.place_formatted && <p>{result.place_formatted}</p>}
             </div>
@@ -668,6 +680,7 @@ function MapboxSearchComponent({ country, types = 'address,poi' }) {
 ```
 
 **Benefits:**
+
 - ✅ Full control over UI design
 - ✅ Search JS Core handles debouncing automatically
 - ✅ Search JS Core handles session tokens automatically
@@ -682,6 +695,7 @@ function MapboxSearchComponent({ country, types = 'address,poi' }) {
 **When to use:** iOS app, want pre-built search UI, fastest implementation
 
 **Installation:**
+
 ```swift
 // Add to Package.swift or SPM
 dependencies: [
@@ -690,6 +704,7 @@ dependencies: [
 ```
 
 **Complete implementation with built-in UI:**
+
 ```swift
 import MapboxSearch
 import MapboxMaps
@@ -743,6 +758,7 @@ extension SearchViewController: SearchControllerDelegate {
 **When to use:** Need custom UI, integrate with UISearchController, full control over UX
 
 **Complete implementation:**
+
 ```swift
 import MapboxSearch
 import MapboxMaps
@@ -827,6 +843,7 @@ extension SearchViewController: UISearchResultsUpdating {
 **When to use:** Android app, want pre-built search UI, fastest implementation
 
 **Installation:**
+
 ```gradle
 // Add to build.gradle
 dependencies {
@@ -836,6 +853,7 @@ dependencies {
 ```
 
 **Complete implementation with built-in UI:**
+
 ```kotlin
 import com.mapbox.search.ui.view.SearchBottomSheetView
 import com.mapbox.maps.MapView
@@ -880,6 +898,7 @@ class SearchActivity : AppCompatActivity() {
 **When to use:** Need custom UI, integrate with SearchView, full control over UX
 
 **Complete implementation:**
+
 ```kotlin
 import com.mapbox.search.SearchEngine
 import com.mapbox.search.SearchEngineSettings
@@ -972,11 +991,13 @@ class SearchActivity : AppCompatActivity() {
 **When to use:** Server-side search, backend API, serverless functions
 
 **Installation:**
+
 ```bash
 npm install @mapbox/search-js-core
 ```
 
 **Complete implementation:**
+
 ```javascript
 import { SearchSession } from '@mapbox/search-js-core';
 
@@ -1015,6 +1036,7 @@ app.get('/api/search/:id', async (req, res) => {
 ```
 
 **Key benefits:**
+
 - ✅ Search JS Core handles session tokens automatically
 - ✅ Perfect for serverless (Vercel, Netlify, AWS Lambda)
 - ✅ Same API as browser Search JS Core
@@ -1025,6 +1047,7 @@ app.get('/api/search/:id', async (req, res) => {
 **When to use:** Very specific requirements, need features not in Search JS Core
 
 **Implementation:**
+
 ```javascript
 import fetch from 'node-fetch';
 
@@ -1036,9 +1059,7 @@ async function searchPlaces(query, options = {}) {
     ...options
   });
 
-  const response = await fetch(
-    `https://api.mapbox.com/search/searchbox/v1/suggest?${params}`
-  );
+  const response = await fetch(`https://api.mapbox.com/search/searchbox/v1/suggest?${params}`);
 
   return response.json();
 }
@@ -1069,6 +1090,7 @@ function debouncedSearch(query) {
 ```
 
 **Why 300ms?**
+
 - Fast enough to feel responsive
 - Slow enough to avoid spam
 - Industry standard (Google uses ~300ms)
@@ -1080,6 +1102,7 @@ function debouncedSearch(query) {
 **Problem:** Search Box API charges per session, not per request
 
 **What's a session?**
+
 - Starts with first suggest request
 - Ends with retrieve request
 - Use same token for all requests in session
@@ -1111,6 +1134,7 @@ class SearchSession {
 ```
 
 **Cost impact:**
+
 - ✅ Correct: 1 session = unlimited suggests + 1 retrieve = 1 charge
 - ❌ Wrong: No session token = each request charged separately
 
@@ -1120,21 +1144,29 @@ class SearchSession {
 
 ```javascript
 // GOOD: Specific country
-{ country: 'US' }
+{
+  country: 'US';
+}
 
 // GOOD: Proximity to user
-{ proximity: [-122.4194, 37.7749] }
+{
+  proximity: [-122.4194, 37.7749];
+}
 
 // GOOD: Bounding box for service area
-{ bbox: [-122.5, 37.7, -122.3, 37.9] }
+{
+  bbox: [-122.5, 37.7, -122.3, 37.9];
+}
 
 // BAD: No geographic context
-{ } // Returns global results, slower, less relevant
+{
+} // Returns global results, slower, less relevant
 ```
 
 **Tip:** Use the [Location Helper tool](https://labs.mapbox.com/location-helper/) to easily calculate bounding boxes for your service area.
 
 **Why it matters:**
+
 - ✅ Better result relevance
 - ✅ Faster response times
 - ✅ Lower ambiguity
@@ -1175,7 +1207,6 @@ async function performSearch(query) {
     }
 
     return data.suggestions;
-
   } catch (error) {
     // Network error
     console.error('Search error:', error);
@@ -1198,8 +1229,10 @@ async function performSearch(query) {
 ```
 
 **Not just:**
+
 ```html
-<div>Starbucks</div>  <!-- Which Starbucks? -->
+<div>Starbucks</div>
+<!-- Which Starbucks? -->
 ```
 
 ### 6. Loading States
@@ -1211,12 +1244,12 @@ function performSearch(query) {
   showLoadingSpinner();
 
   fetch(searchUrl)
-    .then(response => response.json())
-    .then(data => {
+    .then((response) => response.json())
+    .then((data) => {
       hideLoadingSpinner();
       displayResults(data.suggestions);
     })
-    .catch(error => {
+    .catch((error) => {
       hideLoadingSpinner();
       showError('Search failed');
     });
@@ -1228,13 +1261,7 @@ function performSearch(query) {
 **Make search keyboard-navigable:**
 
 ```html
-<input
-  type="search"
-  role="combobox"
-  aria-autocomplete="list"
-  aria-controls="search-results"
-  aria-expanded="false"
-/>
+<input type="search" role="combobox" aria-autocomplete="list" aria-controls="search-results" aria-expanded="false" />
 
 <ul id="search-results" role="listbox">
   <li role="option" tabindex="0">Result 1</li>
@@ -1243,6 +1270,7 @@ function performSearch(query) {
 ```
 
 **Keyboard support:**
+
 - ⬆️⬇️ Arrow keys: Navigate results
 - Enter: Select result
 - Escape: Close results
@@ -1267,6 +1295,7 @@ view.addGestureRecognizer(tapGesture)
 ```
 
 **Make touch targets large enough:**
+
 - Minimum: 44x44pt (iOS) / 48x48dp (Android)
 - Ensure adequate spacing between results
 
@@ -1302,7 +1331,7 @@ class SearchCache {
   }
 
   isValid(entry, maxAgeMs = 5 * 60 * 1000) {
-    return entry && (Date.now() - entry.timestamp) < maxAgeMs;
+    return entry && Date.now() - entry.timestamp < maxAgeMs;
   }
 }
 
@@ -1341,7 +1370,8 @@ async function search(query) {
 ```
 
 **Never:**
-- ❌ Use secret tokens (sk.*) in client-side code
+
+- ❌ Use secret tokens (sk.\*) in client-side code
 - ❌ Give tokens more scopes than needed
 - ❌ Skip URL restrictions on public tokens
 
@@ -1352,6 +1382,7 @@ See `mapbox-token-security` skill for details.
 ### ❌ Pitfall 1: No Debouncing
 
 **Problem:**
+
 ```javascript
 input.addEventListener('input', (e) => {
   performSearch(e.target.value); // API call on EVERY keystroke!
@@ -1359,6 +1390,7 @@ input.addEventListener('input', (e) => {
 ```
 
 **Impact:**
+
 - 🔥 Expensive (hundreds of unnecessary API calls)
 - 🐌 Slow (race conditions, outdated results)
 - 💥 Rate limiting (429 errors)
@@ -1368,12 +1400,14 @@ input.addEventListener('input', (e) => {
 ### ❌ Pitfall 2: Ignoring Session Tokens
 
 **Problem:**
+
 ```javascript
 // No session token = each request charged separately
 fetch('...suggest?q=query&access_token=xxx');
 ```
 
 **Impact:**
+
 - 💰 Costs 10-100x more than necessary
 - Budget blown on redundant charges
 
@@ -1382,17 +1416,22 @@ fetch('...suggest?q=query&access_token=xxx');
 ### ❌ Pitfall 3: No Geographic Context
 
 **Problem:**
+
 ```javascript
 // Searching globally for "Paris"
-{ q: 'Paris' } // Paris, France? Paris, Texas? Paris, Kentucky?
+{
+  q: 'Paris';
+} // Paris, France? Paris, Texas? Paris, Kentucky?
 ```
 
 **Impact:**
+
 - 😕 Confusing results (wrong country)
 - 🐌 Slower responses
 - 😞 Poor user experience
 
 **Solution:**
+
 ```javascript
 // Much better
 { q: 'Paris', country: 'US', proximity: user_location }
@@ -1401,20 +1440,23 @@ fetch('...suggest?q=query&access_token=xxx');
 ### ❌ Pitfall 4: Poor Mobile UX
 
 **Problem:**
+
 ```html
 <!-- Tiny touch targets -->
 <div style="height: 20px; padding: 2px;">Search result</div>
 ```
 
 **Impact:**
+
 - 😤 Frustrating to tap
 - 🎯 Accidental selections
 - ⭐ Bad reviews
 
 **Solution:**
+
 ```css
 .search-result {
-  min-height: 48px;  /* Android minimum */
+  min-height: 48px; /* Android minimum */
   padding: 12px;
   margin: 4px 0;
 }
@@ -1423,16 +1465,19 @@ fetch('...suggest?q=query&access_token=xxx');
 ### ❌ Pitfall 5: Not Handling Empty Results
 
 **Problem:**
+
 ```javascript
 // Just shows empty container
 displayResults([]); // User sees blank space - is it loading? broken?
 ```
 
 **Impact:**
+
 - ❓ User confusion
 - 🤔 Is it working?
 
 **Solution:**
+
 ```javascript
 if (results.length === 0) {
   showMessage('No results found. Try a different search term.');
@@ -1442,38 +1487,43 @@ if (results.length === 0) {
 ### ❌ Pitfall 6: Blocking on Slow Networks
 
 **Problem:**
+
 ```javascript
 // No timeout = waits forever on slow network
 await fetch(searchUrl);
 ```
 
 **Impact:**
+
 - ⏰ Appears frozen
 - 😫 User frustration
 
 **Solution:**
+
 ```javascript
 const controller = new AbortController();
 const timeout = setTimeout(() => controller.abort(), 5000);
 
-fetch(searchUrl, { signal: controller.signal })
-  .finally(() => clearTimeout(timeout));
+fetch(searchUrl, { signal: controller.signal }).finally(() => clearTimeout(timeout));
 ```
 
 ### ❌ Pitfall 7: Ignoring Result Types
 
 **Problem:**
+
 ```javascript
 // Treating all results the same
 displayResult(result.name); // But is it an address? POI? Region?
 ```
 
 **Impact:**
+
 - 🤷 Unclear what was selected
 - 🗺️ Wrong zoom level
 - 📍 Inappropriate markers
 
 **Solution:**
+
 ```javascript
 function handleResult(result) {
   const type = result.feature_type;
@@ -1493,6 +1543,7 @@ function handleResult(result) {
 ### ❌ Pitfall 8: Race Conditions
 
 **Problem:**
+
 ```javascript
 // Fast typing: "san francisco"
 // API responses arrive out of order:
@@ -1500,10 +1551,12 @@ function handleResult(result) {
 ```
 
 **Impact:**
+
 - 🔀 Wrong results displayed
 - 😵 Confusing UX
 
 **Solution:**
+
 ```javascript
 let searchCounter = 0;
 
@@ -1565,26 +1618,29 @@ function useMapboxSearch(accessToken, options = {}) {
     searchSessionRef.current = new SearchSession({ accessToken });
   }, [accessToken]);
 
-  const search = useCallback(async (query) => {
-    if (!query || query.length < 2) {
-      setResults([]);
-      return;
-    }
+  const search = useCallback(
+    async (query) => {
+      if (!query || query.length < 2) {
+        setResults([]);
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      // Search JS Core handles debouncing and session tokens
-      const response = await searchSessionRef.current.suggest(query, options);
-      setResults(response.suggestions || []);
-    } catch (err) {
-      setError(err.message);
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [options]);
+      try {
+        // Search JS Core handles debouncing and session tokens
+        const response = await searchSessionRef.current.suggest(query, options);
+        setResults(response.suggestions || []);
+      } catch (err) {
+        setError(err.message);
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [options]
+  );
 
   const retrieve = useCallback(async (suggestion) => {
     try {
@@ -1602,6 +1658,7 @@ function useMapboxSearch(accessToken, options = {}) {
 ```
 
 **Benefits of using Search JS Core:**
+
 - ✅ No manual session token management
 - ✅ No manual debouncing needed
 - ✅ No race condition handling needed (SDK handles it)
@@ -1663,6 +1720,7 @@ export function useMapboxSearch(accessToken, options = {}) {
 ```
 
 **Key benefits:**
+
 - ✅ Search JS Core handles debouncing automatically (no lodash needed)
 - ✅ Session tokens managed automatically (no manual token generation)
 - ✅ Simpler code, fewer dependencies
@@ -1691,7 +1749,7 @@ describe('MapboxSearch', () => {
     search.search('san francisco');
 
     // Wait for debounce
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     // Should only make one API call
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -1787,6 +1845,7 @@ function trackError(errorType, query) {
 Before launching, verify:
 
 **Configuration:**
+
 - [ ] Token properly scoped (search:read only)
 - [ ] URL restrictions configured
 - [ ] Geographic filtering set (country, proximity, or bbox)
@@ -1794,6 +1853,7 @@ Before launching, verify:
 - [ ] Language parameter set if needed
 
 **Implementation:**
+
 - [ ] Debouncing implemented (300ms recommended)
 - [ ] Session tokens used correctly
 - [ ] Error handling for all failure cases
@@ -1802,6 +1862,7 @@ Before launching, verify:
 - [ ] Race conditions prevented
 
 **UX:**
+
 - [ ] Touch targets at least 44pt/48dp
 - [ ] Results show enough context (name + address)
 - [ ] Keyboard navigation works
@@ -1809,12 +1870,14 @@ Before launching, verify:
 - [ ] Mobile keyboard handled properly
 
 **Performance:**
+
 - [ ] Caching implemented (if high volume)
 - [ ] Request timeout set
 - [ ] Minimal data fetched
 - [ ] Bundle size optimized
 
 **Testing:**
+
 - [ ] Unit tests for core logic
 - [ ] Integration tests with real API
 - [ ] Tested on slow networks
@@ -1822,6 +1885,7 @@ Before launching, verify:
 - [ ] Mobile device testing
 
 **Monitoring:**
+
 - [ ] Analytics tracking set up
 - [ ] Error logging configured
 - [ ] Usage monitoring in place
@@ -1830,6 +1894,7 @@ Before launching, verify:
 ## Integration with Other Skills
 
 **Works with:**
+
 - **mapbox-search-patterns**: Parameter selection and optimization
 - **mapbox-web-integration-patterns**: Framework-specific patterns
 - **mapbox-token-security**: Token management and security

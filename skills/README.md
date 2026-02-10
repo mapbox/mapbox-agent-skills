@@ -25,6 +25,7 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 ## Documentation
 
 For full documentation including:
+
 - Detailed skill descriptions and use cases
 - Installation instructions for Claude Code, Cursor, VS Code
 - Examples and conversation transcripts
@@ -35,6 +36,7 @@ See the [main README](../README.md).
 ## Contributing
 
 Want to create a new skill or improve an existing one? See the [Contributing Guide](../CONTRIBUTING.md) for:
+
 - Skill structure and format requirements
 - Content guidelines and quality standards
 - Testing and validation instructions

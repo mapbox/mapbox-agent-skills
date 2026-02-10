@@ -169,7 +169,7 @@ Ask your AI assistant:
 You should see 30+ tools including:
 
 - **Style tools**: `create_style_tool`, `list_styles_tool`, `update_style_tool`, `delete_style_tool`, `preview_style_tool`, etc.
-- **Token tools**: `create_token`, `list_tokens`
+- **Token tools**: `create_token_tool`, `list_tokens_tool`
 - **Validation tools**: `validate_geojson_tool`, `validate_style_tool`, `validate_expression_tool`
 - **Geographic tools**: `bounding_box_tool`, `coordinate_conversion_tool`, `tilequery_tool`
 - **Documentation**: `get_latest_mapbox_docs_tool`

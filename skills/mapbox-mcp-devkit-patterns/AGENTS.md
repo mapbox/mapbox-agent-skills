@@ -124,10 +124,10 @@ Configure in Claude Desktop config:
 
 ### Token Management
 
-| Tool             | Purpose               | Example Use                  |
-| ---------------- | --------------------- | ---------------------------- |
-| **create_token** | Generate access token | "Create token for localhost" |
-| **list_tokens**  | Show all tokens       | "List my tokens and scopes"  |
+| Tool                  | Purpose               | Example Use                  |
+| --------------------- | --------------------- | ---------------------------- |
+| **create_token_tool** | Generate access token | "Create token for localhost" |
+| **list_tokens_tool**  | Show all tokens       | "List my tokens and scopes"  |
 
 ### Validation & Analysis
 

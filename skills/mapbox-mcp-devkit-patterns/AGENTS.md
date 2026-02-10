@@ -12,27 +12,31 @@ MCP server that gives AI assistants access to Mapbox developer APIs for style ma
 
 ### Hosted (Recommended)
 
-Use Mapbox's hosted server - no installation needed. Supports **OAuth** (no token config required):
+Use Mapbox's hosted server - no installation needed.
+
+**Claude Desktop:**
 
 ```json
-// Claude Code: ~/.claude/claude_desktop_config.json
+// ~/Library/Application Support/Claude/claude_desktop_config.json (macOS)
+// %APPDATA%\Claude\claude_desktop_config.json (Windows)
 {
   "mcpServers": {
-    "mapbox-devkit": {
-      "url": "https://mcp-devkit.mapbox.com/mcp"
+    "mapbox-devkit-mcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
     }
   }
 }
 ```
 
-OAuth prompts on first use. Optionally use token auth:
+**Claude Code:**
 
 ```json
+// ~/.claude/.claude.json
 {
   "mcpServers": {
     "mapbox-devkit": {
-      "url": "https://mcp-devkit.mapbox.com/mcp",
-      "headers": {"Authorization": "Bearer your_token"}
+      "url": "https://mcp-devkit.mapbox.com/mcp"
     }
   }
 }
@@ -43,14 +47,19 @@ OAuth prompts on first use. Optionally use token auth:
 ```bash
 git clone https://github.com/mapbox/mcp-devkit-server.git
 cd mcp-devkit-server && npm install && npm run build
+```
 
-# Configure
+Configure in Claude Desktop config:
+
+```json
 {
   "mcpServers": {
-    "mapbox-devkit": {
+    "MapboxDevKitServer": {
       "command": "node",
-      "args": ["/path/to/build/index.js"],
-      "env": {"MAPBOX_ACCESS_TOKEN": "your_token"}
+      "args": ["/Users/username/github-projects/mcp-devkit-server/dist/esm/index.js"],
+      "env": {
+        "MAPBOX_ACCESS_TOKEN": "some token"
+      }
     }
   }
 }
@@ -114,14 +123,20 @@ Check for:
 
 ## When to Use DevKit
 
-| Use DevKit ✅ | Use Direct APIs ❌ |
-|--------------|-------------------|
-| Development-time operations | Production runtime |
-| Style creation/updates | Tile serving |
-| Token generation | Map rendering |
-| Data validation | High-frequency updates |
-| Learning/prototyping | User-facing features |
-| Documentation lookup | Client-side operations |
+| Scenario | Use DevKit | Use Direct APIs |
+|----------|------------|-----------------|
+| Development-time operations | ✅ | |
+| Production runtime | | ✅ |
+| Style creation/updates | ✅ | |
+| Tile serving | | ✅ |
+| Token generation | ✅ | |
+| Map rendering | | ✅ |
+| Data validation | ✅ | |
+| High-frequency updates | | ✅ |
+| Learning/prototyping | ✅ | |
+| User-facing features | | ✅ |
+| Documentation lookup | ✅ | |
+| Client-side operations | | ✅ |
 
 ## Validation Patterns
 

@@ -79,7 +79,7 @@ const getDirectionsTool = createTool({
     const result = await mcp.callTool('get_directions', {
       origin,
       destination,
-      profile: 'driving-traffic'
+      profile: 'mapbox/driving-traffic'
     });
 
     return {
@@ -150,7 +150,7 @@ const getIsochroneTool = createTool({
   inputSchema: z.object({
     location: z.array(z.number()).length(2).describe('Center point [longitude, latitude]'),
     minutes: z.number().describe('Time limit in minutes'),
-    profile: z.enum(['driving', 'walking', 'cycling']).optional().default('driving')
+    profile: z.enum(['mapbox/driving', 'mapbox/walking', 'mapbox/cycling']).optional().default('mapbox/driving')
   }),
   outputSchema: z.object({
     area: z.string().describe('GeoJSON polygon of reachable area')
@@ -159,7 +159,7 @@ const getIsochroneTool = createTool({
     const result = await mcp.callTool('get_isochrone', {
       coordinates: location,
       contours_minutes: [minutes],
-      profile: profile || 'driving'
+      profile: profile || 'mapbox/driving'
     });
 
     return {

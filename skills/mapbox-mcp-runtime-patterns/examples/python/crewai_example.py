@@ -84,7 +84,7 @@ class DirectionsTool(BaseTool):
         result = mcp.call_tool('get_directions', {
             'origin': origin,
             'destination': destination,
-            'profile': 'driving-traffic'
+            'profile': 'mapbox/driving-traffic'
         })
         return f"Directions: {result}"
 
@@ -133,7 +133,7 @@ class IsochroneInput(BaseModel):
     """Input schema for isochrone tool."""
     location: list = Field(..., description="Center point [longitude, latitude]")
     minutes: int = Field(..., description="Time limit in minutes")
-    profile: str = Field('driving', description="Travel mode: driving, walking, or cycling")
+    profile: str = Field('mapbox/driving', description="Travel mode: mapbox/driving, mapbox/walking, or mapbox/cycling")
 
 
 class IsochroneTool(BaseTool):
@@ -141,7 +141,7 @@ class IsochroneTool(BaseTool):
     description: str = "Calculate the AREA reachable within a time limit from a starting point. Use for 'What can I reach in X minutes?' questions or service area analysis. Returns GeoJSON polygon of reachable area."
     args_schema: Type[BaseModel] = IsochroneInput
 
-    def _run(self, location: list, minutes: int, profile: str = 'driving') -> str:
+    def _run(self, location: list, minutes: int, profile: str = 'mapbox/driving') -> str:
         result = mcp.call_tool('get_isochrone', {
             'coordinates': location,
             'contours_minutes': [minutes],

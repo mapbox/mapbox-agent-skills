@@ -37,15 +37,16 @@ No installation required, just configure your AI assistant.
 
 **Authentication:** The hosted server supports OAuth, so no token configuration needed! Simply add the server URL:
 
-#### For Claude Code
+#### For Claude Desktop
 
-Add to `~/.claude/claude_desktop_config.json`:
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
-    "mapbox-devkit": {
-      "url": "https://mcp-devkit.mapbox.com/mcp"
+    "mapbox-devkit-mcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
     }
   }
 }
@@ -53,18 +54,15 @@ Add to `~/.claude/claude_desktop_config.json`:
 
 You'll be prompted to authenticate via OAuth on first use.
 
-**Alternative - Token Authentication:**
+#### For Claude Code
 
-If you prefer to use an access token instead of OAuth:
+Add to `~/.claude/.claude.json`:
 
 ```json
 {
   "mcpServers": {
     "mapbox-devkit": {
-      "url": "https://mcp-devkit.mapbox.com/mcp",
-      "headers": {
-        "Authorization": "Bearer your_mapbox_token_here"
-      }
+      "url": "https://mcp-devkit.mapbox.com/mcp"
     }
   }
 }
@@ -108,21 +106,23 @@ npm install
 npm run build
 ```
 
-**Configuration for self-hosted:**
+**Configuration for self-hosted (Claude Desktop):**
 
 ```json
 {
   "mcpServers": {
-    "mapbox-devkit": {
+    "MapboxDevKitServer": {
       "command": "node",
-      "args": ["/path/to/mcp-devkit-server/build/index.js"],
+      "args": ["/Users/username/github-projects/mcp-devkit-server/dist/esm/index.js"],
       "env": {
-        "MAPBOX_ACCESS_TOKEN": "your_token_here"
+        "MAPBOX_ACCESS_TOKEN": "some token"
       }
     }
   }
 }
 ```
+
+Replace `/Users/username/github-projects/` with your actual path.
 
 ### Verify Installation
 

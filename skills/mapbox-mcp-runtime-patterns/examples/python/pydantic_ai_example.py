@@ -98,7 +98,7 @@ def get_directions(
     result = mcp.call_tool('get_directions', {
         'origin': list(origin),
         'destination': list(destination),
-        'profile': 'driving-traffic'
+        'profile': 'mapbox/driving-traffic'
     })
     return result
 
@@ -155,14 +155,14 @@ def get_isochrone(
     ctx: RunContext,
     location: Tuple[float, float],
     minutes: int,
-    profile: str = 'walking'
+    profile: str = 'mapbox/walking'
 ) -> str:
     """Calculate reachable area within a time limit.
 
     Args:
         location: Center point (longitude, latitude)
         minutes: Time limit in minutes
-        profile: 'driving', 'walking', or 'cycling'
+        profile: 'mapbox/driving', 'mapbox/walking', or 'mapbox/cycling'
 
     Returns:
         GeoJSON polygon of reachable area

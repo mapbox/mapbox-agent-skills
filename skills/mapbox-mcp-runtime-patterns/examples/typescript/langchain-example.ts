@@ -76,7 +76,7 @@ const getDirectionsTool = new DynamicStructuredTool({
     const result = await mcp.callTool('get_directions', {
       origin: Array.from(origin),
       destination: Array.from(destination),
-      profile: 'driving-traffic'
+      profile: 'mapbox/driving-traffic'
     });
     return result;
   }
@@ -122,13 +122,13 @@ const getIsochroneTool = new DynamicStructuredTool({
   schema: z.object({
     location: z.tuple([z.number(), z.number()]).describe('Center point [longitude, latitude]'),
     minutes: z.number().describe('Time limit in minutes'),
-    profile: z.enum(['driving', 'walking', 'cycling']).optional()
+    profile: z.enum(['mapbox/driving', 'mapbox/walking', 'mapbox/cycling']).optional()
   }) as any,
   func: async ({ location, minutes, profile }: any) => {
     const result = await mcp.callTool('get_isochrone', {
       coordinates: Array.from(location),
       contours_minutes: [minutes],
-      profile: profile || 'walking'
+      profile: profile || 'mapbox/walking'
     });
     return result;
   }

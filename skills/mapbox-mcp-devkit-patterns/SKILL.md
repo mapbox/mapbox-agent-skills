@@ -70,21 +70,37 @@ Add to `~/.claude/.claude.json`:
 
 #### For Cursor
 
-Add to Cursor MCP settings:
+Add to Cursor MCP settings (Settings > Features > MCP):
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "mapbox-devkit": {
-        "url": "https://mcp-devkit.mapbox.com/mcp"
-      }
+  "mcpServers": {
+    "mapbox-devkit-mcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
     }
   }
 }
 ```
 
 OAuth authentication will be handled automatically.
+
+#### For VS Code with Copilot
+
+Add to `.vscode/settings.json` in your project or User settings:
+
+```json
+{
+  "mcp.servers": {
+    "mapbox-devkit-mcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
+    }
+  }
+}
+```
+
+Requires GitHub Copilot with MCP support enabled.
 
 #### For Windsurf/Cline
 

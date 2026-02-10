@@ -42,6 +42,34 @@ Use Mapbox's hosted server - no installation needed.
 }
 ```
 
+**Cursor:**
+
+```json
+// Cursor MCP settings (Settings > Features > MCP)
+{
+  "mcpServers": {
+    "mapbox-devkit-mcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
+    }
+  }
+}
+```
+
+**VS Code with Copilot:**
+
+```json
+// .vscode/settings.json or User settings
+{
+  "mcp.servers": {
+    "mapbox-devkit-mcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://mcp-devkit.mapbox.com/mcp"]
+    }
+  }
+}
+```
+
 ### Self-Hosted (Advanced)
 
 ```bash

@@ -10,6 +10,7 @@ Comprehensive patterns for building store locators, restaurant finders, and loca
 ## When to Use This Skill
 
 Use this skill when building applications that:
+
 - Display multiple locations on a map (stores, restaurants, offices, etc.)
 - Allow users to filter or search locations
 - Calculate distances from user location
@@ -20,10 +21,12 @@ Use this skill when building applications that:
 ## Dependencies
 
 **Required:**
+
 - Mapbox GL JS v3.x
 - [@turf/turf](https://turfjs.org/) - For spatial calculations (distance, area, etc.)
 
 **Installation:**
+
 ```bash
 npm install mapbox-gl @turf/turf
 ```
@@ -71,6 +74,7 @@ A typical store locator consists of:
 ```
 
 **Key properties:**
+
 - `id` - Unique identifier for each location
 - `name` - Display name
 - `address` - Full address for display and geocoding
@@ -105,7 +109,7 @@ const stores = {
         phone: '(202) 555-0123',
         category: 'retail'
       }
-    },
+    }
     // ... more stores
   ]
 };
@@ -240,24 +244,8 @@ map.on('load', () => {
     source: 'stores',
     filter: ['has', 'point_count'],
     paint: {
-      'circle-color': [
-        'step',
-        ['get', 'point_count'],
-        '#51bbd6',
-        10,
-        '#f1f075',
-        30,
-        '#f28cb1'
-      ],
-      'circle-radius': [
-        'step',
-        ['get', 'point_count'],
-        20,
-        10,
-        30,
-        30,
-        40
-      ]
+      'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'],
+      'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40]
     }
   });
 
@@ -444,14 +432,13 @@ document.getElementById('search-input').addEventListener('input', (e) => {
 
 ```javascript
 function filterByCategory(category) {
-  const filtered = category === 'all'
-    ? stores
-    : {
-        type: 'FeatureCollection',
-        features: stores.features.filter(
-          (store) => store.properties.category === category
-        )
-      };
+  const filtered =
+    category === 'all'
+      ? stores
+      : {
+          type: 'FeatureCollection',
+          features: stores.features.filter((store) => store.properties.category === category)
+        };
 
   // Update map and list
   if (map.getSource('stores')) {
@@ -491,10 +478,7 @@ navigator.geolocation.getCurrentPosition(
 
     // Calculate distances and sort
     const storesWithDistance = stores.features.map((store) => {
-      const distance = calculateDistance(
-        userLocation,
-        store.geometry.coordinates
-      );
+      const distance = calculateDistance(userLocation, store.geometry.coordinates);
       return {
         ...store,
         properties: {
@@ -566,7 +550,7 @@ function buildLocationList(stores) {
 async function getDirections(from, to) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/driving/${from[0]},${from[1]};${to[0]},${to[1]}?` +
-    `steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`
+      `steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`
   );
 
   const data = await query.json();
@@ -632,7 +616,7 @@ function createPopup(store) {
          <p><strong>${directions.distance} mi • ${directions.duration} min</strong></p>
          <p>${store.properties.address}</p>
          <div class="directions-steps">
-           ${directions.steps.map(step => `<p>${step.maneuver.instruction}</p>`).join('')}
+           ${directions.steps.map((step) => `<p>${step.maneuver.instruction}</p>`).join('')}
          </div>`
       );
     });
@@ -647,192 +631,187 @@ function createPopup(store) {
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Store Locator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Arial', sans-serif;
-    }
+  <head>
+    <meta charset="utf-8" />
+    <title>Store Locator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Arial', sans-serif;
+      }
 
-    #app {
-      display: flex;
-      height: 100vh;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 400px;
-      height: 100vh;
-      overflow-y: scroll;
-      background-color: #fff;
-      border-right: 1px solid #ddd;
-    }
-
-    .sidebar-header {
-      padding: 20px;
-      background-color: #f8f9fa;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .sidebar-header h1 {
-      margin: 0 0 10px 0;
-      font-size: 24px;
-    }
-
-    /* Search */
-    .search-box {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-
-    .filter-group {
-      margin-top: 10px;
-    }
-
-    .filter-group select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-
-    /* Listings */
-    #listings {
-      padding: 0;
-    }
-
-    .listing {
-      padding: 15px 20px;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .listing:hover {
-      background-color: #f8f9fa;
-    }
-
-    .listing.active {
-      background-color: #e3f2fd;
-      border-left: 3px solid #2196f3;
-    }
-
-    .listing .title {
-      display: block;
-      color: #333;
-      font-weight: bold;
-      font-size: 16px;
-      text-decoration: none;
-      margin-bottom: 5px;
-    }
-
-    .listing .title:hover {
-      color: #2196f3;
-    }
-
-    .listing p {
-      margin: 5px 0;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .listing .distance {
-      color: #2196f3;
-      font-weight: bold;
-    }
-
-    /* Map */
-    #map {
-      flex: 1;
-      height: 100vh;
-    }
-
-    /* Popups */
-    .mapboxgl-popup-content {
-      padding: 15px;
-      font-family: 'Arial', sans-serif;
-    }
-
-    .mapboxgl-popup-content h3 {
-      margin: 0 0 10px 0;
-      font-size: 18px;
-    }
-
-    .mapboxgl-popup-content p {
-      margin: 5px 0;
-      font-size: 14px;
-    }
-
-    .mapboxgl-popup-content button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background-color: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .mapboxgl-popup-content button:hover {
-      background-color: #1976d2;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
       #app {
-        flex-direction: column;
+        display: flex;
+        height: 100vh;
       }
 
+      /* Sidebar */
       .sidebar {
+        width: 400px;
+        height: 100vh;
+        overflow-y: scroll;
+        background-color: #fff;
+        border-right: 1px solid #ddd;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .sidebar-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+      }
+
+      /* Search */
+      .search-box {
         width: 100%;
-        height: 50vh;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
       }
 
+      .filter-group {
+        margin-top: 10px;
+      }
+
+      .filter-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      /* Listings */
+      #listings {
+        padding: 0;
+      }
+
+      .listing {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .listing:hover {
+        background-color: #f8f9fa;
+      }
+
+      .listing.active {
+        background-color: #e3f2fd;
+        border-left: 3px solid #2196f3;
+      }
+
+      .listing .title {
+        display: block;
+        color: #333;
+        font-weight: bold;
+        font-size: 16px;
+        text-decoration: none;
+        margin-bottom: 5px;
+      }
+
+      .listing .title:hover {
+        color: #2196f3;
+      }
+
+      .listing p {
+        margin: 5px 0;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .listing .distance {
+        color: #2196f3;
+        font-weight: bold;
+      }
+
+      /* Map */
       #map {
-        height: 50vh;
+        flex: 1;
+        height: 100vh;
       }
-    }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h1>Store Locator</h1>
-        <input
-          type="text"
-          id="search-input"
-          class="search-box"
-          placeholder="Search by name or address..."
-        >
-        <div class="filter-group">
-          <select id="category-select">
-            <option value="all">All Categories</option>
-            <option value="retail">Retail</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="office">Office</option>
-          </select>
-        </div>
-      </div>
-      <div id="listings"></div>
-    </div>
-    <div id="map"></div>
-  </div>
 
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
-  <script src="app.js"></script>
-</body>
+      /* Popups */
+      .mapboxgl-popup-content {
+        padding: 15px;
+        font-family: 'Arial', sans-serif;
+      }
+
+      .mapboxgl-popup-content h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+      }
+
+      .mapboxgl-popup-content p {
+        margin: 5px 0;
+        font-size: 14px;
+      }
+
+      .mapboxgl-popup-content button {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .mapboxgl-popup-content button:hover {
+        background-color: #1976d2;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        #app {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          height: 50vh;
+        }
+
+        #map {
+          height: 50vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h1>Store Locator</h1>
+          <input type="text" id="search-input" class="search-box" placeholder="Search by name or address..." />
+          <div class="filter-group">
+            <select id="category-select">
+              <option value="all">All Categories</option>
+              <option value="retail">Retail</option>
+              <option value="restaurant">Restaurant</option>
+              <option value="office">Office</option>
+            </select>
+          </div>
+        </div>
+        <div id="listings"></div>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
 ```
 
@@ -896,7 +875,7 @@ document.getElementById('search-input').addEventListener('input', (e) => {
 
 ```javascript
 // ✅ GOOD: Load data once, filter in memory
-const allStores = await fetch('/api/stores').then(r => r.json());
+const allStores = await fetch('/api/stores').then((r) => r.json());
 
 function filterStores(criteria) {
   return {
@@ -907,7 +886,7 @@ function filterStores(criteria) {
 
 // ❌ BAD: Fetch on every filter
 async function filterStores(criteria) {
-  return await fetch(`/api/stores?filter=${criteria}`).then(r => r.json());
+  return await fetch(`/api/stores?filter=${criteria}`).then((r) => r.json());
 }
 ```
 
@@ -1040,7 +1019,8 @@ document.getElementById('toggle-list').addEventListener('click', () => {
 function createDetailedPopup(store) {
   const popup = new mapboxgl.Popup({ maxWidth: '400px' })
     .setLngLat(store.geometry.coordinates)
-    .setHTML(`
+    .setHTML(
+      `
       <div class="store-popup">
         <h3>${store.properties.name}</h3>
         <p class="address">${store.properties.address}</p>
@@ -1053,7 +1033,8 @@ function createDetailedPopup(store) {
           ${store.properties.website ? `<a href="${store.properties.website}" target="_blank">Website</a>` : ''}
         </div>
       </div>
-    `)
+    `
+    )
     .addTo(map);
 }
 ```

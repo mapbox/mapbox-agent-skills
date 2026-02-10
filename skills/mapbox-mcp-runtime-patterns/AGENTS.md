@@ -10,11 +10,11 @@ Runtime server providing geospatial tools to AI agents via Model Context Protoco
 
 ## Tools Available
 
-| Category | Tools | Cost |
-|----------|-------|------|
-| **Offline (Turf.js)** | distance, bearing, midpoint, point-in-polygon, area, buffer, centroid, bbox, simplify | Free, instant |
-| **Mapbox APIs** | directions, geocoding, category search, isochrone, matrix, static maps, map matching, optimization | API costs apply |
-| **Utility** | version, category list | Free |
+| Category              | Tools                                                                                              | Cost            |
+| --------------------- | -------------------------------------------------------------------------------------------------- | --------------- |
+| **Offline (Turf.js)** | distance, bearing, midpoint, point-in-polygon, area, buffer, centroid, bbox, simplify              | Free, instant   |
+| **Mapbox APIs**       | directions, geocoding, category search, isochrone, matrix, static maps, map matching, optimization | API costs apply |
+| **Utility**           | version, category list                                                                             | Free            |
 
 ## Installation
 
@@ -250,19 +250,19 @@ Turf.js   Mapbox APIs
 
 ## Tool Selection Strategy
 
-| Need | Use | Reason |
-|------|-----|--------|
-| Distance calculation | distance_tool (offline) | Free, instant |
-| Point in polygon | point_in_polygon_tool (offline) | Free, instant |
-| Bounding box | bbox_tool (offline) | Free, instant |
-| Simplify geometry | simplify_tool (offline) | Free, instant |
-| Directions with traffic | directions_tool (API) | Real-time data |
-| Geocoding | reverse_geocode_tool (API) | Requires database |
-| Isochrones | isochrone_tool (API) | Complex calculation |
-| Multi-stop optimization | optimization_tool (API) | Complex calculation |
-| GPS trace matching | map_matching_tool (API) | Requires routing data |
-| Bearing/midpoint | bearing_tool/midpoint_tool (offline) | Free, instant |
-| POI categories | category_list_tool (utility) | Metadata lookup |
+| Need                    | Use                                  | Reason                |
+| ----------------------- | ------------------------------------ | --------------------- |
+| Distance calculation    | distance_tool (offline)              | Free, instant         |
+| Point in polygon        | point_in_polygon_tool (offline)      | Free, instant         |
+| Bounding box            | bbox_tool (offline)                  | Free, instant         |
+| Simplify geometry       | simplify_tool (offline)              | Free, instant         |
+| Directions with traffic | directions_tool (API)                | Real-time data        |
+| Geocoding               | reverse_geocode_tool (API)           | Requires database     |
+| Isochrones              | isochrone_tool (API)                 | Complex calculation   |
+| Multi-stop optimization | optimization_tool (API)              | Complex calculation   |
+| GPS trace matching      | map_matching_tool (API)              | Requires routing data |
+| Bearing/midpoint        | bearing_tool/midpoint_tool (offline) | Free, instant         |
+| POI categories          | category_list_tool (utility)         | Metadata lookup       |
 
 ## Performance Optimization
 
@@ -277,7 +277,7 @@ class CachedMCP {
     // Cache offline tools forever (deterministic)
     const ttl = this.offlineTools.includes(name) ? Infinity : 3600000;
 
-    const key = JSON.stringify({name, params});
+    const key = JSON.stringify({ name, params });
     const cached = this.cache.get(key);
 
     if (cached && Date.now() - cached.timestamp < ttl) {
@@ -296,13 +296,11 @@ class CachedMCP {
 ```typescript
 // ❌ Bad: Sequential calls
 for (const location of locations) {
-  await mcp.call('distance_tool', {from: user, to: location});
+  await mcp.call('distance_tool', { from: user, to: location });
 }
 
 // ✅ Good: Parallel
-await Promise.all(
-  locations.map(loc => mcp.call('distance_tool', {from: user, to: loc}))
-);
+await Promise.all(locations.map((loc) => mcp.call('distance_tool', { from: user, to: loc })));
 
 // ✅ Better: Use matrix tool
 await mcp.call('matrix_tool', {
@@ -362,9 +360,9 @@ class RateLimitedMCP {
 class MockMCP {
   async callTool(name: string, params: any) {
     const mocks = {
-      'distance_tool': () => '2.5',
-      'directions_tool': () => ({ duration: 1200, distance: 5000 }),
-      'point_in_polygon_tool': () => true
+      distance_tool: () => '2.5',
+      directions_tool: () => ({ duration: 1200, distance: 5000 }),
+      point_in_polygon_tool: () => true
     };
     return mocks[name]?.();
   }
@@ -376,13 +374,13 @@ const agent = new MapboxAgent(new MockMCP());
 
 ## When to Use
 
-| Use MCP ✅ | Use Direct API ❌ |
-|-----------|------------------|
-| AI agent interactions | Simple operations |
-| Complex workflows | Performance-critical |
-| Offline calculations | Client-side rendering |
-| Multi-step geospatial logic | Map display |
-| Prototyping | Production maps |
+| Use MCP ✅                  | Use Direct API ❌     |
+| --------------------------- | --------------------- |
+| AI agent interactions       | Simple operations     |
+| Complex workflows           | Performance-critical  |
+| Offline calculations        | Client-side rendering |
+| Multi-step geospatial logic | Map display           |
+| Prototyping                 | Production maps       |
 
 ## Cost Optimization
 
@@ -402,20 +400,20 @@ const freeOps = [
 
 // Use API tools only when necessary
 const apiOps = [
-  'directions_tool',      // Need traffic data
-  'reverse_geocode_tool',     // Need address database
-  'isochrone_tool',       // Complex calculation
-  'category_search_tool',     // Need POI database
-  'matrix_tool',          // Travel time matrix
-  'static_map_image_tool',    // Static map generation
-  'map_matching_tool',    // GPS trace matching
-  'optimization_tool'     // Route optimization
+  'directions_tool', // Need traffic data
+  'reverse_geocode_tool', // Need address database
+  'isochrone_tool', // Complex calculation
+  'category_search_tool', // Need POI database
+  'matrix_tool', // Travel time matrix
+  'static_map_image_tool', // Static map generation
+  'map_matching_tool', // GPS trace matching
+  'optimization_tool' // Route optimization
 ];
 
 // Utility tools
 const utilityOps = [
-  'version_tool',         // Server version info
-  'category_list_tool'    // Available POI categories
+  'version_tool', // Server version info
+  'category_list_tool' // Available POI categories
 ];
 
 function chooseTool(operation: string, needsRealtime: boolean) {

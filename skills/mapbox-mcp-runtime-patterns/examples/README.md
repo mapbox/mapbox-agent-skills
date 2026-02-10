@@ -31,6 +31,7 @@ python pydantic_ai_example.py
 ```
 
 **Features**:
+
 - Type-safe tool definitions
 - Environment variable support
 - Hosted MCP server integration
@@ -49,6 +50,7 @@ python crewai_example.py
 ```
 
 **Features**:
+
 - Multi-agent crews with specialized roles
 - Task dependencies and context passing
 - Location Analyst + Route Planner agents
@@ -57,6 +59,7 @@ python crewai_example.py
 **Best for**: Complex workflows requiring multiple specialized agents
 
 **Agents included**:
+
 - **Location Analyst**: Finds places, analyzes areas
 - **Route Planner**: Calculates routes and travel times
 
@@ -71,6 +74,7 @@ python smolagents_example.py
 ```
 
 **Features**:
+
 - **Method 1**: Direct MCP connection (recommended, minimal code)
 - **Method 2**: Custom tools with `@tool` decorator
 - Lightweight and fast
@@ -104,6 +108,7 @@ npm run mastra
 ```
 
 **Features**:
+
 - Type-safe tool creation with Zod schemas
 - Hosted MCP server integration
 - Multiple Mapbox tools (directions, POI search, distance, isochrone)
@@ -112,12 +117,14 @@ npm run mastra
 **Best for**: TypeScript applications with strong typing
 
 **Tools included**:
+
 - `get-directions`: Driving directions with traffic
 - `search-poi`: Find restaurants, hotels, etc.
 - `calculate-distance`: Offline distance calculation
 - `get-isochrone`: Reachable area analysis
 
 **Verify it compiles**:
+
 ```bash
 npm run build  # TypeScript type-check
 ```
@@ -133,6 +140,7 @@ npm run langchain
 ```
 
 **Features**:
+
 - Conversational interface
 - Tool chaining
 - Memory and context management
@@ -141,6 +149,7 @@ npm run langchain
 **Best for**: Conversational applications with complex tool chains
 
 **Tools included**:
+
 - Directions, POI search, distance calculation, isochrones
 - All tools use hosted Mapbox MCP server
 
@@ -148,13 +157,13 @@ npm run langchain
 
 ## Framework Comparison
 
-| Framework | Language | Best For | Complexity | Type Safety |
-|-----------|----------|----------|------------|-------------|
-| **Pydantic AI** | Python | Production apps | Medium | ⭐⭐⭐ |
-| **CrewAI** | Python | Multi-agent systems | High | ⭐⭐ |
-| **Smolagents** | Python | Lightweight agents | Low | ⭐⭐ |
-| **Mastra** | TypeScript | Typed agents | Medium | ⭐⭐⭐ |
-| **LangChain** | TypeScript | Conversational AI | High | ⭐⭐ |
+| Framework       | Language   | Best For            | Complexity | Type Safety |
+| --------------- | ---------- | ------------------- | ---------- | ----------- |
+| **Pydantic AI** | Python     | Production apps     | Medium     | ⭐⭐⭐      |
+| **CrewAI**      | Python     | Multi-agent systems | High       | ⭐⭐        |
+| **Smolagents**  | Python     | Lightweight agents  | Low        | ⭐⭐        |
+| **Mastra**      | TypeScript | Typed agents        | Medium     | ⭐⭐⭐      |
+| **LangChain**   | TypeScript | Conversational AI   | High       | ⭐⭐        |
 
 ## Common Use Cases
 
@@ -185,6 +194,7 @@ Find properties with good commute:
 All examples connect to the hosted Mapbox MCP Server at `https://mcp.mapbox.com/mcp`.
 
 **API Tools** (require Mapbox token):
+
 - `directions_tool`: Driving directions with traffic
 - `category_search_tool`: Find POIs by category
 - `reverse_geocode_tool`: Coordinates to address
@@ -195,6 +205,7 @@ All examples connect to the hosted Mapbox MCP Server at `https://mcp.mapbox.com/
 - `optimization_tool`: Optimize multi-stop routes
 
 **Offline Tools** (free, instant):
+
 - `distance_tool`: Distance between points
 - `bearing_tool`: Compass direction
 - `midpoint_tool`: Midpoint between points
@@ -206,6 +217,7 @@ All examples connect to the hosted Mapbox MCP Server at `https://mcp.mapbox.com/
 - `simplify_tool`: Simplify geometries
 
 **Utility Tools**:
+
 - `version_tool`: Get MCP server version
 - `category_list_tool`: List available POI categories
 
@@ -242,6 +254,7 @@ Error: MAPBOX_ACCESS_TOKEN is required
 ```
 
 **Solution**: Export the environment variable
+
 ```bash
 export MAPBOX_ACCESS_TOKEN="pk.ey..."
 ```
@@ -261,6 +274,7 @@ ModuleNotFoundError: No module named 'crewai'
 ```
 
 **Solution**: Install requirements
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -272,6 +286,7 @@ Cannot find module '@mastra/core'
 ```
 
 **Solution**: Install dependencies
+
 ```bash
 npm install
 ```

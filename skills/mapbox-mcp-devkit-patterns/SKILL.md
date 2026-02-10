@@ -31,6 +31,7 @@ The [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) is a
 ### Option 1: Hosted Server (Recommended)
 
 **Easiest setup** - Use Mapbox's hosted DevKit MCP server at:
+
 ```
 https://mcp-devkit.mapbox.com/mcp
 ```
@@ -61,6 +62,7 @@ You'll be prompted to authenticate via OAuth on first use.
 Claude Code supports both user-level and project-level MCP configuration:
 
 **User-level** (applies to all projects) - `~/.claude.json`:
+
 ```json
 {
   "mcpServers": {
@@ -72,6 +74,7 @@ Claude Code supports both user-level and project-level MCP configuration:
 ```
 
 **Project-level** (specific project, can commit to git) - `.mcp.json` in repository root:
+
 ```json
 {
   "mcpServers": {
@@ -158,11 +161,13 @@ Replace `/Users/username/github-projects/` with your actual path.
 ### Verify Installation
 
 Ask your AI assistant:
+
 ```
 "List the available Mapbox DevKit tools"
 ```
 
 You should see 30+ tools including:
+
 - **Style tools**: `create_style_tool`, `list_styles_tool`, `update_style_tool`, `delete_style_tool`, `preview_style_tool`, etc.
 - **Token tools**: `create_token_tool`, `list_tokens_tool`
 - **Validation tools**: `validate_geojson_tool`, `validate_style_tool`, `validate_expression_tool`
@@ -181,6 +186,7 @@ and use blue for water. Name it 'app-dark-mode'."
 ```
 
 The AI will use `create_style_tool` tool to:
+
 - Generate style JSON following Mapbox Style Spec
 - Upload to your Mapbox account
 - Return style ID and preview URL
@@ -268,6 +274,7 @@ Restrict it to domains: localhost, example.com"
 ### Pattern 1: Iterative Style Development
 
 **Workflow:**
+
 1. Describe desired style in natural language
 2. AI creates initial style via MCP
 3. View preview URL
@@ -293,6 +300,7 @@ AI: [Updates style with symbols]
 ```
 
 **Benefits:**
+
 - No manual JSON editing
 - Visual feedback via preview URLs
 - Rapid iteration
@@ -300,6 +308,7 @@ AI: [Updates style with symbols]
 ### Pattern 2: Environment-Specific Tokens
 
 **Workflow:**
+
 1. Define requirements per environment
 2. AI creates tokens with appropriate scopes/restrictions
 3. Store securely in environment variables
@@ -316,6 +325,7 @@ AI: [Creates three tokens with specified configurations]
 ```
 
 **Benefits:**
+
 - Least-privilege access
 - Domain restrictions prevent token misuse
 - Clear separation of concerns
@@ -323,6 +333,7 @@ AI: [Creates three tokens with specified configurations]
 ### Pattern 3: Validation-First Development
 
 **Workflow:**
+
 1. Design data structure
 2. Validate GeoJSON before using
 3. Validate expressions before adding to style
@@ -343,6 +354,7 @@ AI: [Validates expression, then creates style]
 ```
 
 **Benefits:**
+
 - Catch errors before deployment
 - Ensure data integrity
 - Faster debugging
@@ -350,6 +362,7 @@ AI: [Validates expression, then creates style]
 ### Pattern 4: Documentation-Driven Development
 
 **Workflow:**
+
 1. Ask about Mapbox capabilities
 2. Get authoritative documentation
 3. Implement with correct patterns
@@ -368,6 +381,7 @@ AI: [Creates style following documented pattern]
 ```
 
 **Benefits:**
+
 - Always use latest best practices
 - No outdated Stack Overflow answers
 - Official Mapbox guidance
@@ -459,6 +473,7 @@ You: [Review, commit to git]
 ### DevKit not appearing in AI assistant
 
 **Check:**
+
 1. MCP server running? Check logs
 2. Config file in correct location?
 3. Token environment variable set?
@@ -469,6 +484,7 @@ You: [Review, commit to git]
 ### Style creation fails
 
 **Check:**
+
 1. Access token has `styles:write` scope
 2. Style name is unique
 3. JSON is valid Mapbox Style Spec
@@ -478,6 +494,7 @@ You: [Review, commit to git]
 ### Token creation fails
 
 **Check:**
+
 1. Access token has `tokens:write` scope
 2. Requested scopes are valid
 3. URL restrictions are well-formed
@@ -487,6 +504,7 @@ You: [Review, commit to git]
 ### Validation errors
 
 **Check:**
+
 1. GeoJSON follows spec (RFC 7946)
 2. Coordinates are [longitude, latitude] order
 3. Properties match expected schema

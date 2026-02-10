@@ -32,6 +32,7 @@ Use Mapbox's hosted server - no installation needed.
 **Claude Code:**
 
 User-level (all projects) in `~/.claude.json`:
+
 ```json
 {
   "mcpServers": {
@@ -43,6 +44,7 @@ User-level (all projects) in `~/.claude.json`:
 ```
 
 Or project-level (specific project) in `.mcp.json`:
+
 ```json
 {
   "mcpServers": {
@@ -107,55 +109,55 @@ Configure in Claude Desktop config:
 
 ### Style Management
 
-| Tool | Purpose | Example Use |
-|------|---------|-------------|
-| **create_style_tool** | Create new style | "Create dark mode style with 3D buildings" |
-| **list_styles_tool** | List all styles | "Show my styles" |
-| **retrieve_style_tool** | Get style details | "Show details of my light style" |
-| **update_style_tool** | Modify existing style | "Make roads more prominent" |
-| **delete_style_tool** | Delete a style | "Delete my test style" |
-| **preview_style_tool** | Generate preview URL | "Preview this style at downtown SF" |
-| **style_builder_tool** | Build style from template | "Create a style for navigation" |
-| **validate_style_tool** | Check style JSON | "Validate this style" |
-| **compare_styles_tool** | Compare two styles | "Compare light vs dark style" |
-| **optimize_style_tool** | Optimize style JSON | "Optimize this style for performance" |
+| Tool                    | Purpose                   | Example Use                                |
+| ----------------------- | ------------------------- | ------------------------------------------ |
+| **create_style_tool**   | Create new style          | "Create dark mode style with 3D buildings" |
+| **list_styles_tool**    | List all styles           | "Show my styles"                           |
+| **retrieve_style_tool** | Get style details         | "Show details of my light style"           |
+| **update_style_tool**   | Modify existing style     | "Make roads more prominent"                |
+| **delete_style_tool**   | Delete a style            | "Delete my test style"                     |
+| **preview_style_tool**  | Generate preview URL      | "Preview this style at downtown SF"        |
+| **style_builder_tool**  | Build style from template | "Create a style for navigation"            |
+| **validate_style_tool** | Check style JSON          | "Validate this style"                      |
+| **compare_styles_tool** | Compare two styles        | "Compare light vs dark style"              |
+| **optimize_style_tool** | Optimize style JSON       | "Optimize this style for performance"      |
 
 ### Token Management
 
-| Tool | Purpose | Example Use |
-|------|---------|-------------|
+| Tool                  | Purpose               | Example Use                  |
+| --------------------- | --------------------- | ---------------------------- |
 | **create_token_tool** | Generate access token | "Create token for localhost" |
-| **list_tokens_tool** | Show all tokens | "List my tokens and scopes" |
+| **list_tokens_tool**  | Show all tokens       | "List my tokens and scopes"  |
 
 ### Validation & Analysis
 
-| Tool | Purpose | Example Use |
-|------|---------|-------------|
-| **validate_geojson_tool** | Check GeoJSON | "Validate this GeoJSON" |
-| **validate_expression_tool** | Check expression | "Is this expression valid?" |
-| **geojson_preview_tool** | Preview GeoJSON on map | "Preview this GeoJSON" |
-| **check_color_contrast_tool** | Check WCAG contrast | "Check if #FF0000 on #FFFFFF passes WCAG" |
+| Tool                          | Purpose                | Example Use                               |
+| ----------------------------- | ---------------------- | ----------------------------------------- |
+| **validate_geojson_tool**     | Check GeoJSON          | "Validate this GeoJSON"                   |
+| **validate_expression_tool**  | Check expression       | "Is this expression valid?"               |
+| **geojson_preview_tool**      | Preview GeoJSON on map | "Preview this GeoJSON"                    |
+| **check_color_contrast_tool** | Check WCAG contrast    | "Check if #FF0000 on #FFFFFF passes WCAG" |
 
 ### Geographic Utilities
 
-| Tool | Purpose | Example Use |
-|------|---------|-------------|
-| **bounding_box_tool** | Get bounding box for area | "Get bbox for San Francisco" |
-| **country_bounding_box_tool** | Get country bounds | "Get bounding box for France" |
-| **coordinate_conversion_tool** | Convert coordinate systems | "Convert lat/lng to Web Mercator" |
-| **tilequery_tool** | Query tile data at point | "What features at this coordinate?" |
+| Tool                           | Purpose                    | Example Use                         |
+| ------------------------------ | -------------------------- | ----------------------------------- |
+| **bounding_box_tool**          | Get bounding box for area  | "Get bbox for San Francisco"        |
+| **country_bounding_box_tool**  | Get country bounds         | "Get bounding box for France"       |
+| **coordinate_conversion_tool** | Convert coordinate systems | "Convert lat/lng to Web Mercator"   |
+| **tilequery_tool**             | Query tile data at point   | "What features at this coordinate?" |
 
 ### Feedback & Data
 
-| Tool | Purpose | Example Use |
-|------|---------|-------------|
-| **get_feedback_tool** | Get feedback item | "Get feedback #12345" |
+| Tool                   | Purpose            | Example Use            |
+| ---------------------- | ------------------ | ---------------------- |
+| **get_feedback_tool**  | Get feedback item  | "Get feedback #12345"  |
 | **list_feedback_tool** | List user feedback | "Show recent feedback" |
 
 ### Documentation
 
-| Tool | Purpose | Example Use |
-|------|---------|-------------|
+| Tool                            | Purpose            | Example Use                       |
+| ------------------------------- | ------------------ | --------------------------------- |
 | **get_latest_mapbox_docs_tool** | Access Mapbox docs | "What are fill layer properties?" |
 
 ## Common Workflows
@@ -203,20 +205,20 @@ Check for:
 
 ## When to Use DevKit
 
-| Scenario | Use DevKit | Use Direct APIs |
-|----------|------------|-----------------|
-| Development-time operations | ✅ | |
-| Production runtime | | ✅ |
-| Style creation/updates | ✅ | |
-| Tile serving | | ✅ |
-| Token generation | ✅ | |
-| Map rendering | | ✅ |
-| Data validation | ✅ | |
-| High-frequency updates | | ✅ |
-| Learning/prototyping | ✅ | |
-| User-facing features | | ✅ |
-| Documentation lookup | ✅ | |
-| Client-side operations | | ✅ |
+| Scenario                    | Use DevKit | Use Direct APIs |
+| --------------------------- | ---------- | --------------- |
+| Development-time operations | ✅         |                 |
+| Production runtime          |            | ✅              |
+| Style creation/updates      | ✅         |                 |
+| Tile serving                |            | ✅              |
+| Token generation            | ✅         |                 |
+| Map rendering               |            | ✅              |
+| Data validation             | ✅         |                 |
+| High-frequency updates      |            | ✅              |
+| Learning/prototyping        | ✅         |                 |
+| User-facing features        |            | ✅              |
+| Documentation lookup        | ✅         |                 |
+| Client-side operations      |            | ✅              |
 
 ## Validation Patterns
 
@@ -233,14 +235,14 @@ Check for:
 
 ## Token Scopes
 
-| Scope | Grants Access To |
-|-------|------------------|
-| **styles:read** | Read styles |
-| **styles:write** | Create/update styles |
-| **fonts:read** | Load fonts |
-| **datasets:read** | Read datasets |
-| **tokens:write** | Create tokens |
-| **uploads:read** | Read uploads |
+| Scope             | Grants Access To     |
+| ----------------- | -------------------- |
+| **styles:read**   | Read styles          |
+| **styles:write**  | Create/update styles |
+| **fonts:read**    | Load fonts           |
+| **datasets:read** | Read datasets        |
+| **tokens:write**  | Create tokens        |
+| **uploads:read**  | Read uploads         |
 
 **Best practice:** Use minimal scopes + URL restrictions
 
@@ -264,20 +266,22 @@ Prod:
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| DevKit not found | Check MCP config path, restart AI assistant |
-| Style creation fails | Verify token has `styles:write` scope |
-| Token creation fails | Need `tokens:write` scope |
-| Validation errors | Check GeoJSON spec (RFC 7946), coordinate order |
+| Issue                | Solution                                        |
+| -------------------- | ----------------------------------------------- |
+| DevKit not found     | Check MCP config path, restart AI assistant     |
+| Style creation fails | Verify token has `styles:write` scope           |
+| Token creation fails | Need `tokens:write` scope                       |
+| Validation errors    | Check GeoJSON spec (RFC 7946), coordinate order |
 
 ## Integration Patterns
 
 **With Mapbox Studio:**
+
 - DevKit: Quick creation, AI iteration
 - Studio: Fine-tuning, visual editing
 
 **With Version Control:**
+
 ```
 1. "Create style and save JSON to styles/map.json"
 2. Review changes in git
@@ -285,6 +289,7 @@ Prod:
 ```
 
 **With CI/CD:**
+
 ```
 1. Style JSON in repo
 2. Validate via DevKit in CI

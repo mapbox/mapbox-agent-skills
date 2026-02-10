@@ -12,6 +12,7 @@ This skill provides patterns for integrating the Mapbox MCP Server into AI appli
 The [Mapbox MCP Server](https://github.com/mapbox/mcp-server) is a Model Context Protocol (MCP) server that provides AI agents with geospatial tools:
 
 **Offline Tools (Turf.js):**
+
 - Distance, bearing, midpoint calculations
 - Point-in-polygon tests
 - Area, buffer, centroid operations
@@ -19,6 +20,7 @@ The [Mapbox MCP Server](https://github.com/mapbox/mcp-server) is a Model Context
 - No API calls, instant results
 
 **Mapbox API Tools:**
+
 - Directions and routing
 - Reverse geocoding
 - POI category search
@@ -29,6 +31,7 @@ The [Mapbox MCP Server](https://github.com/mapbox/mcp-server) is a Model Context
 - Multi-stop route optimization
 
 **Utility Tools:**
+
 - Server version info
 - POI category list
 
@@ -41,11 +44,13 @@ Before integrating, understand the key distinctions between tools to help your L
 ### Distance: "As the Crow Flies" vs "Along Roads"
 
 **Straight-line distance** (offline, instant):
+
 - Tools: `distance_tool`, `calculate_bearing`, `calculate_midpoint`
 - Use for: Proximity checks, "how far away is X?", comparing distances
 - Example: "Is this restaurant within 2 miles?" → `distance_tool`
 
 **Route distance** (API, traffic-aware):
+
 - Tools: `directions_tool`, `matrix_tool`
 - Use for: Navigation, drive time, "how long to drive?"
 - Example: "How long to drive there?" → `directions_tool`
@@ -53,11 +58,13 @@ Before integrating, understand the key distinctions between tools to help your L
 ### Search: Type vs Specific Place
 
 **Category/type search**:
+
 - Tool: `category_search_tool`
 - Use for: "Find coffee shops", "restaurants nearby", browsing by type
 - Example: "What hotels are near me?" → `category_search_tool`
 
 **Specific place/address**:
+
 - Tool: `search_geocode`, `reverse_geocode`
 - Use for: Named places, street addresses, landmarks
 - Example: "Find 123 Main Street" → `search_geocode`
@@ -65,11 +72,13 @@ Before integrating, understand the key distinctions between tools to help your L
 ### Travel Time: Area vs Route
 
 **Reachable area** (what's within reach):
+
 - Tool: `isochrone_tool`
 - Returns: GeoJSON polygon of everywhere reachable
 - Example: "What can I reach in 15 minutes?" → `isochrone_tool`
 
 **Specific route** (how to get there):
+
 - Tool: `directions_tool`
 - Returns: Turn-by-turn directions to one destination
 - Example: "How do I get to the airport?" → `directions_tool`
@@ -77,11 +86,13 @@ Before integrating, understand the key distinctions between tools to help your L
 ### Cost & Performance
 
 **Offline tools** (free, instant):
+
 - No API calls, no token usage
 - Use whenever real-time data not needed
 - Examples: `distance_tool`, `point_in_polygon`, `calculate_area`
 
 **API tools** (requires token, counts against usage):
+
 - Real-time traffic, live POI data, current conditions
 - Use when accuracy and freshness matter
 - Examples: `directions_tool`, `category_search_tool`, `isochrone_tool`
@@ -93,6 +104,7 @@ Before integrating, understand the key distinctions between tools to help your L
 ### Option 1: Hosted Server (Recommended)
 
 **Easiest integration** - Use Mapbox's hosted MCP server at:
+
 ```
 https://mcp.mapbox.com/mcp
 ```
@@ -100,6 +112,7 @@ https://mcp.mapbox.com/mcp
 No installation required. Simply pass your Mapbox access token in the `Authorization` header.
 
 **Benefits:**
+
 - No server management
 - Always up-to-date
 - Production-ready
@@ -234,6 +247,7 @@ class MapboxMCPLocal:
 ```
 
 **Benefits:**
+
 - Type-safe tool definitions
 - Seamless MCP integration
 - Python-native development
@@ -452,6 +466,7 @@ results = restaurant_crew.find_restaurants_with_commute(
 ```
 
 **Benefits:**
+
 - Multi-agent orchestration with geospatial tools
 - Task dependencies and context passing
 - Role-based agent specialization
@@ -670,6 +685,7 @@ results = property_agent.find_properties_near_work(
 ```
 
 **Benefits:**
+
 - Lightweight and efficient
 - Simple tool definition
 - Code-based agent execution
@@ -692,7 +708,7 @@ class MapboxMCP {
     const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
     this.headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${mapboxToken}`
+      Authorization: `Bearer ${mapboxToken}`
     };
   }
 
@@ -775,6 +791,7 @@ const result = await locationAgent.generate([
 ```
 
 **Benefits:**
+
 - Multi-step geospatial workflows
 - Agent orchestration
 - State management
@@ -797,7 +814,7 @@ class MapboxMCP {
     const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
     this.headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${mapboxToken}`
+      Authorization: `Bearer ${mapboxToken}`
     };
   }
 
@@ -826,7 +843,8 @@ const mcp = new MapboxMCP();
 const tools = [
   new DynamicTool({
     name: 'directions_tool',
-    description: 'Get turn-by-turn driving directions with traffic-aware route distance along roads. Use when you need the actual driving route or traffic-aware duration.',
+    description:
+      'Get turn-by-turn driving directions with traffic-aware route distance along roads. Use when you need the actual driving route or traffic-aware duration.',
     func: async (input: string) => {
       const { origin, destination } = JSON.parse(input);
       return await mcp.callTool('directions_tool', {
@@ -839,7 +857,8 @@ const tools = [
 
   new DynamicTool({
     name: 'find_pois',
-    description: 'Find ALL places of a specific category type near a location. Use when user wants to browse places by type (restaurants, hotels, coffee, etc.).',
+    description:
+      'Find ALL places of a specific category type near a location. Use when user wants to browse places by type (restaurants, hotels, coffee, etc.).',
     func: async (input: string) => {
       const { category, location } = JSON.parse(input);
       return await mcp.callTool('category_search_tool', {
@@ -851,7 +870,8 @@ const tools = [
 
   new DynamicTool({
     name: 'calculate_isochrone',
-    description: 'Calculate the AREA reachable within a time limit from a starting point. Use for "What can I reach in X minutes?" questions.',
+    description:
+      'Calculate the AREA reachable within a time limit from a starting point. Use for "What can I reach in X minutes?" questions.',
     func: async (input: string) => {
       const { location, minutes } = JSON.parse(input);
       return await mcp.callTool('isochrone_tool', {
@@ -878,22 +898,19 @@ const tools = [
 
 // Create agent
 const model = new ChatOpenAI({ modelName: 'gpt-4' });
-const executor = await initializeAgentExecutorWithOptions(
-  tools,
-  model,
-  {
-    agentType: 'openai-functions',
-    verbose: true
-  }
-);
+const executor = await initializeAgentExecutorWithOptions(tools, model, {
+  agentType: 'openai-functions',
+  verbose: true
+});
 
 // Use agent
 const result = await executor.invoke({
-  input: "Find coffee shops within 10 minutes walking from Union Square, NYC"
+  input: 'Find coffee shops within 10 minutes walking from Union Square, NYC'
 });
 ```
 
 **Benefits:**
+
 - Conversational interface
 - Tool chaining
 - Memory and context management
@@ -907,14 +924,15 @@ const tool = new DynamicStructuredTool({
   name: 'my_tool',
   schema: z.object({
     coords: z.tuple([z.number(), z.number()])
-  }) as any,  // ← Add 'as any' to prevent type recursion
-  func: async ({ coords }: any) => {  // ← Type parameters as 'any'
+  }) as any, // ← Add 'as any' to prevent type recursion
+  func: async ({ coords }: any) => {
+    // ← Type parameters as 'any'
     // Implementation
   }
 });
 
 // For JSON responses from external APIs
-const data = await response.json() as any;
+const data = (await response.json()) as any;
 
 // For createOpenAIFunctionsAgent with complex tool types
 // @ts-ignore - Zod tuple schemas cause deep type recursion
@@ -943,7 +961,7 @@ class CustomMapboxAgent {
     const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
     this.headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${mapboxToken}`
+      Authorization: `Bearer ${mapboxToken}`
     };
   }
 
@@ -1015,10 +1033,7 @@ class CustomMapboxAgent {
     return JSON.parse(isInRange);
   }
 
-  async findRestaurantsNearby(
-    location: [number, number],
-    radiusMiles: number
-  ) {
+  async findRestaurantsNearby(location: [number, number], radiusMiles: number) {
     // Search restaurants
     const results = await this.callTool('category_search_tool', {
       category: 'restaurant',
@@ -1054,18 +1069,19 @@ await agent.initialize();
 
 const properties = await agent.findPropertiesWithCommute(
   [-122.4194, 37.7749], // Home in SF
-  [-122.4, 37.79],      // Work downtown
-  30                     // Max 30min commute
+  [-122.4, 37.79], // Work downtown
+  30 // Max 30min commute
 );
 
 // Usage in TripAdvisor-style app
 const restaurants = await agent.findRestaurantsNearby(
   [-73.9857, 40.7484], // Times Square
-  0.5                   // Within 0.5 miles
+  0.5 // Within 0.5 miles
 );
 ```
 
 **Benefits:**
+
 - Full control over agent behavior
 - Domain-specific abstractions
 - Custom error handling
@@ -1101,6 +1117,7 @@ const restaurants = await agent.findRestaurantsNearby(
 ```
 
 **Benefits:**
+
 - Clean separation of concerns
 - Easy to swap MCP server versions
 - Centralized geospatial logic
@@ -1112,8 +1129,8 @@ You can use MCP for AI agent features while using direct Mapbox APIs for other p
 ```typescript
 class GeospatialService {
   constructor(
-    private mcpServer: MapboxMCPServer,  // For AI features
-    private mapboxSdk: MapboxSDK         // For direct app features
+    private mcpServer: MapboxMCPServer, // For AI features
+    private mapboxSdk: MapboxSDK // For direct app features
   ) {}
 
   // AI Agent Feature: Natural language search
@@ -1140,7 +1157,9 @@ class GeospatialService {
   async calculateDistance(from: Point, to: Point): Promise<number> {
     // No API cost, instant
     return await this.mcpServer.callTool('distance_tool', {
-      from, to, units: 'miles'
+      from,
+      to,
+      units: 'miles'
     });
   }
 }
@@ -1148,13 +1167,13 @@ class GeospatialService {
 
 **Architecture Decision Guide:**
 
-| Use Case | Use This | Why |
-|----------|----------|-----|
-| AI agent natural language features | MCP Server | Simplified tool interface, AI-friendly responses |
-| Map rendering, direct UI controls | Mapbox SDK | More control, better performance |
-| Distance/area calculations | MCP Server (offline tools) | Free, instant, no API calls |
-| Custom map styling | Mapbox SDK | Fine-grained style control |
-| Conversational geospatial queries | MCP Server | AI agent can chain tools |
+| Use Case                           | Use This                   | Why                                              |
+| ---------------------------------- | -------------------------- | ------------------------------------------------ |
+| AI agent natural language features | MCP Server                 | Simplified tool interface, AI-friendly responses |
+| Map rendering, direct UI controls  | Mapbox SDK                 | More control, better performance                 |
+| Distance/area calculations         | MCP Server (offline tools) | Free, instant, no API calls                      |
+| Custom map styling                 | Mapbox SDK                 | Fine-grained style control                       |
+| Conversational geospatial queries  | MCP Server                 | AI agent can chain tools                         |
 
 ## Use Cases by Application Type
 
@@ -1281,7 +1300,7 @@ async buildItinerary(
 
 ```typescript
 class CachedMapboxMCP {
-  private cache = new Map<string, {result: any, timestamp: number}>();
+  private cache = new Map<string, { result: any; timestamp: number }>();
   private cacheTTL = 3600000; // 1 hour
 
   async callTool(name: string, params: any): Promise<any> {
@@ -1290,7 +1309,7 @@ class CachedMapboxMCP {
     const ttl = offlineTools.includes(name) ? Infinity : this.cacheTTL;
 
     // Check cache
-    const cacheKey = JSON.stringify({name, params});
+    const cacheKey = JSON.stringify({ name, params });
     const cached = this.cache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < ttl) {
@@ -1324,7 +1343,7 @@ for (const location of locations) {
 
 // ✅ Good: Parallel batch
 const distances = await Promise.all(
-  locations.map(location =>
+  locations.map((location) =>
     mcp.callTool('distance_tool', {
       from: userLocation,
       to: location
@@ -1432,7 +1451,7 @@ const searchPOITool = new DynamicStructuredTool({
 
   DO NOT use for:
   - Specific named places (use search_geocode instead)
-  - Addresses (use search_geocode or reverse_geocode)`,
+  - Addresses (use search_geocode or reverse_geocode)`
   // ... schema and implementation
 });
 ```
@@ -1463,18 +1482,18 @@ When in doubt, prefer:
 ```typescript
 // Use offline tools when possible (faster, free)
 const localOps = {
-  distance: 'distance_tool',      // Turf.js
-  pointInPolygon: 'point_in_polygon_tool',  // Turf.js
-  bearing: 'bearing_tool',        // Turf.js
-  area: 'area_tool'               // Turf.js
+  distance: 'distance_tool', // Turf.js
+  pointInPolygon: 'point_in_polygon_tool', // Turf.js
+  bearing: 'bearing_tool', // Turf.js
+  area: 'area_tool' // Turf.js
 };
 
 // Use API tools when necessary (requires token, slower)
 const apiOps = {
-  directions: 'directions_tool',        // Mapbox API
-  geocoding: 'reverse_geocode_tool',        // Mapbox API
-  isochrone: 'isochrone_tool',         // Mapbox API
-  search: 'category_search_tool'           // Mapbox API
+  directions: 'directions_tool', // Mapbox API
+  geocoding: 'reverse_geocode_tool', // Mapbox API
+  isochrone: 'isochrone_tool', // Mapbox API
+  search: 'category_search_tool' // Mapbox API
 };
 
 // Choose based on requirements
@@ -1490,11 +1509,7 @@ function chooseTool(operation: string, needsRealtime: boolean) {
 
 ```typescript
 class RobustMapboxMCP {
-  async callToolWithRetry(
-    name: string,
-    params: any,
-    maxRetries: number = 3
-  ): Promise<any> {
+  async callToolWithRetry(name: string, params: any, maxRetries: number = 3): Promise<any> {
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await this.mcpServer.callTool(name, params);
@@ -1517,11 +1532,7 @@ class RobustMapboxMCP {
     }
   }
 
-  async callToolWithFallback(
-    primaryTool: string,
-    fallbackTool: string,
-    params: any
-  ): Promise<any> {
+  async callToolWithFallback(primaryTool: string, fallbackTool: string, params: any): Promise<any> {
     try {
       return await this.callTool(primaryTool, params);
     } catch (error) {

@@ -32,7 +32,7 @@ Use Mapbox's hosted server - no installation needed.
 **Claude Code:**
 
 ```json
-// ~/.claude/.claude.json
+// ~/.claude.json (macOS/Linux)
 {
   "mcpServers": {
     "mapbox-devkit": {

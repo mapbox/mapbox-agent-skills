@@ -56,7 +56,7 @@ You'll be prompted to authenticate via OAuth on first use.
 
 #### For Claude Code
 
-Add to `~/.claude/.claude.json`:
+Add to `~/.claude.json` (macOS/Linux):
 
 ```json
 {

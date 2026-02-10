@@ -79,6 +79,37 @@ Guides AI assistants through the entire search integration process: asking disco
 
 ---
 
+### 🔍 mapbox-search-patterns
+
+**Expert guidance on choosing the right search tool and parameters for geocoding, POI search, and location discovery.**
+
+Helps AI assistants select between search_and_geocode, category_search, and reverse_geocode tools, and optimize parameters like proximity, bbox, country, limit, and more.
+
+**Use when:**
+- Choosing between search tools (specific names vs categories)
+- Setting up geocoding or POI search
+- Optimizing search parameters for accuracy
+- Implementing "near me" searches
+- Building autocomplete functionality
+- Troubleshooting search results
+
+**Key topics:**
+- Tool selection decision matrix (brands vs categories vs coordinates)
+- Parameter guidance (proximity, bbox, country, limit, types, ETA)
+- Common patterns ("near me", route-based search, multilingual)
+- Anti-patterns to avoid (missing proximity, wrong tool choice)
+- Performance optimization (minimizing API calls, appropriate limits)
+- Combining search with geospatial operations
+
+**Search tools covered:**
+- search_and_geocode_tool: Specific places, addresses, brands
+- category_search_tool: Generic categories, plural queries
+- reverse_geocode_tool: Coordinates to addresses
+
+[View skill →](./skills/mapbox-search-patterns/SKILL.md)
+
+---
+
 ### 🔄 mapbox-maplibre-migration
 
 **Migration guide between Mapbox GL JS and MapLibre GL JS in both directions.**

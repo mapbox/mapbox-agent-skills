@@ -71,14 +71,18 @@ map.on('load', () => {
     }
   });
 
-  // Add hover effect
+  // Add hover effect with reusable popup
+  const popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+  });
+
   map.on('mousemove', 'states-layer', (e) => {
     if (e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer';
 
-      // Show popup with data
       const feature = e.features[0];
-      new mapboxgl.Popup()
+      popup
         .setLngLat(e.lngLat)
         .setHTML(
           `
@@ -92,6 +96,7 @@ map.on('load', () => {
 
   map.on('mouseleave', 'states-layer', () => {
     map.getCanvas().style.cursor = '';
+    popup.remove();
   });
 });
 ```
@@ -636,29 +641,42 @@ map.on('load', () => {
 **Pattern:** Load data in chunks as needed
 
 ```javascript
-const bounds = map.getBounds();
-const visibleData = allData.features.filter((feature) => {
+// Helper to check if feature is in bounds
+function isFeatureInBounds(feature, bounds) {
   const coords = feature.geometry.coordinates;
-  return bounds.contains(coords);
-});
+
+  // Handle different geometry types
+  if (feature.geometry.type === 'Point') {
+    return bounds.contains(coords);
+  } else if (feature.geometry.type === 'LineString') {
+    return coords.some((coord) => bounds.contains(coord));
+  } else if (feature.geometry.type === 'Polygon') {
+    return coords[0].some((coord) => bounds.contains(coord));
+  }
+  return false;
+}
+
+const bounds = map.getBounds();
+const visibleData = allData.features.filter((feature) => isFeatureInBounds(feature, bounds));
 
 map.getSource('data-source').setData({
   type: 'FeatureCollection',
   features: visibleData
 });
 
-// Reload on map move
+// Reload on map move with debouncing
+let updateTimeout;
 map.on('moveend', () => {
-  const bounds = map.getBounds();
-  const visibleData = allData.features.filter((feature) => {
-    const coords = feature.geometry.coordinates;
-    return bounds.contains(coords);
-  });
+  clearTimeout(updateTimeout);
+  updateTimeout = setTimeout(() => {
+    const bounds = map.getBounds();
+    const visibleData = allData.features.filter((feature) => isFeatureInBounds(feature, bounds));
 
-  map.getSource('data-source').setData({
-    type: 'FeatureCollection',
-    features: visibleData
-  });
+    map.getSource('data-source').setData({
+      type: 'FeatureCollection',
+      features: visibleData
+    });
+  }, 150);
 });
 ```
 
@@ -775,10 +793,15 @@ const qualitativeScale = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00']
 
 ```javascript
 // Calculate statistical breaks for choropleth
+// Using classybrew library (npm install classybrew)
+import classybrew from 'classybrew';
+
 function calculateJenksBreaks(values, numClasses) {
-  // Use simple-statistics or classyrew library
-  const breaks = classyBrew.classify(values, numClasses, 'jenks');
-  return breaks;
+  const brew = new classybrew();
+  brew.setSeries(values);
+  brew.setNumClasses(numClasses);
+  brew.classify('jenks');
+  return brew.getBreaks();
 }
 
 // Normalize data for better visualization
@@ -786,12 +809,24 @@ function normalizeData(features, property) {
   const values = features.map((f) => f.properties[property]);
   const max = Math.max(...values);
   const min = Math.min(...values);
+  const range = max - min;
+
+  // Handle case where all values are the same
+  if (range === 0) {
+    return features.map((feature) => ({
+      ...feature,
+      properties: {
+        ...feature.properties,
+        normalized: 0.5
+      }
+    }));
+  }
 
   return features.map((feature) => ({
     ...feature,
     properties: {
       ...feature.properties,
-      normalized: (feature.properties[property] - min) / (max - min)
+      normalized: (feature.properties[property] - min) / range
     }
   }));
 }

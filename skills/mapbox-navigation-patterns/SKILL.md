@@ -10,6 +10,7 @@ Expert guidance for implementing navigation and routing features using Mapbox Di
 ## Use This Skill When
 
 User says things like:
+
 - "I need turn-by-turn navigation in my app"
 - "How do I add driving directions?"
 - "I want to show a route on the map"
@@ -21,9 +22,11 @@ User says things like:
 ## Product Overview
 
 ### Directions API (REST)
+
 **Best for:** Web applications, simple routing, backend route calculation
 
 **Features:**
+
 - Route calculation (driving, walking, cycling, traffic)
 - Alternative routes
 - Turn-by-turn instructions
@@ -35,9 +38,11 @@ User says things like:
 **Pricing:** Pay per request
 
 ### Navigation SDK for iOS
+
 **Best for:** Native iOS apps with turn-by-turn navigation
 
 **Features:**
+
 - Complete turn-by-turn navigation UI
 - Voice guidance (30+ languages)
 - Real-time rerouting
@@ -50,9 +55,11 @@ User says things like:
 **Pricing:** Monthly Active Users (MAU) based
 
 ### Navigation SDK for Android
+
 **Best for:** Native Android apps with turn-by-turn navigation
 
 **Features:**
+
 - Complete turn-by-turn navigation UI
 - Voice guidance (30+ languages)
 - Real-time rerouting
@@ -67,6 +74,7 @@ User says things like:
 ## Decision Guide
 
 ### Choose Directions API when:
+
 - ✅ Web application
 - ✅ Simple route display (no turn-by-turn)
 - ✅ Backend route calculation
@@ -75,6 +83,7 @@ User says things like:
 - ✅ Don't need voice guidance
 
 ### Choose Navigation SDK when:
+
 - ✅ Native mobile app (iOS/Android)
 - ✅ Need turn-by-turn navigation
 - ✅ Need voice guidance
@@ -104,7 +113,7 @@ const map = new mapboxgl.Map({
 async function getRoute(start, end) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?` +
-    `steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
+      `steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
     { method: 'GET' }
   );
 
@@ -140,17 +149,13 @@ async function getRoute(start, end) {
   }
 
   // Add start and end markers
-  new mapboxgl.Marker({ color: '#3FB1CE' })
-    .setLngLat(start)
-    .addTo(map);
+  new mapboxgl.Marker({ color: '#3FB1CE' }).setLngLat(start).addTo(map);
 
-  new mapboxgl.Marker({ color: '#FF0000' })
-    .setLngLat(end)
-    .addTo(map);
+  new mapboxgl.Marker({ color: '#FF0000' }).setLngLat(end).addTo(map);
 
   // Fit map to route
   const bounds = new mapboxgl.LngLatBounds();
-  route.geometry.coordinates.forEach(coord => bounds.extend(coord));
+  route.geometry.coordinates.forEach((coord) => bounds.extend(coord));
   map.fitBounds(bounds, { padding: 50 });
 
   return route;
@@ -158,7 +163,7 @@ async function getRoute(start, end) {
 
 // Example usage
 const start = [-122.4194, 37.7749]; // San Francisco
-const end = [-122.2711, 37.8044];   // Oakland
+const end = [-122.2711, 37.8044]; // Oakland
 
 getRoute(start, end);
 ```
@@ -169,12 +174,13 @@ getRoute(start, end);
 function displayInstructions(route) {
   const steps = route.legs[0].steps;
 
-  const instructionsHTML = steps.map((step, index) => {
-    const instruction = step.maneuver.instruction;
-    const distance = (step.distance * 0.000621371).toFixed(1); // Convert to miles
-    const duration = Math.round(step.duration / 60); // Convert to minutes
+  const instructionsHTML = steps
+    .map((step, index) => {
+      const instruction = step.maneuver.instruction;
+      const distance = (step.distance * 0.000621371).toFixed(1); // Convert to miles
+      const duration = Math.round(step.duration / 60); // Convert to minutes
 
-    return `
+      return `
       <div class="instruction-step">
         <div class="step-number">${index + 1}</div>
         <div class="step-details">
@@ -183,7 +189,8 @@ function displayInstructions(route) {
         </div>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 
   document.getElementById('instructions').innerHTML = `
     <div class="instructions-container">
@@ -206,10 +213,10 @@ function displayInstructions(route) {
 async function getRouteWithAlternatives(start, end) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?` +
-    `alternatives=true&` +
-    `geometries=geojson&` +
-    `steps=true&` +
-    `access_token=${mapboxgl.accessToken}`
+      `alternatives=true&` +
+      `geometries=geojson&` +
+      `steps=true&` +
+      `access_token=${mapboxgl.accessToken}`
   );
 
   const json = await query.json();
@@ -263,21 +270,9 @@ async function getRouteWithAlternatives(start, end) {
 function selectRoute(routeIndex) {
   // Update styling to highlight selected route
   routes.forEach((route, index) => {
-    map.setPaintProperty(
-      `route-${index}`,
-      'line-color',
-      index === routeIndex ? '#3b9ddd' : '#cccccc'
-    );
-    map.setPaintProperty(
-      `route-${index}`,
-      'line-width',
-      index === routeIndex ? 8 : 6
-    );
-    map.setPaintProperty(
-      `route-${index}`,
-      'line-opacity',
-      index === routeIndex ? 0.8 : 0.5
-    );
+    map.setPaintProperty(`route-${index}`, 'line-color', index === routeIndex ? '#3b9ddd' : '#cccccc');
+    map.setPaintProperty(`route-${index}`, 'line-width', index === routeIndex ? 8 : 6);
+    map.setPaintProperty(`route-${index}`, 'line-opacity', index === routeIndex ? 0.8 : 0.5);
   });
 
   // Update instructions for selected route
@@ -292,13 +287,13 @@ async function getMultiStopRoute(waypoints) {
   // waypoints: array of [lng, lat] coordinates
   // Maximum 25 waypoints including start and end
 
-  const coordinates = waypoints.map(wp => `${wp[0]},${wp[1]}`).join(';');
+  const coordinates = waypoints.map((wp) => `${wp[0]},${wp[1]}`).join(';');
 
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?` +
-    `steps=true&` +
-    `geometries=geojson&` +
-    `access_token=${mapboxgl.accessToken}`
+      `steps=true&` +
+      `geometries=geojson&` +
+      `access_token=${mapboxgl.accessToken}`
   );
 
   const json = await query.json();
@@ -313,9 +308,7 @@ async function getMultiStopRoute(waypoints) {
     el.className = 'waypoint-marker';
     el.textContent = index + 1;
 
-    new mapboxgl.Marker(el)
-      .setLngLat(waypoint)
-      .addTo(map);
+    new mapboxgl.Marker(el).setLngLat(waypoint).addTo(map);
   });
 
   // Display total distance and duration
@@ -331,7 +324,7 @@ const deliveryStops = [
   [-122.4089, 37.7849], // Stop 1
   [-122.3922, 37.7911], // Stop 2
   [-122.3844, 37.8044], // Stop 3
-  [-122.2711, 37.8044]  // End: Oakland
+  [-122.2711, 37.8044] // End: Oakland
 ];
 
 getMultiStopRoute(deliveryStops);
@@ -343,27 +336,27 @@ getMultiStopRoute(deliveryStops);
 
 ```javascript
 async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
-  const coordinates = waypoints.map(wp => `${wp[0]},${wp[1]}`).join(';');
+  const coordinates = waypoints.map((wp) => `${wp[0]},${wp[1]}`).join(';');
 
   // Build waypoint indices for source and destination
   const source = startIndex === 'first' ? 'first' : startIndex;
-  const destination = endIndex === null ? 'any' : (endIndex === 'last' ? 'last' : endIndex);
+  const destination = endIndex === null ? 'any' : endIndex === 'last' ? 'last' : endIndex;
 
   const query = await fetch(
     `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coordinates}?` +
-    `source=${source}&` +
-    `destination=${destination}&` +
-    `roundtrip=true&` +
-    `steps=true&` +
-    `geometries=geojson&` +
-    `access_token=${mapboxgl.accessToken}`
+      `source=${source}&` +
+      `destination=${destination}&` +
+      `roundtrip=true&` +
+      `steps=true&` +
+      `geometries=geojson&` +
+      `access_token=${mapboxgl.accessToken}`
   );
 
   const json = await query.json();
   const optimizedRoute = json.trips[0];
 
   // Get the optimized order of waypoints
-  const waypointOrder = json.waypoints.map(wp => wp.waypoint_index);
+  const waypointOrder = json.waypoints.map((wp) => wp.waypoint_index);
 
   console.log('Optimized waypoint order:', waypointOrder);
   console.log(`Optimized distance: ${(optimizedRoute.distance * 0.000621371).toFixed(1)} miles`);
@@ -382,10 +375,10 @@ async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
 async function getTrafficRoute(start, end) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${start[0]},${start[1]};${end[0]},${end[1]}?` +
-    `steps=true&` +
-    `geometries=geojson&` +
-    `annotations=duration,distance,speed,congestion&` +
-    `access_token=${mapboxgl.accessToken}`
+      `steps=true&` +
+      `geometries=geojson&` +
+      `annotations=duration,distance,speed,congestion&` +
+      `access_token=${mapboxgl.accessToken}`
   );
 
   const json = await query.json();
@@ -430,11 +423,15 @@ async function getTrafficRoute(start, end) {
       'line-color': [
         'match',
         ['get', 'congestion'],
-        'low', '#4CAF50',      // Green - free flow
-        'moderate', '#FFC107', // Yellow - moderate traffic
-        'heavy', '#FF5722',    // Orange - heavy traffic
-        'severe', '#F44336',   // Red - severe congestion
-        '#3b9ddd'              // Default blue
+        'low',
+        '#4CAF50', // Green - free flow
+        'moderate',
+        '#FFC107', // Yellow - moderate traffic
+        'heavy',
+        '#FF5722', // Orange - heavy traffic
+        'severe',
+        '#F44336', // Red - severe congestion
+        '#3b9ddd' // Default blue
       ],
       'line-width': 8
     }
@@ -874,7 +871,6 @@ async function getRobustRoute(start, end) {
     }
 
     return json.routes[0];
-
   } catch (error) {
     console.error('Route calculation failed:', error);
 
@@ -909,10 +905,10 @@ function requestRouteDebounced(start, end) {
 async function getSimplifiedRoute(start, end) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/driving/` +
-    `${start.join(',')};${end.join(',')}?` +
-    `geometries=polyline6&` + // More compact than geojson
-    `overview=simplified&` +   // Simplified geometry
-    `access_token=${mapboxgl.accessToken}`
+      `${start.join(',')};${end.join(',')}?` +
+      `geometries=polyline6&` + // More compact than geojson
+      `overview=simplified&` + // Simplified geometry
+      `access_token=${mapboxgl.accessToken}`
   );
 
   return await query.json();
@@ -938,7 +934,7 @@ async function getRouteWithLoading(start, end) {
 // Animate camera to show full route
 function showRouteWithAnimation(route) {
   const bounds = new mapboxgl.LngLatBounds();
-  route.geometry.coordinates.forEach(coord => bounds.extend(coord));
+  route.geometry.coordinates.forEach((coord) => bounds.extend(coord));
 
   map.fitBounds(bounds, {
     padding: { top: 100, bottom: 100, left: 50, right: 50 },
@@ -955,11 +951,7 @@ function showRouteWithAnimation(route) {
 ```javascript
 async function planDeliveryRoute(warehouse, deliveryLocations) {
   // Add warehouse as first and last point for round trip
-  const waypoints = [
-    warehouse,
-    ...deliveryLocations,
-    warehouse
-  ];
+  const waypoints = [warehouse, ...deliveryLocations, warehouse];
 
   // Optimize the order
   const optimized = await getOptimizedRoute(waypoints, 0, waypoints.length - 1);
@@ -967,7 +959,7 @@ async function planDeliveryRoute(warehouse, deliveryLocations) {
   // Get the optimized order of deliveries
   const deliveryOrder = optimized.order
     .slice(1, -1) // Remove warehouse from start and end
-    .map(index => deliveryLocations[index - 1]);
+    .map((index) => deliveryLocations[index - 1]);
 
   return {
     route: optimized.route,
@@ -1002,10 +994,10 @@ async function calculatePickupETA(driverLocation, passengerLocation) {
 async function getWalkingRoute(start, end) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/walking/` +
-    `${start.join(',')};${end.join(',')}?` +
-    `steps=true&` +
-    `geometries=geojson&` +
-    `access_token=${mapboxgl.accessToken}`
+      `${start.join(',')};${end.join(',')}?` +
+      `steps=true&` +
+      `geometries=geojson&` +
+      `access_token=${mapboxgl.accessToken}`
   );
 
   const json = await query.json();
@@ -1015,10 +1007,10 @@ async function getWalkingRoute(start, end) {
 async function getCyclingRoute(start, end) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/cycling/` +
-    `${start.join(',')};${end.join(',')}?` +
-    `steps=true&` +
-    `geometries=geojson&` +
-    `access_token=${mapboxgl.accessToken}`
+      `${start.join(',')};${end.join(',')}?` +
+      `steps=true&` +
+      `geometries=geojson&` +
+      `access_token=${mapboxgl.accessToken}`
   );
 
   const json = await query.json();
@@ -1046,10 +1038,12 @@ async function getCyclingRoute(start, end) {
 ## Quick Decision Guide
 
 **User says: "I need directions"**
+
 - Web app → Use Directions API
 - Mobile app → Use Navigation SDK
 
 **User says: "I need turn-by-turn navigation"**
+
 - iOS → Navigation SDK for iOS
 - Android → Navigation SDK for Android
 - Web → Use Directions API + custom UI (no voice guidance)

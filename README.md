@@ -47,6 +47,7 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 Helps AI assistants select the right tool based on problem type (geometric vs routing), accuracy requirements, and performance needs. Features the "as the crow flies" vs "as the crow drives" decision framework.
 
 **Use when:**
+
 - Deciding between offline calculations and API calls
 - Calculating distances (straight-line vs road distance)
 - Checking if points are within an area
@@ -55,6 +56,7 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 - Understanding when to use routing vs geometry
 
 **Key topics:**
+
 - Decision framework: geometric operations vs routing APIs
 - Distance calculations (crow flies vs crow drives)
 - Proximity and containment checks
@@ -66,6 +68,7 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 - Performance and scale considerations
 
 **Tool categories covered:**
+
 - Offline geometric: distance, bearing, buffer, centroid, area, containment
 - Routing APIs: directions, matrix, optimization, isochrone, map matching
 
@@ -124,6 +127,7 @@ Guides AI assistants through the entire search integration process: asking disco
 Helps AI assistants select between search_and_geocode, category_search, and reverse_geocode tools, and optimize parameters like proximity, bbox, country, limit, and more.
 
 **Use when:**
+
 - Choosing between search tools (specific names vs categories)
 - Setting up geocoding or POI search
 - Optimizing search parameters for accuracy
@@ -132,6 +136,7 @@ Helps AI assistants select between search_and_geocode, category_search, and reve
 - Troubleshooting search results
 
 **Key topics:**
+
 - Tool selection decision matrix (brands vs categories vs coordinates)
 - Parameter guidance (proximity, bbox, country, limit, types, ETA)
 - Common patterns ("near me", route-based search, multilingual)
@@ -140,6 +145,7 @@ Helps AI assistants select between search_and_geocode, category_search, and reve
 - Combining search with geospatial operations
 
 **Search tools covered:**
+
 - search_and_geocode_tool: Specific places, addresses, brands
 - category_search_tool: Generic categories, plural queries
 - reverse_geocode_tool: Coordinates to addresses
@@ -422,6 +428,7 @@ Covers scope management, URL restrictions, rotation strategies, and incident res
 Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, traffic-aware routing, and voice guidance across Web, iOS, and Android platforms.
 
 **Use when:**
+
 - Implementing routing and directions in applications
 - Adding turn-by-turn navigation (iOS/Android)
 - Building delivery route optimization
@@ -430,6 +437,7 @@ Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, tr
 - Calculating ETAs or route alternatives
 
 **Key topics:**
+
 - Directions API for web (basic routes, alternatives, multi-stop, optimization)
 - Navigation SDK for iOS (NavigationViewController, voice guidance, custom UI)
 - Navigation SDK for Android (NavigationView, custom UI, route progress)
@@ -438,11 +446,13 @@ Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, tr
 - Error handling and best practices
 
 **Covers all platforms:**
+
 - Web (Directions API with Mapbox GL JS)
 - iOS (Navigation SDK for iOS with Swift)
 - Android (Navigation SDK for Android with Kotlin)
 
 **Common patterns:**
+
 - Basic route display on map
 - Alternative routes comparison
 - Multi-stop waypoint routing (up to 25 waypoints)
@@ -453,6 +463,7 @@ Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, tr
 - Ride-sharing ETA calculations
 
 **API features:**
+
 - Routing profiles (driving, driving-traffic, walking, cycling)
 - Multi-stop routing and optimization
 - Alternative route generation
@@ -471,6 +482,7 @@ Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, tr
 Comprehensive guide covering marker display strategies, filtering, distance calculation, interactive lists synced with maps, and directions integration. Perfect for building any location-based finder application.
 
 **Use when:**
+
 - Building store locator or restaurant finder applications
 - Displaying multiple locations on a map with interactive lists
 - Need filtering by category, distance, or search term
@@ -479,6 +491,7 @@ Comprehensive guide covering marker display strategies, filtering, distance calc
 - Integrate directions to selected locations
 
 **Key topics:**
+
 - Marker strategies (HTML markers, symbol layers, clustering) based on location count
 - Interactive list/map synchronization
 - Search and category filtering
@@ -488,11 +501,13 @@ Comprehensive guide covering marker display strategies, filtering, distance calc
 - Layout patterns (sidebar, overlay, mobile-responsive)
 
 **Covers all marker strategies:**
+
 - **< 100 locations**: HTML Markers with `mapboxgl.Marker()`
 - **100-1000 locations**: Symbol layers with GeoJSON
 - **> 1000 locations**: Clustering with aggregation
 
 **Common use cases:**
+
 - Store locators for retail chains
 - Restaurant finders with category filters
 - Office location directories
@@ -501,6 +516,7 @@ Comprehensive guide covering marker display strategies, filtering, distance calc
 - Service provider locators
 
 **Complete implementation:**
+
 - GeoJSON data structure
 - Map initialization and marker display
 - Interactive listing component

@@ -4,13 +4,13 @@ Quick reference for implementing navigation and routing with Mapbox Directions A
 
 ## Product Decision
 
-| Need | Solution |
-|------|----------|
-| **Web routing** | Directions API |
-| **Turn-by-turn iOS** | Navigation SDK for iOS |
-| **Turn-by-turn Android** | Navigation SDK for Android |
-| **Voice guidance** | Navigation SDK only |
-| **Multi-stop optimization** | Optimization API |
+| Need                        | Solution                   |
+| --------------------------- | -------------------------- |
+| **Web routing**             | Directions API             |
+| **Turn-by-turn iOS**        | Navigation SDK for iOS     |
+| **Turn-by-turn Android**    | Navigation SDK for Android |
+| **Voice guidance**          | Navigation SDK only        |
+| **Multi-stop optimization** | Optimization API           |
 
 ## Directions API (Web)
 
@@ -19,8 +19,8 @@ Quick reference for implementing navigation and routing with Mapbox Directions A
 ```javascript
 const query = await fetch(
   `https://api.mapbox.com/directions/v5/mapbox/driving/` +
-  `${start[0]},${start[1]};${end[0]},${end[1]}?` +
-  `steps=true&geometries=geojson&access_token=${token}`
+    `${start[0]},${start[1]};${end[0]},${end[1]}?` +
+    `steps=true&geometries=geojson&access_token=${token}`
 );
 
 const route = (await query.json()).routes[0];
@@ -58,7 +58,7 @@ const routes = json.routes; // Returns multiple routes
 ```javascript
 // Up to 25 waypoints
 const waypoints = [start, stop1, stop2, stop3, end];
-const coords = waypoints.map(w => `${w[0]},${w[1]}`).join(';');
+const coords = waypoints.map((w) => `${w[0]},${w[1]}`).join(';');
 
 const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}?...`;
 ```
@@ -67,18 +67,20 @@ const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}?...`;
 
 ```javascript
 // Optimize waypoint order
-const url = `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coords}?` +
+const url =
+  `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coords}?` +
   `source=first&destination=last&roundtrip=true&...`;
 
 const optimized = json.trips[0];
-const order = json.waypoints.map(wp => wp.waypoint_index);
+const order = json.waypoints.map((wp) => wp.waypoint_index);
 ```
 
 ### Traffic-Aware Routing
 
 ```javascript
 // Use driving-traffic profile
-const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?` +
+const url =
+  `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?` +
   `annotations=duration,distance,congestion&...`;
 
 // Color by congestion level
@@ -91,7 +93,7 @@ const congestion = route.legs[0].annotation.congestion;
 ```javascript
 const steps = route.legs[0].steps;
 
-steps.forEach(step => {
+steps.forEach((step) => {
   console.log(step.maneuver.instruction); // "Turn left onto Main St"
   console.log(step.distance); // meters
   console.log(step.duration); // seconds
@@ -224,12 +226,12 @@ mapboxNavigation.startTripSession()
 
 ## Routing Profiles
 
-| Profile | Use Case |
-|---------|----------|
-| `driving` | Car routing without traffic |
+| Profile           | Use Case                           |
+| ----------------- | ---------------------------------- |
+| `driving`         | Car routing without traffic        |
 | `driving-traffic` | Car routing with real-time traffic |
-| `walking` | Pedestrian routing |
-| `cycling` | Bicycle routing |
+| `walking`         | Pedestrian routing                 |
+| `cycling`         | Bicycle routing                    |
 
 ## Best Practices
 
@@ -269,7 +271,6 @@ try {
   }
 
   return json.routes[0];
-
 } catch (error) {
   // Show user-friendly message
   alert('Unable to calculate route');
@@ -323,12 +324,12 @@ const url = `https://api.mapbox.com/directions/v5/mapbox/cycling/${coords}?...`;
 
 ## API Limits
 
-| Feature | Limit |
-|---------|-------|
-| **Waypoints** | 25 max (including start/end) |
-| **Alternative routes** | Up to 3 |
-| **Optimization** | 12 waypoints (free tier), 25 (premium) |
-| **Rate limit** | 300 requests/minute (default) |
+| Feature                | Limit                                  |
+| ---------------------- | -------------------------------------- |
+| **Waypoints**          | 25 max (including start/end)           |
+| **Alternative routes** | Up to 3                                |
+| **Optimization**       | 12 waypoints (free tier), 25 (premium) |
+| **Rate limit**         | 300 requests/minute (default)          |
 
 ## Quick Decisions
 

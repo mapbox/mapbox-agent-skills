@@ -4,19 +4,21 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 
 ## Available Skills
 
-| Skill                                                                 | Description                                                                                  |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| [mapbox-google-maps-migration](./mapbox-google-maps-migration/)       | Migration guide from Google Maps Platform to Mapbox GL JS with API equivalents and patterns  |
-| [mapbox-maplibre-migration](./mapbox-maplibre-migration/)             | Migration guide between Mapbox GL JS and MapLibre GL JS in both directions                   |
-| [mapbox-search-integration](./mapbox-search-integration/)             | Complete workflow for implementing Mapbox search with discovery questions and best practices |
-| [mapbox-web-performance-patterns](./mapbox-web-performance-patterns/) | Performance optimization for Mapbox GL JS (initialization, markers, data loading, memory)    |
-| [mapbox-cartography](./mapbox-cartography/)                           | Map design principles, color theory, visual hierarchy, typography                            |
-| [mapbox-web-integration-patterns](./mapbox-web-integration-patterns/) | Framework integration (React, Vue, Svelte, Angular, Next.js)                                 |
-| [mapbox-ios-patterns](./mapbox-ios-patterns/)                         | iOS integration with Swift, SwiftUI, UIKit                                                   |
-| [mapbox-android-patterns](./mapbox-android-patterns/)                 | Android integration with Kotlin, Jetpack Compose                                             |
-| [mapbox-style-patterns](./mapbox-style-patterns/)                     | Common style patterns and layer configurations                                               |
-| [mapbox-style-quality](./mapbox-style-quality/)                       | Style validation, accessibility, optimization                                                |
-| [mapbox-token-security](./mapbox-token-security/)                     | Security best practices for access tokens                                                    |
+| Skill | Description |
+|-------|-------------|
+| [mapbox-google-maps-migration](./mapbox-google-maps-migration/) | Migration guide from Google Maps Platform to Mapbox GL JS with API equivalents and patterns |
+| [mapbox-maplibre-migration](./mapbox-maplibre-migration/) | Migration guide between Mapbox GL JS and MapLibre GL JS in both directions |
+| [mapbox-search-integration](./mapbox-search-integration/) | Complete workflow for implementing Mapbox search with discovery questions and best practices |
+| [mapbox-search-patterns](./mapbox-search-patterns/) | Choosing the right search tool and parameters for geocoding and POI search |
+| [mapbox-web-performance-patterns](./mapbox-web-performance-patterns/) | Performance optimization for Mapbox GL JS (initialization, markers, data loading, memory) |
+| [mapbox-cartography](./mapbox-cartography/) | Map design principles, color theory, visual hierarchy, typography |
+| [mapbox-web-integration-patterns](./mapbox-web-integration-patterns/) | Framework integration (React, Vue, Svelte, Angular, Next.js) |
+| [mapbox-ios-patterns](./mapbox-ios-patterns/) | iOS integration with Swift, SwiftUI, UIKit |
+| [mapbox-android-patterns](./mapbox-android-patterns/) | Android integration with Kotlin, Jetpack Compose |
+| [mapbox-style-patterns](./mapbox-style-patterns/) | Common style patterns and layer configurations |
+| [mapbox-style-quality](./mapbox-style-quality/) | Style validation, accessibility, optimization |
+| [mapbox-token-security](./mapbox-token-security/) | Security best practices for access tokens |
+| [mapbox-store-locator-patterns](./mapbox-store-locator-patterns/) | Store locator and location finder patterns with markers, filtering, and distance calculation |
 
 ## Documentation
 

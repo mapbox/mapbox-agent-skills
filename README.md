@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**10 comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, geospatial operations, and security best practices.
+**Comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, geospatial operations, and security best practices.
 
 ## Quick Start
 

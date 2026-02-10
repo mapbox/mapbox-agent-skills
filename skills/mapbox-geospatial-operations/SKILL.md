@@ -195,7 +195,13 @@ distance_tool({from: A, to: B})
 // Returns 10km as the crow flies, but actual drive is 15km
 
 // CORRECT: Need routing for driving distance
-directions_tool({coordinates: [A, B], profile: "driving"})
+directions_tool({
+  coordinates: [
+    {longitude: A[0], latitude: A[1]},
+    {longitude: B[0], latitude: B[1]}
+  ],
+  routing_profile: "mapbox/driving"
+})
 // Returns actual road distance and drive time as the crow drives
 ```
 
@@ -222,7 +228,11 @@ point_in_polygon_tool({point: location, polygon: boundary})
 distance_tool + calculate 20min * avg_speed
 
 // CORRECT: Actual routing with road network
-isochrone_tool({time: 20, profile: "driving"})
+isochrone_tool({
+  coordinates: {longitude: startLng, latitude: startLat},
+  contours_minutes: [20],
+  profile: "mapbox/driving"
+})
 ```
 
 **Why wrong:** Roads aren't straight lines; traffic varies
@@ -233,7 +243,12 @@ isochrone_tool({time: 20, profile: "driving"})
 // User asks: "Which direction is the airport?"
 
 // OVERCOMPLICATED: Full routing
-directions_tool({from: hotel, to: airport})
+directions_tool({
+  coordinates: [
+    {longitude: hotel[0], latitude: hotel[1]},
+    {longitude: airport[0], latitude: airport[1]}
+  ]
+})
 
 // BETTER: Just need bearing
 bearing_tool({from: hotel, to: airport})
@@ -352,7 +367,7 @@ Understanding what users mean:
 - `area_tool` - Calculate polygon area
 - `buffer_tool` - Create circular buffer/zone
 - `centroid_tool` - Geometric center of polygon
-- `bounding_box_tool` - Min/max coordinates of geometry
+- `bbox_tool` - Min/max coordinates of geometry
 - `simplify_tool` - Reduce geometry complexity
 
 ### Routing & Navigation (APIs)

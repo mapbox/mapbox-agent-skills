@@ -312,7 +312,7 @@ class DirectionsTool(BaseTool):
         result = self.mcp.call_tool('directions_tool', {
             'origin': origin,
             'destination': destination,
-            'profile': 'driving-traffic'
+            'routing_profile': 'mapbox/driving-traffic'
         })
         return f"Directions: {result}"
 
@@ -527,7 +527,7 @@ class DirectionsTool(Tool):
         return self.mcp.call_tool('directions_tool', {
             'origin': origin,
             'destination': destination,
-            'profile': 'driving-traffic'
+            'routing_profile': 'mapbox/driving-traffic'
         })
 
 class CalculateDistanceTool(Tool):

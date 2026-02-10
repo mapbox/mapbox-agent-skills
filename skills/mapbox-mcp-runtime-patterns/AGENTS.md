@@ -16,6 +16,27 @@ Runtime server providing geospatial tools to AI agents via Model Context Protoco
 | **Mapbox APIs**       | directions, geocoding, category search, isochrone, matrix, static maps, map matching, optimization | API costs apply |
 | **Utility**           | version, category list                                                                             | Free            |
 
+## Coordinate Formats
+
+Different tools accept different coordinate formats:
+
+**Object format** `{longitude: lng, latitude: lat}`:
+
+- `directions_tool` - coordinates array
+- `isochrone_tool` - coordinates parameter
+- `reverse_geocode_tool` - coordinates parameter
+- `category_search_tool` - proximity parameter
+
+**Array format** `[longitude, latitude]`:
+
+- `distance_tool` - from/to parameters
+- `bearing_tool` - from/to parameters
+- `midpoint_tool` - from/to parameters
+- `point_in_polygon_tool` - point parameter
+- `buffer_tool` - coordinates parameter
+
+**Note:** All coordinates use `[longitude, latitude]` order (not lat, lng).
+
 ## Installation
 
 ### Hosted (Recommended)

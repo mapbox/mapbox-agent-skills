@@ -5,6 +5,7 @@ Quick reference for building store locators and location finders with Mapbox.
 ## Architecture
 
 **Core Components:**
+
 1. Map with markers
 2. Location data (GeoJSON)
 3. Interactive list
@@ -17,31 +18,33 @@ Quick reference for building store locators and location finders with Mapbox.
 ```json
 {
   "type": "FeatureCollection",
-  "features": [{
-    "type": "Feature",
-    "geometry": {
-      "type": "Point",
-      "coordinates": [-77.034084, 38.909671]
-    },
-    "properties": {
-      "id": "store-001",
-      "name": "Downtown Store",
-      "address": "123 Main St, DC 20001",
-      "phone": "(202) 555-0123",
-      "category": "retail",
-      "hours": "Mon-Sat: 9am-9pm"
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-77.034084, 38.909671]
+      },
+      "properties": {
+        "id": "store-001",
+        "name": "Downtown Store",
+        "address": "123 Main St, DC 20001",
+        "phone": "(202) 555-0123",
+        "category": "retail",
+        "hours": "Mon-Sat: 9am-9pm"
+      }
     }
-  }]
+  ]
 }
 ```
 
 ## Marker Strategies
 
-| Locations | Strategy | Implementation |
-|-----------|----------|----------------|
-| **< 100** | HTML Markers | `new mapboxgl.Marker()` |
+| Locations    | Strategy     | Implementation                 |
+| ------------ | ------------ | ------------------------------ |
+| **< 100**    | HTML Markers | `new mapboxgl.Marker()`        |
 | **100-1000** | Symbol Layer | `addLayer({ type: 'symbol' })` |
-| **> 1000** | Clustering | `cluster: true` in source |
+| **> 1000**   | Clustering   | `cluster: true` in source      |
 
 ## HTML Markers Pattern
 
@@ -193,12 +196,13 @@ document.getElementById('search').addEventListener('input', (e) => {
 
 ```javascript
 function filterByCategory(category) {
-  const filtered = category === 'all'
-    ? stores
-    : {
-        type: 'FeatureCollection',
-        features: stores.features.filter(s => s.properties.category === category)
-      };
+  const filtered =
+    category === 'all'
+      ? stores
+      : {
+          type: 'FeatureCollection',
+          features: stores.features.filter((s) => s.properties.category === category)
+        };
 
   map.getSource('stores').setData(filtered);
   buildLocationList(filtered);
@@ -246,8 +250,8 @@ navigator.geolocation.getCurrentPosition((position) => {
 async function getDirections(from, to) {
   const query = await fetch(
     `https://api.mapbox.com/directions/v5/mapbox/driving/` +
-    `${from[0]},${from[1]};${to[0]},${to[1]}?` +
-    `geometries=geojson&access_token=${mapboxgl.accessToken}`
+      `${from[0]},${from[1]};${to[0]},${to[1]}?` +
+      `geometries=geojson&access_token=${mapboxgl.accessToken}`
   );
 
   const route = (await query.json()).routes[0];
@@ -285,7 +289,7 @@ async function getDirections(from, to) {
 ```html
 <div style="display: flex; height: 100vh;">
   <div class="sidebar" style="width: 400px; overflow-y: scroll;">
-    <input type="text" id="search" placeholder="Search...">
+    <input type="text" id="search" placeholder="Search..." />
     <div id="listings"></div>
   </div>
   <div id="map" style="flex: 1;"></div>
@@ -296,9 +300,16 @@ async function getDirections(from, to) {
 
 ```css
 @media (max-width: 768px) {
-  #app { flex-direction: column; }
-  .sidebar { width: 100%; height: 40vh; }
-  #map { height: 60vh; }
+  #app {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: 40vh;
+  }
+  #map {
+    height: 60vh;
+  }
 }
 ```
 
@@ -332,6 +343,7 @@ map.addControl(
 ## Common Patterns
 
 **Restaurant Finder:**
+
 - Category filters (cuisine type)
 - Price range filters
 - Rating display
@@ -339,12 +351,14 @@ map.addControl(
 - Delivery/pickup options
 
 **Office Locator:**
+
 - Department filters
 - Floor/building numbers
 - Contact information
 - Meeting room availability
 
 **Retail Store Finder:**
+
 - Inventory availability
 - Store hours
 - Services offered

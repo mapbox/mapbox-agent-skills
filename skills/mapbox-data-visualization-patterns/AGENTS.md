@@ -42,13 +42,13 @@ map.addLayer({
 
 ```javascript
 // Linear (continuous)
-['interpolate', ['linear'], ['get', 'value'], 0, '#fff', 100, '#000']
-
-// Steps (discrete buckets)
-['step', ['get', 'value'], '#fff', 25, '#ccc', 50, '#888', 75, '#000']
-
-// Categories (qualitative)
-['match', ['get', 'category'], 'A', '#ff0000', 'B', '#0000ff', '#cccccc']
+['interpolate', ['linear'], ['get', 'value'], 0, '#fff', 100, '#000'][
+  // Steps (discrete buckets)
+  ('step', ['get', 'value'], '#fff', 25, '#ccc', 50, '#888', 75, '#000')
+][
+  // Categories (qualitative)
+  ('match', ['get', 'category'], 'A', '#ff0000', 'B', '#0000ff', '#cccccc')
+];
 ```
 
 ## Heat Maps
@@ -381,13 +381,13 @@ const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 
 ```javascript
 // Divide
-['/', ['get', 'numerator'], ['get', 'denominator']]
-
-// Multiply
-['*', ['get', 'value'], 1.5]
-
-// Percentage
-['*', ['/', ['get', 'part'], ['get', 'total']], 100]
+['/', ['get', 'numerator'], ['get', 'denominator']][
+  // Multiply
+  ('*', ['get', 'value'], 1.5)
+][
+  // Percentage
+  ('*', ['/', ['get', 'part'], ['get', 'total']], 100)
+];
 ```
 
 ## Resources

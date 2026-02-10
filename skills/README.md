@@ -6,6 +6,7 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 
 | Skill | Description |
 |-------|-------------|
+| [mapbox-geospatial-operations](./mapbox-geospatial-operations/) | Choosing between offline geometric tools and routing APIs for geospatial operations |
 | [mapbox-google-maps-migration](./mapbox-google-maps-migration/) | Migration guide from Google Maps Platform to Mapbox GL JS with API equivalents and patterns |
 | [mapbox-maplibre-migration](./mapbox-maplibre-migration/) | Migration guide between Mapbox GL JS and MapLibre GL JS in both directions |
 | [mapbox-search-integration](./mapbox-search-integration/) | Complete workflow for implementing Mapbox search with discovery questions and best practices |
@@ -24,6 +25,7 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 ## Documentation
 
 For full documentation including:
+
 - Detailed skill descriptions and use cases
 - Installation instructions for Claude Code, Cursor, VS Code
 - Examples and conversation transcripts
@@ -34,6 +36,7 @@ See the [main README](../README.md).
 ## Contributing
 
 Want to create a new skill or improve an existing one? See the [Contributing Guide](../CONTRIBUTING.md) for:
+
 - Skill structure and format requirements
 - Content guidelines and quality standards
 - Testing and validation instructions

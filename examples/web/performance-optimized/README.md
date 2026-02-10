@@ -22,11 +22,11 @@ This example demonstrates **advanced performance patterns** for production-ready
 
 ## Performance Comparison
 
-| Pattern | Markers | Load Time | FPS | Memory |
-|---------|---------|-----------|-----|--------|
-| ❌ Basic (HTML markers) | 5,000 | 8-12s | 15-20 | 500MB+ |
-| ✅ Symbol layers | 5,000 | 2-3s | 45-55 | 150MB |
-| ✅ Clustering (this example) | 5,000 | 1-2s | 55-60 | 100MB |
+| Pattern                      | Markers | Load Time | FPS   | Memory |
+| ---------------------------- | ------- | --------- | ----- | ------ |
+| ❌ Basic (HTML markers)      | 5,000   | 8-12s     | 15-20 | 500MB+ |
+| ✅ Symbol layers             | 5,000   | 2-3s      | 45-55 | 150MB  |
+| ✅ Clustering (this example) | 5,000   | 1-2s      | 55-60 | 100MB  |
 
 ## Prerequisites
 
@@ -37,16 +37,19 @@ This example demonstrates **advanced performance patterns** for production-ready
 ## Setup
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Create `.env.local` file:**
+
    ```bash
    VITE_MAPBOX_ACCESS_TOKEN=pk.your_token_here
    ```
 
 3. **Start development server:**
+
    ```bash
    npm run dev
    ```
@@ -106,6 +109,7 @@ useEffect(() => {
 ### 2. Marker Clustering
 
 Threshold guidance from **mapbox-web-performance-patterns**:
+
 - < 500 markers: HTML markers OK
 - 500-100,000 markers: Clustering required ← **This example**
 - > 100,000 markers: Server-side clustering
@@ -119,8 +123,8 @@ function addClusteredMarkers(restaurants) {
       features: restaurants
     },
     cluster: true,
-    clusterMaxZoom: 14,      // Max zoom to cluster points
-    clusterRadius: 50        // Radius of each cluster (pixels)
+    clusterMaxZoom: 14, // Max zoom to cluster points
+    clusterRadius: 50 // Radius of each cluster (pixels)
   });
 
   // Cluster circles with size based on count
@@ -130,18 +134,8 @@ function addClusteredMarkers(restaurants) {
     source: 'restaurants',
     filter: ['has', 'point_count'],
     paint: {
-      'circle-color': [
-        'step',
-        ['get', 'point_count'],
-        '#51bbd6', 100,
-        '#f1f075', 750,
-        '#f28cb1'
-      ],
-      'circle-radius': [
-        'step',
-        ['get', 'point_count'],
-        20, 100, 30, 750, 40
-      ]
+      'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
+      'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
     }
   });
 
@@ -233,12 +227,12 @@ if (performance.memory) {
 
 Following **mapbox-web-performance-patterns** metrics:
 
-| Metric | Target | This Example |
-|--------|--------|--------------|
-| Initial load | < 1s | ~800ms |
-| Time to interactive | < 2s | ~1.5s |
-| FPS (panning) | > 50 | 55-60 |
-| Memory usage | < 150MB | ~100MB |
+| Metric              | Target  | This Example |
+| ------------------- | ------- | ------------ |
+| Initial load        | < 1s    | ~800ms       |
+| Time to interactive | < 2s    | ~1.5s        |
+| FPS (panning)       | > 50    | 55-60        |
+| Memory usage        | < 150MB | ~100MB       |
 
 ## Testing with Different Marker Counts
 
@@ -253,6 +247,7 @@ export function generateRestaurants(count = 5000) {
 ```
 
 **Try these volumes:**
+
 - 500 markers - Clustering still works but maybe not necessary
 - 5,000 markers - Sweet spot for clustering (this example)
 - 10,000 markers - Clustering essential
@@ -261,6 +256,7 @@ export function generateRestaurants(count = 5000) {
 ## Skills Reference
 
 This example follows patterns from:
+
 - **mapbox-web-performance-patterns** - All optimization techniques
 - **mapbox-web-integration-patterns** - React lifecycle management
 - **mapbox-token-security** - Secure token handling
@@ -304,12 +300,14 @@ npm run preview
 ## Troubleshooting
 
 **Still slow?**
+
 - Check marker count - clustering enabled?
 - Verify event throttling is active
 - Monitor network waterfall in DevTools
 - Check for memory leaks with Profiler
 
 **Clusters not working?**
+
 - Verify `cluster: true` in source
 - Check `clusterRadius` and `clusterMaxZoom` values
 - Ensure GeoJSON features are valid Points

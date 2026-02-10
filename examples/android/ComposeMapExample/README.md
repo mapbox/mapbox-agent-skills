@@ -40,6 +40,7 @@ File → Open → select ComposeMapExample directory
 Following **mapbox-token-security** skill:
 
 **Create `local.properties` (add to `.gitignore`):**
+
 ```properties
 MAPBOX_ACCESS_TOKEN=pk.your_actual_token_here
 MAPBOX_DOWNLOADS_TOKEN=sk.your_secret_downloads_token_here
@@ -200,21 +201,25 @@ android {
 ## Key Points from mapbox-android-patterns
 
 ✅ **Lifecycle Management:**
+
 - `rememberMapViewWithLifecycle()` handles ON_START, ON_STOP, ON_DESTROY
 - `DisposableEffect` ensures cleanup when composable leaves composition
 - Prevents memory leaks and crashes
 
 ✅ **Token Security:**
+
 - Token stored in `local.properties` (not in code)
 - `local.properties` in `.gitignore`
 - Accessed via `BuildConfig` at runtime
 
 ✅ **Compose Integration:**
+
 - `AndroidView` bridges traditional Views into Compose
 - `remember` prevents MapView recreation on recomposition
 - State changes trigger `update` block, not recreation
 
 ✅ **Memory Safety:**
+
 - Explicit cleanup in `DisposableEffect.onDispose`
 - Lifecycle observer properly removed
 - No memory leaks
@@ -275,12 +280,14 @@ To verify proper lifecycle handling:
 ## Skills Reference
 
 This example follows patterns from:
+
 - **mapbox-android-patterns** - Compose integration patterns
 - **mapbox-token-security** - Secure token storage
 
 ## Next Steps
 
 Once you have this basic pattern working:
+
 - Add **offline maps** - Download regions for offline use
 - Add **navigation** - Integrate Navigation SDK
 - Custom **styling** - Use mapbox-cartography patterns
@@ -301,27 +308,32 @@ This example avoids common mistakes:
 ## Troubleshooting
 
 **Map not showing?**
+
 - Verify `MAPBOX_ACCESS_TOKEN` is set in `local.properties`
 - Check `BuildConfig.MAPBOX_ACCESS_TOKEN` is not empty
 - Verify token has required scopes
 - Check Logcat for errors
 
 **Token not found?**
+
 - Ensure `local.properties` exists in project root
 - Run "Sync Project with Gradle Files"
 - Clean and rebuild project
 
 **Crashes on background?**
+
 - Verify `rememberMapViewWithLifecycle()` is used
 - Check lifecycle callbacks in Logcat
 - Ensure `DisposableEffect` cleanup is present
 
 **Memory leaks?**
+
 - Add LeakCanary: `debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")`
 - Verify `mapView.onDestroy()` is called
 - Check for missing lifecycle observer removal
 
 **Build errors?**
+
 - Update to Android Studio Hedgehog or later
 - Verify Gradle plugin version is 8.2.0+
 - Invalidate caches and restart: File → Invalidate Caches → Invalidate and Restart

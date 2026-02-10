@@ -38,6 +38,7 @@
     "frontends",
     "frontmatter",
     "geocoder",
+    "geofencing",
     "Geolocate",
     "geolocation",
     "geojson",

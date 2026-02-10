@@ -77,9 +77,11 @@ const getDirectionsTool = createTool({
   }),
   execute: async ({ origin, destination }) => {
     const result = await mcp.callTool('directions_tool', {
-      origin,
-      destination,
-      profile: 'mapbox/driving-traffic'
+      coordinates: [
+        { longitude: origin[0], latitude: origin[1] },
+        { longitude: destination[0], latitude: destination[1] }
+      ],
+      routing_profile: 'mapbox/driving-traffic'
     });
 
     return {
@@ -107,7 +109,7 @@ const searchPOITool = createTool({
   execute: async ({ category, location }) => {
     const result = await mcp.callTool('category_search_tool', {
       category,
-      proximity: location
+      proximity: { longitude: location[0], latitude: location[1] }
     });
 
     return {
@@ -157,7 +159,7 @@ const getIsochroneTool = createTool({
   }),
   execute: async ({ location, minutes, profile }) => {
     const result = await mcp.callTool('isochrone_tool', {
-      coordinates: location,
+      coordinates: { longitude: location[0], latitude: location[1] },
       contours_minutes: [minutes],
       profile: profile || 'mapbox/driving'
     });

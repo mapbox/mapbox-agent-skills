@@ -82,9 +82,11 @@ class DirectionsTool(BaseTool):
 
     def _run(self, origin: list, destination: list) -> str:
         result = mcp.call_tool('directions_tool', {
-            'origin': origin,
-            'destination': destination,
-            'profile': 'mapbox/driving-traffic'
+            'coordinates': [
+                {'longitude': origin[0], 'latitude': origin[1]},
+                {'longitude': destination[0], 'latitude': destination[1]}
+            ],
+            'routing_profile': 'mapbox/driving-traffic'
         })
         return f"Directions: {result}"
 
@@ -103,7 +105,7 @@ class SearchPOITool(BaseTool):
     def _run(self, category: str, location: list) -> str:
         result = mcp.call_tool('category_search_tool', {
             'category': category,
-            'proximity': location
+            'proximity': {'longitude': location[0], 'latitude': location[1]}
         })
         return result
 
@@ -143,7 +145,7 @@ class IsochroneTool(BaseTool):
 
     def _run(self, location: list, minutes: int, profile: str = 'mapbox/driving') -> str:
         result = mcp.call_tool('isochrone_tool', {
-            'coordinates': location,
+            'coordinates': {'longitude': location[0], 'latitude': location[1]},
             'contours_minutes': [minutes],
             'profile': profile
         })

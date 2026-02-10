@@ -74,9 +74,11 @@ const getDirectionsTool = new DynamicStructuredTool({
   }) as any,
   func: async ({ origin, destination }: any) => {
     const result = await mcp.callTool('directions_tool', {
-      origin: Array.from(origin),
-      destination: Array.from(destination),
-      profile: 'mapbox/driving-traffic'
+      coordinates: [
+        { longitude: origin[0], latitude: origin[1] },
+        { longitude: destination[0], latitude: destination[1] }
+      ],
+      routing_profile: 'mapbox/driving-traffic'
     });
     return result;
   }
@@ -92,7 +94,7 @@ const searchPOITool = new DynamicStructuredTool({
   func: async ({ category, location }: any) => {
     const result = await mcp.callTool('category_search_tool', {
       category,
-      proximity: Array.from(location)
+      proximity: { longitude: location[0], latitude: location[1] }
     });
     return result;
   }
@@ -126,7 +128,7 @@ const getIsochroneTool = new DynamicStructuredTool({
   }) as any,
   func: async ({ location, minutes, profile }: any) => {
     const result = await mcp.callTool('isochrone_tool', {
-      coordinates: Array.from(location),
+      coordinates: { longitude: location[0], latitude: location[1] },
       contours_minutes: [minutes],
       profile: profile || 'mapbox/walking'
     });

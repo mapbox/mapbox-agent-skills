@@ -39,7 +39,6 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 
 ---
 
-<<<<<<< HEAD
 ### 🗺️ mapbox-geospatial-operations
 
 **Expert guidance on choosing between offline geometric tools and routing APIs for geospatial operations.**
@@ -70,7 +69,9 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 - Routing APIs: directions, matrix, optimization, isochrone, map matching
 
 [View skill →](./skills/mapbox-geospatial-operations/SKILL.md)
-=======
+
+---
+
 ### 🔍 mapbox-search-integration
 
 **Complete workflow for implementing Mapbox search in applications from discovery to production.**
@@ -139,7 +140,6 @@ Helps AI assistants select between search_and_geocode, category_search, and reve
 - reverse_geocode_tool: Coordinates to addresses
 
 [View skill →](./skills/mapbox-search-patterns/SKILL.md)
->>>>>>> origin/main
 
 ---
 

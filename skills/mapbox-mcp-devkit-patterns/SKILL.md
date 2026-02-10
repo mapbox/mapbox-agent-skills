@@ -160,7 +160,7 @@ Ask your AI assistant:
 "List the available Mapbox DevKit tools"
 ```
 
-You should see tools like `create_style`, `list_tokens`, `validate_geojson`, etc.
+You should see tools like `create_style_tool`, `list_tokens_tool`, `validate_geojson_tool`, etc.
 
 ## Core Workflows
 
@@ -173,7 +173,7 @@ You should see tools like `create_style`, `list_tokens`, `validate_geojson`, etc
 and use blue for water. Name it 'app-dark-mode'."
 ```
 
-The AI will use `create_style` tool to:
+The AI will use `create_style_tool` tool to:
 - Generate style JSON following Mapbox Style Spec
 - Upload to your Mapbox account
 - Return style ID and preview URL
@@ -466,7 +466,7 @@ You: [Review, commit to git]
 2. Style name is unique
 3. JSON is valid Mapbox Style Spec
 
-**Solution:** Use `validate_style` tool first.
+**Solution:** Use `validate_style_tool` tool first.
 
 ### Token creation fails
 

@@ -53,7 +53,7 @@ mcp = subprocess.Popen(['npx', '@mapbox/mcp-server'],
 agent = Agent(
     model='gpt-4',
     tools=[
-        lambda from_loc, to_loc: call_mcp('get_directions', {
+        lambda from_loc, to_loc: call_mcp('directions_tool', {
             'origin': from_loc,
             'destination': to_loc
         })
@@ -89,11 +89,11 @@ import { DynamicTool } from '@langchain/core/tools';
 
 const tools = [
   new DynamicTool({
-    name: 'get_directions',
+    name: 'directions_tool',
     description: 'Get driving directions',
     func: async (input) => {
       const { origin, destination } = JSON.parse(input);
-      return await callMCP('get_directions', { origin, destination });
+      return await callMCP('directions_tool', { origin, destination });
     }
   })
 ];
@@ -139,20 +139,20 @@ class MapboxAgent {
 // Find properties with good commute
 async findByCommute(home: Point, work: Point, maxMinutes: number) {
   // 1. Get reachable area from work
-  const isochrone = await mcp.call('get_isochrone', {
+  const isochrone = await mcp.call('isochrone_tool', {
     coordinates: work,
     contours_minutes: [maxMinutes]
   });
 
   // 2. Check if home is within range
-  const inRange = await mcp.call('point_in_polygon', {
+  const inRange = await mcp.call('point_in_polygon_tool', {
     point: home,
     polygon: isochrone
   });
 
   // 3. Get exact commute time
   if (inRange) {
-    const route = await mcp.call('get_directions', {
+    const route = await mcp.call('directions_tool', {
       origin: home,
       destination: work
     });
@@ -167,21 +167,21 @@ async findByCommute(home: Point, work: Point, maxMinutes: number) {
 // Check delivery availability
 async canDeliver(restaurant: Point, address: Point, maxTime: number) {
   // 1. Calculate delivery zone
-  const zone = await mcp.call('get_isochrone', {
+  const zone = await mcp.call('isochrone_tool', {
     coordinates: restaurant,
     contours_minutes: [maxTime],
     profile: 'driving'
   });
 
   // 2. Check if address is in zone
-  const canDeliver = await mcp.call('point_in_polygon', {
+  const canDeliver = await mcp.call('point_in_polygon_tool', {
     point: address,
     polygon: zone
   });
 
   // 3. Get delivery time with traffic
   if (canDeliver) {
-    const route = await mcp.call('get_directions', {
+    const route = await mcp.call('directions_tool', {
       origin: restaurant,
       destination: address,
       profile: 'driving-traffic'
@@ -197,7 +197,7 @@ async canDeliver(restaurant: Point, address: Point, maxTime: number) {
 // Find nearby attractions with travel times
 async findAttractions(hotel: Point, category: string) {
   // 1. Search nearby
-  const places = await mcp.call('category_search', {
+  const places = await mcp.call('category_search_tool', {
     category,
     proximity: hotel
   });
@@ -206,7 +206,7 @@ async findAttractions(hotel: Point, category: string) {
   const withDistances = await Promise.all(
     places.map(async (place) => ({
       ...place,
-      distance: await mcp.call('calculate_distance', {
+      distance: await mcp.call('distance_tool', {
         from: hotel,
         to: place.coordinates,
         units: 'miles'
@@ -215,7 +215,7 @@ async findAttractions(hotel: Point, category: string) {
   );
 
   // 3. Get travel times (batch API call)
-  const matrix = await mcp.call('get_matrix', {
+  const matrix = await mcp.call('matrix_tool', {
     origins: [hotel],
     destinations: places.map(p => p.coordinates),
     profile: 'walking'
@@ -260,7 +260,7 @@ Turf.js   Mapbox APIs
 ```typescript
 class CachedMCP {
   private cache = new Map();
-  private offlineTools = ['calculate_distance', 'point_in_polygon'];
+  private offlineTools = ['distance_tool', 'point_in_polygon_tool'];
 
   async callTool(name: string, params: any) {
     // Cache offline tools forever (deterministic)
@@ -285,16 +285,16 @@ class CachedMCP {
 ```typescript
 // ❌ Bad: Sequential calls
 for (const location of locations) {
-  await mcp.call('calculate_distance', {from: user, to: location});
+  await mcp.call('distance_tool', {from: user, to: location});
 }
 
 // ✅ Good: Parallel
 await Promise.all(
-  locations.map(loc => mcp.call('calculate_distance', {from: user, to: loc}))
+  locations.map(loc => mcp.call('distance_tool', {from: user, to: loc}))
 );
 
 // ✅ Better: Use matrix tool
-await mcp.call('get_matrix', {
+await mcp.call('matrix_tool', {
   origins: [user],
   destinations: locations
 });
@@ -351,9 +351,9 @@ class RateLimitedMCP {
 class MockMCP {
   async callTool(name: string, params: any) {
     const mocks = {
-      'calculate_distance': () => '2.5',
-      'get_directions': () => ({ duration: 1200, distance: 5000 }),
-      'point_in_polygon': () => true
+      'distance_tool': () => '2.5',
+      'directions_tool': () => ({ duration: 1200, distance: 5000 }),
+      'point_in_polygon_tool': () => true
     };
     return mocks[name]?.();
   }
@@ -378,19 +378,19 @@ const agent = new MapboxAgent(new MockMCP());
 ```typescript
 // Prefer offline tools (free)
 const freeOps = [
-  'calculate_distance',
-  'point_in_polygon',
-  'calculate_bearing',
-  'calculate_area',
-  'calculate_centroid'
+  'distance_tool',
+  'point_in_polygon_tool',
+  'bearing_tool',
+  'area_tool',
+  'centroid_tool'
 ];
 
 // Use API tools only when necessary
 const apiOps = [
-  'get_directions',      // Need traffic data
-  'reverse_geocode',     // Need address database
-  'get_isochrone',       // Complex calculation
-  'category_search'      // Need POI database
+  'directions_tool',      // Need traffic data
+  'reverse_geocode_tool',     // Need address database
+  'isochrone_tool',       // Complex calculation
+  'category_search_tool'      // Need POI database
 ];
 
 function chooseTool(operation: string, needsRealtime: boolean) {

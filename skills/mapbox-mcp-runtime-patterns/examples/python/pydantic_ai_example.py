@@ -16,7 +16,7 @@ import json
 from typing import List, Tuple
 import requests
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -66,7 +66,7 @@ class MapboxMCP:
 mcp = MapboxMCP()
 
 # Create Pydantic AI agent with Mapbox tools
-model = OpenAIModel('gpt-4o')
+model = OpenAIChatModel('gpt-4o')
 
 agent = Agent(
     model,
@@ -95,7 +95,7 @@ def get_directions(
     Returns:
         JSON string with route details (duration, distance)
     """
-    result = mcp.call_tool('get_directions', {
+    result = mcp.call_tool('directions_tool', {
         'origin': list(origin),
         'destination': list(destination),
         'profile': 'mapbox/driving-traffic'
@@ -118,7 +118,7 @@ def search_poi(
     Returns:
         JSON string with nearby POIs
     """
-    result = mcp.call_tool('category_search', {
+    result = mcp.call_tool('category_search_tool', {
         'category': category,
         'proximity': list(location)
     })
@@ -142,7 +142,7 @@ def calculate_distance(
     Returns:
         Distance as a string
     """
-    result = mcp.call_tool('calculate_distance', {
+    result = mcp.call_tool('distance_tool', {
         'from': list(from_coords),
         'to': list(to_coords),
         'units': units
@@ -167,7 +167,7 @@ def get_isochrone(
     Returns:
         GeoJSON polygon of reachable area
     """
-    result = mcp.call_tool('get_isochrone', {
+    result = mcp.call_tool('isochrone_tool', {
         'coordinates': list(location),
         'contours_minutes': [minutes],
         'profile': profile
@@ -183,7 +183,7 @@ def main():
         "Find 3 restaurants near Times Square NYC (coordinates: -73.9857, 40.7484) "
         "and tell me how far each is from the center."
     )
-    print("Agent:", result1.data)
+    print("Agent:", result1.output)
     print("\n---\n")
 
     print("Example 2: Planning route with traffic\n")
@@ -191,7 +191,7 @@ def main():
         "What is the driving time from Boston (-71.0589, 42.3601) to "
         "NYC (-74.0060, 40.7128) with current traffic?"
     )
-    print("Agent:", result2.data)
+    print("Agent:", result2.output)
     print("\n---\n")
 
     print("Example 3: Multi-step analysis\n")
@@ -199,7 +199,7 @@ def main():
         "I work at -122.4, 37.79 in San Francisco. Find coffee shops within "
         "10 minutes walking, calculate distance to each, and recommend the closest 3."
     )
-    print("Agent:", result3.data)
+    print("Agent:", result3.output)
 
 
 if __name__ == '__main__':

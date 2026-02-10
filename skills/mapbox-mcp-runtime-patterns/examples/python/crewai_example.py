@@ -76,12 +76,12 @@ class DirectionsInput(BaseModel):
 
 
 class DirectionsTool(BaseTool):
-    name: str = "get_directions"
+    name: str = "directions_tool"
     description: str = "Get turn-by-turn driving directions with traffic-aware route distance and travel time along roads. Use when you need the actual driving route or traffic-aware duration. Returns duration and distance."
     args_schema: Type[BaseModel] = DirectionsInput
 
     def _run(self, origin: list, destination: list) -> str:
-        result = mcp.call_tool('get_directions', {
+        result = mcp.call_tool('directions_tool', {
             'origin': origin,
             'destination': destination,
             'profile': 'mapbox/driving-traffic'
@@ -101,7 +101,7 @@ class SearchPOITool(BaseTool):
     args_schema: Type[BaseModel] = SearchPOIInput
 
     def _run(self, category: str, location: list) -> str:
-        result = mcp.call_tool('category_search', {
+        result = mcp.call_tool('category_search_tool', {
             'category': category,
             'proximity': location
         })
@@ -116,12 +116,12 @@ class CalculateDistanceInput(BaseModel):
 
 
 class CalculateDistanceTool(BaseTool):
-    name: str = "calculate_distance"
+    name: str = "distance_tool"
     description: str = "Calculate straight-line (great-circle) distance between two points. Use for quick 'as the crow flies' distance checks. Works offline, instant, no API cost."
     args_schema: Type[BaseModel] = CalculateDistanceInput
 
     def _run(self, from_coords: list, to_coords: list, units: str = 'miles') -> str:
-        result = mcp.call_tool('calculate_distance', {
+        result = mcp.call_tool('distance_tool', {
             'from': from_coords,
             'to': to_coords,
             'units': units
@@ -137,12 +137,12 @@ class IsochroneInput(BaseModel):
 
 
 class IsochroneTool(BaseTool):
-    name: str = "get_isochrone"
+    name: str = "isochrone_tool"
     description: str = "Calculate the AREA reachable within a time limit from a starting point. Use for 'What can I reach in X minutes?' questions or service area analysis. Returns GeoJSON polygon of reachable area."
     args_schema: Type[BaseModel] = IsochroneInput
 
     def _run(self, location: list, minutes: int, profile: str = 'mapbox/driving') -> str:
-        result = mcp.call_tool('get_isochrone', {
+        result = mcp.call_tool('isochrone_tool', {
             'coordinates': location,
             'contours_minutes': [minutes],
             'profile': profile

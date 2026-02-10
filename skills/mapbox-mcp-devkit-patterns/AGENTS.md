@@ -107,14 +107,14 @@ Configure in Claude Desktop config:
 
 | Tool | Purpose | Example Use |
 |------|---------|-------------|
-| **create_style** | Create new style | "Create dark mode style with 3D buildings" |
-| **update_style** | Modify existing style | "Make roads more prominent" |
-| **validate_style** | Check style JSON | "Validate this style" |
-| **create_token** | Generate access token | "Create token for localhost" |
-| **list_tokens** | Show all tokens | "List my tokens and scopes" |
-| **validate_geojson** | Check GeoJSON | "Validate this GeoJSON" |
-| **validate_expression** | Check expression | "Is this expression valid?" |
-| **get_documentation** | Access Mapbox docs | "What are fill layer properties?" |
+| **create_style_tool** | Create new style | "Create dark mode style with 3D buildings" |
+| **update_style_tool** | Modify existing style | "Make roads more prominent" |
+| **validate_style_tool** | Check style JSON | "Validate this style" |
+| **create_token_tool** | Generate access token | "Create token for localhost" |
+| **list_tokens_tool** | Show all tokens | "List my tokens and scopes" |
+| **validate_geojson_tool** | Check GeoJSON | "Validate this GeoJSON" |
+| **validate_expression_tool** | Check expression | "Is this expression valid?" |
+| **get_latest_mapbox_docs_tool** | Access Mapbox docs | "What are fill layer properties?" |
 
 ## Common Workflows
 

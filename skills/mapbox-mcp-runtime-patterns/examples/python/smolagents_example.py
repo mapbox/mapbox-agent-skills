@@ -128,7 +128,7 @@ def get_directions(origin: list, destination: list) -> str:
     Returns:
         Route details with duration and distance
     """
-    return mcp.call_tool('get_directions', {
+    return mcp.call_tool('directions_tool', {
         'origin': origin,
         'destination': destination,
         'profile': 'mapbox/driving-traffic'
@@ -147,7 +147,7 @@ def search_poi(category: str, location: list) -> str:
     Returns:
         List of nearby POIs with names and addresses
     """
-    return mcp.call_tool('category_search', {
+    return mcp.call_tool('category_search_tool', {
         'category': category,
         'proximity': location
     })
@@ -166,7 +166,7 @@ def calculate_distance(from_coords: list, to_coords: list, units: str = 'miles')
     Returns:
         Distance value
     """
-    return mcp.call_tool('calculate_distance', {
+    return mcp.call_tool('distance_tool', {
         'from': from_coords,
         'to': to_coords,
         'units': units
@@ -186,7 +186,7 @@ def get_isochrone(location: list, minutes: int, profile: str = 'mapbox/walking')
     Returns:
         GeoJSON polygon of reachable area
     """
-    return mcp.call_tool('get_isochrone', {
+    return mcp.call_tool('isochrone_tool', {
         'coordinates': location,
         'contours_minutes': [minutes],
         'profile': profile

@@ -66,14 +66,14 @@ const mcp = new MapboxMCP();
 
 // Create LangChain tools from Mapbox MCP
 const getDirectionsTool = new DynamicStructuredTool({
-  name: 'get_directions',
+  name: 'directions_tool',
   description: 'Get turn-by-turn driving directions with traffic-aware route distance and travel time along roads. Use when you need the actual driving route, navigation, or traffic-aware duration. Returns route distance and time.',
   schema: z.object({
     origin: z.tuple([z.number(), z.number()]).describe('Origin coordinates [longitude, latitude]'),
     destination: z.tuple([z.number(), z.number()]).describe('Destination coordinates [longitude, latitude]'),
   }) as any,
   func: async ({ origin, destination }: any) => {
-    const result = await mcp.callTool('get_directions', {
+    const result = await mcp.callTool('directions_tool', {
       origin: Array.from(origin),
       destination: Array.from(destination),
       profile: 'mapbox/driving-traffic'
@@ -90,7 +90,7 @@ const searchPOITool = new DynamicStructuredTool({
     location: z.tuple([z.number(), z.number()]).describe('Search center [longitude, latitude]'),
   }) as any,
   func: async ({ category, location }: any) => {
-    const result = await mcp.callTool('category_search', {
+    const result = await mcp.callTool('category_search_tool', {
       category,
       proximity: Array.from(location)
     });
@@ -99,7 +99,7 @@ const searchPOITool = new DynamicStructuredTool({
 });
 
 const calculateDistanceTool = new DynamicStructuredTool({
-  name: 'calculate_distance',
+  name: 'distance_tool',
   description: 'Calculate straight-line (great-circle) distance between two points. Use for quick "as the crow flies" distance, proximity checks, or when routing not needed. Works offline, instant, no API cost.',
   schema: z.object({
     from: z.tuple([z.number(), z.number()]).describe('Start coordinates [longitude, latitude]'),
@@ -107,7 +107,7 @@ const calculateDistanceTool = new DynamicStructuredTool({
     units: z.enum(['miles', 'kilometers']).optional()
   }) as any,
   func: async ({ from, to, units }: any) => {
-    const result = await mcp.callTool('calculate_distance', {
+    const result = await mcp.callTool('distance_tool', {
       from: Array.from(from),
       to: Array.from(to),
       units: units || 'miles'
@@ -117,7 +117,7 @@ const calculateDistanceTool = new DynamicStructuredTool({
 });
 
 const getIsochroneTool = new DynamicStructuredTool({
-  name: 'get_isochrone',
+  name: 'isochrone_tool',
   description: 'Calculate the AREA reachable within a time limit from a starting point. Use for "What can I reach in X minutes?" questions, service areas, or delivery zones. Returns GeoJSON polygon of reachable area.',
   schema: z.object({
     location: z.tuple([z.number(), z.number()]).describe('Center point [longitude, latitude]'),
@@ -125,7 +125,7 @@ const getIsochroneTool = new DynamicStructuredTool({
     profile: z.enum(['mapbox/driving', 'mapbox/walking', 'mapbox/cycling']).optional()
   }) as any,
   func: async ({ location, minutes, profile }: any) => {
-    const result = await mcp.callTool('get_isochrone', {
+    const result = await mcp.callTool('isochrone_tool', {
       coordinates: Array.from(location),
       contours_minutes: [minutes],
       profile: profile || 'mapbox/walking'

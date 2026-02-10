@@ -76,7 +76,7 @@ const getDirectionsTool = createTool({
     summary: z.string().describe('Route summary')
   }),
   execute: async ({ origin, destination }) => {
-    const result = await mcp.callTool('get_directions', {
+    const result = await mcp.callTool('directions_tool', {
       origin,
       destination,
       profile: 'mapbox/driving-traffic'
@@ -105,7 +105,7 @@ const searchPOITool = createTool({
     }))
   }),
   execute: async ({ category, location }) => {
-    const result = await mcp.callTool('category_search', {
+    const result = await mcp.callTool('category_search_tool', {
       category,
       proximity: location
     });
@@ -132,7 +132,7 @@ const calculateDistanceTool = createTool({
     distance: z.number().describe('Distance in specified units')
   }),
   execute: async ({ from, to, units }) => {
-    const result = await mcp.callTool('calculate_distance', {
+    const result = await mcp.callTool('distance_tool', {
       from,
       to,
       units: units || 'miles'
@@ -156,7 +156,7 @@ const getIsochroneTool = createTool({
     area: z.string().describe('GeoJSON polygon of reachable area')
   }),
   execute: async ({ location, minutes, profile }) => {
-    const result = await mcp.callTool('get_isochrone', {
+    const result = await mcp.callTool('isochrone_tool', {
       coordinates: location,
       contours_minutes: [minutes],
       profile: profile || 'mapbox/driving'

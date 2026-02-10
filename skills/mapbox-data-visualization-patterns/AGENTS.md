@@ -4,13 +4,13 @@ Quick reference for visualizing data on Mapbox maps.
 
 ## Visualization Type Decision Matrix
 
-| Data Type | Visualization | Layer Type | Use For |
-|-----------|---------------|------------|---------|
-| **Regional/Polygons** | Choropleth | `fill` | Statistics, demographics, elections |
-| **Point Density** | Heat Map | `heatmap` | Crime, events, incident clustering |
-| **Point Magnitude** | Bubble/Circle | `circle` | Earthquakes, sales, metrics |
-| **3D Data** | Extrusions | `fill-extrusion` | Buildings, elevation, volume |
-| **Flow/Network** | Lines | `line` | Traffic, routes, connections |
+| Data Type             | Visualization | Layer Type       | Use For                             |
+| --------------------- | ------------- | ---------------- | ----------------------------------- |
+| **Regional/Polygons** | Choropleth    | `fill`           | Statistics, demographics, elections |
+| **Point Density**     | Heat Map      | `heatmap`        | Crime, events, incident clustering  |
+| **Point Magnitude**   | Bubble/Circle | `circle`         | Earthquakes, sales, metrics         |
+| **3D Data**           | Extrusions    | `fill-extrusion` | Buildings, elevation, volume        |
+| **Flow/Network**      | Lines         | `line`           | Traffic, routes, connections        |
 
 ## Choropleth Maps
 
@@ -26,9 +26,12 @@ map.addLayer({
       'interpolate',
       ['linear'],
       ['get', 'value'],
-      0, '#f0f9ff',      // Low
-      50, '#7fcdff',
-      100, '#0080ff',    // High
+      0,
+      '#f0f9ff', // Low
+      50,
+      '#7fcdff',
+      100,
+      '#0080ff' // High
     ],
     'fill-opacity': 0.75
   }
@@ -39,13 +42,13 @@ map.addLayer({
 
 ```javascript
 // Linear (continuous)
-['interpolate', ['linear'], ['get', 'value'], 0, '#fff', 100, '#000']
-
-// Steps (discrete buckets)
-['step', ['get', 'value'], '#fff', 25, '#ccc', 50, '#888', 75, '#000']
-
-// Categories (qualitative)
-['match', ['get', 'category'], 'A', '#red', 'B', '#blue', '#gray']
+['interpolate', ['linear'], ['get', 'value'], 0, '#fff', 100, '#000'][
+  // Steps (discrete buckets)
+  ('step', ['get', 'value'], '#fff', 25, '#ccc', 50, '#888', 75, '#000')
+][
+  // Categories (qualitative)
+  ('match', ['get', 'category'], 'A', '#red', 'B', '#blue', '#gray')
+];
 ```
 
 ## Heat Maps
@@ -61,13 +64,21 @@ map.addLayer({
     'heatmap-weight': ['get', 'intensity'],
     'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 15, 3],
     'heatmap-color': [
-      'interpolate', ['linear'], ['heatmap-density'],
-      0, 'rgba(33,102,172,0)',
-      0.2, 'rgb(103,169,207)',
-      0.4, 'rgb(209,229,240)',
-      0.6, 'rgb(253,219,199)',
-      0.8, 'rgb(239,138,98)',
-      1, 'rgb(178,24,43)'
+      'interpolate',
+      ['linear'],
+      ['heatmap-density'],
+      0,
+      'rgba(33,102,172,0)',
+      0.2,
+      'rgb(103,169,207)',
+      0.4,
+      'rgb(209,229,240)',
+      0.6,
+      'rgb(253,219,199)',
+      0.8,
+      'rgb(239,138,98)',
+      1,
+      'rgb(178,24,43)'
     ],
     'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 15, 20]
   }
@@ -96,22 +107,8 @@ map.addLayer({
   type: 'circle',
   source: 'data',
   paint: {
-    'circle-radius': [
-      'interpolate',
-      ['exponential', 2],
-      ['get', 'magnitude'],
-      0, 2,
-      5, 20,
-      10, 100
-    ],
-    'circle-color': [
-      'interpolate',
-      ['linear'],
-      ['get', 'value'],
-      0, '#ffffcc',
-      50, '#78c679',
-      100, '#006837'
-    ],
+    'circle-radius': ['interpolate', ['exponential', 2], ['get', 'magnitude'], 0, 2, 5, 20, 10, 100],
+    'circle-color': ['interpolate', ['linear'], ['get', 'value'], 0, '#ffffcc', 50, '#78c679', 100, '#006837'],
     'circle-opacity': 0.7,
     'circle-stroke-color': '#fff',
     'circle-stroke-width': 1
@@ -135,9 +132,12 @@ map.addLayer({
       'interpolate',
       ['linear'],
       ['get', 'height'],
-      0, '#fafa6e',
-      100, '#e64a45',
-      200, '#a63e3e'
+      0,
+      '#fafa6e',
+      100,
+      '#e64a45',
+      200,
+      '#a63e3e'
     ],
     'fill-extrusion-opacity': 0.9
   }
@@ -158,20 +158,17 @@ map.addLayer({
   type: 'line',
   source: 'roads',
   paint: {
-    'line-width': [
-      'interpolate',
-      ['exponential', 2],
-      ['get', 'volume'],
-      0, 1,
-      10000, 15
-    ],
+    'line-width': ['interpolate', ['exponential', 2], ['get', 'volume'], 0, 1, 10000, 15],
     'line-color': [
       'interpolate',
       ['linear'],
       ['get', 'speed'],
-      0, '#d73027',    // Stopped
-      30, '#fee08b',   // Moderate
-      60, '#1a9850'    // Free flow
+      0,
+      '#d73027', // Stopped
+      30,
+      '#fee08b', // Moderate
+      60,
+      '#1a9850' // Free flow
     ]
   }
 });
@@ -195,7 +192,7 @@ function animate() {
 
 ```javascript
 setInterval(async () => {
-  const data = await fetch('/api/live-data').then(r => r.json());
+  const data = await fetch('/api/live-data').then((r) => r.json());
   map.getSource('live').setData(data);
 }, 5000);
 ```
@@ -204,11 +201,11 @@ setInterval(async () => {
 
 **Data Size Guidelines:**
 
-| Size | Format | Strategy |
-|------|--------|----------|
-| < 1 MB | GeoJSON | Direct load |
-| 1-10 MB | GeoJSON | Consider vector tiles |
-| > 10 MB | Vector Tiles | Required |
+| Size    | Format       | Strategy              |
+| ------- | ------------ | --------------------- |
+| < 1 MB  | GeoJSON      | Direct load           |
+| 1-10 MB | GeoJSON      | Consider vector tiles |
+| > 10 MB | Vector Tiles | Required              |
 
 **Vector Tiles:**
 
@@ -263,9 +260,7 @@ map.setFilter('layer-id', ['>=', ['get', 'value'], threshold]);
 ```javascript
 map.on('moveend', () => {
   const bounds = map.getBounds();
-  const visible = allData.features.filter(f =>
-    bounds.contains(f.geometry.coordinates)
-  );
+  const visible = allData.features.filter((f) => bounds.contains(f.geometry.coordinates));
   map.getSource('data').setData({ type: 'FeatureCollection', features: visible });
 });
 ```
@@ -379,25 +374,20 @@ const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 **Safe Property Access:**
 
 ```javascript
-[
-  'case',
-  ['has', 'property'],
-  ['get', 'property'],
-  defaultValue
-]
+['case', ['has', 'property'], ['get', 'property'], defaultValue];
 ```
 
 **Calculations:**
 
 ```javascript
 // Divide
-['/', ['get', 'numerator'], ['get', 'denominator']]
-
-// Multiply
-['*', ['get', 'value'], 1.5]
-
-// Percentage
-['*', ['/', ['get', 'part'], ['get', 'total']], 100]
+['/', ['get', 'numerator'], ['get', 'denominator']][
+  // Multiply
+  ('*', ['get', 'value'], 1.5)
+][
+  // Percentage
+  ('*', ['/', ['get', 'part'], ['get', 'total']], 100)
+];
 ```
 
 ## Resources

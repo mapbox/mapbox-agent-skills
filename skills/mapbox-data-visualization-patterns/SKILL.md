@@ -10,6 +10,7 @@ Comprehensive patterns for visualizing data on Mapbox maps. Covers choropleth ma
 ## When to Use This Skill
 
 Use this skill when:
+
 - Visualizing statistical data on maps (population, sales, demographics)
 - Creating choropleth maps with color-coded regions
 - Building heat maps for density visualization
@@ -44,11 +45,16 @@ map.on('load', () => {
         'interpolate',
         ['linear'],
         ['get', 'population'],
-        0, '#f0f9ff',      // Light blue for low population
-        500000, '#7fcdff',
-        1000000, '#0080ff',
-        5000000, '#0040bf', // Dark blue for high population
-        10000000, '#001f5c'
+        0,
+        '#f0f9ff', // Light blue for low population
+        500000,
+        '#7fcdff',
+        1000000,
+        '#0080ff',
+        5000000,
+        '#0040bf', // Dark blue for high population
+        10000000,
+        '#001f5c'
       ],
       'fill-opacity': 0.75
     }
@@ -74,10 +80,12 @@ map.on('load', () => {
       const feature = e.features[0];
       new mapboxgl.Popup()
         .setLngLat(e.lngLat)
-        .setHTML(`
+        .setHTML(
+          `
           <h3>${feature.properties.name}</h3>
           <p>Population: ${feature.properties.population.toLocaleString()}</p>
-        `)
+        `
+        )
         .addTo(map);
     }
   });
@@ -162,49 +170,31 @@ map.on('load', () => {
     maxzoom: 15,
     paint: {
       // Increase weight based on intensity property
-      'heatmap-weight': [
-        'interpolate',
-        ['linear'],
-        ['get', 'intensity'],
-        0, 0,
-        6, 1
-      ],
+      'heatmap-weight': ['interpolate', ['linear'], ['get', 'intensity'], 0, 0, 6, 1],
       // Increase intensity as zoom level increases
-      'heatmap-intensity': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        0, 1,
-        15, 3
-      ],
+      'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 15, 3],
       // Color ramp for heatmap
       'heatmap-color': [
         'interpolate',
         ['linear'],
         ['heatmap-density'],
-        0, 'rgba(33,102,172,0)',
-        0.2, 'rgb(103,169,207)',
-        0.4, 'rgb(209,229,240)',
-        0.6, 'rgb(253,219,199)',
-        0.8, 'rgb(239,138,98)',
-        1, 'rgb(178,24,43)'
+        0,
+        'rgba(33,102,172,0)',
+        0.2,
+        'rgb(103,169,207)',
+        0.4,
+        'rgb(209,229,240)',
+        0.6,
+        'rgb(253,219,199)',
+        0.8,
+        'rgb(239,138,98)',
+        1,
+        'rgb(178,24,43)'
       ],
       // Adjust radius by zoom level
-      'heatmap-radius': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        0, 2,
-        15, 20
-      ],
+      'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 15, 20],
       // Decrease opacity at higher zoom levels
-      'heatmap-opacity': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        7, 1,
-        15, 0
-      ]
+      'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 7, 1, 15, 0]
     }
   });
 
@@ -215,13 +205,7 @@ map.on('load', () => {
     source: 'incidents',
     minzoom: 14,
     paint: {
-      'circle-radius': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        14, 4,
-        22, 30
-      ],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 4, 22, 30],
       'circle-color': '#ff4444',
       'circle-opacity': 0.8,
       'circle-stroke-color': '#fff',
@@ -260,10 +244,14 @@ map.on('load', () => {
         'interpolate',
         ['linear'],
         ['get', 'height'],
-        0, '#fafa6e',
-        50, '#eca25b',
-        100, '#e64a45',
-        200, '#a63e3e'
+        0,
+        '#fafa6e',
+        50,
+        '#eca25b',
+        100,
+        '#e64a45',
+        200,
+        '#a63e3e'
       ],
       'fill-extrusion-opacity': 0.9
     }
@@ -316,24 +304,22 @@ map.on('load', () => {
     source: 'earthquakes',
     paint: {
       // Size circles by magnitude
-      'circle-radius': [
-        'interpolate',
-        ['exponential', 2],
-        ['get', 'mag'],
-        0, 2,
-        5, 20,
-        8, 100
-      ],
+      'circle-radius': ['interpolate', ['exponential', 2], ['get', 'mag'], 0, 2, 5, 20, 8, 100],
       // Color by depth
       'circle-color': [
         'interpolate',
         ['linear'],
         ['get', 'depth'],
-        0, '#ffffcc',
-        50, '#a1dab4',
-        100, '#41b6c4',
-        200, '#2c7fb8',
-        300, '#253494'
+        0,
+        '#ffffcc',
+        50,
+        '#a1dab4',
+        100,
+        '#41b6c4',
+        200,
+        '#2c7fb8',
+        300,
+        '#253494'
       ],
       'circle-stroke-color': '#ffffff',
       'circle-stroke-width': 1,
@@ -346,11 +332,13 @@ map.on('load', () => {
     const props = e.features[0].properties;
     new mapboxgl.Popup()
       .setLngLat(e.features[0].geometry.coordinates)
-      .setHTML(`
+      .setHTML(
+        `
         <h3>Magnitude ${props.mag}</h3>
         <p>Depth: ${props.depth} km</p>
         <p>Time: ${new Date(props.time).toLocaleString()}</p>
-      `)
+      `
+      )
       .addTo(map);
   });
 });
@@ -376,25 +364,24 @@ map.on('load', () => {
     source: 'traffic',
     paint: {
       // Width by traffic volume
-      'line-width': [
-        'interpolate',
-        ['exponential', 2],
-        ['get', 'volume'],
-        0, 1,
-        1000, 5,
-        10000, 15
-      ],
+      'line-width': ['interpolate', ['exponential', 2], ['get', 'volume'], 0, 1, 1000, 5, 10000, 15],
       // Color by speed (congestion)
       'line-color': [
         'interpolate',
         ['linear'],
         ['get', 'speed'],
-        0, '#d73027',      // Red: stopped
-        15, '#fc8d59',     // Orange: slow
-        30, '#fee08b',     // Yellow: moderate
-        45, '#d9ef8b',     // Light green: good
-        60, '#91cf60',     // Green: free flow
-        75, '#1a9850'
+        0,
+        '#d73027', // Red: stopped
+        15,
+        '#fc8d59', // Orange: slow
+        30,
+        '#fee08b', // Yellow: moderate
+        45,
+        '#d9ef8b', // Light green: good
+        60,
+        '#91cf60', // Green: free flow
+        75,
+        '#1a9850'
       ],
       'line-opacity': 0.8
     }
@@ -457,7 +444,7 @@ function getDataForTime(hour) {
   // Fetch or generate data for specific time
   return {
     type: 'FeatureCollection',
-    features: data.filter(d => d.properties.hour === hour)
+    features: data.filter((d) => d.properties.hour === hour)
   };
 }
 ```
@@ -522,13 +509,7 @@ function updateVisualization(newData) {
   map.setPaintProperty('data-layer', 'circle-radius', targetRadius);
 
   // Or use expressions for smooth interpolation
-  map.setPaintProperty('data-layer', 'circle-radius', [
-    'interpolate',
-    ['linear'],
-    ['get', 'value'],
-    0, 2,
-    100, 20
-  ]);
+  map.setPaintProperty('data-layer', 'circle-radius', ['interpolate', ['linear'], ['get', 'value'], 0, 2, 100, 20]);
 }
 ```
 
@@ -538,11 +519,11 @@ function updateVisualization(newData) {
 
 **When to use each:**
 
-| Data Size | Format | Reason |
-|-----------|--------|--------|
-| < 1 MB | GeoJSON | Simple, no processing needed |
-| 1-10 MB | GeoJSON or Vector Tiles | Consider data update frequency |
-| > 10 MB | Vector Tiles | Better performance, progressive loading |
+| Data Size | Format                  | Reason                                  |
+| --------- | ----------------------- | --------------------------------------- |
+| < 1 MB    | GeoJSON                 | Simple, no processing needed            |
+| 1-10 MB   | GeoJSON or Vector Tiles | Consider data update frequency          |
+| > 10 MB   | Vector Tiles            | Better performance, progressive loading |
 
 **Vector Tile Pattern:**
 
@@ -586,8 +567,8 @@ map.on('load', () => {
       'fill-color': [
         'case',
         ['boolean', ['feature-state', 'hover'], false],
-        '#ff0000',  // Hover color
-        '#3b9ddd'   // Default color
+        '#ff0000', // Hover color
+        '#3b9ddd' // Default color
       ]
     }
   });
@@ -598,27 +579,18 @@ map.on('load', () => {
   map.on('mousemove', 'states', (e) => {
     if (e.features.length > 0) {
       if (hoveredStateId !== null) {
-        map.setFeatureState(
-          { source: 'states', id: hoveredStateId },
-          { hover: false }
-        );
+        map.setFeatureState({ source: 'states', id: hoveredStateId }, { hover: false });
       }
 
       hoveredStateId = e.features[0].id;
 
-      map.setFeatureState(
-        { source: 'states', id: hoveredStateId },
-        { hover: true }
-      );
+      map.setFeatureState({ source: 'states', id: hoveredStateId }, { hover: true });
     }
   });
 
   map.on('mouseleave', 'states', () => {
     if (hoveredStateId !== null) {
-      map.setFeatureState(
-        { source: 'states', id: hoveredStateId },
-        { hover: false }
-      );
+      map.setFeatureState({ source: 'states', id: hoveredStateId }, { hover: false });
     }
     hoveredStateId = null;
   });
@@ -718,35 +690,35 @@ map.on('moveend', () => {
 </div>
 
 <style>
-.legend {
-  position: absolute;
-  bottom: 30px;
-  right: 10px;
-  background: white;
-  padding: 10px;
-  border-radius: 3px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-}
+  .legend {
+    position: absolute;
+    bottom: 30px;
+    right: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+  }
 
-.legend h4 {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-}
+  .legend h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+  }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
 
-.legend-color {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
-}
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+  }
 </style>
 ```
 
@@ -764,14 +736,16 @@ map.on('click', 'data-layer', (e) => {
 
   new mapboxgl.Popup()
     .setLngLat(e.lngLat)
-    .setHTML(`
+    .setHTML(
+      `
       <div style="max-width: 300px;">
         <h3>Feature Details</h3>
         <table style="width: 100%; font-size: 12px;">
           ${propsTable}
         </table>
       </div>
-    `)
+    `
+    )
     .addTo(map);
 });
 ```
@@ -809,11 +783,11 @@ function calculateJenksBreaks(values, numClasses) {
 
 // Normalize data for better visualization
 function normalizeData(features, property) {
-  const values = features.map(f => f.properties[property]);
+  const values = features.map((f) => f.properties[property]);
   const max = Math.max(...values);
   const min = Math.min(...values);
 
-  return features.map(feature => ({
+  return features.map((feature) => ({
     ...feature,
     properties: {
       ...feature.properties,
@@ -840,15 +814,9 @@ map.on('load', () => {
     paint: {
       'fill-color': [
         'case',
-        ['has', 'value'],  // Check if property exists
-        [
-          'interpolate',
-          ['linear'],
-          ['get', 'value'],
-          0, '#f0f0f0',
-          100, '#0080ff'
-        ],
-        '#cccccc'  // Default color for missing data
+        ['has', 'value'], // Check if property exists
+        ['interpolate', ['linear'], ['get', 'value'], 0, '#f0f0f0', 100, '#0080ff'],
+        '#cccccc' // Default color for missing data
       ]
     }
   });
@@ -876,17 +844,22 @@ map.addLayer({
     'fill-color': [
       'match',
       ['get', 'winner'],
-      'democrat', '#3b82f6',
-      'republican', '#ef4444',
-      'independent', '#a855f7',
-      '#94a3b8'  // No data
+      'democrat',
+      '#3b82f6',
+      'republican',
+      '#ef4444',
+      'independent',
+      '#a855f7',
+      '#94a3b8' // No data
     ],
     'fill-opacity': [
       'interpolate',
       ['linear'],
       ['get', 'margin'],
-      0, 0.3,    // Close race: light
-      20, 0.9    // Landslide: dark
+      0,
+      0.3, // Close race: light
+      20,
+      0.9 // Landslide: dark
     ]
   }
 });
@@ -902,14 +875,20 @@ map.addLayer({
   paint: {
     'fill-color': [
       'step',
-      ['/', ['get', 'cases'], ['get', 'population']],  // Cases per capita
+      ['/', ['get', 'cases'], ['get', 'population']], // Cases per capita
       '#ffffb2',
-      0.001, '#fed976',
-      0.005, '#feb24c',
-      0.01, '#fd8d3c',
-      0.02, '#fc4e2a',
-      0.05, '#e31a1c',
-      0.1, '#b10026'
+      0.001,
+      '#fed976',
+      0.005,
+      '#feb24c',
+      0.01,
+      '#fd8d3c',
+      0.02,
+      '#fc4e2a',
+      0.05,
+      '#e31a1c',
+      0.1,
+      '#b10026'
     ]
   }
 });
@@ -923,23 +902,21 @@ map.addLayer({
   type: 'circle',
   source: 'properties',
   paint: {
-    'circle-radius': [
-      'interpolate',
-      ['exponential', 2],
-      ['get', 'price'],
-      100000, 5,
-      1000000, 20,
-      10000000, 50
-    ],
+    'circle-radius': ['interpolate', ['exponential', 2], ['get', 'price'], 100000, 5, 1000000, 20, 10000000, 50],
     'circle-color': [
       'interpolate',
       ['linear'],
       ['get', 'price_per_sqft'],
-      0, '#ffffcc',
-      200, '#a1dab4',
-      400, '#41b6c4',
-      600, '#2c7fb8',
-      800, '#253494'
+      0,
+      '#ffffcc',
+      200,
+      '#a1dab4',
+      400,
+      '#41b6c4',
+      600,
+      '#2c7fb8',
+      800,
+      '#253494'
     ],
     'circle-opacity': 0.6,
     'circle-stroke-color': '#ffffff',

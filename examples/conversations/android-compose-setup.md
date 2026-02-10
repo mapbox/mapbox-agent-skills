@@ -12,6 +12,7 @@ This conversation demonstrates how the **mapbox-android-patterns** skill helps i
 ## Conversation
 
 ### User
+
 > How do I add a Mapbox map to my Jetpack Compose screen with proper lifecycle handling?
 
 ### AI Assistant
@@ -33,6 +34,7 @@ dependencies {
 ```
 
 **Add to `settings.gradle.kts`:**
+
 ```kotlin
 dependencyResolutionManagement {
     repositories {
@@ -54,12 +56,14 @@ dependencyResolutionManagement {
 **Following mapbox-token-security skill**, store your token securely:
 
 **Create `local.properties` (add to `.gitignore`):**
+
 ```properties
 MAPBOX_ACCESS_TOKEN=pk.your_actual_token_here
 MAPBOX_DOWNLOADS_TOKEN=sk.your_secret_token_here
 ```
 
 **Update `build.gradle.kts` to read token:**
+
 ```kotlin
 android {
     defaultConfig {
@@ -248,21 +252,25 @@ fun MapScreen() {
 ### Key Points from mapbox-android-patterns
 
 ✅ **Proper Lifecycle Management:**
+
 - `rememberMapViewWithLifecycle()` handles ON_START, ON_STOP, ON_DESTROY
 - `DisposableEffect` ensures cleanup when composable leaves composition
 - Prevents memory leaks and crashes
 
 ✅ **Token Security:**
+
 - Token stored in `local.properties` (not in source code)
 - `local.properties` added to `.gitignore`
 - Token accessed via `BuildConfig` at runtime
 
 ✅ **Compose Integration:**
+
 - `AndroidView` bridges traditional Views into Compose
 - `remember` prevents MapView recreation on recomposition
 - State changes trigger `update` block, not recreation
 
 ✅ **Memory Safety:**
+
 - Explicit cleanup in `DisposableEffect.onDispose`
 - Lifecycle observer properly removed
 - No memory leaks
@@ -331,6 +339,7 @@ To verify proper lifecycle handling:
 ### Next Steps
 
 Based on your needs:
+
 - **Add clustering** - Use mapbox-web-performance-patterns guidance (applies to Android too)
 - **Offline maps** - See offline patterns in mapbox-android-patterns skill
 - **Navigation** - Navigation SDK integration patterns
@@ -353,6 +362,7 @@ Does this cover what you need?
 ### Without the skill:
 
 An AI assistant without the skill might:
+
 - Forget lifecycle callbacks (causes crashes)
 - Not use DisposableEffect for cleanup (memory leaks)
 - Hardcode token in source (security risk)

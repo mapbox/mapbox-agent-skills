@@ -85,14 +85,7 @@ This skill provides security expertise for managing Mapbox access tokens safely 
 ```javascript
 // Overly permissive - don't do this
 {
-  scopes: [
-    'styles:read',
-    'styles:write',
-    'styles:list',
-    'styles:delete',
-    'tokens:read',
-    'tokens:write'
-  ];
+  scopes: ['styles:read', 'styles:write', 'styles:list', 'styles:delete', 'tokens:read', 'tokens:write'];
 }
 ```
 

@@ -4,10 +4,12 @@
   "description": "Agent Skills for building fast, beautiful, secure Mapbox applications",
   "type": "module",
   "scripts": {
+    "format": "prettier --write \"**/*.{md,json,js}\"",
+    "format:check": "prettier --check \"**/*.{md,json,js}\"",
     "spellcheck": "cspell \"*.md\" \"skills/**/*.md\"",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules",
     "validate:skills": "node scripts/validate-skills.js",
-    "check": "npm run spellcheck && npm run lint:markdown && npm run validate:skills"
+    "check": "npm run format:check && npm run spellcheck && npm run lint:markdown && npm run validate:skills"
   },
   "keywords": [
     "agent-skills",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "cspell": "^8.0.0",
-    "markdownlint-cli": "^0.39.0"
+    "markdownlint-cli": "^0.39.0",
+    "prettier": "^3.8.1"
   }
 }

@@ -63,32 +63,24 @@ Quick reference for common style patterns, layer configurations, and data-driven
 ### 1. Clustering
 
 ```javascript
-map.addSource("points", {
-  type: "geojson",
+map.addSource('points', {
+  type: 'geojson',
   data: geojson,
   cluster: true,
   clusterRadius: 50,
-  clusterMaxZoom: 14,
+  clusterMaxZoom: 14
 });
 
 // Cluster circles
 map.addLayer({
-  id: "clusters",
-  type: "circle",
-  source: "points",
-  filter: ["has", "point_count"],
+  id: 'clusters',
+  type: 'circle',
+  source: 'points',
+  filter: ['has', 'point_count'],
   paint: {
-    "circle-color": [
-      "step",
-      ["get", "point_count"],
-      "#51bbd6",
-      100,
-      "#f1f075",
-      750,
-      "#f28cb1",
-    ],
-    "circle-radius": ["step", ["get", "point_count"], 20, 100, 30, 750, 40],
-  },
+    'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
+    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
+  }
 });
 ```
 
@@ -123,17 +115,13 @@ map.on('mousemove', 'layer', (e) => {
 
 ```javascript
 // ✅ Filter by property
-map.setFilter("layer", ["==", ["get", "type"], "restaurant"]);
+map.setFilter('layer', ['==', ['get', 'type'], 'restaurant']);
 
 // ✅ Filter by multiple conditions
-map.setFilter("layer", [
-  "all",
-  ["==", ["get", "type"], "restaurant"],
-  [">", ["get", "rating"], 4],
-]);
+map.setFilter('layer', ['all', ['==', ['get', 'type'], 'restaurant'], ['>', ['get', 'rating'], 4]]);
 
 // ✅ Filter by zoom
-map.setFilter("layer", ["all", [">=", ["zoom"], 10], ["<", ["zoom"], 14]]);
+map.setFilter('layer', ['all', ['>=', ['zoom'], 10], ['<', ['zoom'], 14]]);
 ```
 
 ### 4. Expressions
@@ -179,9 +167,9 @@ map.setFilter("layer", ["all", [">=", ["zoom"], 10], ["<", ["zoom"], 14]]);
 ```javascript
 // ✅ Set minzoom/maxzoom
 map.addLayer({
-  id: "layer",
+  id: 'layer',
   minzoom: 10, // Only show zoom 10+
-  maxzoom: 16, // Hide above zoom 16
+  maxzoom: 16 // Hide above zoom 16
 });
 
 // ✅ Use feature state instead of removing/re-adding
@@ -199,16 +187,16 @@ map.addLayer({
 
 ```javascript
 // ✅ Update paint property
-map.setPaintProperty("layer", "fill-color", "#ff0000");
+map.setPaintProperty('layer', 'fill-color', '#ff0000');
 
 // ✅ Update layout property
-map.setLayoutProperty("layer", "visibility", "none");
+map.setLayoutProperty('layer', 'visibility', 'none');
 
 // ✅ Update source data
-map.getSource("source").setData(newGeojson);
+map.getSource('source').setData(newGeojson);
 
 // ✅ Batch updates (better performance)
-map.once("idle", () => {
+map.once('idle', () => {
   // Multiple style changes here
 });
 ```
@@ -219,11 +207,11 @@ map.once("idle", () => {
 // ✅ Insert layer at specific position
 map.addLayer(
   {
-    id: "new-layer",
-    type: "fill",
-    source: "source",
+    id: 'new-layer',
+    type: 'fill',
+    source: 'source'
   },
-  "existing-layer-id",
+  'existing-layer-id'
 ); // Insert before this layer
 ```
 
@@ -233,21 +221,13 @@ map.addLayer(
 
 ```javascript
 map.addLayer({
-  id: "choropleth",
-  type: "fill",
-  source: "counties",
+  id: 'choropleth',
+  type: 'fill',
+  source: 'counties',
   paint: {
-    "fill-color": [
-      "interpolate",
-      ["linear"],
-      ["get", "density"],
-      0,
-      "#f7fbff",
-      100,
-      "#08519c",
-    ],
-    "fill-opacity": 0.7,
-  },
+    'fill-color': ['interpolate', ['linear'], ['get', 'density'], 0, '#f7fbff', 100, '#08519c'],
+    'fill-opacity': 0.7
+  }
 });
 ```
 
@@ -255,14 +235,14 @@ map.addLayer({
 
 ```javascript
 map.addLayer({
-  id: "route",
-  type: "line",
-  source: "route",
+  id: 'route',
+  type: 'line',
+  source: 'route',
   paint: {
-    "line-color": "#0080ff",
-    "line-width": 5,
-    "line-opacity": 0.8,
-  },
+    'line-color': '#0080ff',
+    'line-width': 5,
+    'line-opacity': 0.8
+  }
 });
 ```
 
@@ -270,68 +250,17 @@ map.addLayer({
 
 ```javascript
 map.addLayer({
-  id: "buildings",
-  type: "fill-extrusion",
-  source: "composite",
-  "source-layer": "building",
+  id: 'buildings',
+  type: 'fill-extrusion',
+  source: 'composite',
+  'source-layer': 'building',
   paint: {
-    "fill-extrusion-color": "#aaa",
-    "fill-extrusion-height": ["get", "height"],
-    "fill-extrusion-base": ["get", "min_height"],
-    "fill-extrusion-opacity": 0.8,
-  },
+    'fill-extrusion-color': '#aaa',
+    'fill-extrusion-height': ['get', 'height'],
+    'fill-extrusion-base': ['get', 'min_height'],
+    'fill-extrusion-opacity': 0.8
+  }
 });
-```
-
-### Delivery Tracking
-
-```javascript
-// Delivery zones with status colors
-map.addLayer({
-  id: "delivery-zones",
-  type: "fill",
-  source: "zones",
-  paint: {
-    "fill-color": [
-      "match",
-      ["get", "status"],
-      "available",
-      "#4caf50",
-      "busy",
-      "#ff9800",
-      "unavailable",
-      "#f44336",
-      "#9e9e9e",
-    ],
-    "fill-opacity": 0.15,
-  },
-});
-
-// Driver markers with status
-map.addLayer({
-  id: "drivers",
-  type: "circle",
-  source: "drivers",
-  paint: {
-    "circle-radius": 14,
-    "circle-color": [
-      "match",
-      ["get", "status"],
-      "picking_up",
-      "#ff9800",
-      "en_route",
-      "#2196f3",
-      "delivered",
-      "#4caf50",
-      "#9e9e9e",
-    ],
-    "circle-stroke-color": "#ffffff",
-    "circle-stroke-width": 3,
-  },
-});
-
-// Update driver location (real-time)
-map.getSource("drivers").setData(driversGeoJSON);
 ```
 
 ## Quick Reference: Expression Types
@@ -349,18 +278,18 @@ map.getSource("drivers").setData(driversGeoJSON);
 
 ```javascript
 // ✅ Check if layer exists
-if (map.getLayer("layer-id")) {
-  map.removeLayer("layer-id");
+if (map.getLayer('layer-id')) {
+  map.removeLayer('layer-id');
 }
 
 // ✅ Check if source exists
-if (map.getSource("source-id")) {
-  map.removeSource("source-id");
+if (map.getSource('source-id')) {
+  map.removeSource('source-id');
 }
 
 // ✅ List all layers
 console.log(map.getStyle().layers);
 
 // ✅ Get layer paint properties
-console.log(map.getPaintProperty("layer", "fill-color"));
+console.log(map.getPaintProperty('layer', 'fill-color'));
 ```

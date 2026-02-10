@@ -15,6 +15,7 @@
     "cartography",
     "choropleth",
     "chromedevtools",
+    "classyrew",
     "CMYK",
     "Coblis",
     "codex",
@@ -33,8 +34,10 @@
     "elicitation",
     "elicitations",
     "framerate",
+    "frontends",
     "frontmatter",
     "geocoder",
+    "geofencing",
     "Geolocate",
     "geolocation",
     "geojson",
@@ -62,6 +65,7 @@
     "mapboxgl",
     "maplibre",
     "maplibregl",
+    "mapload",
     "Maptiler",
     "maki",
     "markerclustererplus",
@@ -78,13 +82,16 @@
     "myapp",
     "Noto",
     "objc",
+    "Offc",
     "OLED",
     "pois",
     "Protomaps",
     "recompositions",
     "rerouting",
     "rgba",
+    "scroller",
     "searchbox",
+    "sqft",
     "subview",
     "swiftui",
     "symbology",
@@ -92,6 +99,7 @@
     "tileset",
     "tilesets",
     "touchmove",
+    "turfjs",
     "uikit",
     "uiview",
     "unclustered",
@@ -111,9 +119,5 @@
     "yourusername",
     "zoomend"
   ],
-  "ignorePaths": [
-    "node_modules",
-    "package-lock.json",
-    ".git"
-  ]
+  "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

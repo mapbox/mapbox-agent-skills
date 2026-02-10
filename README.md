@@ -47,6 +47,7 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 Helps AI assistants select the right tool based on problem type (geometric vs routing), accuracy requirements, and performance needs. Features the "as the crow flies" vs "as the crow drives" decision framework.
 
 **Use when:**
+
 - Deciding between offline calculations and API calls
 - Calculating distances (straight-line vs road distance)
 - Checking if points are within an area
@@ -55,6 +56,7 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 - Understanding when to use routing vs geometry
 
 **Key topics:**
+
 - Decision framework: geometric operations vs routing APIs
 - Distance calculations (crow flies vs crow drives)
 - Proximity and containment checks
@@ -66,6 +68,7 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 - Performance and scale considerations
 
 **Tool categories covered:**
+
 - Offline geometric: distance, bearing, buffer, centroid, area, containment
 - Routing APIs: directions, matrix, optimization, isochrone, map matching
 

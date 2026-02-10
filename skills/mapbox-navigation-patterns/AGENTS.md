@@ -392,12 +392,12 @@ const url = `https://api.mapbox.com/directions/v5/mapbox/cycling/${coords}?...`;
 
 ## API Limits
 
-| Feature                | Limit                                         |
-| ---------------------- | --------------------------------------------- |
-| **Waypoints**          | 25 max (including start/end)                  |
-| **Alternative routes** | Max 2 alternatives (3 total routes)           |
-| **Optimization**       | 12 waypoints (v1 API hard limit)              |
-| **Rate limit**         | 300 requests/minute (default)                 |
+| Feature                | Limit                               |
+| ---------------------- | ----------------------------------- |
+| **Waypoints**          | 25 max (including start/end)        |
+| **Alternative routes** | Max 2 alternatives (3 total routes) |
+| **Optimization**       | 12 waypoints (v1 API hard limit)    |
+| **Rate limit**         | 300 requests/minute (default)       |
 
 ## Quick Decisions
 

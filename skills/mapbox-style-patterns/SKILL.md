@@ -932,6 +932,19 @@ This skill provides battle-tested style patterns and layer configurations for co
 - Restaurant/pickup locations clearly marked
 - Shadow effects on driver markers for depth
 
+**Load custom arrow icon:**
+
+```javascript
+// Load custom arrow icon for driver direction indicator
+// Note: 'arrow' is not a standard Maki icon and must be loaded manually
+map.on('load', () => {
+  map.loadImage('path/to/arrow-icon.png', (error, image) => {
+    if (error) throw error;
+    map.addImage('arrow', image);
+  });
+});
+```
+
 **Real-time update pattern:**
 
 ```javascript
@@ -973,11 +986,11 @@ function pulseCustomerMarker() {
     const elapsed = time - start;
     const phase = (elapsed % duration) / duration;
 
-    map.setPaintProperty('customer-pulse', 'circle-radius', [
-      'interpolate', ['linear'], ['literal', phase],
-      0, 12,
-      1, 24
-    ]);
+    // Update radius (12 to 24 pixels)
+    map.setPaintProperty('customer-pulse', 'circle-radius', 12 + phase * 12);
+
+    // Update opacity (fade from 0.3 to 0)
+    map.setPaintProperty('customer-pulse', 'circle-opacity', 0.3 * (1 - phase));
 
     requestAnimationFrame(animate);
   }

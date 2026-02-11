@@ -15,9 +15,11 @@
     "cartography",
     "choropleth",
     "chromedevtools",
+    "classyrew",
     "CMYK",
     "Coblis",
     "codex",
+    "colorbrewer",
     "composable",
     "Contentful",
     "constraintlayout",
@@ -37,6 +39,7 @@
     "frontends",
     "frontmatter",
     "geocoder",
+    "geofencing",
     "Geolocate",
     "geolocation",
     "geojson",
@@ -45,8 +48,8 @@
     "grayscale",
     "Haversine",
     "hillshade",
-    "htmlelement",
     "hillshading",
+    "htmlelement",
     "iconimage",
     "Ijoi",
     "infowindow",
@@ -69,7 +72,6 @@
     "maki",
     "markerclustererplus",
     "Clusterer",
-    "colorbrewer",
     "markerstroked",
     "maxzoom",
     "millis",
@@ -91,6 +93,7 @@
     "rgba",
     "scroller",
     "searchbox",
+    "sqft",
     "subview",
     "swiftui",
     "symbology",
@@ -118,9 +121,5 @@
     "yourusername",
     "zoomend"
   ],
-  "ignorePaths": [
-    "node_modules",
-    "package-lock.json",
-    ".git"
-  ]
+  "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

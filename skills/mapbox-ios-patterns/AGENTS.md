@@ -181,7 +181,7 @@ mapView.gestures.onMapTap.observe { [weak self] context in
 .mapStyle(.standard)    // Recommended
 .mapStyle(.streets)
 .mapStyle(.dark)
-.mapStyle(.satellite)
+.mapStyle(.standardSatellite)
 
 // UIKit
 mapView.mapboxMap.loadStyle(.standard)
@@ -224,7 +224,7 @@ mapView.gestures.onMapTap.observe { [weak self] context in
 .mapStyle(.standard)
 
 // Use others only when needed
-.mapStyle(.satellite)
+.mapStyle(.standardSatellite)
 ```
 
 ## Quick Checklist

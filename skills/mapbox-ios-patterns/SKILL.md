@@ -453,8 +453,7 @@ Map(viewport: $viewport)
     .mapStyle(.outdoors)         // Mapbox Outdoors
     .mapStyle(.light)            // Mapbox Light
     .mapStyle(.dark)             // Mapbox Dark
-    .mapStyle(.satellite)        // Satellite imagery
-    .mapStyle(.satelliteStreets) // Satellite + streets
+    .mapStyle(.standardSatellite) // Satellite imagery
 
 // UIKit
 mapView.mapboxMap.loadStyle(.standard)
@@ -677,8 +676,7 @@ deinit {
 .mapStyle(.standard)
 
 // Use other styles only when needed for specific use cases
-.mapStyle(.satellite)      // Imagery-focused apps
-.mapStyle(.satelliteStreets) // Heavier, use sparingly
+.mapStyle(.standardSatellite) // Satellite imagery
 ```
 
 ---

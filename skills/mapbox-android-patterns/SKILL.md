@@ -106,11 +106,8 @@ fun MapScreen() {
     MapboxMap(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Initialize map style and camera via MapEffect
+        // Initialize camera via MapEffect (Style.STANDARD loads by default)
         MapEffect(Unit) { mapView ->
-            // Load Standard style
-            mapView.mapboxMap.loadStyle(Style.STANDARD)
-
             // Set initial camera position
             mapView.mapboxMap.setCamera(
                 CameraOptions.Builder()
@@ -138,9 +135,7 @@ MapboxMap(
         Compass(enabled = true)
     }
 ) {
-    MapEffect(Unit) { mapView ->
-        mapView.mapboxMap.loadStyle(Style.STANDARD)
-    }
+    // Style.STANDARD loads by default
 }
 ```
 
@@ -599,12 +594,12 @@ mapView.camera.easeTo(camera)
 // Compose - load style via MapEffect
 MapboxMap(modifier = Modifier.fillMaxSize()) {
     MapEffect(Unit) { mapView ->
-        mapView.mapboxMap.loadStyle(Style.STANDARD)         // Mapbox Standard (recommended)
+        // Style.STANDARD loads by default, explicit loading only needed for other styles
         // mapView.mapboxMap.loadStyle(Style.STREETS)       // Mapbox Streets
         // mapView.mapboxMap.loadStyle(Style.OUTDOORS)      // Mapbox Outdoors
         // mapView.mapboxMap.loadStyle(Style.LIGHT)         // Mapbox Light
         // mapView.mapboxMap.loadStyle(Style.DARK)          // Mapbox Dark
-        // mapView.mapboxMap.loadStyle(Style.SATELLITE)     // Satellite imagery
+        // mapView.mapboxMap.loadStyle(Style.STANDARD_SATELLITE)     // Satellite imagery
         // mapView.mapboxMap.loadStyle(Style.SATELLITE_STREETS) // Satellite + streets
     }
 }
@@ -843,8 +838,7 @@ override fun onDestroy() {
 Style.STANDARD
 
 // Use other styles only when needed for specific use cases
-Style.SATELLITE         // Imagery-focused apps
-Style.STANDARD_SATELLITE // Heavier, use sparingly
+Style.STANDARD_SATELLITE // Satellite imagery
 ```
 
 ---

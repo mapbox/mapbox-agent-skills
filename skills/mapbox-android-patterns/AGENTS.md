@@ -49,7 +49,6 @@ import com.mapbox.geojson.Point
 fun MapScreen() {
     MapboxMap(modifier = Modifier.fillMaxSize()) {
         MapEffect(Unit) { mapView ->
-            mapView.mapboxMap.loadStyle(Style.STANDARD)
             mapView.mapboxMap.setCamera(
                 CameraOptions.Builder()
                     .center(Point.fromLngLat(-122.4194, 37.7749))
@@ -65,7 +64,6 @@ fun MapScreen() {
 ```kotlin
 MapboxMap(modifier = Modifier.fillMaxSize()) {
     MapEffect(Unit) { mapView ->
-        mapView.mapboxMap.loadStyle(Style.STANDARD)
         val annotationManager = mapView.annotations.createPointAnnotationManager()
         val pointAnnotation = PointAnnotationOptions()
             .withPoint(Point.fromLngLat(-122.4194, 37.7749))
@@ -75,9 +73,12 @@ MapboxMap(modifier = Modifier.fillMaxSize()) {
 }
 ```
 
-### Previous pattern (annotations must use MapEffect, not declarative)
+### Compose Annotations Pattern
 ```kotlin
+// ❌ Declarative annotation components are not supported
+// Use MapEffect with annotation managers instead (see above)
 MapboxMap(modifier = Modifier.fillMaxSize()) {
+    // This doesn't work:
     PointAnnotation(
         point = Point.fromLngLat(-122.4194, 37.7749)
     ) {
@@ -264,7 +265,7 @@ mapView.gestures.addOnMapClickListener { point ->
 // Compose
 MapboxMap(style = Style.STANDARD)  // Recommended
 MapboxMap(style = Style.DARK)
-MapboxMap(style = Style.SATELLITE)
+MapboxMap(style = Style.STANDARD_SATELLITE)
 
 // Views
 mapView.mapboxMap.loadStyle(Style.STANDARD)
@@ -321,7 +322,7 @@ override fun onDestroy() {
 Style.STANDARD
 
 // Use others only when needed
-Style.SATELLITE
+Style.STANDARD_SATELLITE
 ```
 
 ## Quick Checklist

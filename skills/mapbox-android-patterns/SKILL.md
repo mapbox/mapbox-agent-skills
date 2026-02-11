@@ -844,7 +844,7 @@ Style.STANDARD
 
 // Use other styles only when needed for specific use cases
 Style.SATELLITE         // Imagery-focused apps
-Style.SATELLITE_STREETS // Heavier, use sparingly
+Style.STANDARD_SATELLITE // Heavier, use sparingly
 ```
 
 ---

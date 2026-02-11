@@ -15,6 +15,7 @@ This app demonstrates key patterns using **Jetpack Compose only** (the modern, r
 ## Setup
 
 ### Prerequisites
+
 - Android Studio (latest version)
 - Android SDK 21+
 - Kotlin
@@ -31,6 +32,7 @@ This app demonstrates key patterns using **Jetpack Compose only** (the modern, r
    - Replace `YOUR_MAPBOX_ACCESS_TOKEN` with your actual token
 
 3. **Open in Android Studio:**
+
    ```bash
    cd demos/android-demo
    # Open the folder in Android Studio
@@ -55,6 +57,7 @@ app/src/main/kotlin/com/mapbox/demo/
 ## Implementation Details
 
 ### Pure Jetpack Compose Approach
+
 This demo uses **only Jetpack Compose** - the modern, declarative approach for Android:
 
 ```kotlin
@@ -69,6 +72,7 @@ MapboxMap(
 ```
 
 **Why Jetpack Compose?**
+
 - ✅ Modern, declarative UI (recommended by Google & Mapbox)
 - ✅ Less boilerplate, more readable code
 - ✅ Better state management
@@ -78,14 +82,14 @@ MapboxMap(
 
 All code follows patterns from: `skills/mapbox-android-patterns/SKILL.md`
 
-| Pattern | Implementation |
-|---------|----------------|
-| Standard Style | `style = Style.STANDARD` |
-| Native Map | `MapboxMap` composable |
-| Markers | `PointAnnotation` composable |
-| Camera State | `rememberCameraState {}` |
-| Permissions | `rememberLauncherForActivityResult` |
-| Material3 | Modern UI components |
+| Pattern        | Implementation                      |
+| -------------- | ----------------------------------- |
+| Standard Style | `style = Style.STANDARD`            |
+| Native Map     | `MapboxMap` composable              |
+| Markers        | `PointAnnotation` composable        |
+| Camera State   | `rememberCameraState {}`            |
+| Permissions    | `rememberLauncherForActivityResult` |
+| Material3      | Modern UI components                |
 
 ## Testing
 
@@ -98,18 +102,21 @@ All code follows patterns from: `skills/mapbox-android-patterns/SKILL.md`
 ## Troubleshooting
 
 **Map not displaying:**
-- ✅ Check `mapbox_access_token.xml` has valid **public token** (pk.*)
+
+- ✅ Check `mapbox_access_token.xml` has valid **public token** (pk.\*)
 - ✅ Token must be valid (test at mapbox.com)
 - ✅ Maven repository configured in settings.gradle.kts
 - ✅ Check AndroidManifest.xml has internet permission
 
 **Build errors:**
+
 - ✅ Sync Gradle files (File → Sync Project with Gradle Files)
 - ✅ Check Maven repository URL is correct
 - ✅ Ensure minSdk = 21 in build.gradle.kts
 - ✅ Clean and rebuild (Build → Clean Project)
 
 **Location not working:**
+
 - ✅ Grant location permission when prompted
 - ✅ Check AndroidManifest.xml has location permissions
 - ✅ Test on physical device for best results
@@ -117,7 +124,9 @@ All code follows patterns from: `skills/mapbox-android-patterns/SKILL.md`
 ## Gradle Configuration
 
 ### settings.gradle.kts
+
 Mapbox Maven repository:
+
 ```kotlin
 maven {
     url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
@@ -125,7 +134,9 @@ maven {
 ```
 
 ### app/build.gradle.kts
+
 Dependencies:
+
 ```kotlin
 implementation("com.mapbox.maps:android:11.18.1")
 implementation("com.mapbox.extension:maps-compose:11.18.1")

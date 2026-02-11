@@ -5,6 +5,7 @@ Fast reference for Mapbox Maps SDK v11 on iOS with Swift, SwiftUI, and UIKit.
 ## Setup
 
 ### Installation (SPM)
+
 ```swift
 // File → Add Package Dependencies
 https://github.com/mapbox/mapbox-maps-ios.git
@@ -12,6 +13,7 @@ https://github.com/mapbox/mapbox-maps-ios.git
 ```
 
 ### Access Token
+
 ```xml
 <!-- Info.plist -->
 <key>MBXAccessToken</key>
@@ -21,6 +23,7 @@ https://github.com/mapbox/mapbox-maps-ios.git
 ## SwiftUI
 
 ### Basic Map
+
 ```swift
 import SwiftUI
 import MapboxMaps
@@ -39,6 +42,7 @@ struct MapView: View {
 ```
 
 ### With Annotation
+
 ```swift
 Map(viewport: $viewport) {
     PointAnnotation(coordinate: CLLocationCoordinate2D(
@@ -53,6 +57,7 @@ Map(viewport: $viewport) {
 ## UIKit
 
 ### Basic Map
+
 ```swift
 import UIKit
 import MapboxMaps
@@ -82,6 +87,7 @@ class MapViewController: UIViewController {
 ## Common Patterns
 
 ### 1. Add Markers
+
 ```swift
 var manager = mapView.annotations.makePointAnnotationManager()
 
@@ -92,6 +98,7 @@ manager.annotations = [annotation]
 ```
 
 ### 2. User Location with Camera Follow
+
 ```swift
 import Combine
 
@@ -118,6 +125,7 @@ mapView.location.onLocationChange.observe { [weak self] locations in
 ```
 
 ### 3. Add Custom Data (GeoJSON)
+
 ```swift
 var source = GeoJSONSource(id: "route-source")
 source.data = .geometry(.lineString(LineString(coordinates)))
@@ -130,6 +138,7 @@ try? mapView.mapboxMap.addLayer(layer)
 ```
 
 ### 4. Camera Control
+
 ```swift
 // Fly animation
 mapView.camera.fly(to: CameraOptions(
@@ -145,6 +154,7 @@ mapView.camera.ease(to: CameraOptions(
 ```
 
 ### 5. Featureset Interactions
+
 ```swift
 // Tap on POI features
 let token = mapView.mapboxMap.addInteraction(
@@ -168,6 +178,7 @@ let buildingToken = mapView.mapboxMap.addInteraction(
 ```
 
 ### 6. Map Tap Handling
+
 ```swift
 mapView.gestures.onMapTap.observe { [weak self] context in
     let coordinate = context.coordinate
@@ -176,6 +187,7 @@ mapView.gestures.onMapTap.observe { [weak self] context in
 ```
 
 ### 7. Styles
+
 ```swift
 // SwiftUI
 .mapStyle(.standard)    // Recommended
@@ -191,6 +203,7 @@ mapView.mapboxMap.loadStyle(.dark)
 ## Performance Tips
 
 ### Reuse Managers
+
 ```swift
 // ✅ Create once
 let annotationManager = mapView.annotations.makePointAnnotationManager()
@@ -202,6 +215,7 @@ func updateMarkers() {
 ```
 
 ### Batch Updates
+
 ```swift
 // ✅ Update all at once
 manager.annotations = allAnnotations
@@ -211,6 +225,7 @@ allAnnotations.forEach { manager.annotations.append($0) }
 ```
 
 ### Memory Management
+
 ```swift
 // Use weak self
 mapView.gestures.onMapTap.observe { [weak self] context in
@@ -219,6 +234,7 @@ mapView.gestures.onMapTap.observe { [weak self] context in
 ```
 
 ### Use Standard Style
+
 ```swift
 // ✅ Recommended
 .mapStyle(.standard)

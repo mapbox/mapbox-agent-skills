@@ -8,6 +8,7 @@ description: Official integration patterns for Mapbox Maps SDK on Android. Cover
 Official patterns for integrating Mapbox Maps SDK v11 on Android with Kotlin, Jetpack Compose, and View system.
 
 **Use this skill when:**
+
 - Installing and configuring Mapbox Maps SDK for Android
 - Adding markers and annotations to maps
 - Showing user location and tracking with camera
@@ -16,6 +17,7 @@ Official patterns for integrating Mapbox Maps SDK v11 on Android with Kotlin, Je
 - Handling feature interactions and taps
 
 **Official Resources:**
+
 - [Android Maps Guides](https://docs.mapbox.com/android/maps/guides/)
 - [API Reference](https://docs.mapbox.com/android/maps/api-reference/)
 - [Example Apps](https://github.com/mapbox/mapbox-maps-android/tree/main/Examples)
@@ -25,6 +27,7 @@ Official patterns for integrating Mapbox Maps SDK v11 on Android with Kotlin, Je
 ## Installation & Setup
 
 ### Requirements
+
 - Android SDK 21+
 - Kotlin or Java
 - Android Studio
@@ -696,7 +699,7 @@ class MapActivity : AppCompatActivity() {
 
 **Jetpack Compose Pattern:**
 
-```kotlin
+````kotlin
 @Composable
 fun MapScreen() {
     MapboxMap(modifier = Modifier.fillMaxSize()) {
@@ -738,7 +741,7 @@ mapView.mapboxMap.addInteraction(
         true
     }
 )
-```
+````
 
 ### Long Press Interactions
 
@@ -848,6 +851,7 @@ Style.STANDARD_SATELLITE // Satellite imagery
 ### Map Not Displaying
 
 **Check:**
+
 1. ✅ Token in `mapbox_access_token.xml`
 2. ✅ Token is valid (test at mapbox.com)
 3. ✅ Maven repository configured

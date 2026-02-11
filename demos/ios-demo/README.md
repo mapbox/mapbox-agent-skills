@@ -18,6 +18,7 @@ This app demonstrates key patterns using **SwiftUI only** (the modern, recommend
 ## Setup
 
 ### Prerequisites
+
 - Xcode 15+
 - iOS 14+ device or simulator
 - Swift 5.0+
@@ -34,6 +35,7 @@ This app demonstrates key patterns using **SwiftUI only** (the modern, recommend
    - Replace `YOUR_MAPBOX_ACCESS_TOKEN` with your actual token
 
 3. **Open the project in Xcode:**
+
    ```bash
    cd demos/ios-demo
    open MapboxIOSDemo.xcodeproj
@@ -58,11 +60,13 @@ MapboxIOSDemo/
 ```
 
 ### Legacy Swift Package Structure
+
 The `Sources/` and `Package.swift` files from the old Swift Package structure are kept for reference but are not used by the Xcode project.
 
 ## Implementation Details
 
 ### Pure SwiftUI Approach
+
 This demo uses **only SwiftUI** - the modern, declarative approach for iOS:
 
 ```swift
@@ -79,6 +83,7 @@ Map(viewport: $viewport) {
 ```
 
 **Why SwiftUI?**
+
 - ✅ Modern, declarative API (v11+)
 - ✅ Simpler code, less boilerplate
 - ✅ Better integration with iOS ecosystem
@@ -88,15 +93,15 @@ Map(viewport: $viewport) {
 
 All code follows patterns from: `skills/mapbox-ios-patterns/SKILL.md`
 
-| Pattern | Implementation |
-|---------|----------------|
-| Standard Style | `.mapStyle(.standard)` |
-| Native Map | `Map(viewport: $viewport)` |
-| Markers | `PointAnnotation(coordinate:)` |
+| Pattern                 | Implementation                  |
+| ----------------------- | ------------------------------- |
+| Standard Style          | `.mapStyle(.standard)`          |
+| Native Map              | `Map(viewport: $viewport)`      |
+| Markers                 | `PointAnnotation(coordinate:)`  |
 | Featureset Interactions | `TapInteraction(.featureset())` |
-| Feature State | `setFeatureState()` |
-| Camera Control | Viewport state binding |
-| Permissions | CLLocationManager |
+| Feature State           | `setFeatureState()`             |
+| Camera Control          | Viewport state binding          |
+| Permissions             | CLLocationManager               |
 
 ## Testing
 
@@ -109,16 +114,19 @@ All code follows patterns from: `skills/mapbox-ios-patterns/SKILL.md`
 ## Troubleshooting
 
 **Map not displaying:**
-- ✅ Check `MBXAccessToken` in Info.plist is a valid **public token** (pk.*)
+
+- ✅ Check `MBXAccessToken` in Info.plist is a valid **public token** (pk.\*)
 - ✅ Token must be valid (test at mapbox.com)
 - ✅ Check internet connection
 
 **Build errors:**
+
 - ✅ Run `swift package resolve`
 - ✅ Clean build folder: Product → Clean Build Folder (Shift+Cmd+K)
 - ✅ Minimum iOS 14 required (for SwiftUI Map with Viewport)
 
 **Markers not showing:**
+
 - ✅ Default "marker" icon is used - may need custom images for visibility
 - ✅ Zoom in to see markers better
 

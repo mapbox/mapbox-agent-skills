@@ -5,6 +5,7 @@ Fast reference for Mapbox Maps SDK v11 on Android with Kotlin, Jetpack Compose, 
 ## Setup
 
 ### Installation (Gradle)
+
 ```kotlin
 // settings.gradle.kts
 dependencyResolutionManagement {
@@ -25,6 +26,7 @@ dependencies {
 ```
 
 ### Access Token
+
 ```xml
 <!-- app/res/values/mapbox_access_token.xml -->
 <?xml version="1.0" encoding="utf-8"?>
@@ -37,6 +39,7 @@ dependencies {
 ## Jetpack Compose
 
 ### Basic Map
+
 ```kotlin
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,6 +64,7 @@ fun MapScreen() {
 ```
 
 ### With Annotation
+
 ```kotlin
 MapboxMap(modifier = Modifier.fillMaxSize()) {
     MapEffect(Unit) { mapView ->
@@ -74,6 +78,7 @@ MapboxMap(modifier = Modifier.fillMaxSize()) {
 ```
 
 ### Compose Annotations Pattern
+
 ```kotlin
 // ❌ Declarative annotation components are not supported
 // Use MapEffect with annotation managers instead (see above)
@@ -90,6 +95,7 @@ MapboxMap(modifier = Modifier.fillMaxSize()) {
 ## View System
 
 ### Basic Map
+
 ```kotlin
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -136,6 +142,7 @@ class MapActivity : AppCompatActivity() {
 ## Common Patterns
 
 ### 1. Add Markers
+
 ```kotlin
 val manager = mapView.annotations.createPointAnnotationManager()
 
@@ -147,6 +154,7 @@ manager.create(annotation)
 ```
 
 ### 2. User Location with Camera Follow
+
 ```kotlin
 // Request permission (add to AndroidManifest.xml)
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -186,6 +194,7 @@ mapView.location.addOnIndicatorBearingChangedListener { bearing ->
 ```
 
 ### 3. Add Custom Data (GeoJSON)
+
 ```kotlin
 val geoJsonSource = geoJsonSource("route-source") {
     geometry(LineString.fromLngLats(coordinates))
@@ -200,6 +209,7 @@ mapView.mapboxMap.style?.addLayer(lineLayer)
 ```
 
 ### 4. Camera Control
+
 ```kotlin
 // Fly animation
 mapView.camera.flyTo(
@@ -225,6 +235,7 @@ mapView.camera.easeTo(
 ```
 
 ### 5. Featureset Interactions
+
 ```kotlin
 import com.mapbox.maps.interactions.ClickInteraction
 
@@ -253,6 +264,7 @@ mapView.mapboxMap.addInteraction(
 ```
 
 ### 6. Map Tap Handling
+
 ```kotlin
 mapView.gestures.addOnMapClickListener { point ->
     Log.d("MapClick", "Tapped at: ${point.latitude()}, ${point.longitude()}")
@@ -261,6 +273,7 @@ mapView.gestures.addOnMapClickListener { point ->
 ```
 
 ### 7. Styles
+
 ```kotlin
 // Compose
 MapboxMap(style = Style.STANDARD)  // Recommended
@@ -275,6 +288,7 @@ mapView.mapboxMap.loadStyle(Style.DARK)
 ## Performance Tips
 
 ### Reuse Managers
+
 ```kotlin
 // ✅ Create once
 val annotationManager = mapView.annotations.createPointAnnotationManager()
@@ -287,6 +301,7 @@ fun updateMarkers() {
 ```
 
 ### Batch Updates
+
 ```kotlin
 // ✅ Create all at once
 pointAnnotationManager.create(allAnnotations)
@@ -298,6 +313,7 @@ allAnnotations.forEach { annotation ->
 ```
 
 ### Lifecycle Management
+
 ```kotlin
 // Always call lifecycle methods
 override fun onStart() {
@@ -317,6 +333,7 @@ override fun onDestroy() {
 ```
 
 ### Use Standard Style
+
 ```kotlin
 // ✅ Recommended
 Style.STANDARD

@@ -8,6 +8,7 @@ description: Official integration patterns for Mapbox Maps SDK on iOS. Covers in
 Official patterns for integrating Mapbox Maps SDK v11 on iOS with Swift, SwiftUI, and UIKit.
 
 **Use this skill when:**
+
 - Installing and configuring Mapbox Maps SDK for iOS
 - Adding markers and annotations to maps
 - Showing user location and tracking with camera
@@ -16,6 +17,7 @@ Official patterns for integrating Mapbox Maps SDK v11 on iOS with Swift, SwiftUI
 - Handling feature interactions and taps
 
 **Official Resources:**
+
 - [iOS Maps Guides](https://docs.mapbox.com/ios/maps/guides/)
 - [API Reference](https://docs.mapbox.com/ios/maps/api-reference/)
 - [Example Apps](https://github.com/mapbox/mapbox-maps-ios/tree/main/Sources/Examples)
@@ -25,6 +27,7 @@ Official patterns for integrating Mapbox Maps SDK v11 on iOS with Swift, SwiftUI
 ## Installation & Setup
 
 ### Requirements
+
 - iOS 12+
 - Xcode 15+
 - Swift 5.9+
@@ -686,6 +689,7 @@ deinit {
 ### Map Not Displaying
 
 **Check:**
+
 1. ✅ `MBXAccessToken` in Info.plist
 2. ✅ Token is valid (test at mapbox.com)
 3. ✅ MapboxMaps framework imported

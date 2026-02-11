@@ -1,765 +1,685 @@
 ---
 name: mapbox-ios-patterns
-description: Integration patterns for Mapbox Maps SDK on iOS with Swift, SwiftUI, UIKit, lifecycle management, and mobile optimization best practices.
+description: Official integration patterns for Mapbox Maps SDK on iOS. Covers installation, adding markers, user location, custom data, styles, camera control, and featureset interactions. Based on official Mapbox documentation.
 ---
 
 # Mapbox iOS Integration Patterns
 
-Official integration patterns for Mapbox Maps SDK on iOS. Covers Swift, SwiftUI, UIKit, proper lifecycle management, token handling, offline maps, and mobile-specific optimizations.
+Official patterns for integrating Mapbox Maps SDK v11 on iOS with Swift, SwiftUI, and UIKit.
 
 **Use this skill when:**
 
-- Setting up Mapbox Maps SDK for iOS in a new or existing project
-- Integrating maps with SwiftUI or UIKit
-- Implementing proper lifecycle management and cleanup
-- Managing tokens securely in iOS apps
-- Working with offline maps and caching
-- Integrating Navigation SDK
-- Optimizing for battery life and memory usage
-- Debugging crashes, memory leaks, or performance issues
+- Installing and configuring Mapbox Maps SDK for iOS
+- Adding markers and annotations to maps
+- Showing user location and tracking with camera
+- Adding custom data (GeoJSON) to maps
+- Working with map styles, camera, or user interaction
+- Handling feature interactions and taps
+
+**Official Resources:**
+
+- [iOS Maps Guides](https://docs.mapbox.com/ios/maps/guides/)
+- [API Reference](https://docs.mapbox.com/ios/maps/api-reference/)
+- [Example Apps](https://github.com/mapbox/mapbox-maps-ios/tree/main/Sources/Examples)
 
 ---
 
-## Core Integration Patterns
+## Installation & Setup
+
+### Requirements
+
+- iOS 12+
+- Xcode 15+
+- Swift 5.9+
+- Free Mapbox account
+
+### Step 1: Configure Access Token
+
+Add your public token to `Info.plist`:
+
+```xml
+<key>MBXAccessToken</key>
+<string>pk.your_mapbox_token_here</string>
+```
+
+**Get your token:** Sign in at [mapbox.com](https://account.mapbox.com/access-tokens/)
+
+### Step 2: Add Swift Package Dependency
+
+1. **File → Add Package Dependencies**
+2. **Enter URL:** `https://github.com/mapbox/mapbox-maps-ios.git`
+3. **Version:** "Up to Next Major" from `11.0.0`
+4. **Verify** four dependencies appear: MapboxCommon, MapboxCoreMaps, MapboxMaps, Turf
+
+**Alternative:** CocoaPods or direct download ([install guide](https://docs.mapbox.com/ios/maps/guides/install/))
+
+---
+
+## Map Initialization
 
 ### SwiftUI Pattern (iOS 13+)
 
-**Modern approach using SwiftUI and Combine**
+**Basic map:**
 
 ```swift
 import SwiftUI
 import MapboxMaps
 
-struct MapView: UIViewRepresentable {
-    @Binding var coordinate: CLLocationCoordinate2D
-    @Binding var zoom: CGFloat
-
-    func makeUIView(context: Context) -> MapboxMap.MapView {
-        let mapView = MapboxMap.MapView(frame: .zero)
-
-        // Configure map
-        mapView.mapboxMap.setCamera(
-            to: CameraOptions(
-                center: coordinate,
-                zoom: zoom
-            )
-        )
-
-        return mapView
-    }
-
-    func updateUIView(_ mapView: MapboxMap.MapView, context: Context) {
-        // Update camera when SwiftUI state changes
-        mapView.mapboxMap.setCamera(
-            to: CameraOptions(
-                center: coordinate,
-                zoom: zoom
-            )
-        )
-    }
-}
-
-// Usage in SwiftUI view
 struct ContentView: View {
-    @State private var coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
-    @State private var zoom: CGFloat = 12
+    @State private var viewport: Viewport = .camera(
+        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        zoom: 12
+    )
 
     var body: some View {
-        MapView(coordinate: $coordinate, zoom: $zoom)
-            .edgesIgnoringSafeArea(.all)
+        Map(viewport: $viewport)
+            .mapStyle(.standard)
     }
 }
 ```
 
-**Key points:**
+**With ornaments:**
 
-- Use `UIViewRepresentable` to wrap MapView
-- Bind SwiftUI state to map properties
-- Handle updates in `updateUIView`
-- No manual cleanup needed (SwiftUI handles it)
+```swift
+Map(viewport: $viewport)
+    .mapStyle(.standard)
+    .ornamentOptions(OrnamentOptions(
+        scaleBar: .init(visibility: .visible),
+        compass: .init(visibility: .adaptive),
+        logo: .init(position: .bottomLeading)
+    ))
+```
 
-### UIKit Pattern (Classic)
-
-**Traditional UIKit integration with proper lifecycle**
+### UIKit Pattern
 
 ```swift
 import UIKit
 import MapboxMaps
 
 class MapViewController: UIViewController {
-    private var mapView: MapboxMap.MapView!
+    private var mapView: MapView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Initialize map
-        mapView = MapboxMap.MapView(frame: view.bounds)
-        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-
-        // Configure map
-        mapView.mapboxMap.setCamera(
-            to: CameraOptions(
+        let options = MapInitOptions(
+            cameraOptions: CameraOptions(
                 center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
                 zoom: 12
             )
         )
 
+        mapView = MapView(frame: view.bounds, mapInitOptions: options)
+        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(mapView)
 
-        // Add map loaded handler
-        mapView.mapboxMap.onNext(.mapLoaded) { [weak self] _ in
-            self?.mapDidLoad()
-        }
-    }
-
-    private func mapDidLoad() {
-        // Add sources and layers after map loads
-        addCustomLayers()
-    }
-
-    private func addCustomLayers() {
-        // Add your custom sources and layers
-    }
-
-    deinit {
-        // MapView cleanup happens automatically
-        // No manual cleanup needed with SDK v10+
-    }
-}
-```
-
-**Key points:**
-
-- Initialize in `viewDidLoad()`
-- Use `weak self` in closures to prevent retain cycles
-- Wait for `.mapLoaded` event before adding layers
-- No manual cleanup needed (SDK v10+ handles it)
-
----
-
-## Token Management
-
-### ✅ Recommended: Info.plist Configuration
-
-```xml
-<!-- Info.plist -->
-<key>MBXAccessToken</key>
-<string>$(MAPBOX_ACCESS_TOKEN)</string>
-```
-
-**Xcode Build Configuration:**
-
-1. Create `.xcconfig` file:
-
-```bash
-# Config/Secrets.xcconfig (add to .gitignore)
-MAPBOX_ACCESS_TOKEN = pk.your_token_here
-```
-
-2. Set in Xcode project settings:
-   - Select project → Info tab
-   - Add Configuration Set: Secrets.xcconfig
-
-3. Add to `.gitignore`:
-
-```gitignore
-Config/Secrets.xcconfig
-*.xcconfig
-```
-
-**Why this pattern:**
-
-- Token not in source code
-- Automatically injected at build time
-- Works with Xcode Cloud and CI/CD
-- No hardcoded secrets
-
-### ❌ Anti-Pattern: Hardcoded Tokens
-
-```swift
-// ❌ NEVER DO THIS - Token in source code
-MapboxOptions.accessToken = "pk.YOUR_MAPBOX_TOKEN_HERE"
-```
-
----
-
-## Memory Management and Lifecycle
-
-### ✅ Proper Retain Cycle Prevention
-
-```swift
-class MapViewController: UIViewController {
-    private var mapView: MapboxMap.MapView!
-    private var cancelables = Set<AnyCancelable>()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupMap()
-    }
-
-    private func setupMap() {
-        mapView = MapboxMap.MapView(frame: view.bounds)
-        view.addSubview(mapView)
-
-        // ✅ GOOD: Use weak self to prevent retain cycles
-        mapView.mapboxMap.onEvery(.cameraChanged) { [weak self] event in
-            self?.handleCameraChange(event)
-        }
-
-        // ✅ GOOD: Store cancelables for proper cleanup
-        mapView.gestures.onMapTap
-            .sink { [weak self] coordinate in
-                self?.handleTap(at: coordinate)
-            }
-            .store(in: &cancelables)
-    }
-
-    private func handleCameraChange(_ event: MapboxCoreMaps.Event) {
-        // Handle camera changes
-    }
-
-    private func handleTap(at coordinate: CLLocationCoordinate2D) {
-        // Handle tap
-    }
-
-    deinit {
-        // Cancelables automatically cleaned up
-        print("MapViewController deallocated")
-    }
-}
-```
-
-### ❌ Anti-Pattern: Retain Cycles
-
-```swift
-// ❌ BAD: Strong reference cycle
-mapView.mapboxMap.onEvery(.cameraChanged) { event in
-    self.handleCameraChange(event) // Retains self!
-}
-
-// ❌ BAD: Not storing cancelables
-mapView.gestures.onMapTap
-    .sink { coordinate in
-        self.handleTap(at: coordinate)
-    }
-    // Immediately deallocated!
-```
-
----
-
-## Offline Maps
-
-### Download Region for Offline Use
-
-```swift
-import MapboxMaps
-
-class OfflineManager {
-    private let offlineManager: OfflineRegionManager
-
-    init() {
-        offlineManager = OfflineRegionManager()
-    }
-
-    func downloadRegion(
-        name: String,
-        bounds: CoordinateBounds,
-        minZoom: Double = 0,
-        maxZoom: Double = 16,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) {
-        // Create tile pyramid definition
-        let tilePyramid = TilePyramidOfflineRegionDefinition(
-            styleURL: StyleURI.streets.rawValue,
-            bounds: bounds,
-            minZoom: minZoom,
-            maxZoom: maxZoom
-        )
-
-        // Create offline region
-        offlineManager.createOfflineRegion(
-            for: tilePyramid,
-            metadata: ["name": name]
-        ) { result in
-            switch result {
-            case .success(let region):
-                // Download tiles
-                region.setOfflineRegionDownloadState(to: .active)
-
-                // Monitor progress
-                region.observeOfflineRegionDownloadStatus { status in
-                    print("Downloaded: \(status.completedResourceCount)/\(status.requiredResourceCount)")
-                }
-
-                completion(.success(()))
-
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-    }
-
-    func listOfflineRegions() -> [OfflineRegion] {
-        return offlineManager.offlineRegions
-    }
-
-    func deleteRegion(_ region: OfflineRegion, completion: @escaping (Result<Void, Error>) -> Void) {
-        offlineManager.removeOfflineRegion(for: region) { result in
-            completion(result.map { _ in () })
-        }
-    }
-}
-```
-
-**Key considerations:**
-
-- **Battery impact:** Downloading uses significant battery
-- **Storage limits:** Monitor available disk space
-- **Zoom levels:** Higher zoom = more tiles = more storage
-- **Style updates:** Offline regions don't auto-update styles
-
-### Storage Calculations
-
-```swift
-// Estimate offline region size before downloading
-func estimateSize(bounds: CoordinateBounds, maxZoom: Double) -> Int64 {
-    let tilePyramid = TilePyramidOfflineRegionDefinition(
-        styleURL: StyleURI.streets.rawValue,
-        bounds: bounds,
-        minZoom: 0,
-        maxZoom: maxZoom
-    )
-
-    // Rough estimate: 50 KB per tile average
-    let tileCount = tilePyramid.tileCount
-    return tileCount * 50_000 // bytes
-}
-
-// Check available storage
-func hasEnoughStorage(requiredBytes: Int64) -> Bool {
-    let fileURL = URL(fileURLWithPath: NSHomeDirectory())
-    guard let values = try? fileURL.resourceValues(forKeys: [.volumeAvailableCapacityKey]),
-          let capacity = values.volumeAvailableCapacity else {
-        return false
-    }
-    return Int64(capacity) > requiredBytes * 2 // 2x buffer
-}
-```
-
----
-
-## Navigation SDK Integration
-
-### Basic Navigation Setup
-
-```swift
-import MapboxMaps
-import MapboxNavigation
-import MapboxDirections
-import MapboxCoreNavigation
-
-class NavigationViewController: UIViewController {
-    private var navigationMapView: NavigationMapView!
-    private var routeController: RouteController?
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupNavigationMap()
-    }
-
-    private func setupNavigationMap() {
-        navigationMapView = NavigationMapView(frame: view.bounds)
-        navigationMapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(navigationMapView)
-    }
-
-    func startNavigation(to destination: CLLocationCoordinate2D) {
-        guard let origin = navigationMapView.mapView.location.latestLocation?.coordinate else {
-            return
-        }
-
-        // Request route
-        let waypoints = [
-            Waypoint(coordinate: origin),
-            Waypoint(coordinate: destination)
-        ]
-
-        let options = NavigationRouteOptions(waypoints: waypoints)
-
-        Directions.shared.calculate(options) { [weak self] session, result in
-            guard let self = self else { return }
-
-            switch result {
-            case .success(let response):
-                guard let route = response.routes?.first else { return }
-
-                // Show route on map
-                self.navigationMapView.show([route])
-                self.navigationMapView.showWaypoints(on: route)
-
-                // Start navigation
-                self.startActiveNavigation(with: route)
-
-            case .failure(let error):
-                print("Route calculation failed: \(error)")
-            }
-        }
-    }
-
-    private func startActiveNavigation(with route: Route) {
-        let navigationService = MapboxNavigationService(
-            route: route,
-            routeOptions: route.routeOptions,
-            simulating: .never
-        )
-
-        routeController = RouteController(
-            navigationService: navigationService
-        )
-
-        // Listen to navigation events
-        routeController?.delegate = self
-    }
-}
-
-extension NavigationViewController: RouteControllerDelegate {
-    func routeController(
-        _ routeController: RouteController,
-        didUpdate locations: [CLLocation]
-    ) {
-        // Update user location
-    }
-
-    func routeController(
-        _ routeController: RouteController,
-        didArriveAt waypoint: Waypoint
-    ) {
-        print("Arrived at destination!")
-    }
-}
-```
-
-**Navigation SDK features:**
-
-- Turn-by-turn guidance
-- Voice instructions
-- Route progress tracking
-- Rerouting
-- Traffic-aware routing
-- Offline navigation (with offline regions)
-
----
-
-## Mobile Performance Optimization
-
-### Battery Optimization
-
-```swift
-// ✅ Reduce frame rate when app is in background
-class BatteryAwareMapViewController: UIViewController {
-    private var mapView: MapboxMap.MapView!
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupMap()
-        observeAppState()
-    }
-
-    private func observeAppState() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification,
-            object: nil
-        )
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appWillEnterForeground),
-            name: UIApplication.willEnterForegroundNotification,
-            object: nil
-        )
-    }
-
-    @objc private func appDidEnterBackground() {
-        // Reduce rendering when in background
-        mapView.mapboxMap.setRenderCacheSize(to: 0)
-
-        // Pause expensive operations
-        mapView.location.options.activityType = .otherNavigation
-    }
-
-    @objc private func appWillEnterForeground() {
-        // Resume normal rendering
-        mapView.mapboxMap.setRenderCacheSize(to: nil) // Default
-
-        // Resume location updates
-        mapView.location.options.activityType = .fitness
-    }
-}
-```
-
-### Memory Optimization
-
-```swift
-// ✅ Handle memory warnings
-override func didReceiveMemoryWarning() {
-    super.didReceiveMemoryWarning()
-
-    // Clear map cache
-    mapView?.mapboxMap.clearData { result in
-        switch result {
-        case .success:
-            print("Map cache cleared")
-        case .failure(let error):
-            print("Failed to clear cache: \(error)")
-        }
-    }
-}
-
-// ✅ Limit cached tiles
-let resourceOptions = ResourceOptions(
-    accessToken: accessToken,
-    tileStoreUsageMode: .readOnly
-)
-
-// ✅ Use appropriate map scale for device
-if UIScreen.main.scale > 2.0 {
-    // Retina displays, can use higher detail
-} else {
-    // Lower DPI, reduce detail
-}
-```
-
-### Network Optimization
-
-```swift
-// ✅ Detect network conditions and adjust
-import Network
-
-class NetworkAwareMapViewController: UIViewController {
-    private let monitor = NWPathMonitor()
-    private let queue = DispatchQueue.global(qos: .background)
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupNetworkMonitoring()
-    }
-
-    private func setupNetworkMonitoring() {
-        monitor.pathUpdateHandler = { [weak self] path in
-            if path.status == .satisfied {
-                if path.isExpensive {
-                    // Cellular connection - reduce data usage
-                    self?.enableLowDataMode()
-                } else {
-                    // WiFi - normal quality
-                    self?.enableNormalMode()
-                }
-            }
-        }
-        monitor.start(queue: queue)
-    }
-
-    private func enableLowDataMode() {
-        // Use lower resolution tiles on cellular
-        // Reduce tile prefetching
-    }
-
-    private func enableNormalMode() {
-        // Use full resolution
+        mapView.mapboxMap.loadStyle(.standard)
     }
 }
 ```
 
 ---
 
-## Common Mistakes and Solutions
+## Add Markers (Annotations)
 
-### ❌ Mistake 1: Not Using Weak Self
+### Point Annotations (Markers)
+
+Point annotations are the most common way to mark locations on the map.
+
+**SwiftUI:**
 
 ```swift
-// ❌ BAD: Creates retain cycle
-mapView.mapboxMap.onNext(.mapLoaded) { _ in
-    self.setupLayers() // Retains self!
-}
-
-// ✅ GOOD: Use weak self
-mapView.mapboxMap.onNext(.mapLoaded) { [weak self] _ in
-    self?.setupLayers()
+Map(viewport: $viewport) {
+    PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194))
+        .iconImage("custom-marker")
 }
 ```
 
-### ❌ Mistake 2: Adding Layers Before Map Loads
+**UIKit:**
 
 ```swift
-// ❌ BAD: Adding layers immediately
-override func viewDidLoad() {
-    super.viewDidLoad()
-    mapView = MapboxMap.MapView(frame: view.bounds)
-    view.addSubview(mapView)
+// Create annotation manager (once, reuse for updates)
+var pointAnnotationManager = mapView.annotations.makePointAnnotationManager()
 
-    addCustomLayers() // Map not loaded yet!
-}
+// Create marker
+var annotation = PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194))
+annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
+annotation.iconAnchor = .bottom
 
-// ✅ GOOD: Wait for map loaded event
-override func viewDidLoad() {
-    super.viewDidLoad()
-    mapView = MapboxMap.MapView(frame: view.bounds)
-    view.addSubview(mapView)
-
-    mapView.mapboxMap.onNext(.mapLoaded) { [weak self] _ in
-        self?.addCustomLayers()
-    }
-}
+// Add to map
+pointAnnotationManager.annotations = [annotation]
 ```
 
-### ❌ Mistake 3: Ignoring Location Permissions
+**Multiple markers:**
 
 ```swift
-// ❌ BAD: Enabling location without checking permissions
-mapView.location.options.puckType = .puck2D()
+let locations = [
+    CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+    CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094),
+    CLLocationCoordinate2D(latitude: 37.7649, longitude: -122.4294)
+]
 
-// ✅ GOOD: Request and check permissions
-import CoreLocation
-
-class MapViewController: UIViewController, CLLocationManagerDelegate {
-    private let locationManager = CLLocationManager()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupLocation()
-    }
-
-    private func setupLocation() {
-        locationManager.delegate = self
-
-        switch locationManager.authorizationStatus {
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-        case .authorizedWhenInUse, .authorizedAlways:
-            enableLocationTracking()
-        default:
-            // Handle denied/restricted
-            break
-        }
-    }
-
-    private func enableLocationTracking() {
-        mapView.location.options.puckType = .puck2D()
-    }
-
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse ||
-           manager.authorizationStatus == .authorizedAlways {
-            enableLocationTracking()
-        }
-    }
+let annotations = locations.map { coordinate in
+    var annotation = PointAnnotation(coordinate: coordinate)
+    annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
+    return annotation
 }
+
+pointAnnotationManager.annotations = annotations
 ```
 
-**Add to Info.plist:**
+### Circle Annotations
+
+```swift
+var circleAnnotationManager = mapView.annotations.makeCircleAnnotationManager()
+
+var circle = CircleAnnotation(coordinate: coordinate)
+circle.circleRadius = 10
+circle.circleColor = StyleColor(.red)
+
+circleAnnotationManager.annotations = [circle]
+```
+
+### Polyline Annotations
+
+```swift
+var polylineAnnotationManager = mapView.annotations.makePolylineAnnotationManager()
+
+let coordinates = [coord1, coord2, coord3]
+var polyline = PolylineAnnotation(lineCoordinates: coordinates)
+polyline.lineColor = StyleColor(.blue)
+polyline.lineWidth = 4
+
+polylineAnnotationManager.annotations = [polyline]
+```
+
+### Polygon Annotations
+
+```swift
+var polygonAnnotationManager = mapView.annotations.makePolygonAnnotationManager()
+
+let coordinates = [coord1, coord2, coord3, coord1] // Close the polygon
+var polygon = PolygonAnnotation(polygon: .init(outerRing: .init(coordinates)))
+polygon.fillColor = StyleColor(.blue.withAlphaComponent(0.5))
+polygon.fillOutlineColor = StyleColor(.blue)
+
+polygonAnnotationManager.annotations = [polygon]
+```
+
+---
+
+## Show User Location
+
+### Display User Location
+
+**Step 1: Add location permission to Info.plist:**
 
 ```xml
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>We need your location to show you on the map</string>
+<string>Show your location on the map</string>
 ```
 
-### ❌ Mistake 4: Not Handling Camera State in SwiftUI
+**Step 2: Request permissions and show location:**
 
 ```swift
-// ❌ BAD: No way to read camera state changes
-struct MapView: UIViewRepresentable {
-    @Binding var coordinate: CLLocationCoordinate2D
+import CoreLocation
 
-    func makeUIView(context: Context) -> MapboxMap.MapView {
-        let mapView = MapboxMap.MapView(frame: .zero)
-        // User pans map, but coordinate binding never updates!
-        return mapView
+// Request permissions
+let locationManager = CLLocationManager()
+locationManager.requestWhenInUseAuthorization()
+
+// Show user location puck
+mapView.location.options.puckType = .puck2D()
+mapView.location.options.puckBearingEnabled = true
+```
+
+### Camera Follow User Location
+
+To make the camera follow the user's location as they move:
+
+```swift
+import Combine
+
+class MapViewController: UIViewController {
+    private var mapView: MapView!
+    private var cancelables = Set<AnyCancellable>()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupMap()
+        setupLocationTracking()
+    }
+
+    func setupLocationTracking() {
+        // Request permissions
+        let locationManager = CLLocationManager()
+        locationManager.requestWhenInUseAuthorization()
+
+        // Show user location
+        mapView.location.options.puckType = .puck2D()
+        mapView.location.options.puckBearingEnabled = true
+
+        // Follow user location with camera
+        mapView.location.onLocationChange.observe { [weak self] locations in
+            guard let self = self, let location = locations.last else { return }
+
+            self.mapView.camera.ease(to: CameraOptions(
+                center: location.coordinate,
+                zoom: 15,
+                bearing: location.course >= 0 ? location.course : nil,
+                pitch: 45
+            ), duration: 1.0)
+        }.store(in: &cancelables)
     }
 }
+```
 
-// ✅ GOOD: Use Coordinator to sync camera state
-struct MapView: UIViewRepresentable {
-    @Binding var coordinate: CLLocationCoordinate2D
-    @Binding var zoom: CGFloat
+### Get Current Location Once
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(coordinate: $coordinate, zoom: $zoom)
-    }
+```swift
+if let location = mapView.location.latestLocation {
+    let coordinate = location.coordinate
+    print("User at: \(coordinate.latitude), \(coordinate.longitude)")
 
-    func makeUIView(context: Context) -> MapboxMap.MapView {
-        let mapView = MapboxMap.MapView(frame: .zero)
-
-        // Listen to camera changes
-        mapView.mapboxMap.onEvery(.cameraChanged) { _ in
-            context.coordinator.updateFromMap(mapView.mapboxMap)
-        }
-
-        return mapView
-    }
-
-    class Coordinator {
-        @Binding var coordinate: CLLocationCoordinate2D
-        @Binding var zoom: CGFloat
-
-        init(coordinate: Binding<CLLocationCoordinate2D>, zoom: Binding<CGFloat>) {
-            _coordinate = coordinate
-            _zoom = zoom
-        }
-
-        func updateFromMap(_ map: MapboxMap) {
-            coordinate = map.cameraState.center
-            zoom = CGFloat(map.cameraState.zoom)
-        }
-    }
+    // Move camera to user location
+    mapView.camera.ease(to: CameraOptions(
+        center: coordinate,
+        zoom: 14
+    ), duration: 1.0)
 }
 ```
 
 ---
 
-## Testing Patterns
+## Add Custom Data (GeoJSON)
 
-### Unit Testing Map Logic
+Add your own data to the map using GeoJSON sources and layers.
+
+### Add Line (Route, Path)
 
 ```swift
-import XCTest
-@testable import YourApp
+// Create coordinates for the line
+let routeCoordinates = [
+    CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+    CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094),
+    CLLocationCoordinate2D(latitude: 37.7949, longitude: -122.3994)
+]
+
+// Create GeoJSON source
+var source = GeoJSONSource(id: "route-source")
+source.data = .geometry(.lineString(LineString(routeCoordinates)))
+
+try? mapView.mapboxMap.addSource(source)
+
+// Create line layer
+var layer = LineLayer(id: "route-layer", source: "route-source")
+layer.lineColor = .constant(StyleColor(.blue))
+layer.lineWidth = .constant(4)
+layer.lineCap = .constant(.round)
+layer.lineJoin = .constant(.round)
+
+try? mapView.mapboxMap.addLayer(layer)
+```
+
+### Add Polygon (Area)
+
+```swift
+let polygonCoordinates = [coord1, coord2, coord3, coord1] // Close the polygon
+
+var source = GeoJSONSource(id: "area-source")
+source.data = .geometry(.polygon(Polygon([polygonCoordinates])))
+
+try? mapView.mapboxMap.addSource(source)
+
+var fillLayer = FillLayer(id: "area-fill", source: "area-source")
+fillLayer.fillColor = .constant(StyleColor(.blue.withAlphaComponent(0.3)))
+fillLayer.fillOutlineColor = .constant(StyleColor(.blue))
+
+try? mapView.mapboxMap.addLayer(fillLayer)
+```
+
+### Add Points from GeoJSON
+
+```swift
+let geojsonString = """
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-122.4194, 37.7749]},
+      "properties": {"name": "Location 1"}
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-122.4094, 37.7849]},
+      "properties": {"name": "Location 2"}
+    }
+  ]
+}
+"""
+
+var source = GeoJSONSource(id: "points-source")
+source.data = .string(geojsonString)
+
+try? mapView.mapboxMap.addSource(source)
+
+var symbolLayer = SymbolLayer(id: "points-layer", source: "points-source")
+symbolLayer.iconImage = .constant(.name("marker"))
+symbolLayer.textField = .constant(.expression(Exp(.get) { "name" }))
+symbolLayer.textOffset = .constant([0, 1.5])
+
+try? mapView.mapboxMap.addLayer(symbolLayer)
+```
+
+### Update Layer Properties
+
+```swift
+try? mapView.mapboxMap.updateLayer(
+    withId: "route-layer",
+    type: LineLayer.self
+) { layer in
+    layer.lineColor = .constant(StyleColor(.red))
+    layer.lineWidth = .constant(6)
+}
+```
+
+### Remove Layers and Sources
+
+```swift
+try? mapView.mapboxMap.removeLayer(withId: "route-layer")
+try? mapView.mapboxMap.removeSource(withId: "route-source")
+```
+
+---
+
+## Camera Control
+
+### Set Camera Position
+
+```swift
+// SwiftUI - Update viewport state
+viewport = .camera(
+    center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+    zoom: 14,
+    bearing: 90,
+    pitch: 60
+)
+
+// UIKit - Immediate
+mapView.mapboxMap.setCamera(to: CameraOptions(
+    center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+    zoom: 14,
+    bearing: 90,
+    pitch: 60
+))
+```
+
+### Animated Camera Transitions
+
+```swift
+// Fly animation (dramatic arc)
+mapView.camera.fly(to: CameraOptions(
+    center: destination,
+    zoom: 15
+), duration: 2.0)
+
+// Ease animation (smooth)
+mapView.camera.ease(to: CameraOptions(
+    center: destination,
+    zoom: 15
+), duration: 1.0)
+```
+
+### Fit Camera to Coordinates
+
+```swift
+let coordinates = [coord1, coord2, coord3]
+let camera = mapView.mapboxMap.camera(for: coordinates,
+                                       padding: UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50),
+                                       bearing: 0,
+                                       pitch: 0)
+mapView.camera.ease(to: camera, duration: 1.0)
+```
+
+---
+
+## Map Styles
+
+### Built-in Styles
+
+```swift
+// SwiftUI
+Map(viewport: $viewport)
+    .mapStyle(.standard)        // Mapbox Standard (recommended)
+    .mapStyle(.streets)          // Mapbox Streets
+    .mapStyle(.outdoors)         // Mapbox Outdoors
+    .mapStyle(.light)            // Mapbox Light
+    .mapStyle(.dark)             // Mapbox Dark
+    .mapStyle(.standardSatellite) // Satellite imagery
+
+// UIKit
+mapView.mapboxMap.loadStyle(.standard)
+mapView.mapboxMap.loadStyle(.streets)
+mapView.mapboxMap.loadStyle(.dark)
+```
+
+### Custom Style URL
+
+```swift
+// SwiftUI
+Map(viewport: $viewport)
+    .mapStyle(MapStyle(uri: StyleURI(url: customStyleURL)!))
+
+// UIKit
+mapView.mapboxMap.loadStyle(StyleURI(url: customStyleURL)!)
+```
+
+**Style from Mapbox Studio:**
+
+```swift
+let styleURL = URL(string: "mapbox://styles/username/style-id")!
+```
+
+---
+
+## User Interaction & Feature Taps
+
+### Featureset Interactions (Recommended)
+
+The modern Interactions API allows handling taps on map features with typed feature access. Works with Standard Style predefined featuresets like POIs, buildings, and place labels.
+
+**SwiftUI Pattern:**
+
+```swift
+import SwiftUI
 import MapboxMaps
 
-class MapLogicTests: XCTestCase {
-    func testCoordinateConversion() {
-        let coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+struct MapView: View {
+    @State private var viewport: Viewport = .camera(
+        center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
+        zoom: 12
+    )
+    @State private var selectedBuildings = [StandardBuildingsFeature]()
 
-        // Test your map logic without creating actual MapView
-        let converted = YourMapLogic.convert(coordinate: coordinate)
+    var body: some View {
+        Map(viewport: $viewport) {
+            // Tap on POI features
+            TapInteraction(.standardPoi) { poi, context in
+                print("Tapped POI: \(poi.name ?? "Unknown")")
+                return true // Stop propagation
+            }
 
-        XCTAssertEqual(converted.latitude, 37.7749, accuracy: 0.001)
+            // Tap on buildings and collect selected buildings
+            TapInteraction(.standardBuildings) { building, context in
+                print("Tapped building")
+                selectedBuildings.append(building)
+                return true
+            }
+
+            // Apply feature state to selected buildings (highlighting)
+            ForEvery(selectedBuildings, id: \.id) { building in
+                FeatureState(building, .init(select: true))
+            }
+        }
+        .mapStyle(.standard)
     }
 }
 ```
 
-### UI Testing with Maps
+**UIKit Pattern:**
 
 ```swift
-import XCTest
+import MapboxMaps
+import Combine
 
-class MapUITests: XCTestCase {
-    func testMapViewLoads() {
-        let app = XCUIApplication()
-        app.launch()
+class MapViewController: UIViewController {
+    private var mapView: MapView!
+    private var cancelables = Set<AnyCancellable>()
 
-        // Wait for map to load
-        let mapView = app.otherElements["mapView"]
-        XCTAssertTrue(mapView.waitForExistence(timeout: 5))
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupMap()
+        setupInteractions()
+    }
+
+    func setupInteractions() {
+        // Tap on POI features
+        let poiToken = mapView.mapboxMap.addInteraction(
+            TapInteraction(.standardPoi) { [weak self] poi, context in
+                print("Tapped POI: \(poi.name ?? "Unknown")")
+                return true
+            }
+        )
+
+        // Tap on buildings
+        let buildingToken = mapView.mapboxMap.addInteraction(
+            TapInteraction(.standardBuildings) { [weak self] building, context in
+                print("Tapped building")
+
+                // Highlight the building using feature state
+                self?.mapView.mapboxMap.setFeatureState(
+                    building,
+                    state: ["select": true]
+                )
+                return true
+            }
+        )
+
+        // Store tokens to keep interactions active
+        // Cancel tokens when done: poiToken.cancel()
     }
 }
 ```
 
-**Set accessibility identifier:**
+### Tap on Custom Layers
 
 ```swift
-mapView.accessibilityIdentifier = "mapView"
+let token = mapView.mapboxMap.addInteraction(
+    TapInteraction(.layer("custom-layer-id")) { feature, context in
+        if let properties = feature.properties {
+            print("Feature properties: \(properties)")
+        }
+        return true
+    }
+)
+```
+
+### Long Press Interactions
+
+```swift
+let token = mapView.mapboxMap.addInteraction(
+    LongPressInteraction(.standardPoi) { poi, context in
+        print("Long pressed POI: \(poi.name ?? "Unknown")")
+        return true
+    }
+)
+```
+
+### Handle Map Taps (Empty Space)
+
+```swift
+// UIKit
+mapView.gestures.onMapTap.observe { [weak self] context in
+    let coordinate = context.coordinate
+    print("Tapped map at: \(coordinate.latitude), \(coordinate.longitude)")
+}.store(in: &cancelables)
+```
+
+### Gesture Configuration
+
+```swift
+// Disable specific gestures
+mapView.gestures.options.pitchEnabled = false
+mapView.gestures.options.rotateEnabled = false
+
+// Configure zoom limits
+mapView.mapboxMap.setCamera(to: CameraOptions(
+    zoom: 12,
+    minZoom: 10,
+    maxZoom: 16
+))
+```
+
+---
+
+## Performance Best Practices
+
+### Reuse Annotation Managers
+
+```swift
+// ❌ Don't create new managers repeatedly
+func updateMarkers() {
+    let manager = mapView.annotations.makePointAnnotationManager()
+    manager.annotations = markers
+}
+
+// ✅ Create once, reuse
+let pointAnnotationManager: PointAnnotationManager
+
+init() {
+    pointAnnotationManager = mapView.annotations.makePointAnnotationManager()
+}
+
+func updateMarkers() {
+    pointAnnotationManager.annotations = markers
+}
+```
+
+### Batch Annotation Updates
+
+```swift
+// ✅ Update all at once
+pointAnnotationManager.annotations = newAnnotations
+
+// ❌ Don't update one by one
+for annotation in newAnnotations {
+    pointAnnotationManager.annotations.append(annotation)
+}
+```
+
+### Memory Management
+
+```swift
+// Use weak self in closures
+mapView.gestures.onMapTap.observe { [weak self] context in
+    self?.handleTap(context.coordinate)
+}.store(in: &cancelables)
+
+// Clean up on deinit
+deinit {
+    cancelables.forEach { $0.cancel() }
+}
+```
+
+### Use Standard Style
+
+```swift
+// ✅ Standard style is optimized and recommended
+.mapStyle(.standard)
+
+// Use other styles only when needed for specific use cases
+.mapStyle(.standardSatellite) // Satellite imagery
 ```
 
 ---
@@ -768,74 +688,38 @@ mapView.accessibilityIdentifier = "mapView"
 
 ### Map Not Displaying
 
-**Checklist:**
+**Check:**
 
-1. ✅ Token configured in Info.plist?
-2. ✅ Bundle ID matches token restrictions?
-3. ✅ MapboxMaps framework imported?
-4. ✅ MapView added to view hierarchy?
-5. ✅ Internet connection available? (for non-cached tiles)
+1. ✅ `MBXAccessToken` in Info.plist
+2. ✅ Token is valid (test at mapbox.com)
+3. ✅ MapboxMaps framework imported
+4. ✅ MapView added to view hierarchy
+5. ✅ Correct frame/constraints set
 
-### Memory Leaks
+### Style Not Loading
 
-**Use Instruments:**
+```swift
+mapView.mapboxMap.onStyleLoaded.observe { [weak self] _ in
+    print("Style loaded successfully")
+    // Add layers and sources here
+}.store(in: &cancelables)
+```
 
-1. Xcode → Product → Profile → Leaks
-2. Look for retain cycles in map event handlers
-3. Ensure `[weak self]` in all closures
-4. Check that cancelables are stored and cleaned up
+### Performance Issues
 
-### Slow Performance
-
-**Common causes:**
-
-- Too many markers (use clustering or symbols)
-- Large GeoJSON sources (use vector tiles)
-- High-frequency camera updates
-- Not handling memory warnings
-- Running on simulator (use device for accurate testing)
+- Use `.standard` style (recommended and optimized)
+- Limit visible annotations to viewport
+- Reuse annotation managers
+- Avoid frequent style reloads
+- Batch annotation updates
 
 ---
 
-## Platform-Specific Considerations
+## Additional Resources
 
-### iOS Version Support
-
-- **iOS 13+**: Full SwiftUI support
-- **iOS 12**: UIKit only
-- **iOS 11**: Limited features
-
-### Device Optimization
-
-```swift
-// Adjust quality based on device
-if UIDevice.current.userInterfaceIdiom == .pad {
-    // iPad - can handle higher detail
-} else if ProcessInfo.processInfo.isLowPowerModeEnabled {
-    // iPhone in low power mode - reduce detail
-}
-```
-
-### Screen Resolution
-
-```swift
-let scale = UIScreen.main.scale
-if scale >= 3.0 {
-    // @3x displays (iPhone Pro models)
-    // Use highest quality
-} else if scale >= 2.0 {
-    // @2x displays
-    // Standard quality
-}
-```
-
----
-
-## Reference
-
-- [Mapbox Maps SDK for iOS](https://docs.mapbox.com/ios/maps/guides/)
-- [API Reference](https://docs.mapbox.com/ios/maps/api-reference/)
-- [Examples](https://docs.mapbox.com/ios/maps/examples/)
-- [Navigation SDK](https://docs.mapbox.com/ios/navigation/guides/)
-- [Swift Package Manager Installation](https://docs.mapbox.com/ios/maps/guides/install/)
-- [Migration Guides](https://docs.mapbox.com/ios/maps/guides/migrate-to-v10/)
+- [iOS Maps Guides](https://docs.mapbox.com/ios/maps/guides/)
+- [API Reference](https://docs.mapbox.com/ios/maps/api/11.18.1/documentation/mapboxmaps/)
+- [Interactions Guide](https://docs.mapbox.com/ios/maps/guides/user-interaction/Interactions/)
+- [SwiftUI User Guide](https://docs.mapbox.com/ios/maps/api/11.18.1/documentation/mapboxmaps/swiftui-user-guide)
+- [Example Apps](https://github.com/mapbox/mapbox-maps-ios/tree/main/Sources/Examples)
+- [Migration Guide (v10 → v11)](https://docs.mapbox.com/ios/maps/guides/migrate-to-v11/)

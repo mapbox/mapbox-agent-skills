@@ -158,7 +158,7 @@ Before submitting:
    ```
 
 5. **Test with AI assistant:**
-   - Install locally: `npx add-skill . -a claude-code` (or your AI assistant)
+   - Install locally: `npx skills add . -a claude-code` (or your AI assistant)
    - Ask questions the skill should help with
    - Verify the AI uses the skill appropriately
 

@@ -1,1 +1,5 @@
 * @mapbox/locationai
+
+* /examples/web/** @mapbox/gl-js
+* /skills/mapbox-web-integration-patterns/** @mapbox/gl-js
+* /skills/mapbox-web-performance-patterns/** @mapbox/gl-js

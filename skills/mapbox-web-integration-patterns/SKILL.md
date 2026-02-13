@@ -15,7 +15,7 @@ This skill provides official patterns for integrating Mapbox GL JS into web appl
 
 - **Minimum:** v3.0.0
 - **Why v3.x:** Modern API, improved performance, active development
-- **v2.x:** Still supported but deprecated patterns (see migration notes below)
+- **v2.x:** Legacy; no longer actively developed (see migration notes below)
 
 **Installing via npm (recommended for production):**
 
@@ -73,21 +73,22 @@ npm install @mapbox/search-js-web@^1.0.0        # Other frameworks
 
 **Migrating from v2.x to v3.x:**
 
-- `accessToken` can now be passed to Map constructor (preferred)
+- WebGL 2 now required
+- `optimizeForTerrain` option removed
 - Improved TypeScript types
 - Better tree-shaking support
 - No breaking changes to core initialization patterns
 
-**Example:**
+**Token patterns (work in v2.x and v3.x):**
 
 ```javascript
 const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN; // Use env vars in production
 
-// v2.x pattern (still works in v3.x)
+// Global token (works since v1.x)
 mapboxgl.accessToken = token;
 const map = new mapboxgl.Map({ container: '...' });
 
-// v3.x pattern (preferred)
+// Per-map token (works since v1.2.0, preferred for multi-map setups)
 const map = new mapboxgl.Map({
   accessToken: token,
   container: '...'
@@ -266,7 +267,7 @@ export default {
 
 ```svelte
 <script>
-  import { Map } from 'mapbox-gl'
+  import mapboxgl from 'mapbox-gl'
   import 'mapbox-gl/dist/mapbox-gl.css'
   import { onMount, onDestroy } from 'svelte'
 
@@ -274,7 +275,7 @@ export default {
   let mapContainer
 
   onMount(() => {
-    map = new Map({
+    map = new mapboxgl.Map({
       container: mapContainer,
       accessToken: import.meta.env.VITE_MAPBOX_ACCESS_TOKEN,
       center: [-71.05953, 42.36290],

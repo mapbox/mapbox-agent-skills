@@ -96,8 +96,8 @@ const mastra = new Mastra({
   workflows: {
     findRestaurants: {
       steps: [
-        { tool: 'mapbox.category_search', input: {...} },
-        { tool: 'mapbox.matrix', input: {...} }
+        { tool: 'mapbox.category_search_tool', input: {...} },
+        { tool: 'mapbox.matrix_tool', input: {...} }
       ]
     }
   }

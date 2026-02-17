@@ -65,9 +65,9 @@ Before integrating, understand the key distinctions between tools to help your L
 
 **Specific place/address**:
 
-- Tool: `search_geocode`, `reverse_geocode`
+- Tool: `search_and_geocode_tool`, `reverse_geocode_tool`
 - Use for: Named places, street addresses, landmarks
-- Example: "Find 123 Main Street" → `search_geocode`
+- Example: "Find 123 Main Street" → `search_and_geocode_tool`
 
 ### Travel Time: Area vs Route
 
@@ -363,7 +363,7 @@ location_analyst = Agent(
     backstory="""Expert in geographic analysis and location intelligence.
 
     Use search_poi for finding types of places (restaurants, hotels).
-    Use reverse_geocode for converting coordinates to addresses.""",
+    Use reverse_geocode_tool for converting coordinates to addresses.""",
     tools=[GeocodeTool(), SearchPOITool()],
     verbose=True
 )
@@ -373,7 +373,7 @@ route_planner = Agent(
     goal='Plan optimal routes and provide travel time estimates',
     backstory="""Experienced logistics coordinator specializing in route optimization.
 
-    Use get_directions for route distance along roads with traffic.
+    Use directions_tool for route distance along roads with traffic.
     Always use when traffic-aware travel time is needed.""",
     tools=[DirectionsTool()],
     verbose=True
@@ -1138,8 +1138,8 @@ class GeospatialService {
     // Let AI agent use MCP tools to interpret query and find places
     // Returns natural language response
     return await this.agent.execute(userQuery, [
-      this.mcpServer.tools.category_search,
-      this.mcpServer.tools.get_directions
+      this.mcpServer.tools.category_search_tool,
+      this.mcpServer.tools.directions_tool
     ]);
   }
 
@@ -1450,8 +1450,8 @@ const searchPOITool = new DynamicStructuredTool({
   Returns: List of matching places with names, addresses, and coordinates.
 
   DO NOT use for:
-  - Specific named places (use search_geocode instead)
-  - Addresses (use search_geocode or reverse_geocode)`
+  - Specific named places (use search_and_geocode_tool instead)
+  - Addresses (use search_and_geocode_tool or reverse_geocode_tool)`
   // ... schema and implementation
 });
 ```
@@ -1464,12 +1464,12 @@ Add tool selection guidance to your agent's system prompt:
 const systemPrompt = `You are a location intelligence assistant.
 
 TOOL SELECTION RULES:
-- Use calculate_distance for straight-line distance ("as the crow flies")
-- Use get_directions for route distance along roads with traffic
-- Use category_search for finding types of places ("coffee shops")
-- Use search_geocode for specific addresses or named places ("123 Main St", "Starbucks downtown")
-- Use get_isochrone for "what can I reach in X minutes" questions
-- Use offline tools (calculate_distance, point_in_polygon) when real-time data is not needed
+- Use distance_tool for straight-line distance ("as the crow flies")
+- Use directions_tool for route distance along roads with traffic
+- Use category_search_tool for finding types of places ("coffee shops")
+- Use search_and_geocode_tool for specific addresses or named places ("123 Main St", "Starbucks downtown")
+- Use isochrone_tool for "what can I reach in X minutes" questions
+- Use offline tools (distance_tool, point_in_polygon_tool) when real-time data is not needed
 
 When in doubt, prefer:
 1. Offline tools over API calls (faster, free)
@@ -1601,13 +1601,13 @@ class RateLimitedMCP {
 class MockMapboxMCP {
   async callTool(name: string, params: any): Promise<any> {
     const mocks = {
-      calculate_distance: () => '2.5',
-      get_directions: () => JSON.stringify({
+      distance_tool: () => '2.5',
+      directions_tool: () => JSON.stringify({
         duration: 1200,
         distance: 5000,
         geometry: {...}
       }),
-      point_in_polygon: () => 'true'
+      point_in_polygon_tool: () => 'true'
     };
 
     return mocks[name]?.() || '{}';

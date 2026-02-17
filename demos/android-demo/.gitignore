@@ -1,0 +1,15 @@
+# Android Studio
+.gradle/
+.idea/
+local.properties
+*.iml
+.DS_Store
+
+# Build outputs
+build/
+app/build/
+*.apk
+*.aab
+
+# Gradle wrapper (committed for reproducibility)
+# Keep gradle wrapper files

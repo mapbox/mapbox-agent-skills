@@ -7,19 +7,19 @@
 Install all Mapbox Agent Skills:
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills
+npx skills add mapbox/mapbox-agent-skills
 ```
 
 Install specific skills:
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills --skill mapbox-web-performance-patterns
+npx skills add mapbox/mapbox-agent-skills --skill mapbox-web-performance-patterns
 ```
 
 List available skills:
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills --list
+npx skills add mapbox/mapbox-agent-skills --list
 ```
 
 > **💡 Pro tip:** These skills work great on their own, but they're even more powerful when combined with the [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server). Skills provide the expertise (performance patterns, design principles), while MCP tools provide the actions (create styles, generate previews). Together, they enable complete workflows from design to deployment.
@@ -581,7 +581,7 @@ Skills in this repository are automatically discovered by Claude Code when place
 
 ```bash
 # Install all skills
-npx add-skill mapbox/mapbox-agent-skills
+npx skills add mapbox/mapbox-agent-skills
 
 # Or manually symlink (for development)
 mkdir -p .claude
@@ -593,18 +593,18 @@ Skills are automatically activated when relevant to your task.
 ### With Cursor
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills -a cursor
+npx skills add mapbox/mapbox-agent-skills -a cursor
 ```
 
 ### With VS Code (GitHub Copilot)
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills -a vscode
+npx skills add mapbox/mapbox-agent-skills -a vscode
 ```
 
 ### With Other AI Assistants
 
-The `add-skill` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx add-skill --help` for full list.
+The `skills` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx skills add --help` for full list.
 
 ## Example Usage
 
@@ -795,7 +795,7 @@ git clone https://github.com/mapbox/mapbox-agent-skills.git
 cd mapbox-agent-skills
 
 # Install in Claude Code
-npx add-skill . -a claude-code
+npx skills add . -a claude-code
 
 # Or symlink for development
 mkdir -p .claude
@@ -831,7 +831,7 @@ Test with prompts like:
 
 - [Agent Skills Overview](https://agentskills.io)
 - [Agent Skills Specification](https://github.com/anthropics/skills)
-- [add-skill CLI Tool](https://add-skill.org/)
+- [Skills CLI Tool](https://github.com/anthropics/skills)
 
 **Mapbox Documentation:**
 

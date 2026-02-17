@@ -207,7 +207,7 @@ class MapboxMCP:
 mapbox = MapboxMCP(token='your_token')
 
 agent = Agent(
-    model=OpenAIModel('gpt-4'),
+    model=OpenAIModel('gpt-4o'),
     tools=[
         lambda from_loc, to_loc: mapbox.call_tool(
             'directions_tool',
@@ -897,7 +897,7 @@ const tools = [
 ];
 
 // Create agent
-const model = new ChatOpenAI({ modelName: 'gpt-4' });
+const model = new ChatOpenAI({ model: 'gpt-4o' });
 const executor = await initializeAgentExecutorWithOptions(tools, model, {
   agentType: 'openai-functions',
   verbose: true

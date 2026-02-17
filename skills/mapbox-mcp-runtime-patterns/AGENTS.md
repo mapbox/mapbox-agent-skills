@@ -73,7 +73,7 @@ mcp = subprocess.Popen(['npx', '@mapbox/mcp-server'],
                        env={'MAPBOX_ACCESS_TOKEN': token})
 
 agent = Agent(
-    model='gpt-4',
+    model='gpt-4o',
     tools=[
         lambda from_loc, to_loc: call_mcp('directions_tool', {
             'origin': from_loc,

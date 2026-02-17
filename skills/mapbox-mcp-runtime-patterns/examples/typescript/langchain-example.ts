@@ -146,7 +146,7 @@ async function createLocationAgent() {
   ];
 
   const llm = new ChatOpenAI({
-    model: 'gpt-4o',
+    model: 'gpt-5.2',
     temperature: 0
   });
 

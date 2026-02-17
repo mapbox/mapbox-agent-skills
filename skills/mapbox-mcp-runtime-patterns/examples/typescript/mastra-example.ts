@@ -188,7 +188,7 @@ TOOL SELECTION RULES:
 - Prefer offline tools (calculate-distance) when real-time data is not needed
 
 Always provide clear, actionable information with specific times and distances.`,
-  model: 'openai/gpt-4o',
+  model: 'openai/gpt-5.2',
   tools: {
     getDirectionsTool,
     searchPOITool,

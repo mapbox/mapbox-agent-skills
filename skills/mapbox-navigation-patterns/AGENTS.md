@@ -85,7 +85,7 @@ const url =
 
 // Color by congestion level
 const congestion = route.legs[0].annotation.congestion;
-// Values: 'low', 'moderate', 'heavy', 'severe'
+// Values: 'low', 'moderate', 'heavy', 'severe', 'unknown'
 ```
 
 ### Turn-by-Turn Instructions

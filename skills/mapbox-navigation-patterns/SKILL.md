@@ -369,6 +369,8 @@ async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
 }
 ```
 
+**Note:** For advanced use cases requiring time windows, vehicle capacities, and support for up to 1,000 coordinates, see the [Optimization API v2](https://docs.mapbox.com/api/navigation/optimization-v2/) (async API with enhanced capabilities).
+
 ### Traffic-Aware Routing
 
 ```javascript

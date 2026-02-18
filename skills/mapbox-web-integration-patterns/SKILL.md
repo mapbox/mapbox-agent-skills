@@ -561,7 +561,7 @@ class MapboxMap extends HTMLElement {
   connectedCallback() {
     // Get configuration from attributes
     const token = this.getAttribute('access-token') || import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-    const style = this.getAttribute('style') || 'mapbox://styles/mapbox/standard';
+    const mapStyle = this.getAttribute('map-style') || 'mapbox://styles/mapbox/standard';
     const center = this.getAttribute('center')?.split(',').map(Number) || [-71.05953, 42.3629];
     const zoom = parseFloat(this.getAttribute('zoom')) || 13;
 
@@ -570,7 +570,7 @@ class MapboxMap extends HTMLElement {
 
     this.map = new mapboxgl.Map({
       container: this,
-      style: style,
+      style: mapStyle,
       center: center,
       zoom: zoom
     });
@@ -609,7 +609,7 @@ customElements.define('mapbox-map', MapboxMap);
 <!-- Basic usage -->
 <mapbox-map
   access-token="pk.YOUR_TOKEN"
-  style="mapbox://styles/mapbox/dark-v11"
+  map-style="mapbox://styles/mapbox/dark-v11"
   center="-122.4194,37.7749"
   zoom="12"
 ></mapbox-map>
@@ -649,7 +649,7 @@ function App() {
     <mapbox-map
       ref={mapRef}
       access-token={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
-      style="mapbox://styles/mapbox/standard"
+      map-style="mapbox://styles/mapbox/standard"
       center="-122.4194,37.7749"
       zoom="12"
     />
@@ -664,7 +664,7 @@ function App() {
   <mapbox-map
     ref="map"
     :access-token="token"
-    style="mapbox://styles/mapbox/streets-v12"
+    map-style="mapbox://styles/mapbox/streets-v12"
     center="-71.05953,42.3629"
     zoom="13"
     @mapload="handleMapLoad"
@@ -707,7 +707,7 @@ export default {
 <mapbox-map
   bind:this={mapElement}
   access-token={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
-  style="mapbox://styles/mapbox/standard"
+  map-style="mapbox://styles/mapbox/standard"
   center="-71.05953,42.3629"
   zoom="13"
   on:mapload={handleMapLoad}
@@ -719,7 +719,7 @@ export default {
 ```javascript
 class MapboxMapReactive extends HTMLElement {
   static get observedAttributes() {
-    return ['center', 'zoom', 'style'];
+    return ['center', 'zoom', 'map-style'];
   }
 
   constructor() {
@@ -732,7 +732,7 @@ class MapboxMapReactive extends HTMLElement {
 
     this.map = new mapboxgl.Map({
       container: this,
-      style: this.getAttribute('style') || 'mapbox://styles/mapbox/standard',
+      style: this.getAttribute('map-style') || 'mapbox://styles/mapbox/standard',
       center: this.getAttribute('center')?.split(',').map(Number) || [0, 0],
       zoom: parseFloat(this.getAttribute('zoom')) || 9
     });
@@ -757,7 +757,7 @@ class MapboxMapReactive extends HTMLElement {
       case 'zoom':
         this.map.setZoom(parseFloat(newValue));
         break;
-      case 'style':
+      case 'map-style':
         this.map.setStyle(newValue);
         break;
     }

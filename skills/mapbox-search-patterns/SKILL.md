@@ -187,7 +187,7 @@ Expert guidance for AI assistants on using Mapbox search tools effectively. Cove
 {"q": "Paris", "types": ["poi", "address"]}
 // Returns Paris Hotel, Paris Street, not Paris, France
 
-// Only places (cities/regions)
+// Only places (cities)
 {"q": "Paris", "types": ["place"]}
 // Returns Paris, France; Paris, Texas; etc.
 ```

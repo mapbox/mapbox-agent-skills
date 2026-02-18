@@ -34,9 +34,16 @@ Before jumping into code, ask these questions to understand requirements:
 
 - **"Addresses"** → Focus on address geocoding, consider Search Box API or Geocoding API
 - **"Points of interest / businesses"** → POI search, use Search Box API with category search
-- **"Both addresses and POIs"** → Search Box API (unified search)
-- **"Specific types of places"** (restaurants, hotels, etc.) → Category search or filtered POI search
+- **"Both addresses and POIs"** → Search Box API
+- **"Specific types of POIs"** (restaurants, hotels, etc.) → Search Box API
+- **"Countries, cities, postcodes or neighborhoods"** → Geocoding API
 - **"Custom locations"** (user-created places) → May need custom data + search integration
+
+**Follow-up if not stated initially**: "Are your users searching for points of interest data? Restaurants, stores, categories of businesses?"
+
+**Implications:**
+- **"Yes, POIs are included"** → Use the Search Box API
+- **"No, the user does not need POI search"** → Use the Geocoding API
 
 ### Question 2: What's the geographic scope?
 
@@ -57,7 +64,7 @@ Before jumping into code, ask these questions to understand requirements:
 
 **Common answers and implications:**
 
-- **"Search-as-you-type / autocomplete"** → Use Search Box API with `autocomplete: true`, implement debouncing
+- **"Search-as-you-type / autocomplete"** → Use `auto_complete: true`, for Search Box API, or `autocomplete=true` for Geocoding; also implement debouncing
 - **"Search button / final query"** → Can use either API, no autocomplete needed
 - **"Both"** (autocomplete + refine) → Two-stage search, autocomplete then detailed results
 - **"Voice input"** → Consider speech-to-text integration, handle longer queries
@@ -101,25 +108,14 @@ Before jumping into code, ask these questions to understand requirements:
 
 Based on discovery answers, recommend the right product:
 
-### Recommended: Search Box API (Modern, Unified)
+### Search Box API
 
 **Use when:**
 
-- User needs both addresses AND POIs
-- Building a modern web/mobile app
-- Want autocomplete functionality
+- User needs POI data
 - Need session-based pricing
-- Want the simplest integration
 
-**Advantages:**
-
-- ✅ Unified search (addresses + POIs)
-- ✅ Session-based pricing (cheaper for autocomplete)
-- ✅ Modern API design
-- ✅ Built-in autocomplete support
-- ✅ Better POI coverage
-
-**Products:**
+*Products:**
 
 - **Search Box API** (REST) - Direct API integration
 - **Mapbox Search JS** (SDK) - Web integration with three components:
@@ -133,12 +129,9 @@ Based on discovery answers, recommend the right product:
 
 **Use when:**
 
-- Only need address geocoding (no POIs)
-- Existing integration to maintain
+- No POI data needed
 - Need permanent geocoding (not search)
 - Batch geocoding jobs
-
-**Note:** Prefer Search Box API unless the user specifically says they only want address geocoding.
 
 ## Integration Patterns by Platform
 
@@ -1918,8 +1911,7 @@ Before launching, verify:
 
 1. **Ask discovery questions** (Questions 1-6 above)
 2. **Recommend product:**
-   - Search Box API (most cases)
-   - Direct API (custom needs)
+   - Search Box API or Geocoding API
    - Platform SDK (mobile)
 3. **Implement with:**
    - ✅ Debouncing

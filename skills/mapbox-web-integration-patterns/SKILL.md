@@ -521,24 +521,26 @@ initMap();
 
 ### Web Components (Framework-Agnostic)
 
-> **⚠️ Important:** Web Components are an **advanced pattern** for specific use cases. If you're building a single-framework application (React-only, Vue-only, etc.), use the framework-specific patterns above instead. Web Components add complexity and should only be used when you need cross-framework compatibility.
+Web Components are a W3C standard for creating reusable custom elements that work in any framework or no framework at all.
 
 **When to use Web Components:**
 
-- ✅ **Design systems** - Building company-wide component libraries used across multiple frameworks
-- ✅ **Micro-frontends** - Application uses React, Vue, Angular, etc. in different parts
-- ✅ **Multi-framework organizations** - Teams working with different frameworks need shared components
+- ✅ **Vanilla JavaScript apps** - No framework? Web Components are a great choice
+- ✅ **Design systems** - Building component libraries used across multiple frameworks
+- ✅ **Micro-frontends** - Application uses different frameworks in different parts
+- ✅ **Multi-framework organizations** - Teams working with React, Vue, Svelte, etc. need shared components
 - ✅ **Framework migration** - Transitioning from one framework to another incrementally
-- ✅ **Long-term stability** - W3C standard vs framework-specific wrappers that need updates
+- ✅ **Long-term stability** - W3C standard, no framework lock-in
 
 **Real-world example:** A company with React (main app), Vue (admin panel), and Svelte (marketing site) can build one `<mapbox-map>` component that works everywhere.
 
-**When NOT to use Web Components:**
+**When to use framework-specific patterns instead:**
 
-- ❌ **Single-framework apps** - If you're only using React, use React patterns
-- ❌ **Framework-specific features** - Need React hooks, Vue Composition API, or deep framework integration
-- ❌ **Team familiarity** - Team is proficient with framework patterns and doesn't need portability
-- ❌ **Simplicity** - Want the simplest possible implementation
+- 🔧 **Already using a framework** - If you're building in React, use React patterns (simpler, better integration)
+- 🔧 **Need framework features** - Deep integration with React hooks, Vue Composition API, state management, routing
+- 🔧 **Team familiarity** - Team is proficient with framework patterns
+
+> **💡 Tip:** If you're using React, Vue, Svelte, or Angular, start with the framework-specific patterns above. They're simpler and better integrated. Use Web Components when you need cross-framework compatibility or are building vanilla JavaScript apps.
 
 ---
 

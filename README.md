@@ -800,7 +800,7 @@ For questions or suggestions, please [open an issue](https://github.com/mapbox/m
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE.md) file for details.
 
 ---
 

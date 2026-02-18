@@ -21,5 +21,11 @@ sk\.your_secret_token_here
 ^https://twitter\.com/
 ^https://x\.com/
 
+# Mapbox support community (blocks automated checkers with 403)
+^https://support\.mapbox\.com/hc/en-us/community
+
+# Mapbox Android Examples (old URL, no longer exists)
+^https://github\.com/mapbox/mapbox-maps-android/tree/main/Examples
+
 # Mapbox docs with anchors (sometimes fail due to client-side rendering)
 # We'll still check the base URLs

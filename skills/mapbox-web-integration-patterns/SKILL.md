@@ -517,7 +517,6 @@ initMap();
 
 ---
 
-
 ## Advanced Patterns
 
 ### Web Components (Framework-Agnostic)
@@ -561,8 +560,7 @@ class MapboxMap extends HTMLElement {
 
   connectedCallback() {
     // Get configuration from attributes
-    const token = this.getAttribute('access-token') ||
-                  import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+    const token = this.getAttribute('access-token') || import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
     const style = this.getAttribute('style') || 'mapbox://styles/mapbox/standard';
     const center = this.getAttribute('center')?.split(',').map(Number) || [-71.05953, 42.3629];
     const zoom = parseFloat(this.getAttribute('zoom')) || 13;
@@ -579,9 +577,11 @@ class MapboxMap extends HTMLElement {
 
     // Dispatch custom event when map loads
     this.map.on('load', () => {
-      this.dispatchEvent(new CustomEvent('mapload', {
-        detail: { map: this.map }
-      }));
+      this.dispatchEvent(
+        new CustomEvent('mapload', {
+          detail: { map: this.map }
+        })
+      );
     });
   }
 
@@ -635,9 +635,7 @@ function App() {
     const handleMapLoad = (e) => {
       const map = e.detail.map;
       // Add markers, layers, etc.
-      new mapboxgl.Marker()
-        .setLngLat([-122.4194, 37.7749])
-        .addTo(map);
+      new mapboxgl.Marker().setLngLat([-122.4194, 37.7749]).addTo(map);
     };
 
     mapRef.current?.addEventListener('mapload', handleMapLoad);

@@ -10,8 +10,8 @@
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules",
     "validate:skills": "node scripts/validate-skills.js",
     "check": "npm run format:check && npm run spellcheck && npm run lint:markdown && npm run validate:skills",
-    "setup": "bash scripts/setup-hooks.sh",
-    "postinstall": "bash scripts/setup-hooks.sh"
+    "setup": "node scripts/setup-hooks.js",
+    "postinstall": "node scripts/setup-hooks.js"
   },
   "keywords": [
     "agent-skills",

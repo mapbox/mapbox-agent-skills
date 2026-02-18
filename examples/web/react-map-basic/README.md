@@ -26,16 +26,19 @@ This example demonstrates the **fundamental pattern** for integrating Mapbox GL 
 ## Setup
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Create `.env.local` file:**
+
    ```bash
    VITE_MAPBOX_ACCESS_TOKEN=pk.your_token_here
    ```
 
 3. **Start development server:**
+
    ```bash
    npm run dev
    ```
@@ -99,12 +102,14 @@ function MapComponent() {
 ### Why This Pattern?
 
 ❌ **Common mistakes avoided:**
+
 - Initializing map in render (causes infinite loops)
 - Not cleaning up map instance (memory leaks)
 - Missing cleanup function (crashes on unmount)
 - Reinitializing on every render
 
 ✅ **Best practices:**
+
 - Initialize in useEffect with empty deps
 - Store map instance in ref (persists across renders)
 - Store container element in ref (direct DOM access)
@@ -167,26 +172,30 @@ mapRef.current = new mapboxgl.Map({
 ## Skills Reference
 
 This example follows patterns from:
+
 - **mapbox-web-integration-patterns** - React integration best practices
 - **mapbox-token-security** - Environment variable token management
 
 ## Next Steps
 
 Once you have this basic pattern working, explore:
-- [Vue Map with Markers](../vue-map-with-markers/) - Vue.js integration
+
 - [Performance Optimized](../performance-optimized/) - Advanced performance patterns
 - **mapbox-web-performance-patterns** skill - Optimization guidance
 
 ## Troubleshooting
 
 **Map not showing?**
+
 - Check that `VITE_MAPBOX_ACCESS_TOKEN` is set in `.env.local`
 - Verify token has `styles:tiles` scope
 - Check browser console for errors
 
 **Memory issues?**
+
 - Ensure cleanup function is present: `return () => { mapRef.current.remove(); }`
 - Don't create new Map instances on every render
 
 **Type errors?**
+
 - Install TypeScript types: `npm install -D @types/mapbox-gl`

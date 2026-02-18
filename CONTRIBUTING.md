@@ -17,6 +17,62 @@ We welcome:
 2. **Open an issue** - For new skills, discuss the idea first to ensure it fits
 3. **Review examples** - Look at existing skills to understand the format and style
 
+## Development Setup
+
+### Initial Setup
+
+When you clone the repository and run `npm install`, git hooks are automatically installed. These hooks run quality checks before you push code, preventing CI failures.
+
+**What gets installed:**
+
+- **Pre-push hook** - Runs all CI checks locally before pushing
+
+**What gets checked:**
+
+1. **Formatting** - Prettier formatting (all `.md`, `.json`, `.js` files)
+2. **Spelling** - cspell spell checking (all markdown files)
+3. **Markdown linting** - markdownlint validation
+4. **Skills validation** - YAML frontmatter and structure checks
+
+### Running Checks Manually
+
+You can run all checks at any time:
+
+```bash
+npm run check
+```
+
+Or run individual checks:
+
+```bash
+npm run format:check    # Check formatting
+npm run spellcheck      # Check spelling
+npm run lint:markdown   # Lint markdown
+npm run validate:skills # Validate skill structure
+```
+
+### Fixing Issues
+
+**Auto-fix formatting:**
+
+```bash
+npm run format
+```
+
+**Add words to spell check dictionary:**
+
+Edit `cspell.config.json` and add words to the `words` array.
+
+### Bypassing Hooks (Not Recommended)
+
+If you need to push without running checks (not recommended):
+
+```bash
+git push --no-verify
+```
+
+⚠️ **Warning:** CI will still run these checks and may fail your PR.
+
 ## Creating a New Skill
 
 ### 1. Skill Structure
@@ -45,6 +101,7 @@ description: Brief one-line description of what this skill covers
 ```
 
 **Requirements:**
+
 - `name` must match the directory name exactly
 - `description` should be concise (1-2 sentences)
 - Content must include actionable guidance, not just information
@@ -70,7 +127,7 @@ description: Brief one-line description of what this skill covers
 
 ### 4. Example Template
 
-```markdown
+````markdown
 ---
 name: mapbox-example-skill
 description: Expert guidance on [specific domain] for Mapbox applications
@@ -79,6 +136,7 @@ description: Expert guidance on [specific domain] for Mapbox applications
 # Mapbox [Domain] Skill
 
 Expert guidance on [what this covers]. Use this skill when:
+
 - [Specific use case 1]
 - [Specific use case 2]
 
@@ -89,12 +147,15 @@ Expert guidance on [what this covers]. Use this skill when:
 [Why this matters]
 
 **Anti-pattern:**
+
 ```javascript
 // ❌ BAD: [Why this is wrong]
 code example
 ```
+````
 
 **Solution:**
+
 ```javascript
 // ✅ GOOD: [Why this is better]
 code example
@@ -104,10 +165,10 @@ code example
 
 ### Decision Matrix
 
-| Scenario | Use Approach A | Use Approach B |
-|----------|---------------|----------------|
-| < 1000 items | ✅ | ❌ |
-| 1000-10000 | ⚠️ | ✅ |
+| Scenario     | Use Approach A | Use Approach B |
+| ------------ | -------------- | -------------- |
+| < 1000 items | ✅             | ❌             |
+| 1000-10000   | ⚠️             | ✅             |
 
 ## Common Scenarios
 
@@ -119,7 +180,8 @@ code example
 
 - [Link to official docs]
 - [Link to examples]
-```
+
+````
 
 ## Testing Your Skill
 
@@ -129,9 +191,10 @@ Before submitting:
    ```bash
    npm install
    npm run validate:skills
-   ```
+````
 
 2. **Check spelling:**
+
    ```bash
    npm run spellcheck
    ```
@@ -139,23 +202,26 @@ Before submitting:
    If you have domain-specific terms, add them to `cspell.config.json`.
 
 3. **Lint markdown:**
+
    ```bash
    npm run lint:markdown
    ```
 
 4. **Run all checks:**
+
    ```bash
    npm run check
    ```
 
 5. **Test with AI assistant:**
-   - Install locally: `npx add-skill . -a claude-code` (or your AI assistant)
+   - Install locally: `npx skills add . -a claude-code` (or your AI assistant)
    - Ask questions the skill should help with
    - Verify the AI uses the skill appropriately
 
 ## Pull Request Process
 
 1. **Create a branch:**
+
    ```bash
    git checkout -b add-your-skill-name
    ```
@@ -165,11 +231,13 @@ Before submitting:
    - Add any additional resources
 
 3. **Run checks:**
+
    ```bash
    npm run check
    ```
 
 4. **Commit with clear message:**
+
    ```bash
    git commit -m "Add [skill-name] skill
 
@@ -178,9 +246,12 @@ Before submitting:
    ```
 
 5. **Push and create PR:**
+
    ```bash
    git push -u origin add-your-skill-name
    ```
+
+   The **pre-push hook** will automatically run all quality checks before pushing. If any check fails, the push will be blocked and you'll need to fix the issues.
 
    Create a pull request with:
    - Clear description of the skill's purpose
@@ -188,9 +259,11 @@ Before submitting:
    - Any dependencies or prerequisites
 
 6. **CI checks will run:**
+   - Formatting validation
    - Spell checking
    - Markdown linting
    - Skills validation (YAML frontmatter)
+   - Link checking
 
    All checks must pass before merge.
 

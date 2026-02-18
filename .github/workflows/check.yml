@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Format check
+        run: npm run format:check
+
       - name: Spell check
         run: npm run spellcheck
 
@@ -28,3 +31,18 @@ jobs:
 
       - name: Validate skills
         run: npm run validate:skills
+
+      - name: Check links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: |
+            --verbose
+            --no-progress
+            --max-retries 3
+            --timeout 20
+            --exclude-path 'node_modules/**'
+            --exclude-path '.git/**'
+            '**/*.md'
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -28,10 +28,7 @@ npm install mapbox-gl@^3.0.0    # Installs latest v3.x
 ```html
 <!-- Replace VERSION with latest v3.x from https://docs.mapbox.com/mapbox-gl-js/ -->
 <script src="https://api.mapbox.com/mapbox-gl-js/vVERSION/mapbox-gl.js"></script>
-<link
-  href="https://api.mapbox.com/mapbox-gl-js/vVERSION/mapbox-gl.css"
-  rel="stylesheet"
-/>
+<link href="https://api.mapbox.com/mapbox-gl-js/vVERSION/mapbox-gl.css" rel="stylesheet" />
 ```
 
 ⚠️ **Production apps should use npm, not CDN** - ensures consistent versions and offline builds.
@@ -316,14 +313,7 @@ export default {
 **Pattern: ngOnInit + ngOnDestroy with SSR handling**
 
 ```typescript
-import {
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  inject
-} from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
@@ -459,10 +449,7 @@ initMap();
 
     <!-- Mapbox GL JS CSS -->
     <!-- Replace 3.x.x with latest version from https://docs.mapbox.com/mapbox-gl-js/ -->
-    <link
-      href="https://api.mapbox.com/mapbox-gl-js/v3.x.x/mapbox-gl.css"
-      rel="stylesheet"
-    />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.x.x/mapbox-gl.css" rel="stylesheet" />
 
     <style>
       body {

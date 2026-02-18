@@ -38,7 +38,6 @@ jobs:
           args: |
             --verbose
             --no-progress
-            --exclude-mail
             --max-retries 3
             --timeout 20
             '**/*.md'

@@ -40,6 +40,7 @@ jobs:
             --no-progress
             --max-retries 3
             --timeout 20
+            --exclude node_modules
             '**/*.md'
           fail: true
         env:

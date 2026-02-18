@@ -1,11 +1,11 @@
 ---
 name: mapbox-web-integration-patterns
-description: Official integration patterns for Mapbox GL JS across popular web frameworks and Web Components. Covers setup, lifecycle management, token handling, search integration, and common pitfalls. Based on Mapbox's create-web-app scaffolding tool.
+description: Official integration patterns for Mapbox GL JS across popular web frameworks (React, Vue, Svelte, Angular). Covers setup, lifecycle management, token handling, search integration, and common pitfalls. Based on Mapbox's create-web-app scaffolding tool.
 ---
 
 # Mapbox Integration Patterns Skill
 
-This skill provides official patterns for integrating Mapbox GL JS into web applications across different frameworks and as framework-agnostic Web Components. These patterns are based on Mapbox's `create-web-app` scaffolding tool and represent production-ready best practices.
+This skill provides official patterns for integrating Mapbox GL JS into web applications using React, Vue, Svelte, Angular, and vanilla JavaScript. These patterns are based on Mapbox's `create-web-app` scaffolding tool and represent production-ready best practices.
 
 ## Version Requirements
 
@@ -530,11 +530,35 @@ initMap();
 
 ---
 
-### Web Components (Custom Elements)
+
+## Advanced Patterns
+
+### Web Components (Framework-Agnostic)
+
+> **⚠️ Important:** Web Components are an **advanced pattern** for specific use cases. If you're building a single-framework application (React-only, Vue-only, etc.), use the framework-specific patterns above instead. Web Components add complexity and should only be used when you need cross-framework compatibility.
+
+**When to use Web Components:**
+
+- ✅ **Design systems** - Building company-wide component libraries used across multiple frameworks
+- ✅ **Micro-frontends** - Application uses React, Vue, Angular, etc. in different parts
+- ✅ **Multi-framework organizations** - Teams working with different frameworks need shared components
+- ✅ **Framework migration** - Transitioning from one framework to another incrementally
+- ✅ **Long-term stability** - W3C standard vs framework-specific wrappers that need updates
+
+**Real-world example:** A company with React (main app), Vue (admin panel), and Svelte (marketing site) can build one `<mapbox-map>` component that works everywhere.
+
+**When NOT to use Web Components:**
+
+- ❌ **Single-framework apps** - If you're only using React, use React patterns
+- ❌ **Framework-specific features** - Need React hooks, Vue Composition API, or deep framework integration
+- ❌ **Team familiarity** - Team is proficient with framework patterns and doesn't need portability
+- ❌ **Simplicity** - Want the simplest possible implementation
+
+---
 
 **Pattern: Standard Custom Element with lifecycle callbacks**
 
-Web Components provide a framework-agnostic way to encapsulate Mapbox maps. They work in vanilla JavaScript, React, Vue, Svelte, Angular, and any other framework without modification.
+Web Components provide a framework-agnostic way to encapsulate Mapbox maps using the W3C Web Components standard.
 
 **Basic Web Component:**
 
@@ -705,55 +729,7 @@ export default {
 />
 ```
 
-**Advanced: Web Component with Shadow DOM:**
-
-```javascript
-class MapboxMapShadow extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-    this.map = null;
-  }
-
-  connectedCallback() {
-    // Create container in shadow DOM
-    const container = document.createElement('div');
-    container.style.cssText = 'width: 100%; height: 100%;';
-
-    // Import styles into shadow DOM
-    const style = document.createElement('link');
-    style.rel = 'stylesheet';
-    style.href = 'https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css';
-
-    this.shadowRoot.appendChild(style);
-    this.shadowRoot.appendChild(container);
-
-    // Wait for styles to load
-    style.onload = () => {
-      const token = this.getAttribute('access-token');
-      mapboxgl.accessToken = token;
-
-      this.map = new mapboxgl.Map({
-        container: container,
-        style: this.getAttribute('style') || 'mapbox://styles/mapbox/standard',
-        center: this.getAttribute('center')?.split(',').map(Number) || [0, 0],
-        zoom: parseFloat(this.getAttribute('zoom')) || 9
-      });
-    };
-  }
-
-  disconnectedCallback() {
-    if (this.map) {
-      this.map.remove();
-      this.map = null;
-    }
-  }
-}
-
-customElements.define('mapbox-map-shadow', MapboxMapShadow);
-```
-
-**Reactive Attributes Pattern:**
+**Advanced: Reactive Attributes Pattern:**
 
 ```javascript
 class MapboxMapReactive extends HTMLElement {
@@ -806,37 +782,14 @@ class MapboxMapReactive extends HTMLElement {
 customElements.define('mapbox-map-reactive', MapboxMapReactive);
 ```
 
-**Key points:**
+**Key Implementation Points:**
 
 - Use `connectedCallback()` for initialization (equivalent to mount/ngOnInit)
-- **Always implement `disconnectedCallback()`** to call `map.remove()` (equivalent to cleanup/unmount/ngOnDestroy)
+- **Always implement `disconnectedCallback()`** to call `map.remove()` (prevents memory leaks)
 - Read configuration from HTML attributes
-- Works in any framework without modification
-- Dispatch custom events for map interactions
+- Dispatch custom events for map interactions (`mapload`, etc.)
 - Use `observedAttributes` + `attributeChangedCallback` for reactive updates
-- Shadow DOM encapsulates styles (optional, more complex)
-
-**Benefits of Web Components:**
-
-- ✅ **Framework-agnostic** - works everywhere
-- ✅ **Encapsulation** - clear API through attributes
-- ✅ **Reusability** - use same component across projects
-- ✅ **Standard** - no framework lock-in
-- ✅ **Future-proof** - web platform standard
-
-**When to use:**
-
-- Building component libraries used across multiple frameworks
-- Need maximum portability and reusability
-- Working with micro-frontends
-- Want to avoid framework-specific code
-
-**When to use framework components instead:**
-
-- Already committed to a specific framework
-- Need deep framework integration (state management, routing)
-- Team familiar with framework patterns
-- Using framework-specific features (React hooks, Vue Composition API)
+- Works in any framework without modification
 
 ---
 

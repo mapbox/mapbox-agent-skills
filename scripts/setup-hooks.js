@@ -17,7 +17,9 @@ console.log('🔧 Setting up git hooks...');
 
 // Make sure .git/hooks directory exists
 if (!existsSync(HOOKS_DIR)) {
-  console.error('Error: .git/hooks directory not found. Are you in the repository root?');
+  console.error(
+    'Error: .git/hooks directory not found. Are you in the repository root?'
+  );
   process.exit(1);
 }
 

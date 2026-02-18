@@ -1,25 +1,25 @@
-# Lychee link checker ignore patterns
+# Lychee link checker ignore patterns (regex)
 
 # Localhost and example URLs
-http://localhost*
-https://localhost*
-http://127.0.0.1*
-https://example.com*
-https://YOUR_*
-https://your_*
+^http://localhost
+^https://localhost
+^http://127\.0\.0\.1
+^https://example\.com
+^https://YOUR_
+^https://your_
 
-# Placeholder tokens
-*YOUR_MAPBOX_ACCESS_TOKEN*
-*your_token*
-*sk.your_secret_token_here*
+# Placeholder tokens (match literally)
+YOUR_MAPBOX_ACCESS_TOKEN
+your_token
+sk\.your_secret_token_here
 
 # LinkedIn (rate limits aggressively)
-https://www.linkedin.com/*
-https://linkedin.com/*
+^https://www\.linkedin\.com/
+^https://linkedin\.com/
 
 # Twitter/X (requires auth)
-https://twitter.com/*
-https://x.com/*
+^https://twitter\.com/
+^https://x\.com/
 
 # Mapbox docs with anchors (sometimes fail due to client-side rendering)
 # We'll still check the base URLs

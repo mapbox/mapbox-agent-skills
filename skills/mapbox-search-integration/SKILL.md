@@ -1904,7 +1904,7 @@ Before launching, verify:
 
 - [Search Box API Documentation](https://docs.mapbox.com/api/search/search-box/)
 - [Geocoding API Documentation](https://docs.mapbox.com/api/search/geocoding/)
-- [Mapbox Search JS](https://docs.mapbox.com/mapbox-search-js/api/)
+- [Mapbox Search JS](https://docs.mapbox.com/mapbox-search-js/guides/)
   - [Search JS React](https://docs.mapbox.com/mapbox-search-js/api/react/)
   - [Search JS Web](https://docs.mapbox.com/mapbox-search-js/api/web/)
   - [Search JS Core](https://docs.mapbox.com/mapbox-search-js/api/core/)

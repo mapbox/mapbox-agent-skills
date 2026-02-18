@@ -180,7 +180,6 @@ This example follows patterns from:
 
 Once you have this basic pattern working, explore:
 
-- [Vue Map with Markers](../vue-map-with-markers/) - Vue.js integration
 - [Performance Optimized](../performance-optimized/) - Advanced performance patterns
 - **mapbox-web-performance-patterns** skill - Optimization guidance
 

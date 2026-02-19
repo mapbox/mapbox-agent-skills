@@ -11,7 +11,10 @@
     "validate:skills": "node scripts/validate-skills.js",
     "check": "npm run format:check && npm run spellcheck && npm run lint:markdown && npm run validate:skills",
     "setup": "node scripts/setup-hooks.js",
-    "postinstall": "node scripts/setup-hooks.js"
+    "postinstall": "node scripts/setup-hooks.js",
+    "metrics": "node scripts/generate-metrics-report.js",
+    "metrics:json": "node scripts/generate-metrics-report.js --format=json",
+    "metrics:csv": "node scripts/generate-metrics-report.js --format=csv"
   },
   "keywords": [
     "agent-skills",

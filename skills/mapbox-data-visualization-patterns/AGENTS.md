@@ -235,7 +235,7 @@ map.addSource('data', {
 
 // Update state
 map.setFeatureState(
-  { source: 'data', id: featureId },
+  {  source: 'data', id: featureId, sourceLayer: 'my-source-layer', },
   { hover: true }
 );
 

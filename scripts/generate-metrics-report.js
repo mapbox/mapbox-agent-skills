@@ -82,21 +82,29 @@ async function fetchSkillsShMetrics() {
 
     // Try to extract table data using regex patterns
     // Pattern: rank, skill name (with repo), installs
-    const tablePattern = /<tr[^>]*>.*?<td[^>]*>(\d+)<\/td>.*?<a[^>]*href="\/([^"]+)"[^>]*>([^<]+)<\/a>.*?<td[^>]*>([^<]+)<\/td>.*?<\/tr>/gs;
+    const tablePattern =
+      /<tr[^>]*>.*?<td[^>]*>(\d+)<\/td>.*?<a[^>]*href="\/([^"]+)"[^>]*>([^<]+)<\/a>.*?<td[^>]*>([^<]+)<\/td>.*?<\/tr>/gs;
 
     let match;
     while ((match = tablePattern.exec(result)) !== null) {
       const [_, rank, path, name, installs] = match;
 
       // Only include mapbox-related skills
-      if (name.toLowerCase().includes('mapbox') || path.toLowerCase().includes('mapbox')) {
+      if (
+        name.toLowerCase().includes('mapbox') ||
+        path.toLowerCase().includes('mapbox')
+      ) {
         // Parse install count (e.g., "260.5K" -> 260500)
         let installCount = 0;
         const installStr = installs.trim();
         if (installStr.includes('K')) {
-          installCount = Math.round(parseFloat(installStr.replace('K', '')) * 1000);
+          installCount = Math.round(
+            parseFloat(installStr.replace('K', '')) * 1000
+          );
         } else if (installStr.includes('M')) {
-          installCount = Math.round(parseFloat(installStr.replace('M', '')) * 1000000);
+          installCount = Math.round(
+            parseFloat(installStr.replace('M', '')) * 1000000
+          );
         } else {
           installCount = parseInt(installStr.replace(/,/g, '')) || 0;
         }
@@ -116,7 +124,10 @@ async function fetchSkillsShMetrics() {
       return {
         status: 'published',
         skills: skillsData,
-        totalInstalls: skillsData.reduce((sum, skill) => sum + skill.installs, 0)
+        totalInstalls: skillsData.reduce(
+          (sum, skill) => sum + skill.installs,
+          0
+        )
       };
     } else {
       return {
@@ -169,22 +180,40 @@ function generateMarkdownReport(data) {
 
 | Date | Views | Unique Visitors |
 |------|-------|-----------------|
-${traffic.views.daily.map(day => {
-  const date = new Date(day.timestamp).toLocaleDateString();
-  return `| ${date} | ${day.count} | ${day.uniques} |`;
-}).join('\n')}
+${traffic.views.daily
+  .map((day) => {
+    const date = new Date(day.timestamp).toLocaleDateString();
+    return `| ${date} | ${day.count} | ${day.uniques} |`;
+  })
+  .join('\n')}
 
 ## Top Referrers
 
-${referrers.length > 0 ? referrers.slice(0, 10).map((ref, i) =>
-  `${i + 1}. **${ref.referrer}** - ${ref.count} views (${ref.uniques} unique)`
-).join('\n') : '_No referrer data available_'}
+${
+  referrers.length > 0
+    ? referrers
+        .slice(0, 10)
+        .map(
+          (ref, i) =>
+            `${i + 1}. **${ref.referrer}** - ${ref.count} views (${ref.uniques} unique)`
+        )
+        .join('\n')
+    : '_No referrer data available_'
+}
 
 ## Popular Content
 
-${popular_paths.length > 0 ? popular_paths.slice(0, 10).map((path, i) =>
-  `${i + 1}. \`${path.path}\` - ${path.count} views (${path.uniques} unique)`
-).join('\n') : '_No path data available_'}
+${
+  popular_paths.length > 0
+    ? popular_paths
+        .slice(0, 10)
+        .map(
+          (path, i) =>
+            `${i + 1}. \`${path.path}\` - ${path.count} views (${path.uniques} unique)`
+        )
+        .join('\n')
+    : '_No path data available_'
+}
 
 ## Skills.sh Metrics
 
@@ -192,7 +221,7 @@ ${
   data.skillssh.status === 'published'
     ? `✅ **Status:** ${data.skillssh.skills.length} skill(s) found\n**Total Installs:** ${data.skillssh.totalInstalls.toLocaleString()}\n\n### Published Skills\n\n| Rank | Skill | Installs |\n|------|-------|----------|\n${data.skillssh.skills
         .map(
-          skill =>
+          (skill) =>
             `| #${skill.rank} | ${skill.name} | ${skill.installsFormatted} (${skill.installs.toLocaleString()}) |`
         )
         .join('\n')}`
@@ -218,7 +247,7 @@ function generateCsvReport(data) {
   // Create a map of dates to combine views and clones
   const dateMap = new Map();
 
-  traffic.views.daily.forEach(day => {
+  traffic.views.daily.forEach((day) => {
     const date = new Date(day.timestamp).toISOString().split('T')[0];
     dateMap.set(date, {
       views: day.count,
@@ -228,7 +257,7 @@ function generateCsvReport(data) {
     });
   });
 
-  traffic.clones.daily.forEach(day => {
+  traffic.clones.daily.forEach((day) => {
     const date = new Date(day.timestamp).toISOString().split('T')[0];
     const existing = dateMap.get(date) || { views: 0, uniqueViews: 0 };
     dateMap.set(date, {
@@ -302,14 +331,16 @@ async function main() {
     console.log(`\n✅ Report generated successfully!`);
     console.log(`   📄 ${filename}`);
     console.log(`   📄 ${latestFilename}`);
-    console.log(`\n💡 Tip: Add to cron/GitHub Actions to track metrics over time`);
+    console.log(
+      `\n💡 Tip: Add to cron/GitHub Actions to track metrics over time`
+    );
   } catch (error) {
     console.error('❌ Failed to write report:', error.message);
     process.exit(1);
   }
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('❌ Error:', error.message);
   process.exit(1);
 });

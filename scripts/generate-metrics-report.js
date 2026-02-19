@@ -71,10 +71,10 @@ async function fetchSkillsShMetrics() {
 
   try {
     // Use the skills.sh API to search for mapbox skills
-    const result = execSync(
-      `curl -s "https://skills.sh/api/search?q=mapbox"`,
-      { encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10 }
-    );
+    const result = execSync(`curl -s "https://skills.sh/api/search?q=mapbox"`, {
+      encoding: 'utf-8',
+      maxBuffer: 1024 * 1024 * 10
+    });
 
     const data = JSON.parse(result);
 

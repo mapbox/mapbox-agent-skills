@@ -7,6 +7,7 @@
     "antipattern",
     "appcompat",
     "autoresizing",
+    "basemap",
     "bbox",
     "bindgen",
     "buildconfig",

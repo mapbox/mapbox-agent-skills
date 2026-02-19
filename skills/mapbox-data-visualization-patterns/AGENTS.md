@@ -8,9 +8,38 @@ Quick reference for visualizing data on Mapbox maps.
 | --------------------- | ------------- | ---------------- | ----------------------------------- |
 | **Regional/Polygons** | Choropleth    | `fill`           | Statistics, demographics, elections |
 | **Point Density**     | Heat Map      | `heatmap`        | Crime, events, incident clustering  |
+| **Point Density**     | Clustering    | `circle`         | Grouped markers, aggregated counts  |
 | **Point Magnitude**   | Bubble/Circle | `circle`         | Earthquakes, sales, metrics         |
 | **3D Data**           | Extrusions    | `fill-extrusion` | Buildings, elevation, volume        |
 | **Flow/Network**      | Lines         | `line`           | Traffic, routes, connections        |
+
+## Data Structure
+
+All code snippets below use **Style expressions** to style features based on their property data. Expressions like `['get', 'value']` access properties from your GeoJSON features:
+
+```javascript
+// Example GeoJSON feature
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-77.0323, 38.9131]  // [longitude, latitude]
+  },
+  "properties": {
+    "magnitude": 7.8,      // Custom data property
+    "value": 42,           // Another property
+    "category": "coffee"   // Can be any data type
+  }
+}
+```
+
+**Accessing properties:**
+
+```javascript
+['get', 'magnitude']; // Returns 7.8
+['get', 'value']; // Returns 42
+['get', 'category']; // Returns "coffee"
+```
 
 ## Choropleth Maps
 
@@ -97,6 +126,75 @@ map.addLayer({
 });
 ```
 
+## Clustering (Point Density)
+
+**Pattern:** Group nearby points with aggregated counts
+
+```javascript
+// Add source with clustering enabled
+map.addSource('points', {
+  type: 'geojson',
+  data: data,
+  cluster: true,
+  clusterMaxZoom: 14, // Max zoom to cluster points on
+  clusterRadius: 50 // Radius of each cluster when clustering points (default 50)
+});
+
+// Clusters - sized by point count
+map.addLayer({
+  id: 'clusters',
+  type: 'circle',
+  source: 'points',
+  filter: ['has', 'point_count'],
+  paint: {
+    'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'],
+    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40]
+  }
+});
+
+// Cluster count labels
+map.addLayer({
+  id: 'cluster-count',
+  type: 'symbol',
+  source: 'points',
+  filter: ['has', 'point_count'],
+  layout: {
+    'text-field': ['get', 'point_count_abbreviated'],
+    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+    'text-size': 12
+  }
+});
+
+// Unclustered points
+map.addLayer({
+  id: 'unclustered-point',
+  type: 'circle',
+  source: 'points',
+  filter: ['!', ['has', 'point_count']],
+  paint: {
+    'circle-color': '#11b4da',
+    'circle-radius': 6,
+    'circle-stroke-width': 1,
+    'circle-stroke-color': '#fff'
+  }
+});
+
+// Click to expand clusters
+map.on('click', 'clusters', (e) => {
+  const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+  const clusterId = features[0].properties.cluster_id;
+  map.getSource('points').getClusterExpansionZoom(clusterId, (err, zoom) => {
+    if (err) return;
+    map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+  });
+});
+```
+
+**When to use clustering vs heatmaps:**
+
+- **Clustering:** Discrete grouping, exact counts, click to expand
+- **Heatmaps:** Continuous density visualization, smoother appearance
+
 ## Bubble Maps
 
 **Pattern:** Size circles by magnitude
@@ -120,11 +218,47 @@ map.addLayer({
 
 **Pattern:** Extrude polygons by height
 
+> **Note:** This example works with **classic styles only** (`streets-v12`, `dark-v11`, `light-v11`, etc.). The **Mapbox Standard style** includes 3D buildings with much greater detail by default.
+
 ```javascript
+// Add 3D buildings from basemap
+map.on('load', () => {
+  // Insert the layer beneath any symbol layer
+  const layers = map.getStyle().layers;
+  const labelLayerId = layers.find((layer) => layer.type === 'symbol' && layer.layout['text-field']).id;
+
+  map.addLayer(
+    {
+      id: 'add-3d-buildings',
+      source: 'composite',
+      'source-layer': 'building',
+      filter: ['==', 'extrude', 'true'],
+      type: 'fill-extrusion',
+      minzoom: 15,
+      paint: {
+        'fill-extrusion-color': '#aaa',
+        'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 15, 0, 15.05, ['get', 'height']],
+        'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 15, 0, 15.05, ['get', 'min_height']],
+        'fill-extrusion-opacity': 0.6
+      }
+    },
+    labelLayerId
+  );
+
+  // Enable 3D view
+  map.setPitch(45);
+  map.setBearing(-17.6);
+});
+```
+
+**Data-driven 3D (custom data):**
+
+```javascript
+// For your own data source
 map.addLayer({
-  id: '3d-buildings',
+  id: '3d-data',
   type: 'fill-extrusion',
-  source: 'buildings',
+  source: 'your-data',
   paint: {
     'fill-extrusion-height': ['get', 'height'],
     'fill-extrusion-base': ['get', 'base_height'],
@@ -142,10 +276,6 @@ map.addLayer({
     'fill-extrusion-opacity': 0.9
   }
 });
-
-// Enable 3D view
-map.setPitch(45);
-map.setBearing(-17.6);
 ```
 
 ## Line Visualization
@@ -226,18 +356,24 @@ map.addLayer({
 **Feature State (Dynamic Styling):**
 
 ```javascript
-// Add source with generateId
+// GeoJSON source with generateId
 map.addSource('data', {
   type: 'geojson',
   data: data,
-  generateId: true  // Required
+  generateId: true // Required for feature state
 });
 
-// Update state
-map.setFeatureState(
-  {  source: 'data', id: featureId, sourceLayer: 'my-source-layer', },
-  { hover: true }
-);
+// Update state (GeoJSON source)
+map.setFeatureState({ source: 'data', id: featureId }, { hover: true });
+
+// Vector tile source - requires sourceLayer
+map.addSource('vector-data', {
+  type: 'vector',
+  tiles: ['https://example.com/{z}/{x}/{y}.mvt']
+});
+
+// Update state (vector source)
+map.setFeatureState({ source: 'vector-data', id: featureId, sourceLayer: 'my-source-layer' }, { hover: true });
 
 // Use in paint property
 'fill-color': [
@@ -349,7 +485,7 @@ const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 → Use choropleth with `fill` layer
 
 **Need to show point density?**
-→ Use `heatmap` layer
+→ Use `heatmap` layer (continuous) or clustering (discrete groups)
 
 **Need to show point magnitude?**
 → Use `circle` layer with data-driven radius

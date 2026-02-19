@@ -13,7 +13,7 @@ Use this skill when:
 
 - Visualizing statistical data on maps (population, sales, demographics)
 - Creating choropleth maps with color-coded regions
-- Building heat maps for density visualization
+- Building heat maps or clustering for density visualization
 - Adding 3D visualizations (building heights, terrain elevation)
 - Implementing data-driven styling based on properties
 - Animating time-series data
@@ -220,25 +220,197 @@ map.on('load', () => {
 });
 ```
 
+### Clustering (Point Density)
+
+**Best for:** Grouping nearby points, aggregated counts, large point datasets
+
+**Pattern:** Client-side clustering for visualization
+
+Clustering is a valuable point density visualization technique alongside heat maps. Use clustering when you want **discrete grouping with exact counts** rather than a continuous density visualization.
+
+```javascript
+map.on('load', () => {
+  // Add data source with clustering enabled
+  map.addSource('locations', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: [
+        // Your point features
+      ]
+    },
+    cluster: true,
+    clusterMaxZoom: 14, // Max zoom to cluster points
+    clusterRadius: 50 // Radius of each cluster (default 50)
+  });
+
+  // Clustered circles - styled by point count
+  map.addLayer({
+    id: 'clusters',
+    type: 'circle',
+    source: 'locations',
+    filter: ['has', 'point_count'],
+    paint: {
+      // Color clusters by count (step expression)
+      'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'],
+      // Size clusters by count
+      'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40]
+    }
+  });
+
+  // Cluster count labels
+  map.addLayer({
+    id: 'cluster-count',
+    type: 'symbol',
+    source: 'locations',
+    filter: ['has', 'point_count'],
+    layout: {
+      'text-field': ['get', 'point_count_abbreviated'],
+      'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+      'text-size': 12
+    }
+  });
+
+  // Individual unclustered points
+  map.addLayer({
+    id: 'unclustered-point',
+    type: 'circle',
+    source: 'locations',
+    filter: ['!', ['has', 'point_count']],
+    paint: {
+      'circle-color': '#11b4da',
+      'circle-radius': 6,
+      'circle-stroke-width': 1,
+      'circle-stroke-color': '#fff'
+    }
+  });
+
+  // Click handler to expand clusters
+  map.on('click', 'clusters', (e) => {
+    const features = map.queryRenderedFeatures(e.point, {
+      layers: ['clusters']
+    });
+    const clusterId = features[0].properties.cluster_id;
+
+    // Get cluster expansion zoom
+    map.getSource('locations').getClusterExpansionZoom(clusterId, (err, zoom) => {
+      if (err) return;
+
+      map.easeTo({
+        center: features[0].geometry.coordinates,
+        zoom: zoom
+      });
+    });
+  });
+
+  // Change cursor on hover
+  map.on('mouseenter', 'clusters', () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+  map.on('mouseleave', 'clusters', () => {
+    map.getCanvas().style.cursor = '';
+  });
+});
+```
+
+**Advanced: Custom Cluster Properties**
+
+```javascript
+map.addSource('locations', {
+  type: 'geojson',
+  data: data,
+  cluster: true,
+  clusterMaxZoom: 14,
+  clusterRadius: 50,
+  // Calculate custom cluster properties
+  clusterProperties: {
+    // Sum total values
+    sum: ['+', ['get', 'value']],
+    // Calculate max value
+    max: ['max', ['get', 'value']]
+  }
+});
+
+// Use custom properties in styling
+'circle-color': [
+  'interpolate',
+  ['linear'],
+  ['get', 'sum'],
+  0,
+  '#51bbd6',
+  100,
+  '#f1f075',
+  1000,
+  '#f28cb1'
+];
+```
+
+**When to use clustering vs heatmaps:**
+
+| Use Case                         | Clustering                       | Heatmap                    |
+| -------------------------------- | -------------------------------- | -------------------------- |
+| **Visual style**                 | Discrete circles with counts     | Continuous gradient        |
+| **Interaction**                  | Click to expand/zoom             | Visual density only        |
+| **Data granularity**             | Exact counts visible             | Approximate density        |
+| **Best for**                     | Store locators, event listings   | Crime maps, incident areas |
+| **Performance with many points** | Excellent (groups automatically) | Good                       |
+| **User understanding**           | Clear (numbered clusters)        | Intuitive (heat analogy)   |
+
 ### 3D Extrusions
 
 **Best for:** Building heights, elevation data, volumetric representation
 
 **Pattern:** Extrude polygons based on data
 
+> **Note:** The example below works with **classic styles only** (`streets-v12`, `dark-v11`, `light-v11`, etc.). The **Mapbox Standard style** includes 3D buildings with much greater detail by default.
+
 ```javascript
 map.on('load', () => {
-  // Add buildings data
-  map.addSource('buildings', {
+  // Insert the layer beneath any symbol layer for proper ordering
+  const layers = map.getStyle().layers;
+  const labelLayerId = layers.find((layer) => layer.type === 'symbol' && layer.layout['text-field']).id;
+
+  // Add 3D buildings from basemap
+  map.addLayer(
+    {
+      id: 'add-3d-buildings',
+      source: 'composite',
+      'source-layer': 'building',
+      filter: ['==', 'extrude', 'true'],
+      type: 'fill-extrusion',
+      minzoom: 15,
+      paint: {
+        'fill-extrusion-color': '#aaa',
+        // Smoothly transition height on zoom
+        'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 15, 0, 15.05, ['get', 'height']],
+        'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 15, 0, 15.05, ['get', 'min_height']],
+        'fill-extrusion-opacity': 0.6
+      }
+    },
+    labelLayerId
+  );
+
+  // Enable pitch and bearing for 3D view
+  map.setPitch(45);
+  map.setBearing(-17.6);
+});
+```
+
+**Using Custom Data Source:**
+
+```javascript
+map.on('load', () => {
+  // Add your own buildings data
+  map.addSource('custom-buildings', {
     type: 'geojson',
     data: 'https://example.com/buildings.geojson'
   });
 
   // Add 3D buildings layer
   map.addLayer({
-    id: '3d-buildings',
+    id: '3d-custom-buildings',
     type: 'fill-extrusion',
-    source: 'buildings',
+    source: 'custom-buildings',
     paint: {
       // Height in meters
       'fill-extrusion-height': ['get', 'height'],
@@ -261,10 +433,6 @@ map.on('load', () => {
       'fill-extrusion-opacity': 0.9
     }
   });
-
-  // Enable pitch and bearing for 3D view
-  map.setPitch(45);
-  map.setBearing(-17.6);
 });
 ```
 

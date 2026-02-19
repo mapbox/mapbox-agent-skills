@@ -39,6 +39,15 @@ async function fetchGitHubMetrics() {
   const paths = ghApi(`/repos/${REPO}/traffic/popular/paths`);
   const repo = ghApi(`/repos/${REPO}`);
 
+  // Get open PRs and issues separately (GitHub API counts PRs as issues)
+  const openPRs = ghApi(`/repos/${REPO}/pulls?state=open`);
+  const allOpenIssues = ghApi(`/repos/${REPO}/issues?state=open`);
+
+  // Filter out PRs from issues (issues have no pull_request field)
+  const openIssues = allOpenIssues
+    ? allOpenIssues.filter((item) => !item.pull_request)
+    : [];
+
   return {
     timestamp: new Date().toISOString(),
     repository: {
@@ -46,7 +55,8 @@ async function fetchGitHubMetrics() {
       stars: repo?.stargazers_count || 0,
       forks: repo?.forks_count || 0,
       watchers: repo?.subscribers_count || 0,
-      open_issues: repo?.open_issues_count || 0
+      open_issues: openIssues.length,
+      open_prs: openPRs?.length || 0
     },
     traffic: {
       views: {
@@ -152,6 +162,7 @@ function generateMarkdownReport(data) {
 - ⭐ **Stars:** ${repository.stars.toLocaleString()}
 - 🍴 **Forks:** ${repository.forks.toLocaleString()}
 - 👀 **Watchers:** ${repository.watchers.toLocaleString()}
+- 🔀 **Open PRs:** ${repository.open_prs.toLocaleString()}
 - 🐛 **Open Issues:** ${repository.open_issues.toLocaleString()}
 
 ## Traffic (Last 14 Days)

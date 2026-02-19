@@ -179,7 +179,7 @@ The metrics script is located at `scripts/generate-metrics-report.js` and can be
 
 ### "gh: command not found"
 
-Install the GitHub CLI: https://cli.github.com/
+Install the GitHub CLI: <https://cli.github.com/>
 
 ### "Failed to fetch /repos/.../traffic/views"
 

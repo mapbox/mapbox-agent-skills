@@ -7,19 +7,19 @@
 Install all Mapbox Agent Skills:
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills
+npx skills add mapbox/mapbox-agent-skills
 ```
 
 Install specific skills:
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills --skill mapbox-web-performance-patterns
+npx skills add mapbox/mapbox-agent-skills --skill mapbox-web-performance-patterns
 ```
 
 List available skills:
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills --list
+npx skills add mapbox/mapbox-agent-skills --list
 ```
 
 > **💡 Pro tip:** These skills work great on their own, but they're even more powerful when combined with the [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server). Skills provide the expertise (performance patterns, design principles), while MCP tools provide the actions (create styles, generate previews). Together, they enable complete workflows from design to deployment.
@@ -251,14 +251,16 @@ Covers initialization waterfalls, bundle size, rendering performance, memory man
 
 ### 🔧 mapbox-web-integration-patterns
 
-**Official integration patterns for Mapbox GL JS across popular web frameworks.**
+**Official integration patterns for Mapbox GL JS across popular web frameworks and Web Components.**
 
-Covers React, Vue, Svelte, Angular, and Next.js with proper lifecycle management, token handling, and search integration. Based on Mapbox's `create-web-app` scaffolding tool.
+Covers React, Vue, Svelte, Angular, Next.js, and framework-agnostic Web Components (Custom Elements) with proper lifecycle management, token handling, and search integration. Based on Mapbox's `create-web-app` scaffolding tool.
 
 **Use when:**
 
 - Setting up Mapbox GL JS in a new web project
 - Integrating Mapbox into a specific web framework
+- Building framework-agnostic Web Components
+- Creating reusable component libraries
 - Adding Mapbox Search functionality
 - Implementing proper cleanup and lifecycle management
 - Debugging map initialization issues in web apps
@@ -267,11 +269,13 @@ Covers React, Vue, Svelte, Angular, and Next.js with proper lifecycle management
 **Key topics:**
 
 - Framework-specific patterns (React hooks, Vue composition API, Svelte stores, Angular services)
+- Web Components (Custom Elements, Shadow DOM, reactive attributes)
 - Token management (environment variables across frameworks)
 - Lifecycle management and cleanup (preventing memory leaks)
 - Mapbox Search JS integration
 - Common mistakes and how to avoid them
 - SSR handling (Angular Universal, Next.js)
+- Framework-agnostic patterns for maximum portability
 
 [View skill →](./skills/mapbox-web-integration-patterns/SKILL.md)
 
@@ -527,7 +531,7 @@ Skills in this repository are automatically discovered by Claude Code when place
 
 ```bash
 # Install all skills
-npx add-skill mapbox/mapbox-agent-skills
+npx skills add mapbox/mapbox-agent-skills
 
 # Or manually symlink (for development)
 mkdir -p .claude
@@ -539,18 +543,18 @@ Skills are automatically activated when relevant to your task.
 ### With Cursor
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills -a cursor
+npx skills add mapbox/mapbox-agent-skills -a cursor
 ```
 
 ### With VS Code (GitHub Copilot)
 
 ```bash
-npx add-skill mapbox/mapbox-agent-skills -a vscode
+npx skills add mapbox/mapbox-agent-skills -a vscode
 ```
 
 ### With Other AI Assistants
 
-The `add-skill` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx add-skill --help` for full list.
+The `skills` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx skills add --help` for full list.
 
 ## Example Usage
 
@@ -741,7 +745,7 @@ git clone https://github.com/mapbox/mapbox-agent-skills.git
 cd mapbox-agent-skills
 
 # Install in Claude Code
-npx add-skill . -a claude-code
+npx skills add . -a claude-code
 
 # Or symlink for development
 mkdir -p .claude
@@ -777,7 +781,7 @@ Test with prompts like:
 
 - [Agent Skills Overview](https://agentskills.io)
 - [Agent Skills Specification](https://github.com/anthropics/skills)
-- [add-skill CLI Tool](https://add-skill.org/)
+- [Skills CLI Tool](https://github.com/anthropics/skills)
 
 **Mapbox Documentation:**
 
@@ -800,7 +804,7 @@ For questions or suggestions, please [open an issue](https://github.com/mapbox/m
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE.md) file for details.
 
 ---
 

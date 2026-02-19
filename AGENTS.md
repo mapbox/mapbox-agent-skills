@@ -36,7 +36,7 @@ Skills are invoked automatically by your AI assistant when relevant. You can als
 - "Use the mapbox-web-performance-patterns skill to optimize this"
 - "Check the mapbox-token-security skill for best practices"
 
-Install skills: `npx add-skill mapbox/mapbox-agent-skills`
+Install skills: `npx skills add mapbox/mapbox-agent-skills`
 
 ## Skill Combinations
 

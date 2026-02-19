@@ -108,7 +108,7 @@ map.addLayer({
   source: 'data',
   paint: {
     'circle-radius': ['interpolate', ['exponential', 2], ['get', 'magnitude'], 0, 2, 5, 20, 10, 100],
-    'circle-color': ['interpolate', ['linear'], ['get', 'value'], 0, '#ffffcc', 50, '#78c679', 100, '#006837'],
+    'circle-color': ['interpolate', ['linear'], ['get', 'magnitude'], 0, '#ffffcc', 50, '#78c679', 100, '#006837'],
     'circle-opacity': 0.7,
     'circle-stroke-color': '#fff',
     'circle-stroke-width': 1

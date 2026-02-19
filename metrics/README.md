@@ -38,13 +38,13 @@ The repository includes a workflow (`.github/workflows/metrics.yml`) that runs d
 
 **To download historical metrics:**
 
-1. Go to [Actions](../../actions/workflows/metrics.yml)
+1. Go to [Actions](https://github.com/mapbox/mapbox-agent-skills/actions/workflows/metrics.yml)
 2. Click on a workflow run
 3. Download the `metrics-*` artifact
 
 **To run manually:**
 
-1. Go to [Actions](../../actions/workflows/metrics.yml)
+1. Go to [Actions](https://github.com/mapbox/mapbox-agent-skills/actions/workflows/metrics.yml)
 2. Click "Run workflow"
 3. Download artifacts after completion
 
@@ -199,4 +199,4 @@ To improve the metrics system:
 
 ---
 
-For questions or issues, please [open an issue](../../issues).
+For questions or issues, please [open an issue](https://github.com/mapbox/mapbox-agent-skills/issues).

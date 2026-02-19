@@ -65,77 +65,65 @@ async function fetchGitHubMetrics() {
   };
 }
 
-// Fetch skills.sh data by scraping the search page
+// Fetch skills.sh data using the API
 async function fetchSkillsShMetrics() {
   console.log('🔍 Checking skills.sh metrics...');
 
   try {
-    // Fetch and parse the skills.sh search page for mapbox
+    // Use the skills.sh API to search for mapbox skills
     const result = execSync(
-      `curl -s "https://skills.sh/?q=mapbox" | grep -A 2 "mapbox" || echo ""`,
+      `curl -s "https://skills.sh/api/search?q=mapbox"`,
       { encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10 }
     );
 
-    // More robust approach: use a simple HTML parser
-    // For now, we'll use a simpler approach with regex
-    const skillsData = [];
+    const data = JSON.parse(result);
 
-    // Try to extract table data using regex patterns
-    // Pattern: rank, skill name (with repo), installs
-    const tablePattern =
-      /<tr[^>]*>.*?<td[^>]*>(\d+)<\/td>.*?<a[^>]*href="\/([^"]+)"[^>]*>([^<]+)<\/a>.*?<td[^>]*>([^<]+)<\/td>.*?<\/tr>/gs;
-
-    let match;
-    while ((match = tablePattern.exec(result)) !== null) {
-      const [_, rank, path, name, installs] = match;
-
-      // Only include mapbox-related skills
-      if (
-        name.toLowerCase().includes('mapbox') ||
-        path.toLowerCase().includes('mapbox')
-      ) {
-        // Parse install count (e.g., "260.5K" -> 260500)
-        let installCount = 0;
-        const installStr = installs.trim();
-        if (installStr.includes('K')) {
-          installCount = Math.round(
-            parseFloat(installStr.replace('K', '')) * 1000
-          );
-        } else if (installStr.includes('M')) {
-          installCount = Math.round(
-            parseFloat(installStr.replace('M', '')) * 1000000
-          );
-        } else {
-          installCount = parseInt(installStr.replace(/,/g, '')) || 0;
-        }
-
-        skillsData.push({
-          rank: parseInt(rank),
-          name: name.trim(),
-          path: path,
-          installs: installCount,
-          installsFormatted: installStr
-        });
-      }
-    }
-
-    if (skillsData.length > 0) {
-      console.log(`   Found ${skillsData.length} mapbox skill(s) on skills.sh`);
-      return {
-        status: 'published',
-        skills: skillsData,
-        totalInstalls: skillsData.reduce(
-          (sum, skill) => sum + skill.installs,
-          0
-        )
-      };
-    } else {
+    if (!data.skills || data.skills.length === 0) {
       return {
         status: 'not_found',
-        note: 'No mapbox skills found on skills.sh search results',
+        note: 'No mapbox skills found on skills.sh',
         skills: []
       };
     }
+
+    // Process and deduplicate skills
+    const skillsMap = new Map();
+
+    data.skills.forEach((skill, index) => {
+      const name = skill.name || 'Unknown';
+      const installs = skill.installs || 0;
+      const owner = skill.owner || '';
+      const repo = skill.repo || '';
+      const fullPath = owner && repo ? `${owner}/${repo}` : '';
+
+      // Deduplicate by name, keeping the one with more installs
+      if (!skillsMap.has(name) || skillsMap.get(name).installs < installs) {
+        skillsMap.set(name, {
+          rank: index + 1,
+          name: name,
+          owner: owner,
+          repo: repo,
+          path: fullPath,
+          installs: installs,
+          installsFormatted: installs.toString()
+        });
+      }
+    });
+
+    // Convert map to sorted array
+    const skillsData = Array.from(skillsMap.values()).sort(
+      (a, b) => b.installs - a.installs
+    );
+
+    console.log(
+      `   Found ${skillsData.length} unique mapbox skill(s) on skills.sh`
+    );
+    return {
+      status: 'published',
+      count: skillsData.length,
+      skills: skillsData,
+      totalInstalls: skillsData.reduce((sum, skill) => sum + skill.installs, 0)
+    };
   } catch (error) {
     console.warn('   Unable to fetch skills.sh data:', error.message);
     return {
@@ -219,10 +207,10 @@ ${
 
 ${
   data.skillssh.status === 'published'
-    ? `✅ **Status:** ${data.skillssh.skills.length} skill(s) found\n**Total Installs:** ${data.skillssh.totalInstalls.toLocaleString()}\n\n### Published Skills\n\n| Rank | Skill | Installs |\n|------|-------|----------|\n${data.skillssh.skills
+    ? `✅ **Status:** ${data.skillssh.count} unique skill(s) found\n**Total Installs:** ${data.skillssh.totalInstalls.toLocaleString()}\n\n### Published Skills\n\n| Skill | Repository | Installs |\n|-------|------------|----------|\n${data.skillssh.skills
         .map(
           (skill) =>
-            `| #${skill.rank} | ${skill.name} | ${skill.installsFormatted} (${skill.installs.toLocaleString()}) |`
+            `| ${skill.name} | ${skill.path || 'N/A'} | ${skill.installs.toLocaleString()} |`
         )
         .join('\n')}`
     : data.skillssh.status === 'not_found'

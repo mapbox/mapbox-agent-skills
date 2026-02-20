@@ -66,7 +66,7 @@ class MapboxMCP:
 mcp = MapboxMCP()
 
 # Create Pydantic AI agent with Mapbox tools
-model = OpenAIChatModel('gpt-4o')
+model = OpenAIChatModel('gpt-5.2')
 
 agent = Agent(
     model,

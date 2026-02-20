@@ -66,7 +66,7 @@ class MapboxMCP:
 mcp = MapboxMCP()
 
 # Create Pydantic AI agent with Mapbox tools
-model = OpenAIChatModel('gpt-5.2')
+model = OpenAIChatModel('gpt-4o')
 
 agent = Agent(
     model,
@@ -145,8 +145,8 @@ def calculate_distance(
         Distance as a string
     """
     result = mcp.call_tool('distance_tool', {
-        'from': list(from_coords),
-        'to': list(to_coords),
+        'from': {'longitude': from_coords[0], 'latitude': from_coords[1]},
+        'to': {'longitude': to_coords[0], 'latitude': to_coords[1]},
         'units': units
     })
     return result

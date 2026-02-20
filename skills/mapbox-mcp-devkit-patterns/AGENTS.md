@@ -207,18 +207,18 @@ Check for:
 
 | Scenario                    | Use DevKit | Use Direct APIs |
 | --------------------------- | ---------- | --------------- |
-| Development-time operations | ✅         |                 |
-| Production runtime          |            | ✅              |
-| Style creation/updates      | ✅         |                 |
-| Tile serving                |            | ✅              |
-| Token generation            | ✅         |                 |
-| Map rendering               |            | ✅              |
-| Data validation             | ✅         |                 |
-| High-frequency updates      |            | ✅              |
-| Learning/prototyping        | ✅         |                 |
-| User-facing features        |            | ✅              |
-| Documentation lookup        | ✅         |                 |
-| Client-side operations      |            | ✅              |
+| Development-time operations | ✅         | —               |
+| Production runtime          | —          | ✅              |
+| Style creation/updates      | ✅         | —               |
+| Tile serving                | —          | ✅              |
+| Token generation            | ✅         | —               |
+| Map rendering               | —          | ✅              |
+| Data validation             | ✅         | —               |
+| High-frequency updates      | —          | ✅              |
+| Learning/prototyping        | ✅         | —               |
+| User-facing features        | —          | ✅              |
+| Documentation lookup        | ✅         | —               |
+| Client-side operations      | —          | ✅              |
 
 ## Validation Patterns
 

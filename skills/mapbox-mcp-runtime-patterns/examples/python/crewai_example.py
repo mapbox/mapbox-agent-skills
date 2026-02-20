@@ -124,8 +124,8 @@ class CalculateDistanceTool(BaseTool):
 
     def _run(self, from_coords: list, to_coords: list, units: str = 'miles') -> str:
         result = mcp.call_tool('distance_tool', {
-            'from': from_coords,
-            'to': to_coords,
+            'from': {'longitude': from_coords[0], 'latitude': from_coords[1]},
+            'to': {'longitude': to_coords[0], 'latitude': to_coords[1]},
             'units': units
         })
         return f"{result} {units}"

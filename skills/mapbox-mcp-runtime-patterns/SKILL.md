@@ -1388,7 +1388,7 @@ Clear, specific tool descriptions are critical for helping LLMs select the right
 }
 ```
 
-**Problem: "Find coffee shops nearby"** - Could trigger `category_search_tool` OR `search_geocode`
+**Problem: "Find coffee shops nearby"** - Could trigger `category_search_tool` OR `search_and_geocode_tool`
 
 ```typescript
 // ❌ Ambiguous

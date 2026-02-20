@@ -10,32 +10,33 @@ Runtime server providing geospatial tools to AI agents via Model Context Protoco
 
 ## Tools Available
 
-| Category              | Tools                                                                                              | Cost            |
-| --------------------- | -------------------------------------------------------------------------------------------------- | --------------- |
-| **Offline (Turf.js)** | distance, bearing, midpoint, point-in-polygon, area, buffer, centroid, bbox, simplify              | Free, instant   |
-| **Mapbox APIs**       | directions, geocoding, category search, isochrone, matrix, static maps, map matching, optimization | API costs apply |
-| **Utility**           | version, category list                                                                             | Free            |
+| Category              | Tools                                                                                                                                                                                            | Cost            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
+| **Offline (Turf.js)** | `distance_tool`, `bearing_tool`, `midpoint_tool`, `point_in_polygon_tool`, `area_tool`, `buffer_tool`, `centroid_tool`, `bbox_tool`, `simplify_tool`                                             | Free, instant   |
+| **Mapbox APIs**       | `directions_tool`, `search_and_geocode_tool`, `reverse_geocode_tool`, `category_search_tool`, `isochrone_tool`, `matrix_tool`, `static_map_image_tool`, `map_matching_tool`, `optimization_tool` | API costs apply |
+| **Utility**           | `version_tool`, `category_list_tool`                                                                                                                                                             | Free            |
 
 ## Coordinate Formats
 
-Different tools accept different coordinate formats:
+All tools use `{longitude, latitude}` object format — **not** arrays.
 
 **Object format** `{longitude: lng, latitude: lat}`:
 
-- `directions_tool` - coordinates array
-- `isochrone_tool` - coordinates parameter
-- `reverse_geocode_tool` - coordinates parameter
-- `category_search_tool` - proximity parameter
+- `directions_tool` - `coordinates` array of objects
+- `isochrone_tool` - `coordinates` parameter
+- `reverse_geocode_tool` - `coordinates` parameter
+- `category_search_tool` - `proximity` parameter
+- `distance_tool` - `from`/`to` parameters
+- `bearing_tool` - `from`/`to` parameters
+- `midpoint_tool` - `from`/`to` parameters
+- `point_in_polygon_tool` - `point` parameter
 
-**Array format** `[longitude, latitude]`:
+**Exception — GeoJSON geometry** (arrays only):
 
-- `distance_tool` - from/to parameters
-- `bearing_tool` - from/to parameters
-- `midpoint_tool` - from/to parameters
-- `point_in_polygon_tool` - point parameter
-- `buffer_tool` - coordinates parameter
+- `buffer_tool` - `geometry` parameter uses `[longitude, latitude]` arrays (GeoJSON format)
+- `point_in_polygon_tool` - `polygon` rings use `[longitude, latitude]` arrays
 
-**Note:** All coordinates use `[longitude, latitude]` order (not lat, lng).
+**Note:** All coordinates use `longitude` before `latitude` order.
 
 ## Installation
 
@@ -73,7 +74,7 @@ mcp = subprocess.Popen(['npx', '@mapbox/mcp-server'],
                        env={'MAPBOX_ACCESS_TOKEN': token})
 
 agent = Agent(
-    model='gpt-5.2',
+    model='claude-sonnet-4-5',
     tools=[
         lambda from_loc, to_loc: call_mcp('directions_tool', {
             'origin': from_loc,

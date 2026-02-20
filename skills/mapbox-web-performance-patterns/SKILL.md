@@ -746,18 +746,13 @@ map.addLayer({
   type: 'fill-extrusion',
   source: 'buildings',
   paint: {
-    'fill-extrusion-color': [
-      'interpolate',
-      ['linear'],
-      ['get', 'height'],
-      0, '#dedede',
-      50, '#a0a0a0',
-      100, '#606060'
-    ],
+    'fill-extrusion-color': ['interpolate', ['linear'], ['get', 'height'], 0, '#dedede', 50, '#a0a0a0', 100, '#606060'],
     'fill-extrusion-height': [
-      'step', ['zoom'],
+      'step',
+      ['zoom'],
       ['get', 'height'], // Default: use raw height
-      16, ['*', ['get', 'height'], 1.5] // At zoom 16+: scale up
+      16,
+      ['*', ['get', 'height'], 1.5] // At zoom 16+: scale up
     ]
   }
 });

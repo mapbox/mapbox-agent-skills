@@ -80,6 +80,7 @@
     "maxzoom",
     "millis",
     "minzoom",
+    "MSAA",
     "mouseevents",
     "mouseleave",
     "mousemove",

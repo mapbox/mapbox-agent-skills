@@ -207,7 +207,7 @@ class MapboxMCP:
 mapbox = MapboxMCP(token='your_token')
 
 agent = Agent(
-    model=OpenAIModel('gpt-5.2'),
+    model=OpenAIModel('gateway/openai:gpt-5.2'),
     tools=[
         lambda from_loc, to_loc: mapbox.call_tool(
             'directions_tool',

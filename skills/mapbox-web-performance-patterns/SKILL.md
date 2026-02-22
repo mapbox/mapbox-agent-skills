@@ -617,11 +617,9 @@ const map = new mapboxgl.Map({
       }
     },
 
-    // Disable expensive features on mobile
-    maxPitch: 45, // Limit 3D perspective (battery saver)
-
-    // Simplify rendering
-    fadeDuration: 100 // Faster transitions = less GPU work
+    // fadeDuration controls the label collision fade-in/fade-out animation
+    // Reducing it makes label transitions snappier
+    fadeDuration: 0
   })
 });
 
@@ -851,7 +849,8 @@ Use these tools to measure impact:
 console.time('map-load');
 map.on('load', () => {
   console.timeEnd('map-load');
-  console.log('Tiles loaded:', map.isStyleLoaded());
+  // isStyleLoaded() returns true when the style is fully loaded (not tiles/sprites)
+  console.log('Style loaded:', map.isStyleLoaded());
 });
 
 // Monitor frame rate

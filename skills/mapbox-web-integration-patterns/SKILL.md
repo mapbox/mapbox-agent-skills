@@ -88,7 +88,7 @@ const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN; // Use env vars in produ
 mapboxgl.accessToken = token;
 const map = new mapboxgl.Map({ container: '...' });
 
-// Per-map token (works since v1.2.0, preferred for multi-map setups)
+// Per-map token (preferred for multi-map setups)
 const map = new mapboxgl.Map({
   accessToken: token,
   container: '...'

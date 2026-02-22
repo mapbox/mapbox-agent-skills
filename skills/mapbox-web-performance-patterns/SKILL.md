@@ -618,7 +618,7 @@ const map = new mapboxgl.Map({
     // Limit max zoom to reduce tile fetching at extreme zoom levels
     maxZoom: 18,
 
-    // fadeDuration controls symbol collision fade animation only
+    // fadeDuration controls the label collision fade-in/fade-out animation
     // Reducing it makes label transitions snappier
     fadeDuration: 0
   })
@@ -851,8 +851,8 @@ When building a Mapbox application, verify these optimizations in order:
 console.time('map-load');
 map.on('load', () => {
   console.timeEnd('map-load');
-  // isStyleLoaded() returns true when the style and all resources are fully loaded
-  console.log('Style fully loaded:', map.isStyleLoaded());
+  // isStyleLoaded() returns true when the style is fully loaded (not tiles/sprites)
+  console.log('Style loaded:', map.isStyleLoaded());
 });
 
 // Monitor frame rate

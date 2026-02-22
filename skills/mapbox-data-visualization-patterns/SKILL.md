@@ -1024,12 +1024,9 @@ map.on('load', () => {
     }
   });
 
-  // Handle source errors
+  // Handle map errors
   map.on('error', (e) => {
-    if (e.source === 'data') {
-      console.error('Failed to load data:', e);
-      showNotification('Unable to load visualization data');
-    }
+    console.error('Map error:', e.error);
   });
 });
 ```

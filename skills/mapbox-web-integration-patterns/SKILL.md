@@ -37,23 +37,23 @@ npm install mapbox-gl@^3.0.0    # Installs latest v3.x
 
 **React:**
 
-- Minimum: 19+ (current implementation in create-web-app)
-- Recommended: Latest 19.x
+- GL JS works with React 16.8+ (requires hooks)
+- `create-web-app` scaffolds with React 19.x
 
 **Vue:**
 
-- Minimum: 3.x (Composition API recommended)
+- GL JS works with Vue 2.x+ (Vue 3 Composition API recommended)
 - Vue 2.x: Use Options API pattern (mounted/unmounted hooks)
 
 **Svelte:**
 
-- Minimum: 5+ (current implementation in create-web-app)
-- Recommended: Latest 5.x
+- GL JS works with any Svelte version
+- `create-web-app` scaffolds with Svelte 5.x
 
 **Angular:**
 
-- Minimum: 19+ (current implementation in create-web-app)
-- Recommended: Latest 19.x
+- GL JS works with Angular 2+ (any version with lifecycle hooks)
+- `create-web-app` scaffolds with Angular 19.x
 
 **Next.js:**
 
@@ -1134,10 +1134,12 @@ export default function HomePage() {
 
 ### Default Center and Zoom Guidelines
 
-**Recommended defaults:**
+**Example defaults (used in create-web-app demos):**
 
-- **Center**: `[-71.05953, 42.36290]` (Boston, MA) - Mapbox HQ
+- **Center**: `[-71.05953, 42.36290]` (Boston, MA)
 - **Zoom**: `13` for city-level view
+
+> **Note:** GL JS defaults to `center: [0, 0]` and `zoom: 0` if not specified. Always set these explicitly.
 
 **Zoom level guide:**
 

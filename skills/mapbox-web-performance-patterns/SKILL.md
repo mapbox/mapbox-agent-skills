@@ -319,7 +319,7 @@ map.on('moveend', () => {
 });
 ```
 
-**Important:** `setData()` triggers a full re-parse of the GeoJSON in a web worker. For small datasets updated frequently, consider using `source.updateData()` (requires `dynamic: true` on the source) for partial updates. For large datasets, switch to vector tiles.
+**Important:** `setData()` triggers a full re-parse of the GeoJSON in a web worker. For small datasets updated frequently, consider using `source.updateData()` (requires `dynamic: true` on the source) for partial updates. For large datasets, switch to vector tiles. **Note:** When both `dynamic: true` and `cluster: true` are set, `updateData()` triggers a full recluster, so the performance benefit over `setData()` is reduced.
 
 ### Progressive Data Loading
 

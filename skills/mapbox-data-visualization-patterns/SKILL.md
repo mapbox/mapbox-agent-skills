@@ -694,9 +694,9 @@ function updateVisualization(newData) {
 
 | Data Size | Format                  | Reason                                  |
 | --------- | ----------------------- | --------------------------------------- |
-| < 1 MB    | GeoJSON                 | Simple, no processing needed            |
-| 1-10 MB   | GeoJSON or Vector Tiles | Consider data update frequency          |
-| > 10 MB   | Vector Tiles            | Better performance, progressive loading |
+| < 5 MB    | GeoJSON                 | Simple, no processing needed            |
+| 5-20 MB   | GeoJSON or Vector Tiles | Consider data update frequency          |
+| > 20 MB   | Vector Tiles            | Better performance, progressive loading |
 
 **Vector Tile Pattern:**
 

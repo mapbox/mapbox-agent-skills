@@ -93,7 +93,7 @@ map.on('moveend', () => {
 });
 ```
 
-**Warning:** `setData()` triggers a full re-parse in a web worker. For small datasets updated frequently, use `source.updateData()` (requires `dynamic: true`) for partial updates. For large datasets, switch to vector tiles.
+**Warning:** `setData()` triggers a full re-parse in a web worker. For small datasets updated frequently, use `source.updateData()` (requires `dynamic: true`) for partial updates. For large datasets, switch to vector tiles. **Note:** When both `dynamic: true` and `cluster: true` are set, `updateData()` triggers a full recluster, reducing its performance benefit over `setData()`.
 
 ### 5. Event Handler Optimization
 

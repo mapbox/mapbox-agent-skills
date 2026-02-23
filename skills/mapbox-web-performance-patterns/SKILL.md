@@ -856,8 +856,8 @@ When building a Mapbox application, verify these optimizations in order:
 console.time('map-load');
 map.on('load', () => {
   console.timeEnd('map-load');
-  // isStyleLoaded() returns true when the style and all resources are fully loaded
-  console.log('Style fully loaded:', map.isStyleLoaded());
+  // isStyleLoaded() returns true when style, sources, tiles, sprites, and models are all loaded
+  console.log('Style loaded:', map.isStyleLoaded());
 });
 
 // Monitor frame rate

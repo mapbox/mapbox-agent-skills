@@ -260,10 +260,10 @@ useEffect(() => {
 }, []);
 ```
 
-### Issue: "Container is already initialized"
+### Issue: Multiple Map Instances on Same Container
 
 ```javascript
-// ❌ Multiple initializations
+// ❌ Multiple initializations — creates overlapping maps, leaks memory
 useEffect(() => {
   const map = new mapboxgl.Map({...});
 }, [someState]); // Runs multiple times!

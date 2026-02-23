@@ -69,15 +69,16 @@ map.addLayer({
 
 **Color Scale Types:**
 
+<!-- prettier-ignore -->
 ```javascript
 // Linear (continuous)
-['interpolate', ['linear'], ['get', 'value'], 0, '#fff', 100, '#000'][
-  // Steps (discrete buckets)
-  ('step', ['get', 'value'], '#fff', 25, '#ccc', 50, '#888', 75, '#000')
-][
-  // Categories (qualitative)
-  ('match', ['get', 'category'], 'A', '#ff0000', 'B', '#0000ff', '#cccccc')
-];
+['interpolate', ['linear'], ['get', 'value'], 0, '#fff', 100, '#000']
+
+// Steps (discrete buckets)
+['step', ['get', 'value'], '#fff', 25, '#ccc', 50, '#888', 75, '#000']
+
+// Categories (qualitative)
+['match', ['get', 'category'], 'A', '#ff0000', 'B', '#0000ff', '#cccccc']
 ```
 
 ## Heat Maps
@@ -333,9 +334,9 @@ setInterval(async () => {
 
 | Size    | Format       | Strategy              |
 | ------- | ------------ | --------------------- |
-| < 1 MB  | GeoJSON      | Direct load           |
-| 1-10 MB | GeoJSON      | Consider vector tiles |
-| > 10 MB | Vector Tiles | Required              |
+| < 5 MB  | GeoJSON      | Direct load           |
+| 5-20 MB | GeoJSON      | Consider vector tiles |
+| > 20 MB | Vector Tiles | Required              |
 
 **Vector Tiles:**
 
@@ -496,7 +497,7 @@ const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 **Need to animate over time?**
 → Use `setData()` with time-based filtering
 
-**Large dataset (> 10 MB)?**
+**Large dataset (> 20 MB)?**
 → Use vector tiles instead of GeoJSON
 
 **Need dynamic hover effects?**
@@ -515,15 +516,16 @@ const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 
 **Calculations:**
 
+<!-- prettier-ignore -->
 ```javascript
 // Divide
-['/', ['get', 'numerator'], ['get', 'denominator']][
-  // Multiply
-  ('*', ['get', 'value'], 1.5)
-][
-  // Percentage
-  ('*', ['/', ['get', 'part'], ['get', 'total']], 100)
-];
+['/', ['get', 'numerator'], ['get', 'denominator']]
+
+// Multiply
+['*', ['get', 'value'], 1.5]
+
+// Percentage
+['*', ['/', ['get', 'part'], ['get', 'total']], 100]
 ```
 
 ## Resources

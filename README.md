@@ -556,6 +556,20 @@ npx skills add mapbox/mapbox-agent-skills -a vscode
 
 The `skills` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx skills add --help` for full list.
 
+### Manual Installation
+
+If your AI assistant doesn't support the `skills` CLI, you can copy skill files directly:
+
+```bash
+# For Claude Code — copy SKILL.md into .claude/skills/
+mkdir -p .claude/skills/mapbox-web-performance-patterns
+curl -o .claude/skills/mapbox-web-performance-patterns/SKILL.md \
+  https://raw.githubusercontent.com/mapbox/mapbox-agent-skills/main/skills/mapbox-web-performance-patterns/SKILL.md
+
+# For Codex, Copilot, and other AGENTS.md-based tools — copy to project root
+curl -O https://raw.githubusercontent.com/mapbox/mapbox-agent-skills/main/skills/mapbox-web-performance-patterns/AGENTS.md
+```
+
 ## Example Usage
 
 Once installed, skills activate automatically when relevant:

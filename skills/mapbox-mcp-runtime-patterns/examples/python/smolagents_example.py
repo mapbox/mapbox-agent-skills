@@ -169,8 +169,8 @@ def calculate_distance(from_coords: list, to_coords: list, units: str = 'miles')
         Distance value
     """
     return mcp.call_tool('distance_tool', {
-        'from': from_coords,
-        'to': to_coords,
+        'from': {'longitude': from_coords[0], 'latitude': from_coords[1]},
+        'to': {'longitude': to_coords[0], 'latitude': to_coords[1]},
         'units': units
     })
 

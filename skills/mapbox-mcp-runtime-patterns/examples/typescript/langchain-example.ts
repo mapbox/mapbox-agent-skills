@@ -110,8 +110,8 @@ const calculateDistanceTool = new DynamicStructuredTool({
   }) as any,
   func: async ({ from, to, units }: any) => {
     const result = await mcp.callTool('distance_tool', {
-      from: Array.from(from),
-      to: Array.from(to),
+      from: { longitude: from[0], latitude: from[1] },
+      to: { longitude: to[0], latitude: to[1] },
       units: units || 'miles'
     });
     return result;

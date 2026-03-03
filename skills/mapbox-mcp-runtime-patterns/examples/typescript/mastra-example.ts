@@ -135,8 +135,8 @@ const calculateDistanceTool = createTool({
   }),
   execute: async ({ from, to, units }) => {
     const result = await mcp.callTool('distance_tool', {
-      from,
-      to,
+      from: { longitude: from[0], latitude: from[1] },
+      to: { longitude: to[0], latitude: to[1] },
       units: units || 'miles'
     });
 

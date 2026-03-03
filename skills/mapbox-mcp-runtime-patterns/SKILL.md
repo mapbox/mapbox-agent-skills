@@ -45,7 +45,7 @@ Before integrating, understand the key distinctions between tools to help your L
 
 **Straight-line distance** (offline, instant):
 
-- Tools: `distance_tool`, `calculate_bearing`, `calculate_midpoint`
+- Tools: `distance_tool`, `bearing_tool`, `midpoint_tool`
 - Use for: Proximity checks, "how far away is X?", comparing distances
 - Example: "Is this restaurant within 2 miles?" → `distance_tool`
 
@@ -89,7 +89,7 @@ Before integrating, understand the key distinctions between tools to help your L
 
 - No API calls, no token usage
 - Use whenever real-time data not needed
-- Examples: `distance_tool`, `point_in_polygon`, `calculate_area`
+- Examples: `distance_tool`, `point_in_polygon_tool`, `area_tool`
 
 **API tools** (requires token, counts against usage):
 
@@ -160,7 +160,7 @@ export MAPBOX_ACCESS_TOKEN="your_token_here"
 
 ```python
 from pydantic_ai import Agent
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 import requests
 import json
 import os
@@ -207,15 +207,15 @@ class MapboxMCP:
 mapbox = MapboxMCP(token='your_token')
 
 agent = Agent(
-    model=OpenAIModel('gateway/openai:gpt-5.2'),
+    model=OpenAIChatModel('gateway/openai:gpt-5.2'),
     tools=[
         lambda from_loc, to_loc: mapbox.call_tool(
             'directions_tool',
-            {'origin': from_loc, 'destination': to_loc}
+            {'coordinates': [from_loc, to_loc], 'routing_profile': 'mapbox/driving-traffic'}
         ),
         lambda address: mapbox.call_tool(
             'reverse_geocode_tool',
-            {'coordinates': address}
+            {'coordinates': {'longitude': address[0], 'latitude': address[1]}}
         )
     ]
 )
@@ -310,8 +310,10 @@ class DirectionsTool(BaseTool):
 
     def _run(self, origin: list, destination: list) -> str:
         result = self.mcp.call_tool('directions_tool', {
-            'origin': origin,
-            'destination': destination,
+            'coordinates': [
+                {'longitude': origin[0], 'latitude': origin[1]},
+                {'longitude': destination[0], 'latitude': destination[1]}
+            ],
             'routing_profile': 'mapbox/driving-traffic'
         })
         return f"Directions: {result}"
@@ -331,7 +333,7 @@ class GeocodeTool(BaseTool):
 
     def _run(self, coordinates: list) -> str:
         result = self.mcp.call_tool('reverse_geocode_tool', {
-            'coordinates': coordinates
+            'coordinates': {'longitude': coordinates[0], 'latitude': coordinates[1]}
         })
         return result
 
@@ -352,7 +354,7 @@ class SearchPOITool(BaseTool):
     def _run(self, category: str, location: list) -> str:
         result = self.mcp.call_tool('category_search_tool', {
             'category': category,
-            'proximity': location
+            'proximity': {'longitude': location[0], 'latitude': location[1]}
         })
         return result
 
@@ -525,8 +527,10 @@ class DirectionsTool(Tool):
 
     def forward(self, origin: list, destination: list) -> str:
         return self.mcp.call_tool('directions_tool', {
-            'origin': origin,
-            'destination': destination,
+            'coordinates': [
+                {'longitude': origin[0], 'latitude': origin[1]},
+                {'longitude': destination[0], 'latitude': destination[1]}
+            ],
             'routing_profile': 'mapbox/driving-traffic'
         })
 
@@ -550,8 +554,8 @@ class CalculateDistanceTool(Tool):
 
     def forward(self, from_coords: list, to_coords: list, units: str = 'miles') -> str:
         return self.mcp.call_tool('distance_tool', {
-            'from': from_coords,
-            'to': to_coords,
+            'from': {'longitude': from_coords[0], 'latitude': from_coords[1]},
+            'to': {'longitude': to_coords[0], 'latitude': to_coords[1]},
             'units': units
         })
 
@@ -575,7 +579,7 @@ class SearchPOITool(Tool):
     def forward(self, category: str, location: list) -> str:
         return self.mcp.call_tool('category_search_tool', {
             'category': category,
-            'proximity': location
+            'proximity': {'longitude': location[0], 'latitude': location[1]}
         })
 
 class IsochroneTool(Tool):
@@ -586,7 +590,7 @@ class IsochroneTool(Tool):
     Args:
         location: Center point [longitude, latitude]
         minutes: Time limit in minutes
-        profile: 'driving', 'walking', or 'cycling'
+        profile: 'mapbox/driving', 'mapbox/walking', or 'mapbox/cycling'
 
     Returns:
         GeoJSON polygon of reachable area
@@ -596,9 +600,9 @@ class IsochroneTool(Tool):
         super().__init__()
         self.mcp = MapboxMCP()
 
-    def forward(self, location: list, minutes: int, profile: str = 'driving') -> str:
+    def forward(self, location: list, minutes: int, profile: str = 'mapbox/driving') -> str:
         return self.mcp.call_tool('isochrone_tool', {
-            'coordinates': location,
+            'coordinates': {'longitude': location[0], 'latitude': location[1]},
             'contours_minutes': [minutes],
             'profile': profile
         })
@@ -802,8 +806,10 @@ const result = await locationAgent.generate([
 
 ```typescript
 import { ChatOpenAI } from '@langchain/openai';
-import { initializeAgentExecutorWithOptions } from 'langchain/agents';
-import { DynamicTool } from '@langchain/core/tools';
+import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
+import { z } from 'zod';
 
 // MCP Server wrapper for hosted server
 class MapboxMCP {
@@ -841,67 +847,87 @@ class MapboxMCP {
 const mcp = new MapboxMCP();
 
 const tools = [
-  new DynamicTool({
+  new DynamicStructuredTool({
     name: 'directions_tool',
     description:
       'Get turn-by-turn driving directions with traffic-aware route distance along roads. Use when you need the actual driving route or traffic-aware duration.',
-    func: async (input: string) => {
-      const { origin, destination } = JSON.parse(input);
+    schema: z.object({
+      origin: z.tuple([z.number(), z.number()]).describe('Origin [longitude, latitude]'),
+      destination: z.tuple([z.number(), z.number()]).describe('Destination [longitude, latitude]')
+    }) as any,
+    func: async ({ origin, destination }: any) => {
       return await mcp.callTool('directions_tool', {
-        origin,
-        destination,
-        profile: 'driving-traffic'
+        coordinates: [
+          { longitude: origin[0], latitude: origin[1] },
+          { longitude: destination[0], latitude: destination[1] }
+        ],
+        routing_profile: 'mapbox/driving-traffic'
       });
     }
   }),
 
-  new DynamicTool({
-    name: 'find_pois',
+  new DynamicStructuredTool({
+    name: 'category_search_tool',
     description:
       'Find ALL places of a specific category type near a location. Use when user wants to browse places by type (restaurants, hotels, coffee, etc.).',
-    func: async (input: string) => {
-      const { category, location } = JSON.parse(input);
+    schema: z.object({
+      category: z.string().describe('POI category: restaurant, hotel, coffee, etc.'),
+      location: z.tuple([z.number(), z.number()]).describe('Search center [longitude, latitude]')
+    }) as any,
+    func: async ({ category, location }: any) => {
       return await mcp.callTool('category_search_tool', {
         category,
-        proximity: location
+        proximity: { longitude: location[0], latitude: location[1] }
       });
     }
   }),
 
-  new DynamicTool({
-    name: 'calculate_isochrone',
+  new DynamicStructuredTool({
+    name: 'isochrone_tool',
     description:
       'Calculate the AREA reachable within a time limit from a starting point. Use for "What can I reach in X minutes?" questions.',
-    func: async (input: string) => {
-      const { location, minutes } = JSON.parse(input);
+    schema: z.object({
+      location: z.tuple([z.number(), z.number()]).describe('Center point [longitude, latitude]'),
+      minutes: z.number().describe('Time limit in minutes'),
+      profile: z.enum(['mapbox/driving', 'mapbox/walking', 'mapbox/cycling']).optional()
+    }) as any,
+    func: async ({ location, minutes, profile }: any) => {
       return await mcp.callTool('isochrone_tool', {
-        coordinates: location,
+        coordinates: { longitude: location[0], latitude: location[1] },
         contours_minutes: [minutes],
-        profile: 'walking'
+        profile: profile || 'mapbox/walking'
       });
     }
   }),
 
-  new DynamicTool({
+  new DynamicStructuredTool({
     name: 'distance_tool',
-    description: 'Calculate distance between two points (offline, free)',
-    func: async (input: string) => {
-      const { from, to } = JSON.parse(input);
+    description: 'Calculate straight-line distance between two points (offline, free)',
+    schema: z.object({
+      from: z.tuple([z.number(), z.number()]).describe('Start [longitude, latitude]'),
+      to: z.tuple([z.number(), z.number()]).describe('End [longitude, latitude]'),
+      units: z.enum(['miles', 'kilometers']).optional()
+    }) as any,
+    func: async ({ from, to, units }: any) => {
       return await mcp.callTool('distance_tool', {
-        from,
-        to,
-        units: 'miles'
+        from: { longitude: from[0], latitude: from[1] },
+        to: { longitude: to[0], latitude: to[1] },
+        units: units || 'miles'
       });
     }
   })
 ];
 
 // Create agent
-const model = new ChatOpenAI({ model: 'gpt-5.2' });
-const executor = await initializeAgentExecutorWithOptions(tools, model, {
-  agentType: 'openai-functions',
-  verbose: true
-});
+const llm = new ChatOpenAI({ model: 'gpt-5.2', temperature: 0 });
+const prompt = ChatPromptTemplate.fromMessages([
+  ['system', 'You are a location intelligence assistant.'],
+  ['human', '{input}'],
+  new MessagesPlaceholder('agent_scratchpad')
+]);
+// @ts-ignore - Zod tuple schemas cause deep type recursion
+const agent = await createToolCallingAgent({ llm, tools, prompt });
+const executor = new AgentExecutor({ agent, tools, verbose: true });
 
 // Use agent
 const result = await executor.invoke({
@@ -1019,14 +1045,14 @@ class CustomMapboxAgent {
   ) {
     // Get isochrone from work location
     const isochrone = await this.callTool('isochrone_tool', {
-      coordinates: workLocation,
+      coordinates: { longitude: workLocation[0], latitude: workLocation[1] },
       contours_minutes: [maxCommuteMinutes],
-      profile: 'driving-traffic'
+      profile: 'mapbox/driving-traffic'
     });
 
     // Check if home is within isochrone
     const isInRange = await this.callTool('point_in_polygon_tool', {
-      point: homeLocation,
+      point: { longitude: homeLocation[0], latitude: homeLocation[1] },
       polygon: JSON.parse(isochrone).features[0].geometry
     });
 
@@ -1037,7 +1063,7 @@ class CustomMapboxAgent {
     // Search restaurants
     const results = await this.callTool('category_search_tool', {
       category: 'restaurant',
-      proximity: location
+      proximity: { longitude: location[0], latitude: location[1] }
     });
 
     // Filter by distance
@@ -1046,8 +1072,8 @@ class CustomMapboxAgent {
 
     for (const restaurant of restaurants) {
       const distance = await this.callTool('distance_tool', {
-        from: location,
-        to: restaurant.coordinates,
+        from: { longitude: location[0], latitude: location[1] },
+        to: { longitude: restaurant.coordinates[0], latitude: restaurant.coordinates[1] },
         units: 'miles'
       });
 
@@ -1188,23 +1214,24 @@ async findPropertiesByCommute(
 ) {
   // 1. Get isochrone from work
   const reachableArea = await mcp.callTool('isochrone_tool', {
-    coordinates: workLocation,
-    contours_minutes: [maxCommuteMinutes]
+    coordinates: { longitude: workLocation[0], latitude: workLocation[1] },
+    contours_minutes: [maxCommuteMinutes],
+    profile: 'mapbox/driving'
   });
 
   // 2. Check each property
   const propertiesInRange = [];
   for (const property of properties) {
     const inRange = await mcp.callTool('point_in_polygon_tool', {
-      point: property.location,
+      point: { longitude: property.location[0], latitude: property.location[1] },
       polygon: reachableArea
     });
 
     if (inRange) {
       // 3. Get exact commute time
       const directions = await mcp.callTool('directions_tool', {
-        origin: property.location,
-        destination: workLocation
+        coordinates: [property.location, workLocation],
+        routing_profile: 'mapbox/driving-traffic'
       });
 
       propertiesInRange.push({
@@ -1231,7 +1258,7 @@ async canDeliver(
   const deliveryZone = await mcp.callTool('isochrone_tool', {
     coordinates: restaurantLocation,
     contours_minutes: [maxDeliveryTime],
-    profile: 'driving'
+    profile: 'mapbox/driving'
   });
 
   // 2. Check if address is in zone
@@ -1244,9 +1271,8 @@ async canDeliver(
 
   // 3. Get accurate delivery time
   const route = await mcp.callTool('directions_tool', {
-    origin: restaurantLocation,
-    destination: deliveryAddress,
-    profile: 'driving-traffic'
+    coordinates: [restaurantLocation, deliveryAddress],
+    routing_profile: 'mapbox/driving-traffic'
   });
 
   return {
@@ -1281,7 +1307,7 @@ async buildItinerary(
   const matrix = await mcp.callTool('matrix_tool', {
     origins: [hotel],
     destinations: attractions.map(a => a.location),
-    profile: 'walking'
+    profile: 'mapbox/walking'
   });
 
   // 3. Sort by walking time
@@ -1305,7 +1331,7 @@ class CachedMapboxMCP {
 
   async callTool(name: string, params: any): Promise<any> {
     // Cache offline tools indefinitely (deterministic)
-    const offlineTools = ['distance_tool', 'point_in_polygon_tool', 'bearing'];
+    const offlineTools = ['distance_tool', 'point_in_polygon_tool', 'bearing_tool'];
     const ttl = offlineTools.includes(name) ? Infinity : this.cacheTTL;
 
     // Check cache

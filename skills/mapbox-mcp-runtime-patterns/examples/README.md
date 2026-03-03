@@ -197,6 +197,7 @@ All examples connect to the hosted Mapbox MCP Server at `https://mcp.mapbox.com/
 
 - `directions_tool`: Driving directions with traffic
 - `category_search_tool`: Find POIs by category
+- `search_and_geocode_tool`: Search for specific places or addresses
 - `reverse_geocode_tool`: Coordinates to address
 - `isochrone_tool`: Reachable area within time
 - `matrix_tool`: Travel time matrix

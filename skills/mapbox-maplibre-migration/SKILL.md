@@ -144,16 +144,16 @@ Mapbox provides professionally designed, maintained styles:
 
 ```javascript
 // Mapbox built-in styles
-style: 'mapbox://styles/mapbox/standard'        // Mapbox Standard (default)
-style: 'mapbox://styles/mapbox/standard-satellite'    // Mapbox Standard Satellite
-style: 'mapbox://styles/mapbox/streets-v12'               // Streets v12
-style: 'mapbox://styles/mapbox/satellite-v9'       // Satellite imagery
-style: 'mapbox://styles/mapbox/satellite-streets-v12'  // Hybrid
-style: 'mapbox://styles/mapbox/outdoors-v12'       // Outdoor/recreation
-style: 'mapbox://styles/mapbox/light-v11'          // Light theme
-style: 'mapbox://styles/mapbox/dark-v11'           // Dark theme
-style: 'mapbox://styles/mapbox/navigation-day-v1'  // Navigation (day)
-style: 'mapbox://styles/mapbox/navigation-night-v1' // Navigation (night)
+style: 'mapbox://styles/mapbox/standard'; // Mapbox Standard (default)
+style: 'mapbox://styles/mapbox/standard-satellite'; // Mapbox Standard Satellite
+style: 'mapbox://styles/mapbox/streets-v12'; // Streets v12
+style: 'mapbox://styles/mapbox/satellite-v9'; // Satellite imagery
+style: 'mapbox://styles/mapbox/satellite-streets-v12'; // Hybrid
+style: 'mapbox://styles/mapbox/outdoors-v12'; // Outdoor/recreation
+style: 'mapbox://styles/mapbox/light-v11'; // Light theme
+style: 'mapbox://styles/mapbox/dark-v11'; // Dark theme
+style: 'mapbox://styles/mapbox/navigation-day-v1'; // Navigation (day)
+style: 'mapbox://styles/mapbox/navigation-night-v1'; // Navigation (night)
 ```
 
 **Custom styles:**

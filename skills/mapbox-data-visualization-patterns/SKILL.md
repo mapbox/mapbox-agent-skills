@@ -1130,5 +1130,5 @@ map.addLayer({
 - [Mapbox Expression Reference](https://docs.mapbox.com/style-spec/reference/expressions/)
 - [ColorBrewer](https://colorbrewer2.org/) - Color scales for maps
 - [Turf.js](https://turfjs.org/) - Spatial analysis
-- [Simple Statistics](https://simplestatistics.org/) - Data classification
+- [Simple Statistics](https://simple-statistics.github.io/) - Data classification
 - [Data Visualization Tutorials](https://docs.mapbox.com/help/tutorials/#data-visualization)

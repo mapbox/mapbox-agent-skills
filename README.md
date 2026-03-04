@@ -523,6 +523,88 @@ Covers API equivalents, coordinate order gotchas, pattern translations, and step
 
 ---
 
+### 📊 mapbox-data-visualization-patterns
+
+**Patterns for visualizing data on Mapbox maps.**
+
+Covers choropleth maps, heat maps, clustering, bubble charts, 3D extrusions, and animated data layers. Includes data-driven styling with style expressions, color scales, and performance optimization.
+
+**Use when:**
+
+- Creating choropleth maps for statistics or demographics
+- Building heat maps for point density visualization
+- Clustering large datasets of point features
+- Implementing 3D building or elevation extrusions
+- Applying data-driven styles based on feature properties
+- Animating data over time
+
+**Key topics:**
+
+- Visualization type selection (choropleth, heat map, clustering, bubble, 3D, flow)
+- Style expressions for data-driven rendering
+- Color scales and interpolation
+- GeoJSON data structures
+- Layer type selection (`fill`, `heatmap`, `circle`, `fill-extrusion`, `line`)
+- Performance optimization for large datasets
+
+[View skill →](./skills/mapbox-data-visualization-patterns/SKILL.md)
+
+---
+
+### 🤖 mapbox-mcp-devkit-patterns
+
+**Integration patterns for Mapbox MCP DevKit Server in AI coding assistants.**
+
+Setup and usage guide for the [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) — an MCP server for AI coding workflows. Covers style management, token creation, data validation, and documentation access through Claude Code, Cursor, and other AI assistants.
+
+**Use when:**
+
+- Setting up Mapbox MCP DevKit in Claude Code, Cursor, Claude Desktop, or VS Code
+- Creating and iterating on map styles with AI assistance
+- Generating scoped access tokens for different environments
+- Validating GeoJSON, style expressions, or checking color contrast
+- Looking up Mapbox documentation through your AI coding assistant
+
+**Key topics:**
+
+- Setup for Claude Code, Claude Desktop, Cursor, VS Code with Copilot
+- Style management (create, update, preview, compare, validate)
+- Token management with scoped permissions and URL restrictions
+- GeoJSON and style expression validation
+- Geographic utilities (bounding boxes, coordinate conversion)
+- Dev/staging/prod environment setup
+
+[View skill →](./skills/mapbox-mcp-devkit-patterns/SKILL.md)
+
+---
+
+### 🌐 mapbox-mcp-runtime-patterns
+
+**Integration patterns for Mapbox MCP Server in AI applications and agent frameworks.**
+
+Patterns for integrating the [Mapbox MCP Server](https://github.com/mapbox/mcp-server) into production AI applications. Covers all major Python and TypeScript agent frameworks with working examples and correct API usage.
+
+**Use when:**
+
+- Integrating geospatial capabilities into AI agents (Pydantic AI, CrewAI, Smolagents, LangChain, Mastra)
+- Building location-aware applications (real estate, food delivery, travel planning)
+- Choosing between offline Turf.js tools vs. Mapbox API tools
+- Optimizing geospatial operations (caching, batching, tool selection)
+- Building Zillow-style, DoorDash-style, or TripAdvisor-style AI features
+
+**Key topics:**
+
+- Framework-specific patterns (Pydantic AI, CrewAI, Smolagents, LangChain, Mastra)
+- Offline tools (distance, bearing, point-in-polygon, area — free, instant)
+- API tools (directions, geocoding, isochrone, POI search — real-time data)
+- Correct coordinate format (`{longitude, latitude}` objects)
+- Tool description writing for accurate LLM tool selection
+- Performance optimization and error handling
+
+[View skill →](./skills/mapbox-mcp-runtime-patterns/SKILL.md)
+
+---
+
 ## How Skills Work
 
 ### With Claude Code

@@ -40,25 +40,25 @@
     {
       "id": 4,
       "prompt": "I'm building a real-time fleet tracking app. Every 2 seconds I get a GPS coordinate for each of my 50 trucks and need to check if any of them have entered or left our restricted zones (stored as GeoJSON polygons). What's the right Mapbox MCP approach?",
-      "expected_output": "Should recommend point_in_polygon_tool for the containment checks — it's a geometric operation that runs offline/instantly with no API latency, making it suitable for real-time high-frequency use. Should NOT suggest routing APIs for this.",
+      "expected_output": "Should recommend point_in_polygon_tool for the containment checks. Ideally also addresses the architectural concern: at 50 trucks × 0.5Hz, calling MCP tools directly may hit overhead limits, so Turf.js in-process is the correct hot-path approach while MCP tools handle peripheral tasks (zone definition, rerouting). Should NOT suggest routing APIs for containment checks.",
       "files": [],
       "expectations": [
-        "Recommends point_in_polygon_tool for the containment checks",
+        "Recommends point_in_polygon_tool (or equivalent Turf.js booleanPointInPolygon) for the containment checks",
         "Explains that point_in_polygon_tool is an offline geometric tool with instant results",
-        "Highlights that this is appropriate for high-frequency real-time use",
+        "Addresses scale/architecture: at high call frequency, direct Turf.js use is preferable to MCP tool overhead",
         "Does NOT suggest using directions_tool or other routing APIs for geofencing"
       ]
     },
     {
       "id": 5,
       "prompt": "I want to find all coffee shops within 1km of my current location (47.6062° N, 122.3321° W in Seattle), then get the actual walking time from my location to the top 3 closest ones. What's the most efficient set of Mapbox MCP tool calls?",
-      "expected_output": "Should recommend a two-step approach: (1) category_search_tool to find coffee shops nearby (it returns distance automatically), then (2) directions_tool with walking profile for the top 3 to get actual walking time. Should not call directions_tool for all results.",
+      "expected_output": "Should recommend: (1) category_search_tool to find coffee shops nearby (returns results sorted by distance), then (2) matrix_tool or directions_tool with walking profile for the top 3 to get actual walking time — matrix_tool preferred as it batches all 3 in one call. Should not call routing tools for all results.",
       "files": [],
       "expectations": [
         "Recommends category_search_tool to find coffee shops (not distance_tool + separate search)",
         "Notes that category_search_tool already returns proximity/distance",
-        "Recommends directions_tool with mapbox/walking profile for the top candidates",
-        "Avoids calling directions_tool for all results — only for the top 3 finalists"
+        "Recommends matrix_tool or directions_tool with mapbox/walking profile for the top candidates",
+        "Limits routing tool calls to the top 3 finalists only, not all results"
       ]
     }
   ]

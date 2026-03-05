@@ -1,0 +1,44 @@
+{
+  "skill_name": "mapbox-cartography",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a dark-themed map for a nighttime food delivery app. The map needs to show restaurants, delivery routes, and driver locations clearly. What colors and visual hierarchy should I use?",
+      "expected_output": "Should recommend a dark base (near-black background, dark gray roads), with high-contrast accent colors for key elements (bright colors for restaurants and drivers), and lower-contrast muted colors for background infrastructure. Should mention contrast ratios for accessibility.",
+      "files": [],
+      "expectations": [
+        "Recommends a dark background color (e.g., near-black or very dark gray)",
+        "Addresses visual hierarchy: drivers/restaurants should stand out most",
+        "Recommends high-contrast, bright colors for key interactive elements (restaurants, driver pins)",
+        "Mentions WCAG contrast ratio requirements or accessibility considerations",
+        "Provides specific color recommendations (hex values or color ranges) rather than only abstract guidance"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm designing a choropleth map showing population density across US counties. The data ranges from near 0 to 70,000 people per square mile (heavily skewed — most counties are low density, but a few urban counties are extremely high). What color scale and data classification approach do you recommend?",
+      "expected_output": "Should recommend a logarithmic or quantile classification to handle the skewed distribution, not equal-interval. Should recommend a sequential color scheme for a single-variable map. Should warn against equal-interval which would make most of the map look the same.",
+      "files": [],
+      "expectations": [
+        "Recommends quantile, jenks/natural breaks, or logarithmic classification for skewed data",
+        "Warns against equal-interval classification for heavily skewed data",
+        "Recommends a sequential (single-hue) color scheme for density data",
+        "Addresses the number of classes to use (typically 5-7)",
+        "Mentions colorblind-safe palette options or accessibility"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My map has road labels, city names, neighborhood labels, and street address text. At zoom level 12 (neighborhood level), everything is showing and it's visually overwhelming. How should I approach text hierarchy and zoom-based label management?",
+      "expected_output": "Should recommend a clear typographic hierarchy with size and weight differentiation, zoom-level filtering (showing only relevant labels at each zoom), and label collision detection. Should give specific guidance on text sizes and when each label type should appear.",
+      "files": [],
+      "expectations": [
+        "Recommends differentiated text sizes and/or font weights for different label types",
+        "Suggests zoom-based filtering: different label categories appear at different zoom levels",
+        "Addresses label collision/overlap management",
+        "Provides a recommended hierarchy (e.g., city > neighborhood > street > address)",
+        "Gives specific size recommendations or zoom level thresholds"
+      ]
+    }
+  ]
+}

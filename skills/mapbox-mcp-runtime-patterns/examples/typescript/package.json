@@ -1,0 +1,26 @@
+{
+  "name": "mapbox-mcp-runtime-examples",
+  "version": "1.0.0",
+  "description": "Working examples of Mapbox MCP Server integration with popular agent frameworks",
+  "private": true,
+  "scripts": {
+    "mastra": "ts-node mastra-example.ts",
+    "langchain": "ts-node langchain-example.ts",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.29",
+    "@langchain/openai": "^0.3.16",
+    "@mastra/core": "^1.2.0",
+    "langchain": "^0.3.13",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

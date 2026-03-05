@@ -17,6 +17,62 @@ We welcome:
 2. **Open an issue** - For new skills, discuss the idea first to ensure it fits
 3. **Review examples** - Look at existing skills to understand the format and style
 
+## Development Setup
+
+### Initial Setup
+
+When you clone the repository and run `npm install`, git hooks are automatically installed. These hooks run quality checks before you push code, preventing CI failures.
+
+**What gets installed:**
+
+- **Pre-push hook** - Runs all CI checks locally before pushing
+
+**What gets checked:**
+
+1. **Formatting** - Prettier formatting (all `.md`, `.json`, `.js` files)
+2. **Spelling** - cspell spell checking (all markdown files)
+3. **Markdown linting** - markdownlint validation
+4. **Skills validation** - YAML frontmatter and structure checks
+
+### Running Checks Manually
+
+You can run all checks at any time:
+
+```bash
+npm run check
+```
+
+Or run individual checks:
+
+```bash
+npm run format:check    # Check formatting
+npm run spellcheck      # Check spelling
+npm run lint:markdown   # Lint markdown
+npm run validate:skills # Validate skill structure
+```
+
+### Fixing Issues
+
+**Auto-fix formatting:**
+
+```bash
+npm run format
+```
+
+**Add words to spell check dictionary:**
+
+Edit `cspell.config.json` and add words to the `words` array.
+
+### Bypassing Hooks (Not Recommended)
+
+If you need to push without running checks (not recommended):
+
+```bash
+git push --no-verify
+```
+
+⚠️ **Warning:** CI will still run these checks and may fail your PR.
+
 ## Creating a New Skill
 
 ### 1. Skill Structure
@@ -195,15 +251,19 @@ Before submitting:
    git push -u origin add-your-skill-name
    ```
 
+   The **pre-push hook** will automatically run all quality checks before pushing. If any check fails, the push will be blocked and you'll need to fix the issues.
+
    Create a pull request with:
    - Clear description of the skill's purpose
    - Example use cases
    - Any dependencies or prerequisites
 
 6. **CI checks will run:**
+   - Formatting validation
    - Spell checking
    - Markdown linting
    - Skills validation (YAML frontmatter)
+   - Link checking
 
    All checks must pass before merge.
 

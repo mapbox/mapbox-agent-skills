@@ -709,9 +709,9 @@ Both libraries have similar rendering performance as they share the same core co
 
 **Migration Support:**
 
-- [Get Started Guide](https://docs.mapbox.com/help/tutorials/get-started-mapbox-gl-js/)
+- [Get Started Guide](https://docs.mapbox.com/mapbox-gl-js/guides/install/)
 - [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
-- [Mapbox Community Forum](https://github.com/mapbox/mapbox-gl-js/discussions)
+- [Mapbox Community Support](https://support.mapbox.com/hc/en-us/community/topics)
 
 ## Quick Reference
 

@@ -18,18 +18,15 @@ Complete, runnable applications that follow the patterns from the skills.
 ### Web Examples
 
 - [react-map-basic](./web/react-map-basic/) - Basic React map with proper lifecycle management
-- [vue-map-with-markers](./web/vue-map-with-markers/) - Vue map with optimized marker clustering
 - [performance-optimized](./web/performance-optimized/) - Advanced performance patterns (parallel loading, clustering)
 
 ### iOS Examples
 
 - [SwiftUIMapExample](./ios/SwiftUIMapExample/) - SwiftUI map with UIViewRepresentable pattern
-- [UIKitMapExample](./ios/UIKitMapExample/) - UIKit map with proper lifecycle and memory management
 
 ### Android Examples
 
 - [ComposeMapExample](./android/ComposeMapExample/) - Jetpack Compose map with AndroidView pattern
-- [ViewSystemMapExample](./android/ViewSystemMapExample/) - Traditional Android View system integration
 
 ## How to Use These Examples
 

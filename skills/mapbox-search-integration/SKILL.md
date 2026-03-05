@@ -42,6 +42,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Follow-up if not stated initially**: "Are your users searching for points of interest data? Restaurants, stores, categories of businesses?"
 
 **Implications:**
+
 - **"Yes, POIs are included"** → Use the Search Box API
 - **"No, the user does not need POI search"** → Use the Geocoding API
 
@@ -115,7 +116,7 @@ Based on discovery answers, recommend the right product:
 - User needs POI data
 - Need session-based pricing
 
-*Products:**
+\*Products:\*\*
 
 - **Search Box API** (REST) - Direct API integration
 - **Mapbox Search JS** (SDK) - Web integration with three components:

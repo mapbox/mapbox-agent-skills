@@ -21,7 +21,8 @@
       "expectations": [
         "Recommends optimization_tool as the primary tool",
         "Explains that optimization_tool solves the traveling salesman problem / reorders stops",
-        "Distinguishes optimization_tool from directions_tool (directions doesn't reorder)",
+        "Distinguishes optimization_tool from directions_tool (directions doesn't reorder stops)",
+        "Distinguishes optimization_tool from matrix_tool (matrix gives travel times between all pairs but doesn't compute optimal ordering)",
         "Optionally mentions that search_and_geocode_tool can be used first to geocode any addresses"
       ]
     },

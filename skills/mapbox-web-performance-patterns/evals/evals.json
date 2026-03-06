@@ -1,0 +1,45 @@
+{
+  "skill_name": "mapbox-web-performance-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this Mapbox initialization code and tell me what's wrong with it:\n\n```javascript\nasync function initMap() {\n  const map = new mapboxgl.Map({\n    container: 'map',\n    style: 'mapbox://styles/mapbox/streets-v12',\n    center: [-122.4194, 37.7749],\n    zoom: 12\n  });\n\n  map.on('load', async () => {\n    const response = await fetch('/api/restaurants');\n    const data = await response.json();\n\n    map.addSource('restaurants', { type: 'geojson', data });\n    map.addLayer({\n      id: 'restaurants',\n      type: 'circle',\n      source: 'restaurants',\n      paint: { 'circle-color': '#ff0000' }\n    });\n  });\n\n  map.on('click', (e) => {\n    const features = map.queryRenderedFeatures(e.point);\n    if (features.length > 0) {\n      new mapboxgl.Popup()\n        .setLngLat(e.lngLat)\n        .setHTML(features[0].properties.name)\n        .addTo(map);\n    }\n  });\n\n  map.on('move', () => {\n    updateVisibleCount(map);\n  });\n}\n```",
+      "expected_output": "Should identify four performance issues: (1) data fetch inside map.on('load') creates a loading waterfall — the fetch should start before map initialization so both run in parallel; (2) new mapboxgl.Popup() created on every click causes a memory leak — a single popup instance should be declared outside the handler and reused; (3) queryRenderedFeatures(e.point) without a layers filter queries all rendered features which is expensive — should pass { layers: ['restaurants'] }; (4) expensive updateVisibleCount() called on every 'move' event which fires ~60 times/sec during pan — should use 'moveend' instead, or throttle.",
+      "files": [],
+      "expectations": [
+        "Identifies the data fetch waterfall: fetch inside map.on('load') runs sequentially after map init instead of in parallel",
+        "Recommends starting the fetch before new mapboxgl.Map() so both run concurrently",
+        "Identifies new mapboxgl.Popup() on every click as a memory leak",
+        "Recommends declaring a single popup instance outside the handler and reusing it",
+        "Identifies queryRenderedFeatures without a layers filter as expensive",
+        "Identifies expensive operation on 'move' event (fires ~60x/sec) — recommends 'moveend' or throttling"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My Mapbox map has 3,000 restaurant locations to display. I'm currently using the Marker class for each one and the map is extremely slow — panning is janky and it takes 5+ seconds to render. How should I fix this?",
+      "expected_output": "Should recommend switching from HTML Marker instances to a GeoJSON source with a Symbol layer (or Circle layer). 3,000 points is well within the symbol layer range (500–100,000 markers) and does NOT need clustering. Should explain that HTML markers create 3,000 individual DOM elements while symbol layers render on the GPU. Should show the GeoJSON source + addLayer pattern with a single click handler on the layer instead of per-marker handlers.",
+      "files": [],
+      "expectations": [
+        "Identifies that HTML Marker instances create DOM elements that cause layout thrashing",
+        "Recommends a GeoJSON source + Symbol or Circle layer instead of HTML markers",
+        "Correctly identifies that 3,000 points does NOT need clustering (clustering threshold is 100,000+)",
+        "Shows the addSource + addLayer pattern with the GeoJSON FeatureCollection",
+        "Shows a single map.on('click', 'layer-id') handler replacing per-marker event listeners"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have a store map that highlights the hovered store with a different color. Here's my current hover implementation — the map feels sluggish during mouseover. What's the performance problem and how do I fix it?\n\n```javascript\nmap.addSource('stores', { type: 'geojson', data: storesGeoJSON });\nmap.addLayer({\n  id: 'stores',\n  type: 'circle',\n  source: 'stores',\n  paint: { 'circle-color': '#0080ff', 'circle-radius': 8 }\n});\n\nmap.on('mousemove', 'stores', (e) => {\n  if (map.getLayer('stores-hover')) {\n    map.removeLayer('stores-hover');\n  }\n  map.addLayer({\n    id: 'stores-hover',\n    type: 'circle',\n    source: 'stores',\n    filter: ['==', ['id'], e.features[0].id],\n    paint: { 'circle-color': '#ff8800', 'circle-radius': 10 }\n  });\n});\n\nmap.on('mouseleave', 'stores', () => {\n  if (map.getLayer('stores-hover')) {\n    map.removeLayer('stores-hover');\n  }\n});\n```",
+      "expected_output": "Should identify that addLayer/removeLayer on every mousemove event is expensive — it triggers style recalculations and recompilation of GPU shaders on every frame. The correct Mapbox pattern is to use map.setFeatureState() to toggle a hover state flag on the feature, then drive the paint properties from that state using a 'case'/'feature-state' expression in the layer definition. This avoids all layer mutations during interaction.",
+      "files": [],
+      "expectations": [
+        "Identifies that addLayer/removeLayer on every mousemove triggers expensive style recalculations and shader recompilation",
+        "Recommends map.setFeatureState() to set a hover flag on the feature instead of mutating layers",
+        "Shows the 'case' + 'feature-state' expression in the paint properties to drive the color from state",
+        "Shows tracking the previously hovered feature ID to clear the old state before setting the new one",
+        "Shows map.on('mouseleave') clearing the feature state instead of removing a layer"
+      ]
+    }
+  ]
+}

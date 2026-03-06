@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I'm building a Python app using pydantic-ai and want to integrate the Mapbox MCP server. Show me how to set up an agent that can get driving directions from the Eiffel Tower (2.2945° E, 48.8584° N) to the Louvre (2.3376° E, 48.8606° N).",
-      "expected_output": "Should produce a working pydantic-ai example with correct imports (OpenAIChatModel not OpenAIModel), correct directions_tool call using coordinates array of {longitude, latitude} objects with routing_profile 'mapbox/driving-traffic', and MCP server setup via MCPServerHTTP.",
+      "prompt": "I'm building a Python app using pydantic-ai with OpenAI's GPT-4o as the LLM and want to integrate the Mapbox MCP server. Show me how to set up an agent that can get driving directions from the Eiffel Tower (2.2945° E, 48.8584° N) to the Louvre (2.3376° E, 48.8606° N).",
+      "expected_output": "Should produce a working pydantic-ai example with correct imports (OpenAIChatModel not OpenAIModel from pydantic_ai.models.openai), correct directions_tool call using coordinates array of {longitude, latitude} objects with routing_profile 'mapbox/driving-traffic', and MCP server connection setup.",
       "files": [],
       "expectations": [
         "Uses OpenAIChatModel (not OpenAIModel) from pydantic_ai.models.openai",

@@ -218,6 +218,81 @@ Before submitting:
    - Ask questions the skill should help with
    - Verify the AI uses the skill appropriately
 
+## Skill Evals
+
+Evals measure how much a skill actually improves AI responses by comparing answers with and without the skill loaded. They catch non-discriminating content (things the AI already knows) and guide targeted skill improvements.
+
+### Eval File Structure
+
+Create `skills/your-skill-name/evals/evals.json`:
+
+```json
+{
+  "skill_name": "mapbox-your-skill-name",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The exact question posed to the AI, with enough context to be unambiguous",
+      "expected_output": "A description of what a correct response looks like",
+      "files": [],
+      "expectations": [
+        "Specific, checkable assertion about the response",
+        "Another assertion — each should be independently verifiable"
+      ]
+    }
+  ]
+}
+```
+
+### Writing Good Evals
+
+**Test Mapbox-specific knowledge**, not general AI knowledge. If the AI can answer correctly without the skill, the eval won't show a delta.
+
+| ❌ Non-discriminating                    | ✅ Discriminating                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------- |
+| "Use environment variables for secrets"  | "Use `pk.*` public tokens client-side, `sk.*` secret tokens server-side only" |
+| "Choose colors with sufficient contrast" | "Dark theme roads must use `#3a3a3a`, never colored hues"                     |
+| "Use batch operations for efficiency"    | "Use `matrix_tool` (25×25) instead of 500 individual `directions_tool` calls" |
+
+**Target 3–5 evals per skill.** More isn't better — focus on the highest-value, most non-obvious guidance in the skill.
+
+**Make expectations specific and binary.** "Mentions routing" is hard to grade. "Recommends `optimization_tool` (not `directions_tool`) for multi-stop reordering" is clear.
+
+### Running Evals
+
+Install the skill-creator benchmark tool:
+
+```bash
+npm install -g skill-creator  # or: npx skill-creator
+```
+
+Run evals for a skill:
+
+```bash
+# Create a workspace directory (gitignored)
+mkdir mapbox-your-skill-name-workspace
+
+# Run with and without the skill
+skill-creator eval \
+  --skill skills/mapbox-your-skill-name/SKILL.md \
+  --evals skills/mapbox-your-skill-name/evals/evals.json \
+  --workspace mapbox-your-skill-name-workspace/iteration-1
+```
+
+### Interpreting Results
+
+The benchmark reports:
+
+- **With skill pass rate** — % of expectations met when the skill is loaded
+- **Without skill pass rate** — % met without the skill (baseline)
+- **Delta** — the difference; higher is better
+
+**Target: +20pp or higher delta.** If delta is near zero, the evals are testing general knowledge — redesign them to test skill-specific content.
+
+### Workspace Files Are Gitignored
+
+The `*-workspace/` pattern is in `.gitignore`. Never commit workspace output directories — only commit `evals/evals.json`.
+
 ## Pull Request Process
 
 1. **Create a branch:**

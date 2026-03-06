@@ -1,6 +1,9 @@
 node_modules/
 demos/ios-demo/.build/
 
+# Skill eval workspaces (runtime data, not for commit)
+*-workspace/
+
 # Xcode user state
 *.xcuserstate
 *.xcuserdatad

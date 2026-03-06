@@ -158,6 +158,8 @@ export MAPBOX_ACCESS_TOKEN="your_token_here"
 
 #### Using Hosted Server (Recommended)
 
+> **Common mistake:** When using pydantic-ai with OpenAI, the correct import is `from pydantic_ai.models.openai import OpenAIChatModel`. Do NOT use `OpenAIModel` — that class does not exist in pydantic-ai and will throw an ImportError at runtime.
+
 ```python
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel

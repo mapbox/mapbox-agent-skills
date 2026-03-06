@@ -112,6 +112,8 @@ Attribution: 8-9px
 9. POI symbols
 10. User-generated content (routes, markers)
 
+> **Common mistake:** Developers often put their app's route line or active markers _below_ POI symbols, reasoning that "POIs must stay visible." This is backwards — user-generated content (your route, selected location, user position) is the most important layer and must render above everything, including POIs. A route line that covers a POI icon is acceptable; a route obscured by POI icons is not.
+
 ### Zoom Level Strategy
 
 **Zoom 0-4** (World to Continent):
@@ -140,6 +142,8 @@ Attribution: 8-9px
 - Building footprints
 - POIs (restaurants, shops)
 - Street names
+
+> **Note:** Mapbox's hosted Streets style defaults to showing most POIs around zoom 14. For custom styles, start POIs at zoom 12 — this is the neighborhood scale where density is manageable and users are browsing. Zoom 14 is late; zoom 10 (metro-area scale) is far too early and creates severe icon clutter.
 
 **Zoom 16-22** (Street Level):
 
@@ -175,6 +179,8 @@ Attribution: 8-9px
   "text": "#ffffff"
 }
 ```
+
+> **Road color rule for dark themes:** Roads must use neutral dark gray (`#3a3a3a`), visibly distinct from the background but not colored. Never style roads with amber, blue, or other hues — reserve color for app data layers (routes, markers). Colored base roads and colored data layers will compete visually. Local roads that blend into the background (`#1e1e1e` on `#1a1a1a`) create a "floating labels" problem where street names appear with no visible road beneath them.
 
 **High Contrast (Accessibility):**
 

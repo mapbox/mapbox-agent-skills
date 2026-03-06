@@ -17,28 +17,28 @@
     },
     {
       "id": 2,
-      "prompt": "My Mapbox map has 3,000 restaurant locations to display. I'm currently using the Marker class for each one and the map is extremely slow — panning is janky and it takes 5+ seconds to render. How should I fix this?",
-      "expected_output": "Should recommend switching from HTML Marker instances to a GeoJSON source with a Symbol layer (or Circle layer). 3,000 points is well within the symbol layer range (500–100,000 markers) and does NOT need clustering. Should explain that HTML markers create 3,000 individual DOM elements while symbol layers render on the GPU. Should show the GeoJSON source + addLayer pattern with a single click handler on the layer instead of per-marker handlers.",
+      "prompt": "We're building a map showing 75,000 store locations across the US. The previous implementation used the Mapbox Marker class and was completely unusable. My team is debating whether to switch to clustering or symbol layers — which is the right fix, and why?",
+      "expected_output": "Should recommend symbol layers (GeoJSON source + circle or symbol layer), NOT clustering. 75,000 points is within the symbol layer range (500–100,000 markers) and renders efficiently on the GPU without clustering. Clustering is only needed at 100,000+ markers. Should explain that HTML markers create 75,000 DOM elements (the actual problem) and that symbol layers render all points as a single WebGL draw call at 60 FPS. Clustering at this scale adds complexity without the performance benefit that symbol layers already provide.",
       "files": [],
       "expectations": [
-        "Identifies that HTML Marker instances create DOM elements that cause layout thrashing",
-        "Recommends a GeoJSON source + Symbol or Circle layer instead of HTML markers",
-        "Correctly identifies that 3,000 points does NOT need clustering (clustering threshold is 100,000+)",
-        "Shows the addSource + addLayer pattern with the GeoJSON FeatureCollection",
-        "Shows a single map.on('click', 'layer-id') handler replacing per-marker event listeners"
+        "Recommends symbol layers (GeoJSON source + circle or symbol layer) as the primary fix",
+        "Correctly identifies that 75,000 points does NOT require clustering — clustering is for 100,000+ markers",
+        "Explains that the root cause is HTML markers creating 75,000 DOM elements",
+        "Explains that symbol layers render on the GPU and handle this scale efficiently",
+        "Shows or describes the GeoJSON source + addLayer pattern"
       ]
     },
     {
       "id": 3,
-      "prompt": "I have a store map that highlights the hovered store with a different color. Here's my current hover implementation — the map feels sluggish during mouseover. What's the performance problem and how do I fix it?\n\n```javascript\nmap.addSource('stores', { type: 'geojson', data: storesGeoJSON });\nmap.addLayer({\n  id: 'stores',\n  type: 'circle',\n  source: 'stores',\n  paint: { 'circle-color': '#0080ff', 'circle-radius': 8 }\n});\n\nmap.on('mousemove', 'stores', (e) => {\n  if (map.getLayer('stores-hover')) {\n    map.removeLayer('stores-hover');\n  }\n  map.addLayer({\n    id: 'stores-hover',\n    type: 'circle',\n    source: 'stores',\n    filter: ['==', ['id'], e.features[0].id],\n    paint: { 'circle-color': '#ff8800', 'circle-radius': 10 }\n  });\n});\n\nmap.on('mouseleave', 'stores', () => {\n  if (map.getLayer('stores-hover')) {\n    map.removeLayer('stores-hover');\n  }\n});\n```",
-      "expected_output": "Should identify that addLayer/removeLayer on every mousemove event is expensive — it triggers style recalculations and recompilation of GPU shaders on every frame. The correct Mapbox pattern is to use map.setFeatureState() to toggle a hover state flag on the feature, then drive the paint properties from that state using a 'case'/'feature-state' expression in the layer definition. This avoids all layer mutations during interaction.",
+      "prompt": "I have a 15 MB GeoJSON file of US census tracts with demographic data that I want to display on a Mapbox map. Should I serve this as GeoJSON directly or convert it to vector tiles? What are the tradeoffs?",
+      "expected_output": "Should identify that 15 MB is in the borderline range (5–20 MB) where vector tiles are recommended. GeoJSON at 15 MB will cause slow initial load and high memory usage, especially on mobile — the entire dataset is downloaded and parsed upfront. Vector tiles load only the visible viewport on demand, dramatically reducing initial payload. The recommendation should be to convert to vector tiles (e.g., via Mapbox Tiling Service or Tippecanoe), with the tradeoff that GeoJSON is simpler for frequently-changing data.",
       "files": [],
       "expectations": [
-        "Identifies that addLayer/removeLayer on every mousemove triggers expensive style recalculations and shader recompilation",
-        "Recommends map.setFeatureState() to set a hover flag on the feature instead of mutating layers",
-        "Shows the 'case' + 'feature-state' expression in the paint properties to drive the color from state",
-        "Shows tracking the previously hovered feature ID to clear the old state before setting the new one",
-        "Shows map.on('mouseleave') clearing the feature state instead of removing a layer"
+        "Identifies that 15 MB is above the threshold where GeoJSON becomes problematic (roughly 5 MB)",
+        "Recommends vector tiles for a 15 MB dataset",
+        "Explains that GeoJSON downloads the entire file upfront while vector tiles load only the visible viewport",
+        "Mentions the performance impact: slow initial load and high memory usage with raw GeoJSON at this size",
+        "Notes the tradeoff: GeoJSON is simpler for frequently-changing data, vector tiles for static or slow-changing data"
       ]
     }
   ]

@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-search-integration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a React app with a Mapbox map. I want users to type in a search box, see autocomplete suggestions for both addresses and businesses, and click a result to fly the map to that location. What's the recommended implementation?",
+      "expectations": [
+        "Recommends Search Box API (not Geocoding API) — users need both addresses and businesses/POIs",
+        "Recommends Search JS React (`@mapbox/search-js-react`) as the easiest option for React apps with a built-in UI",
+        "Shows the SearchBox component with an onRetrieve callback to get coordinates and call map.flyTo()",
+        "Does NOT recommend direct API calls with fetch() as the primary approach — SDK handles debouncing, session tokens, and UI"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to add an autocomplete search box to my web app but I need a completely custom dropdown UI — my own styling, keyboard navigation, and result rendering. Should I call the Mapbox Search Box API directly with fetch() requests, or is there a better approach?",
+      "expectations": [
+        "Recommends Search JS Core (`@mapbox/search-js-core`) over direct API calls for custom UI — it provides the API wrapper without imposing UI",
+        "Explains that calling the API directly means manually implementing debouncing and session token management",
+        "Notes that Search JS Core handles debouncing and session tokens automatically",
+        "If direct API is used anyway, explains that session tokens are required for proper billing and must be generated per search session"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My app needs to geocode addresses — users type a US address and I get back coordinates. I'm looking at the Mapbox Geocoding API. Should I use that or the Search Box API?",
+      "expectations": [
+        "Recommends Search Box API as the default choice for interactive address search",
+        "Explains Search Box API has session-based pricing which is more cost-efficient for autocomplete/interactive use",
+        "Notes Geocoding API is appropriate for batch geocoding, maintaining an existing integration, or permanent geocoding (not search)",
+        "Notes SDKs (Search JS) are preferred over direct API calls for web integration"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-mcp-devkit-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to use an AI assistant to help me create and iterate on Mapbox styles. What Mapbox MCP DevKit tools are available for style work, and what workflow do you recommend?",
+      "expectations": [
+        "Identifies create_style_tool for creating new styles, update_style_tool for modifying existing styles",
+        "Identifies preview_style_tool or retrieve_style_tool for viewing and inspecting styles",
+        "Recommends the iterative workflow: describe style in natural language → create_style_tool → preview_style_tool → update_style_tool to refine",
+        "Mentions validate_style_tool or style_builder_tool for validation during development"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm working on a Mapbox style and I need to create separate tokens for development and production environments with different permission scopes. How can I do this with the MCP DevKit?",
+      "expectations": [
+        "Use create_token_tool to create scoped tokens for each environment",
+        "Development token: broader scopes (styles:read, styles:write, fonts:read, etc.)",
+        "Production token: minimal scopes — only what the app needs (typically styles:read, fonts:read, datasets:read)",
+        "Can use list_tokens_tool to view existing tokens and their scopes"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Before shipping a new Mapbox style to production, what validation steps should I take using the MCP DevKit tools?",
+      "expectations": [
+        "Use validate_style_tool to check the style JSON is spec-compliant",
+        "Use validate_expression_tool to check data expressions in layer paint/layout properties",
+        "Use check_color_contrast_tool to verify text labels meet WCAG accessibility standards",
+        "Use compare_styles_tool or style_comparison_tool to diff the new style against the current production style before deploying"
+      ]
+    }
+  ]
+}

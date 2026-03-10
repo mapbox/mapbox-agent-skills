@@ -21,6 +21,147 @@ Web · iOS · Android · Performance · Cartography · Security
 
 ---
 
+# The Problem
+
+AI assistants are good at general coding — but Mapbox is a specialized, fast-moving platform.
+
+<div class="grid grid-cols-2 gap-6 mt-6">
+<div class="border-l-4 border-red-400 pl-4">
+
+**Without domain expertise, AI assistants...**
+
+- Suggest `queryRenderedFeatures` for Standard style taps ❌
+- Create a new `PointAnnotationManager` on every marker update ❌
+- Put access tokens directly in source code ❌
+- Use `< 1 MB GeoJSON / > 10 MB vector tiles` thresholds from old docs ❌
+- Scaffold React without cleaning up the map on unmount ❌
+
+</div>
+<div class="border-l-4 border-gray-300 pl-4">
+
+**Why this happens**
+
+- Training data has a cutoff — SDK APIs evolve
+- Mapbox has platform-specific conventions that aren't obvious
+- The right answer often depends on context (data size, use case, platform)
+- Security and performance trade-offs require judgment, not just syntax
+
+</div>
+</div>
+
+---
+
+# What Are Agent Skills?
+
+Skills are a lightweight way to give AI assistants deep, focused domain expertise — without fine-tuning.
+
+<div class="grid grid-cols-3 gap-4 mt-4">
+<div class="border rounded p-4 text-sm">
+
+**Fine-tuning**
+
+Bakes knowledge into model weights. Expensive, slow to update, requires training data.
+
+</div>
+<div class="border rounded p-4 text-sm">
+
+**RAG / context injection**
+
+Retrieves docs at query time. Requires infrastructure, noisy results, no guarantee of relevance.
+
+</div>
+<div class="border-2 border-blue-400 rounded p-4 text-sm">
+
+**Agent Skills** ✓
+
+A folder of curated guidance the AI reads at task time. Zero infra, always up to date, version-controlled alongside the code.
+
+</div>
+</div>
+
+<div class="mt-6 p-4 bg-blue-50 rounded">
+
+> A skill is like hiring a specialist who sits next to the AI — they don't write the code, but they make sure it's done right.
+
+</div>
+
+---
+
+# Why Mapbox Needs Skills
+
+Mapbox has deep, interconnected complexity across multiple surfaces.
+
+<div class="grid grid-cols-2 gap-6 mt-4">
+<div>
+
+**Fast-moving APIs**
+
+The Standard style (v3) introduced a completely new interaction model. The iOS and Android SDKs have platform-specific annotation patterns. Models trained before 2024 don't know these.
+
+**Performance decisions require judgment**
+
+"Should I use GeoJSON or vector tiles?" depends on data size, update frequency, and zoom range — not just a simple threshold.
+
+**Security is easy to get wrong**
+
+Token scoping, secret vs public tokens, and environment variable patterns are Mapbox-specific. Generic security advice doesn't apply.
+
+</div>
+<div>
+
+**Multi-platform surface**
+
+Each platform (Web, iOS, Android) has different idioms. A correct React pattern is wrong in Vue. A correct Swift pattern is wrong in Kotlin.
+
+**The cost of mistakes is high**
+
+A leaked token means real billing exposure. An HTML marker loop with 50K points freezes the browser. A wrong API call returns 404s in production.
+
+**MCP is brand new territory**
+
+Using Mapbox MCP tools effectively inside AI agents is a novel pattern — no training data exists for it yet.
+
+</div>
+</div>
+
+---
+
+# Skills as a Strategy
+
+Skills are Mapbox's answer to the question: *how do we make AI assistants great at Mapbox development?*
+
+<div class="grid grid-cols-3 gap-4 mt-6">
+<div class="border rounded p-4 text-center">
+
+**📦 Open source**
+
+Published on GitHub, installable with one command, forkable and customizable.
+
+</div>
+<div class="border rounded p-4 text-center">
+
+**🔄 Version controlled**
+
+Skill updates ship alongside SDK releases. When the API changes, the skill changes too.
+
+</div>
+<div class="border rounded p-4 text-center">
+
+**📏 Measurable**
+
+Every skill ships with evals — we can prove the improvement with a benchmark delta.
+
+</div>
+</div>
+
+<div class="mt-6 p-4 bg-green-50 rounded">
+
+The goal: any developer using Claude Code, Cursor, or GitHub Copilot on a Mapbox project gets expert-level guidance automatically — without reading docs, without knowing which patterns apply.
+
+</div>
+
+---
+
 # What Are Agent Skills?
 
 Skills are folders of instructions + resources that AI assistants can discover and use.

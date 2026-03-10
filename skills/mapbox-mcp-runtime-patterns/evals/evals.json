@@ -1,0 +1,57 @@
+{
+  "skill_name": "mapbox-mcp-runtime-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a Python app using pydantic-ai with OpenAI's GPT-4o as the LLM and want to integrate the Mapbox MCP server. Show me how to set up an agent that can get driving directions from the Eiffel Tower (2.2945° E, 48.8584° N) to the Louvre (2.3376° E, 48.8606° N).",
+      "expected_output": "Should produce a working pydantic-ai example with correct imports (OpenAIChatModel not OpenAIModel from pydantic_ai.models.openai), correct directions_tool call using coordinates array of {longitude, latitude} objects with routing_profile 'mapbox/driving-traffic', and MCP server connection setup.",
+      "files": [],
+      "expectations": [
+        "Uses OpenAIChatModel (not OpenAIModel) from pydantic_ai.models.openai",
+        "Calls directions_tool with a 'coordinates' array of {longitude, latitude} objects",
+        "Includes 'routing_profile' parameter with 'mapbox/' prefix (e.g., 'mapbox/driving-traffic')",
+        "Does NOT pass coordinates as arrays like [lng, lat]",
+        "Does NOT use 'origin'/'destination' parameter names for directions_tool",
+        "Shows MCP server connection setup (MCPServerHTTP or similar)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm using LangChain in TypeScript and want to find coffee shops near Times Square (40.7580° N, 73.9855° W) using the Mapbox MCP server. Show me the setup code.",
+      "expected_output": "Should use the modern LangChain createToolCallingAgent + AgentExecutor pattern (NOT the deprecated initializeAgentExecutorWithOptions). The category_search_tool proximity parameter should be an object {longitude, latitude}, not an array.",
+      "files": [],
+      "expectations": [
+        "Uses createToolCallingAgent and AgentExecutor (not initializeAgentExecutorWithOptions)",
+        "Uses DynamicStructuredTool with Zod schemas (not DynamicTool)",
+        "category_search_tool proximity parameter is an object {longitude: ..., latitude: ...}",
+        "Does NOT pass proximity as an array [longitude, latitude]",
+        "Shows MCP client/transport setup"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm building an AI agent with Mastra and want to check if a user's location (34.0522° N, 118.2437° W in Los Angeles) falls within a service polygon. Show me how to use point_in_polygon_tool with the Mapbox MCP server in Mastra.",
+      "expected_output": "Should show a Mastra agent that calls point_in_polygon_tool with the point as a {longitude, latitude} object. Should demonstrate MCP integration via Mastra's tool system.",
+      "files": [],
+      "expectations": [
+        "point_in_polygon_tool point parameter is a {longitude, latitude} object",
+        "Does NOT pass point as an array [longitude, latitude]",
+        "Demonstrates Mastra agent setup with MCP tools",
+        "Shows how to pass a polygon (GeoJSON format) to the tool"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to build a custom AI agent in Python that can answer questions like 'What restaurants are within 15 minutes walking from Union Square in San Francisco?' using the Mapbox MCP server. Walk me through the approach and show skeleton code.",
+      "expected_output": "Should outline a two-step approach: (1) isochrone_tool to get the 15-minute walking zone, (2) category_search_tool to find restaurants. isochrone_tool coordinates should be a {longitude, latitude} object with profile 'mapbox/walking'. category_search_tool proximity as {longitude, latitude} object.",
+      "files": [],
+      "expectations": [
+        "Recommends isochrone_tool to create the 15-minute walking zone with profile 'mapbox/walking'",
+        "isochrone_tool coordinates parameter is a {longitude, latitude} object",
+        "Recommends category_search_tool to find restaurants",
+        "category_search_tool proximity is a {longitude, latitude} object",
+        "Routing profile includes 'mapbox/' prefix"
+      ]
+    }
+  ]
+}

@@ -138,6 +138,8 @@ The Mapbox MCP Server provides two categories of geospatial tools:
 | Periodic proximity checks           | Geometric distance   | `distance_tool`                          |
 | Live traffic routing                | Routing with traffic | `directions_tool` (driving-traffic)      |
 
+**Architecture note for high-frequency geofencing:** If the application calls containment checks at very high rates (e.g., 50 vehicles every 2 seconds = 25 checks/second), calling MCP tools over the network adds agent-reasoning overhead that makes it impractical. In those cases, recommend using Turf.js directly in-process (`turf.booleanPointInPolygon`) for the hot path, and reserve MCP tools for peripheral tasks like zone definition (`isochrone_tool`), rerouting (`directions_tool`), or visualization (`static_map_image_tool`).
+
 ## Common Scenarios and Optimal Approaches
 
 ### Scenario 1: Store Locator

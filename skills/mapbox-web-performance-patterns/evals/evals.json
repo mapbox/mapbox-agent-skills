@@ -1,0 +1,45 @@
+{
+  "skill_name": "mapbox-web-performance-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this Mapbox initialization code and tell me what's wrong with it:\n\n```javascript\nasync function initMap() {\n  const map = new mapboxgl.Map({\n    container: 'map',\n    style: 'mapbox://styles/mapbox/streets-v12',\n    center: [-122.4194, 37.7749],\n    zoom: 12\n  });\n\n  map.on('load', async () => {\n    const response = await fetch('/api/restaurants');\n    const data = await response.json();\n\n    map.addSource('restaurants', { type: 'geojson', data });\n    map.addLayer({\n      id: 'restaurants',\n      type: 'circle',\n      source: 'restaurants',\n      paint: { 'circle-color': '#ff0000' }\n    });\n  });\n\n  map.on('click', (e) => {\n    const features = map.queryRenderedFeatures(e.point);\n    if (features.length > 0) {\n      new mapboxgl.Popup()\n        .setLngLat(e.lngLat)\n        .setHTML(features[0].properties.name)\n        .addTo(map);\n    }\n  });\n\n  map.on('move', () => {\n    updateVisibleCount(map);\n  });\n}\n```",
+      "expected_output": "Should identify four performance issues: (1) data fetch inside map.on('load') creates a loading waterfall — the fetch should start before map initialization so both run in parallel; (2) new mapboxgl.Popup() created on every click causes a memory leak — a single popup instance should be declared outside the handler and reused; (3) queryRenderedFeatures(e.point) without a layers filter queries all rendered features which is expensive — should pass { layers: ['restaurants'] }; (4) expensive updateVisibleCount() called on every 'move' event which fires ~60 times/sec during pan — should use 'moveend' instead, or throttle.",
+      "files": [],
+      "expectations": [
+        "Identifies the data fetch waterfall: fetch inside map.on('load') runs sequentially after map init instead of in parallel",
+        "Recommends starting the fetch before new mapboxgl.Map() so both run concurrently",
+        "Identifies new mapboxgl.Popup() on every click as a memory leak",
+        "Recommends declaring a single popup instance outside the handler and reusing it",
+        "Identifies queryRenderedFeatures without a layers filter as expensive",
+        "Identifies expensive operation on 'move' event (fires ~60x/sec) — recommends 'moveend' or throttling"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're building a map showing 75,000 store locations across the US. The previous implementation used the Mapbox Marker class and was completely unusable. My team is debating whether to switch to clustering or symbol layers — which is the right fix, and why?",
+      "expected_output": "Should recommend symbol layers (GeoJSON source + circle or symbol layer), NOT clustering. 75,000 points is within the symbol layer range (500–100,000 markers) and renders efficiently on the GPU without clustering. Clustering is only needed at 100,000+ markers. Should explain that HTML markers create 75,000 DOM elements (the actual problem) and that symbol layers render all points as a single WebGL draw call at 60 FPS. Clustering at this scale adds complexity without the performance benefit that symbol layers already provide.",
+      "files": [],
+      "expectations": [
+        "Recommends symbol layers (GeoJSON source + circle or symbol layer) as the primary fix",
+        "Correctly identifies that 75,000 points does NOT require clustering — clustering is for 100,000+ markers",
+        "Explains that the root cause is HTML markers creating 75,000 DOM elements",
+        "Explains that symbol layers render on the GPU and handle this scale efficiently",
+        "Shows or describes the GeoJSON source + addLayer pattern"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have a 15 MB GeoJSON file of US census tracts with demographic data that I want to display on a Mapbox map. Should I serve this as GeoJSON directly or convert it to vector tiles? What are the tradeoffs?",
+      "expected_output": "Should identify that 15 MB is in the borderline range (5–20 MB) where vector tiles are recommended. GeoJSON at 15 MB will cause slow initial load and high memory usage, especially on mobile — the entire dataset is downloaded and parsed upfront. Vector tiles load only the visible viewport on demand, dramatically reducing initial payload. The recommendation should be to convert to vector tiles (e.g., via Mapbox Tiling Service or Tippecanoe), with the tradeoff that GeoJSON is simpler for frequently-changing data.",
+      "files": [],
+      "expectations": [
+        "Identifies that 15 MB is above the threshold where GeoJSON becomes problematic (roughly 5 MB)",
+        "Recommends vector tiles for a 15 MB dataset",
+        "Explains that GeoJSON downloads the entire file upfront while vector tiles load only the visible viewport",
+        "Mentions the performance impact: slow initial load and high memory usage with raw GeoJSON at this size",
+        "Notes the tradeoff: GeoJSON is simpler for frequently-changing data, vector tiles for static or slow-changing data"
+      ]
+    }
+  ]
+}

@@ -29,6 +29,7 @@ Skills are folders of instructions + resources that AI assistants can discover a
 <div class="border rounded p-4">
 
 ### 🛠️ Tools
+
 Provide **actions**
 `create_style`, `directions`, `geocode`
 
@@ -36,6 +37,7 @@ Provide **actions**
 <div class="border rounded p-4">
 
 ### 📚 Skills
+
 Provide **expertise**
 Know-how, patterns, best practices
 
@@ -43,6 +45,7 @@ Know-how, patterns, best practices
 <div class="border rounded p-4">
 
 ### 💬 Prompts
+
 Provide **workflows**
 Guided sequences for specific tasks
 
@@ -51,7 +54,7 @@ Guided sequences for specific tasks
 
 <div class="mt-6 p-4 bg-blue-50 rounded">
 
-> Skills teach AI assistants *how to think* about a domain — not just what actions to take.
+> Skills teach AI assistants _how to think_ about a domain — not just what actions to take.
 
 </div>
 
@@ -113,11 +116,13 @@ description: >
 <div>
 
 **🌐 Web**
+
 - `mapbox-web-integration-patterns` — React, Vue, Svelte, Angular, Next.js
 - `mapbox-web-performance-patterns` — Markers, data loading, memory
 - `mapbox-data-visualization-patterns` — Choropleth, heat maps, clustering
 
 **🗺️ Cartography & Style**
+
 - `mapbox-cartography` — Color theory, visual hierarchy, typography
 - `mapbox-style-patterns` — Layer configs, expressions, reuse
 - `mapbox-style-quality` — Validation, accessibility, optimization
@@ -126,12 +131,14 @@ description: >
 <div>
 
 **📍 Location & Search**
+
 - `mapbox-geospatial-operations` — Geometry vs routing APIs
 - `mapbox-search-patterns` — Geocoding, POI, forward/reverse
 - `mapbox-search-integration` — Full search workflow
 - `mapbox-store-locator-patterns` — Filtering, distance, clustering
 
 **📱 Mobile**
+
 - `mapbox-ios-patterns` — Swift, SwiftUI, UIKit
 - `mapbox-android-patterns` — Kotlin, Jetpack Compose
 
@@ -146,10 +153,12 @@ description: >
 <div>
 
 **🤖 MCP / AI Integration**
+
 - `mapbox-mcp-devkit-patterns` — Style management in AI coding assistants
 - `mapbox-mcp-runtime-patterns` — pydantic-ai, mastra, LangChain, custom agents
 
 **🔄 Migration**
+
 - `mapbox-google-maps-migration` — Google Maps → Mapbox GL JS
 - `mapbox-maplibre-migration` — MapLibre ↔ Mapbox (both directions)
 
@@ -157,9 +166,11 @@ description: >
 <div>
 
 **🔒 Security**
+
 - `mapbox-token-security` — Token scoping, rotation, env vars
 
-**🧭 Navigation** *(in review)*
+**🧭 Navigation** _(in review)_
+
 - `mapbox-navigation-patterns` — Directions API, Navigation SDKs
 
 </div>
@@ -173,14 +184,15 @@ description: >
 
 **Marker decision tree:**
 
-| Count | Approach | Why |
-|-------|----------|-----|
-| < 100 | HTML markers | Simple, interactive |
-| 100 – 10K | Symbol layers | GPU-rendered, no DOM |
+| Count      | Approach                   | Why                   |
+| ---------- | -------------------------- | --------------------- |
+| < 100      | HTML markers               | Simple, interactive   |
+| 100 – 10K  | Symbol layers              | GPU-rendered, no DOM  |
 | 10K – 100K | Clustering + symbol layers | Reduce visual clutter |
-| 100K+ | Vector tiles | Progressive loading |
+| 100K+      | Vector tiles               | Progressive loading   |
 
 **Key patterns the skill teaches:**
+
 - Avoid `new mapboxgl.Marker()` in loops — create annotation managers once
 - Use `feature-state` instead of new layers for hover/selection
 - `generateId: true` + `setFeatureState` for highlight without re-uploading GeoJSON
@@ -263,11 +275,11 @@ Every skill ships with `evals/evals.json` — 3 test cases that measure how much
 
 **Benchmark results:**
 
-| Skill | Without skill | With skill | Delta |
-|-------|--------------|------------|-------|
-| `mapbox-ios-patterns` | 67% | 100% | **+33pp** |
-| `mapbox-android-patterns` | 67% | 100% | **+33pp** |
-| `mapbox-web-performance-patterns` | ~80% | ~95% | **+15pp** |
+| Skill                             | Without skill | With skill | Delta     |
+| --------------------------------- | ------------- | ---------- | --------- |
+| `mapbox-ios-patterns`             | 67%           | 100%       | **+33pp** |
+| `mapbox-android-patterns`         | 67%           | 100%       | **+33pp** |
+| `mapbox-web-performance-patterns` | ~80%          | ~95%       | **+15pp** |
 
 ---
 
@@ -344,9 +356,11 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) for full guidelines.
 <div>
 
 **This repo**
+
 - [github.com/mapbox/mapbox-agent-skills](https://github.com/mapbox/mapbox-agent-skills)
 
 **Agent Skills spec**
+
 - [agentskills.io](https://agentskills.io)
 - [github.com/anthropics/skills](https://github.com/anthropics/skills)
 
@@ -354,6 +368,7 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) for full guidelines.
 <div>
 
 **Mapbox tools**
+
 - [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server)
 - [Mapbox MCP Server](https://github.com/mapbox/mcp-server)
 - [Mapbox GL JS docs](https://docs.mapbox.com/mapbox-gl-js/)

@@ -491,6 +491,95 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) for full guidelines.
 
 ---
 
+# Writing Evals for Your Skill
+
+Evals prove your skill actually improves AI responses — and show exactly *where* it adds value.
+
+**The format (`evals/evals.json`):**
+
+```json
+{
+  "skill_name": "mapbox-my-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "How do I ...?",
+      "expectations": [
+        "Uses the correct API, not the outdated one",
+        "Includes the required configuration step",
+        "Shows the platform-specific pattern"
+      ]
+    }
+  ]
+}
+```
+
+---
+
+# Writing Good Evals
+
+**Pick prompts where the base model fails without the skill.**
+
+<div class="grid grid-cols-2 gap-6 mt-4">
+<div>
+
+**Good eval prompts**
+
+- Platform-specific questions where the wrong API is plausible
+- Questions about APIs that changed in recent SDK versions
+- Trade-off questions where context determines the right answer
+- Security or performance questions with non-obvious correct answers
+
+</div>
+<div>
+
+**Good expectations**
+
+- Specific and verifiable — not "gives a good answer"
+- Each expectation tests one thing
+- Include negative expectations: "does NOT use `queryRenderedFeatures`"
+- Cover the pattern, not just the syntax
+
+</div>
+</div>
+
+<div class="mt-4 p-3 bg-amber-50 rounded text-sm">
+
+**Rule of thumb:** if the base model gets it right without your skill, the eval is too easy — it's not testing what your skill uniquely provides. Find the edge where the base model fails.
+
+</div>
+
+---
+
+# Benchmarking Your Skill
+
+Run each eval prompt **with** and **without** the skill context. Grade each expectation pass/fail.
+
+```
+eval-1/
+  with_skill/run-1/
+    outputs/response.md     ← AI response with SKILL.md in context
+    grading.json            ← { passed, failed, total, pass_rate }
+  without_skill/run-1/
+    outputs/response.md     ← AI response with no skill context
+    grading.json
+
+benchmark.json              ← aggregated delta across all evals
+```
+
+**What a good benchmark looks like:**
+
+| | without_skill | with_skill | delta |
+|--|--|--|--|
+| eval-1 | 0.33 | 1.00 | **+67pp** |
+| eval-2 | 0.67 | 1.00 | **+33pp** |
+| eval-3 | 1.00 | 1.00 | +0pp (base model already knows this) |
+| **mean** | **0.67** | **1.00** | **+33pp** |
+
+A +0pp eval isn't failure — it just means that prompt isn't a good discriminator. Keep it if the topic is important; replace it if you can find a harder prompt.
+
+---
+
 # Resources
 
 <div class="grid grid-cols-2 gap-6 mt-4">

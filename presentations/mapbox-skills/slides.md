@@ -19,6 +19,12 @@ mdc: true
 
 Web · iOS · Android · Performance · Cartography · Security
 
+<div class="mt-8 text-sm text-gray-500">
+
+Matthew Podwysocki · matthew.podwysocki@mapbox.com · GitHub: mattpodwysocki · X: @mattpodwysocki
+
+</div>
+
 ---
 
 # The Problem

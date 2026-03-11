@@ -11,6 +11,7 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 | [mapbox-maplibre-migration](./mapbox-maplibre-migration/)                   | Migration guide between Mapbox GL JS and MapLibre GL JS in both directions                                                       |
 | [mapbox-mcp-devkit-patterns](./mapbox-mcp-devkit-patterns/)                 | Integration patterns for Mapbox MCP DevKit Server in AI coding assistants for style management, token management, and validation |
 | [mapbox-mcp-runtime-patterns](./mapbox-mcp-runtime-patterns/)               | Integration patterns for Mapbox MCP Server in AI applications with pydantic-ai, mastra, LangChain, and custom agents             |
+| [mapbox-navigation-patterns](./mapbox-navigation-patterns/)                 | Navigation and routing patterns for Directions API and Navigation SDKs                                                           |
 | [mapbox-search-integration](./mapbox-search-integration/)                   | Complete workflow for implementing Mapbox search with discovery questions and best practices                                     |
 | [mapbox-search-patterns](./mapbox-search-patterns/)                         | Choosing the right search tool and parameters for geocoding and POI search                                                       |
 | [mapbox-web-performance-patterns](./mapbox-web-performance-patterns/)       | Performance optimization for Mapbox GL JS (initialization, markers, data loading, memory)                                        |

@@ -1,0 +1,38 @@
+{
+  "skill_name": "mapbox-style-quality",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm shipping a major Mapbox style update to production next week. I added 5 new GeoJSON sources from third-party APIs, wrote about a dozen custom filter and data-driven paint expressions, and added several text label layers to the map. What quality checks should I run and in what order before deploying?",
+      "expectations": [
+        "Validates GeoJSON sources with validate_geojson_tool before adding them as sources (catches invalid coordinates, unclosed rings, wrong coordinate order)",
+        "Validates all expressions with validate_expression_tool during development — not at runtime — to catch type mismatches and syntax errors early",
+        "Checks color contrast for text label layers against WCAG AA standard (4.5:1 ratio for normal text, 3:1 for large text)",
+        "Compares with the previous production style using compare_styles_tool to identify unintended changes",
+        "Optimizes the style with optimize_style_tool before deploying — recommends removing unused sources first, then duplicate layers, then simplifying expressions, then empty layers"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My Mapbox style started at 80KB and has grown to 380KB over 6 months. I've deleted many layers but their source data is still referenced in the style. I also copy-pasted layers a lot, so there are duplicates with identical paint properties. What's the right approach to clean this up?",
+      "expectations": [
+        "Recommends running optimize_style_tool to handle this automatically",
+        "Explains to remove unused sources first — they are the main bloat after deleting layers",
+        "Then remove duplicate layers (layers with identical properties)",
+        "Then simplify redundant boolean expressions",
+        "Then remove empty layers as a final cleanup step",
+        "Recommends reviewing the optimization report (percentReduction, changes list) and testing before deploying"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have a layer filter that should show only cities with a population over 1 million, but I'm getting runtime expression errors. My filter is: `['==', ['get', 'population'], 'large']`. The population field in my data is stored as a number. What's wrong and how do I prevent this kind of error in the future?",
+      "expectations": [
+        "Identifies the type mismatch: population is a number but the filter compares it to the string 'large'",
+        "Provides the correct expression using a numeric comparison: ['>', ['get', 'population'], 1000000]",
+        "Recommends using validate_expression_tool during development to catch type mismatches before they cause runtime errors",
+        "Suggests adding expression validation to pre-commit hooks or CI/CD pipeline as a preventive measure"
+      ]
+    }
+  ]
+}

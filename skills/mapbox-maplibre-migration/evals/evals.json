@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-maplibre-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm migrating a MapLibre GL JS web app to Mapbox GL JS. My app uses custom GeoJSON sources, symbol layers, `fitBounds`, `flyTo`, event handlers, and popups. How much code will I need to change?",
+      "expectations": [
+        "Reassures the migration is minimal — the APIs are ~95% compatible since MapLibre is a fork of Mapbox GL JS",
+        "Lists the actual changes needed: npm install mapbox-gl / remove maplibre-gl, update import, add mapboxgl.accessToken, update style URL",
+        "States that GeoJSON sources, symbol layers, fitBounds, flyTo, events, and popups all work identically — no changes needed for these",
+        "Explains that all maplibregl. references must be replaced with mapboxgl."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I migrated my app from MapLibre to Mapbox GL JS by swapping the package and changing the import. Now I get the error: 'A valid Mapbox access token is required to use Mapbox GL JS. Please set mapboxgl.accessToken before creating a map.' Where does the token go?",
+      "expectations": [
+        "Token must be set as mapboxgl.accessToken = 'pk.xxx' BEFORE calling new mapboxgl.Map()",
+        "Shows the correct pattern: set accessToken at the module level, then create the map",
+        "Advises storing the token in an environment variable (e.g., process.env.VITE_MAPBOX_TOKEN) and not hardcoding it",
+        "Notes the token is NOT passed as a constructor option to the Map — it's a module-level property"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "After migrating from MapLibre to Mapbox GL JS, my geocoder plugin broke. I was using `@maplibre/maplibre-gl-geocoder`. What do I need to do?",
+      "expectations": [
+        "MapLibre plugins are NOT compatible with Mapbox GL JS — must use the Mapbox equivalent",
+        "Install the Mapbox geocoder: @mapbox/mapbox-gl-geocoder",
+        "Update the import from MaplibreGeocoder to MapboxGeocoder",
+        "Notes that other MapLibre plugins also need Mapbox equivalents — check Mapbox ecosystem for Mapbox-specific versions"
+      ]
+    }
+  ]
+}

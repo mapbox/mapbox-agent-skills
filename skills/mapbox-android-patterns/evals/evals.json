@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-android-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm setting up the Mapbox Maps SDK in my Android app. How do I add the dependency and configure the access token?",
+      "expectations": [
+        "Must add the Mapbox Maven repository in settings.gradle.kts: url = uri(\"https://api.mapbox.com/downloads/v2/releases/maven\")",
+        "Add the dependency: implementation(\"com.mapbox.maps:android:11.x.x\")",
+        "Token goes in a resources file app/res/values/mapbox_access_token.xml with the string resource name mapbox_access_token",
+        "Shows the correct XML: <string name=\"mapbox_access_token\">YOUR_TOKEN</string>"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My Android app creates a new `PointAnnotationManager` inside my `refreshMarkers()` method that gets called on every data update. Performance is noticeably poor. What should I change?",
+      "expectations": [
+        "Creating annotation managers repeatedly is the problem — each call reinitializes resources",
+        "Create the PointAnnotationManager once (e.g., in onCreate or a setup method) and reuse it",
+        "To update markers, reassign the annotations list: pointAnnotationManager.annotations = newAnnotations",
+        "Recommends batch updates: set all annotations at once rather than appending individually"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm using the Mapbox Standard style on Android and want to handle user taps on buildings. When a user taps a building, I want to highlight it. How do I implement this?",
+      "expectations": [
+        "Use ClickInteraction.standardBuildings { building, context -> ... } — the modern Interactions API for Standard style featuresets",
+        "Shows the pattern: mapView.mapboxMap.addInteraction(ClickInteraction.standardBuildings { building, context -> ... })",
+        "To highlight, use setFeatureState on the building: mapView.mapboxMap.setFeatureState(building, StandardBuildingsState { highlight(true) })",
+        "Notes that returning true from the lambda stops propagation to other interactions"
+      ]
+    }
+  ]
+}

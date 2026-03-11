@@ -491,6 +491,99 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) for full guidelines.
 
 ---
 
+# Where Skills Are Still Needed
+
+18 skills cover a lot — but significant Mapbox surface area isn't yet represented.
+
+<div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+<div class="border rounded p-3">
+
+**📱 Cross-platform mobile**
+
+Flutter, React Native, Unity SDK — AI assistants have no Mapbox-specific guidance for these runtimes at all.
+
+</div>
+<div class="border rounded p-3">
+
+**🌐 Custom rendering**
+
+`CustomLayerInterface`, THREE.js integration, WebGL custom layers, point clouds, 3D model overlays.
+
+</div>
+<div class="border rounded p-3">
+
+**📴 Offline maps**
+
+Download regions, offline packs, cache management, conflict resolution between offline and live data.
+
+</div>
+<div class="border rounded p-3">
+
+**🧪 Testing**
+
+How to write unit and integration tests for map applications — mocking the map, asserting layer state, CI/CD for styles.
+
+</div>
+<div class="border rounded p-3">
+
+**🌍 Internationalization**
+
+RTL text rendering, non-Latin script support, locale-aware label ordering, right-to-left UI with maps.
+
+</div>
+<div class="border rounded p-3">
+
+**📡 Tiling Service**
+
+Mapbox Tiling Service workflows — recipe authoring, tileset publishing, update pipelines, source validation.
+
+</div>
+</div>
+
+---
+
+# The Skill Gap Is an Opportunity
+
+Every uncovered area is a place where AI assistants are currently guessing.
+
+<div class="mt-4 p-4 bg-orange-50 border-l-4 border-orange-400 rounded">
+
+**If you've ever had to correct an AI assistant's Mapbox advice — that's a skill waiting to be written.**
+
+The correction you just made, the pattern you know that the model doesn't, the mistake you've seen developers make repeatedly — that's exactly the knowledge a skill should capture.
+
+</div>
+
+<div class="grid grid-cols-2 gap-6 mt-6">
+<div>
+
+**Good candidates for new skills**
+
+- Any Mapbox API or SDK surface not yet covered
+- Common mistakes you see in support channels or code review
+- Patterns that are correct but non-obvious
+- Areas where the docs exist but judgment is still required
+
+</div>
+<div>
+
+**How to get started**
+
+```bash
+gh repo fork mapbox/mapbox-agent-skills
+git checkout -b add-my-skill
+mkdir skills/mapbox-my-skill
+# Write SKILL.md, AGENTS.md, evals.json
+gh pr create
+```
+
+You don't need to be a Mapbox employee — community skills are welcome.
+
+</div>
+</div>
+
+---
+
 # Writing Evals for Your Skill
 
 Evals prove your skill actually improves AI responses — and show exactly *where* it adds value.

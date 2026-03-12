@@ -59,6 +59,45 @@ AI assistants are good at general coding — but Mapbox is a specialized, fast-m
 
 # What Are Agent Skills?
 
+Skills are folders of instructions + resources that AI assistants can discover and use.
+
+<div class="grid grid-cols-3 gap-4 mt-6">
+<div class="border rounded p-4">
+
+### 🛠️ Tools
+
+Provide **actions**
+`create_style`, `directions`, `geocode`
+
+</div>
+<div class="border rounded p-4">
+
+### 📚 Skills
+
+Provide **expertise**
+Know-how, patterns, best practices
+
+</div>
+<div class="border rounded p-4">
+
+### 💬 Prompts
+
+Provide **workflows**
+Guided sequences for specific tasks
+
+</div>
+</div>
+
+<div class="mt-6 p-4 bg-blue-900/30 rounded">
+
+> Skills teach AI assistants _how to think_ about a domain — not just what actions to take.
+
+</div>
+
+---
+
+# Why Agent Skills?
+
 Skills are a lightweight way to give AI assistants deep, focused domain expertise — without fine-tuning.
 
 <div class="grid grid-cols-3 gap-4 mt-4">
@@ -134,7 +173,7 @@ Using Mapbox MCP tools effectively inside AI agents is a novel pattern — no tr
 
 # Skills as a Strategy
 
-Skills are Mapbox's answer to the question: *how do we make AI assistants great at Mapbox development?*
+Skills are Mapbox's answer to the question: _how do we make AI assistants great at Mapbox development?_
 
 <div class="grid grid-cols-3 gap-4 mt-6">
 <div class="border rounded p-4 text-center">
@@ -163,45 +202,6 @@ Every skill ships with evals — we can prove the improvement with a benchmark d
 <div class="mt-6 p-4 bg-green-900/30 rounded">
 
 The goal: any developer using Claude Code, Cursor, or GitHub Copilot on a Mapbox project gets expert-level guidance automatically — without reading docs, without knowing which patterns apply.
-
-</div>
-
----
-
-# What Are Agent Skills?
-
-Skills are folders of instructions + resources that AI assistants can discover and use.
-
-<div class="grid grid-cols-3 gap-4 mt-6">
-<div class="border rounded p-4">
-
-### 🛠️ Tools
-
-Provide **actions**
-`create_style`, `directions`, `geocode`
-
-</div>
-<div class="border rounded p-4">
-
-### 📚 Skills
-
-Provide **expertise**
-Know-how, patterns, best practices
-
-</div>
-<div class="border rounded p-4">
-
-### 💬 Prompts
-
-Provide **workflows**
-Guided sequences for specific tasks
-
-</div>
-</div>
-
-<div class="mt-6 p-4 bg-blue-900/30 rounded">
-
-> Skills teach AI assistants _how to think_ about a domain — not just what actions to take.
 
 </div>
 
@@ -447,6 +447,29 @@ async with MCPServerStdio("mapbox-mcp-server") as mcp:
 
 ---
 
+# Skills + MCP: Better Together
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  AI Assistant                        │
+├──────────────────┬──────────────────────────────────┤
+│   Agent Skills   │         MCP Tools                │
+│  (know-how)      │         (actions)                │
+│                  │                                  │
+│ • Performance    │ • create_style_tool              │
+│   patterns       │ • preview_style_tool             │
+│ • Token security │ • directions_tool                │
+│ • iOS/Android    │ • search_and_geocode_tool        │
+│   best practices │ • validate_style_tool            │
+│ • Cartography    │ • isochrone_tool                 │
+│   principles     │ • static_map_image_tool          │
+└──────────────────┴──────────────────────────────────┘
+```
+
+Skills provide the **judgment**. MCP provides the **capability**.
+
+---
+
 # Skill Benchmarks (Evals)
 
 Every skill ships with `evals/evals.json` — 3 test cases that measure how much the skill improves AI responses.
@@ -515,29 +538,6 @@ The skill bridges the gap between the model's training cutoff and current SDK ve
 
 ---
 
-# Skills + MCP: Better Together
-
-```
-┌─────────────────────────────────────────────────────┐
-│                  AI Assistant                        │
-├──────────────────┬──────────────────────────────────┤
-│   Agent Skills   │         MCP Tools                │
-│  (know-how)      │         (actions)                │
-│                  │                                  │
-│ • Performance    │ • create_style_tool              │
-│   patterns       │ • preview_style_tool             │
-│ • Token security │ • directions_tool                │
-│ • iOS/Android    │ • search_and_geocode_tool        │
-│   best practices │ • validate_style_tool            │
-│ • Cartography    │ • isochrone_tool                 │
-│   principles     │ • static_map_image_tool          │
-└──────────────────┴──────────────────────────────────┘
-```
-
-Skills provide the **judgment**. MCP provides the **capability**.
-
----
-
 # Contributing a Skill
 
 1. **Create the skill directory** under `skills/`
@@ -556,6 +556,124 @@ gh pr create
 ```
 
 See [CONTRIBUTING.md](../../CONTRIBUTING.md) for full guidelines.
+
+---
+
+# Let Claude Write the Skill
+
+Claude Code has a built-in `skill-creator` skill — ask it to create, improve, and benchmark skills for you.
+
+```
+You: "Create a new skill for Mapbox offline maps patterns"
+     ↓
+Claude: reads existing skills for structure + style
+        drafts SKILL.md, AGENTS.md, evals/evals.json
+        runs benchmark (with_skill vs without_skill)
+        iterates based on delta
+```
+
+**What `skill-creator` can do:**
+
+- Create a skill from scratch given a topic or existing docs
+- Improve an existing skill's content or trigger description
+- Write eval prompts that target base model failure modes
+- Run the full benchmark and report the pass rate delta
+- Iterate until the delta is meaningful
+
+<div class="mt-4 p-3 border-l-4 border-blue-400 text-sm">
+
+Just describe the domain and Claude will handle the rest — including finding the edge cases where the base model gets it wrong.
+
+</div>
+
+---
+
+# Writing Evals for Your Skill
+
+Evals prove your skill actually improves AI responses — and show exactly _where_ it adds value.
+
+**The format (`evals/evals.json`):**
+
+```json
+{
+  "skill_name": "mapbox-my-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "How do I ...?",
+      "expectations": [
+        "Uses the correct API, not the outdated one",
+        "Includes the required configuration step",
+        "Shows the platform-specific pattern"
+      ]
+    }
+  ]
+}
+```
+
+---
+
+# Writing Good Evals
+
+**Pick prompts where the base model fails without the skill.**
+
+<div class="grid grid-cols-2 gap-6 mt-4">
+<div>
+
+**Good eval prompts**
+
+- Platform-specific questions where the wrong API is plausible
+- Questions about APIs that changed in recent SDK versions
+- Trade-off questions where context determines the right answer
+- Security or performance questions with non-obvious correct answers
+
+</div>
+<div>
+
+**Good expectations**
+
+- Specific and verifiable — not "gives a good answer"
+- Each expectation tests one thing
+- Include negative expectations: "does NOT use `queryRenderedFeatures`"
+- Cover the pattern, not just the syntax
+
+</div>
+</div>
+
+<div class="mt-4 p-3 bg-amber-900/30 rounded text-sm">
+
+**Rule of thumb:** if the base model gets it right without your skill, the eval is too easy — it's not testing what your skill uniquely provides. Find the edge where the base model fails.
+
+</div>
+
+---
+
+# Benchmarking Your Skill
+
+Run each eval prompt **with** and **without** the skill context. Grade each expectation pass/fail.
+
+```
+eval-1/
+  with_skill/run-1/
+    outputs/response.md     ← AI response with SKILL.md in context
+    grading.json            ← { passed, failed, total, pass_rate }
+  without_skill/run-1/
+    outputs/response.md     ← AI response with no skill context
+    grading.json
+
+benchmark.json              ← aggregated delta across all evals
+```
+
+**What a good benchmark looks like:**
+
+| | without_skill | with_skill | delta |
+|--|--|--|--|
+| eval-1 | 0.33 | 1.00 | **+67pp** |
+| eval-2 | 0.67 | 1.00 | **+33pp** |
+| eval-3 | 1.00 | 1.00 | +0pp (base model already knows this) |
+| **mean** | **0.67** | **1.00** | **+33pp** |
+
+A +0pp eval isn't failure — it just means that prompt isn't a good discriminator. Keep it if the topic is important; replace it if you can find a harder prompt.
 
 ---
 
@@ -649,124 +767,6 @@ You don't need to be a Mapbox employee — community skills are welcome.
 
 </div>
 </div>
-
----
-
-# Let Claude Write the Skill
-
-Claude Code has a built-in `skill-creator` skill — ask it to create, improve, and benchmark skills for you.
-
-```
-You: "Create a new skill for Mapbox offline maps patterns"
-     ↓
-Claude: reads existing skills for structure + style
-        drafts SKILL.md, AGENTS.md, evals/evals.json
-        runs benchmark (with_skill vs without_skill)
-        iterates based on delta
-```
-
-**What `skill-creator` can do:**
-
-- Create a skill from scratch given a topic or existing docs
-- Improve an existing skill's content or trigger description
-- Write eval prompts that target base model failure modes
-- Run the full benchmark and report the pass rate delta
-- Iterate until the delta is meaningful
-
-<div class="mt-4 p-3 border-l-4 border-blue-400 text-sm">
-
-Just describe the domain and Claude will handle the rest — including finding the edge cases where the base model gets it wrong.
-
-</div>
-
----
-
-# Writing Evals for Your Skill
-
-Evals prove your skill actually improves AI responses — and show exactly *where* it adds value.
-
-**The format (`evals/evals.json`):**
-
-```json
-{
-  "skill_name": "mapbox-my-skill",
-  "evals": [
-    {
-      "id": 1,
-      "prompt": "How do I ...?",
-      "expectations": [
-        "Uses the correct API, not the outdated one",
-        "Includes the required configuration step",
-        "Shows the platform-specific pattern"
-      ]
-    }
-  ]
-}
-```
-
----
-
-# Writing Good Evals
-
-**Pick prompts where the base model fails without the skill.**
-
-<div class="grid grid-cols-2 gap-6 mt-4">
-<div>
-
-**Good eval prompts**
-
-- Platform-specific questions where the wrong API is plausible
-- Questions about APIs that changed in recent SDK versions
-- Trade-off questions where context determines the right answer
-- Security or performance questions with non-obvious correct answers
-
-</div>
-<div>
-
-**Good expectations**
-
-- Specific and verifiable — not "gives a good answer"
-- Each expectation tests one thing
-- Include negative expectations: "does NOT use `queryRenderedFeatures`"
-- Cover the pattern, not just the syntax
-
-</div>
-</div>
-
-<div class="mt-4 p-3 bg-amber-900/30 rounded text-sm">
-
-**Rule of thumb:** if the base model gets it right without your skill, the eval is too easy — it's not testing what your skill uniquely provides. Find the edge where the base model fails.
-
-</div>
-
----
-
-# Benchmarking Your Skill
-
-Run each eval prompt **with** and **without** the skill context. Grade each expectation pass/fail.
-
-```
-eval-1/
-  with_skill/run-1/
-    outputs/response.md     ← AI response with SKILL.md in context
-    grading.json            ← { passed, failed, total, pass_rate }
-  without_skill/run-1/
-    outputs/response.md     ← AI response with no skill context
-    grading.json
-
-benchmark.json              ← aggregated delta across all evals
-```
-
-**What a good benchmark looks like:**
-
-| | without_skill | with_skill | delta |
-|--|--|--|--|
-| eval-1 | 0.33 | 1.00 | **+67pp** |
-| eval-2 | 0.67 | 1.00 | **+33pp** |
-| eval-3 | 1.00 | 1.00 | +0pp (base model already knows this) |
-| **mean** | **0.67** | **1.00** | **+33pp** |
-
-A +0pp eval isn't failure — it just means that prompt isn't a good discriminator. Keep it if the topic is important; replace it if you can find a harder prompt.
 
 ---
 

@@ -406,8 +406,6 @@ async with MCPServerStdio("mapbox-mcp-server") as mcp:
 
 Every skill ships with `evals/evals.json` — 3 test cases that measure how much the skill improves AI responses.
 
-**Example eval for `mapbox-ios-patterns`:**
-
 ```json
 {
   "id": 3,
@@ -420,13 +418,36 @@ Every skill ships with `evals/evals.json` — 3 test cases that measure how much
 }
 ```
 
-**Benchmark results:**
+Each eval is graded pass/fail per expectation. Results are aggregated into a **pass rate delta**: `with_skill` minus `without_skill`.
 
-| Skill                             | Without skill | With skill | Delta     |
-| --------------------------------- | ------------- | ---------- | --------- |
-| `mapbox-ios-patterns`             | 67%           | 100%       | **+33pp** |
-| `mapbox-android-patterns`         | 67%           | 100%       | **+33pp** |
-| `mapbox-web-performance-patterns` | ~80%          | ~95%       | **+15pp** |
+---
+
+# Benchmark Results
+
+<div class="mt-4">
+
+| Skill | Without | With | Delta |
+| ----- | ------- | ---- | ----- |
+| `ios-patterns` | 67% | 100% | **+33pp** |
+| `android-patterns` | 67% | 100% | **+33pp** |
+| `web-performance-patterns` | ~80% | ~95% | **+15pp** |
+| `mcp-devkit-patterns` | 100% | 100% | +0pp ¹ |
+| `data-visualization-patterns` | 92% | 92% | +0pp ² |
+
+</div>
+
+<div class="mt-4 text-sm text-gray-500">
+
+¹ Base model already knows MCP DevKit tools from public GitHub docs<br>
+² Common patterns (choropleth, feature state) are well-represented in training data
+
+</div>
+
+<div class="mt-4 p-3 bg-blue-50 rounded text-sm">
+
++0pp isn't a bad result — it means the base model already covers that topic well. The high-value skills are the ones where the model confidently gives the **wrong answer** without guidance.
+
+</div>
 
 ---
 

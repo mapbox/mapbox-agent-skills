@@ -607,6 +607,35 @@ You don't need to be a Mapbox employee — community skills are welcome.
 
 ---
 
+# Let Claude Write the Skill
+
+Claude Code has a built-in `skill-creator` skill — ask it to create, improve, and benchmark skills for you.
+
+```
+You: "Create a new skill for Mapbox offline maps patterns"
+     ↓
+Claude: reads existing skills for structure + style
+        drafts SKILL.md, AGENTS.md, evals/evals.json
+        runs benchmark (with_skill vs without_skill)
+        iterates based on delta
+```
+
+**What `skill-creator` can do:**
+
+- Create a skill from scratch given a topic or existing docs
+- Improve an existing skill's content or trigger description
+- Write eval prompts that target base model failure modes
+- Run the full benchmark and report the pass rate delta
+- Iterate until the delta is meaningful
+
+<div class="mt-4 p-3 border-l-4 border-blue-400 text-sm">
+
+Just describe the domain and Claude will handle the rest — including finding the edge cases where the base model gets it wrong.
+
+</div>
+
+---
+
 # Writing Evals for Your Skill
 
 Evals prove your skill actually improves AI responses — and show exactly *where* it adds value.

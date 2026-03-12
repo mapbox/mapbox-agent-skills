@@ -85,7 +85,7 @@ A folder of curated guidance the AI reads at task time. Zero infra, always up to
 </div>
 </div>
 
-<div class="mt-6 p-4 bg-blue-50 rounded">
+<div class="mt-6 p-4 bg-blue-900/30 rounded">
 
 > A skill is like hiring a specialist who sits next to the AI — they don't write the code, but they make sure it's done right.
 
@@ -160,7 +160,7 @@ Every skill ships with evals — we can prove the improvement with a benchmark d
 </div>
 </div>
 
-<div class="mt-6 p-4 bg-green-50 rounded">
+<div class="mt-6 p-4 bg-green-900/30 rounded">
 
 The goal: any developer using Claude Code, Cursor, or GitHub Copilot on a Mapbox project gets expert-level guidance automatically — without reading docs, without knowing which patterns apply.
 
@@ -199,7 +199,7 @@ Guided sequences for specific tasks
 </div>
 </div>
 
-<div class="mt-6 p-4 bg-blue-50 rounded">
+<div class="mt-6 p-4 bg-blue-900/30 rounded">
 
 > Skills teach AI assistants _how to think_ about a domain — not just what actions to take.
 
@@ -222,7 +222,7 @@ npx skills add mapbox/mapbox-agent-skills --list
 
 Once installed, AI assistants automatically apply skill knowledge when the trigger conditions match.
 
-<div class="mt-4 p-3 bg-gray-100 rounded text-sm">
+<div class="mt-4 p-3 bg-white/10 rounded text-sm">
 
 **Example:** Ask "how do I optimize markers for 50,000 points?" → the `mapbox-web-performance-patterns` skill activates and guides the AI toward symbol layers + clustering instead of HTML markers.
 
@@ -443,7 +443,7 @@ Each eval is graded pass/fail per expectation. Results are aggregated into a **p
 
 </div>
 
-<div class="mt-4 p-3 bg-blue-50 rounded text-sm">
+<div class="mt-4 p-3 border rounded text-sm">
 
 +0pp isn't a bad result — it means the base model already covers that topic well. The high-value skills are the ones where the model confidently gives the **wrong answer** without guidance.
 
@@ -573,7 +573,7 @@ Mapbox Tiling Service workflows — recipe authoring, tileset publishing, update
 
 Every uncovered area is a place where AI assistants are currently guessing.
 
-<div class="mt-4 p-4 bg-orange-50 border-l-4 border-orange-400 rounded">
+<div class="mt-4 p-4 bg-orange-900/30 border-l-4 border-orange-400 rounded">
 
 **If you've ever had to correct an AI assistant's Mapbox advice — that's a skill waiting to be written.**
 
@@ -663,7 +663,7 @@ Evals prove your skill actually improves AI responses — and show exactly *wher
 </div>
 </div>
 
-<div class="mt-4 p-3 bg-amber-50 rounded text-sm">
+<div class="mt-4 p-3 bg-amber-900/30 rounded text-sm">
 
 **Rule of thumb:** if the base model gets it right without your skill, the eval is too easy — it's not testing what your skill uniquely provides. Find the edge where the base model fails.
 

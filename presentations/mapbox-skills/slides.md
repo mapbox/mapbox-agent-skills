@@ -230,6 +230,51 @@ Once installed, AI assistants automatically apply skill knowledge when the trigg
 
 ---
 
+# Discovering & Installing Skills
+
+**[skills.sh](https://skills.sh)** is the registry for Agent Skills — browse and search the full catalog.
+
+<div class="grid grid-cols-2 gap-6 mt-4">
+<div>
+
+**Find skills on skills.sh**
+
+- Browse by category (maps, data, security, …)
+- Search by tool or framework name
+- See install commands, descriptions, and source links
+- Community and official skills in one place
+
+</div>
+<div>
+
+**Install with `npx skills`**
+
+```bash
+# Browse what's available
+npx skills add mapbox/mapbox-agent-skills --list
+
+# Install everything from a repo
+npx skills add mapbox/mapbox-agent-skills
+
+# Install one specific skill
+npx skills add mapbox/mapbox-agent-skills \
+  --skill mapbox-token-security
+
+# Install from any GitHub repo
+npx skills add owner/repo-name
+```
+
+</div>
+</div>
+
+<div class="mt-4 text-sm text-gray-400">
+
+Skills are installed into your project's `.claude/` directory and automatically picked up by Claude Code, Cursor, and other AI assistants that support the Agent Skills spec.
+
+</div>
+
+---
+
 # Skill Structure
 
 Every skill follows a simple, consistent format:

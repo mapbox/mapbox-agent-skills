@@ -424,7 +424,7 @@ Each eval is graded pass/fail per expectation. Results are aggregated into a **p
 
 # Benchmark Results
 
-<div class="mt-4">
+<div class="text-sm mt-2">
 
 | Skill | Without | With | Delta |
 | ----- | ------- | ---- | ----- |
@@ -436,14 +436,14 @@ Each eval is graded pass/fail per expectation. Results are aggregated into a **p
 
 </div>
 
-<div class="mt-4 text-sm text-gray-500">
+<div class="mt-2 text-xs text-gray-500">
 
 ¹ Base model already knows MCP DevKit tools from public GitHub docs<br>
 ² Common patterns (choropleth, feature state) are well-represented in training data
 
 </div>
 
-<div class="mt-4 p-3 border rounded text-sm">
+<div class="mt-3 p-3 border rounded text-sm">
 
 +0pp isn't a bad result — it means the base model already covers that topic well. The high-value skills are the ones where the model confidently gives the **wrong answer** without guidance.
 

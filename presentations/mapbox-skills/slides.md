@@ -443,11 +443,7 @@ Each eval is graded pass/fail per expectation. Results are aggregated into a **p
 
 </div>
 
-<div class="mt-3 p-3 border rounded text-sm">
-
 +0pp isn't a bad result — it means the base model already covers that topic well. The high-value skills are the ones where the model confidently gives the **wrong answer** without guidance.
-
-</div>
 
 ---
 

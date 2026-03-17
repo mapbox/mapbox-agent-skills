@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-google-maps-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm migrating a store locator from Google Maps to Mapbox. In Google Maps I created `new google.maps.Marker()` for each of my 500 store locations. I've translated this directly and I'm now creating `new mapboxgl.Marker()` for each store. My map is noticeably sluggish when displaying all 500 markers. What's the issue and how do I fix it?",
+      "expectations": [
+        "Identifies that mapboxgl.Marker() creates individual DOM elements — 500 DOM markers causes performance issues (not GPU-rendered)",
+        "Recommends switching to a GeoJSON source + symbol layer for large marker counts (100+ markers)",
+        "Explains that symbol layers are WebGL-rendered and can handle thousands of points efficiently",
+        "Shows the correct pattern: map.addSource() with GeoJSON FeatureCollection, then map.addLayer() with type 'symbol' or 'circle'"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to remove a GeoJSON layer from my Mapbox map. I'm calling `map.removeSource('stores')` but getting this error: 'Source \"stores\" cannot be removed while layer \"stores-layer\" is using it.' In Google Maps I just called `polygon.setMap(null)`. Why is Mapbox different and how do I fix it?",
+      "expectations": [
+        "Explains that Mapbox separates data (sources) from visual representation (layers) — multiple layers can reference one source",
+        "To remove cleanly: call map.removeLayer('stores-layer') first, then map.removeSource('stores')",
+        "Explains why this design exists — the same source can power multiple layers (e.g., both a circle layer and a label layer)",
+        "Contrasts with Google Maps' object model where the visual and data are combined in one object"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My Mapbox map loads a GeoJSON source with all 1000 stores. When a user filters by category, I call `map.removeLayer('stores')`, `map.removeSource('stores')`, then `map.addSource()` and `map.addLayer()` with filtered data. It works but there's a visible flash when the layer disappears and reappears. Is there a better pattern?",
+      "expectations": [
+        "Recommends map.getSource('stores').setData(filteredGeoJSON) to update data in place — no layer removal, no flash",
+        "OR recommends map.setFilter('stores', filterExpression) with a Mapbox GL JS filter expression — even better, no data re-upload, the full dataset stays in GPU memory",
+        "Explains that remove+re-add reinitializes WebGL resources causing the flash — setData() or setFilter() avoids this",
+        "Shows a concrete example of setFilter() with an expression like ['==', ['get', 'category'], selectedCategory]"
+      ]
+    }
+  ]
+}

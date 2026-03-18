@@ -1,10 +1,16 @@
 {
   "mcpServers": {
     "mapbox-devkit": {
+      "type": "http",
       "url": "https://mcp-devkit.mapbox.com/mcp"
     },
     "mapbox": {
+      "type": "http",
       "url": "https://mcp.mapbox.com/mcp"
+    },
+    "mapbox-docs": {
+      "type": "http",
+      "url": "https://mcp-docs.mapbox.com/mcp"
     }
   }
 }

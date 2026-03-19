@@ -22,22 +22,6 @@ List available skills:
 npx skills add mapbox/mapbox-agent-skills --list
 ```
 
-### Claude Plugin (Claude Code)
-
-Install as a Claude Code plugin to get skills and MCP servers in one step:
-
-```
-/plugin marketplace add mapbox/mapbox-agent-skills
-```
-
-Then install the plugin:
-
-```
-/plugin install mapbox
-```
-
-This adds all Mapbox skills and connects the `mapbox`, `mapbox-devkit`, and `mapbox-docs` MCP servers automatically.
-
 > **💡 Pro tip:** These skills work great on their own, but they're even more powerful when combined with the [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server). Skills provide the expertise (performance patterns, design principles), while MCP tools provide the actions (create styles, generate previews). Together, they enable complete workflows from design to deployment.
 
 ## What are Agent Skills?
@@ -653,6 +637,22 @@ npx skills add mapbox/mapbox-agent-skills -a vscode
 ### With Other AI Assistants
 
 The `skills` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx skills add --help` for full list.
+
+### Claude Plugin (Claude Code)
+
+Install as a Claude Code plugin to get skills and MCP servers in one step:
+
+```
+/plugin marketplace add mapbox/mapbox-agent-skills
+```
+
+Then install the plugin:
+
+```
+/plugin install mapbox
+```
+
+This adds all Mapbox skills and connects the `mapbox`, `mapbox-devkit`, and `mapbox-docs` MCP servers automatically.
 
 ### Open Plugins (Cursor, Codex, GitHub Copilot)
 

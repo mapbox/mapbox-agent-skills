@@ -656,11 +656,19 @@ The `skills` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx skil
 
 ### Open Plugins (Cursor, Codex, GitHub Copilot)
 
-This repository conforms to the [Open Plugins specification](https://open-plugins.com/). The `.plugin/plugin.json` manifest is recognized by any Open Plugins-conformant tool, giving you skills and MCP servers in one installable unit.
+This repository conforms to the [Open Plugins specification](https://open-plugins.com/), making it installable in any conformant tool - Cursor, Codex, GitHub Copilot, and more.
 
-Supported tools: **Cursor**, **Claude Code**, **Codex**, **GitHub Copilot**
+Add the marketplace source:
 
-See [open-plugins.com/supported-agents](https://open-plugins.com/supported-agents) for tool-specific install instructions.
+```
+/plugin marketplace add mapbox/mapbox-agent-skills
+```
+
+Then install the plugin:
+
+```
+/plugin install mapbox
+```
 
 ### Manual Installation
 

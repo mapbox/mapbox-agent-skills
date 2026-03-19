@@ -4,6 +4,40 @@
 
 ## Quick Start
 
+### Open Plugins (Cursor, Codex, GitHub Copilot, Claude Code)
+
+This repository conforms to the [Open Plugins specification](https://open-plugins.com/), making it installable in any conformant tool - Cursor, Codex, GitHub Copilot, Claude Code, and more.
+
+Add the marketplace source:
+
+```
+/plugin marketplace add mapbox/mapbox-agent-skills
+```
+
+Then install the plugin:
+
+```
+/plugin install mapbox
+```
+
+### Claude Plugin (Claude Code)
+
+Install as a Claude Code plugin to get skills and MCP servers in one step:
+
+```
+/plugin marketplace add mapbox/mapbox-agent-skills
+```
+
+Then install the plugin:
+
+```
+/plugin install mapbox
+```
+
+This adds all Mapbox skills and connects the `mapbox`, `mapbox-devkit`, and `mapbox-docs` MCP servers automatically.
+
+### Skills CLI
+
 Install all Mapbox Agent Skills:
 
 ```bash
@@ -637,38 +671,6 @@ npx skills add mapbox/mapbox-agent-skills -a vscode
 ### With Other AI Assistants
 
 The `skills` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx skills add --help` for full list.
-
-### Claude Plugin (Claude Code)
-
-Install as a Claude Code plugin to get skills and MCP servers in one step:
-
-```
-/plugin marketplace add mapbox/mapbox-agent-skills
-```
-
-Then install the plugin:
-
-```
-/plugin install mapbox
-```
-
-This adds all Mapbox skills and connects the `mapbox`, `mapbox-devkit`, and `mapbox-docs` MCP servers automatically.
-
-### Open Plugins (Cursor, Codex, GitHub Copilot)
-
-This repository conforms to the [Open Plugins specification](https://open-plugins.com/), making it installable in any conformant tool - Cursor, Codex, GitHub Copilot, and more.
-
-Add the marketplace source:
-
-```
-/plugin marketplace add mapbox/mapbox-agent-skills
-```
-
-Then install the plugin:
-
-```
-/plugin install mapbox
-```
 
 ### Manual Installation
 

@@ -4,22 +4,20 @@
 
 ## Quick Start
 
-Install all Mapbox Agent Skills:
+### Open Plugins (Cursor, Codex, GitHub Copilot, Claude Code)
 
-```bash
-npx skills add mapbox/mapbox-agent-skills
+This repository conforms to the [Open Plugins specification](https://open-plugins.com/), making it installable in any conformant tool - Cursor, Codex, GitHub Copilot, Claude Code, and more.
+
+Add the marketplace source:
+
+```
+/plugin marketplace add mapbox/mapbox-agent-skills
 ```
 
-Install specific skills:
+Then install the plugin:
 
-```bash
-npx skills add mapbox/mapbox-agent-skills --skill mapbox-web-performance-patterns
 ```
-
-List available skills:
-
-```bash
-npx skills add mapbox/mapbox-agent-skills --list
+/plugin install mapbox
 ```
 
 ### Claude Plugin (Claude Code)
@@ -37,6 +35,26 @@ Then install the plugin:
 ```
 
 This adds all Mapbox skills and connects the `mapbox`, `mapbox-devkit`, and `mapbox-docs` MCP servers automatically.
+
+### Skills CLI
+
+Install all Mapbox Agent Skills:
+
+```bash
+npx skills add mapbox/mapbox-agent-skills
+```
+
+Install specific skills:
+
+```bash
+npx skills add mapbox/mapbox-agent-skills --skill mapbox-web-performance-patterns
+```
+
+List available skills:
+
+```bash
+npx skills add mapbox/mapbox-agent-skills --list
+```
 
 > **💡 Pro tip:** These skills work great on their own, but they're even more powerful when combined with the [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server). Skills provide the expertise (performance patterns, design principles), while MCP tools provide the actions (create styles, generate previews). Together, they enable complete workflows from design to deployment.
 

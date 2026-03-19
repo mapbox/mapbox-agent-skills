@@ -466,24 +466,38 @@ async with MCPServerStdio("mapbox-mcp-server") as mcp:
 
 # Skills + MCP: Better Together
 
-```
-┌─────────────────────────────────────────────────────┐
-│                  AI Assistant                        │
-├──────────────────┬──────────────────────────────────┤
-│   Agent Skills   │         MCP Tools                │
-│  (know-how)      │         (actions)                │
-│                  │                                  │
-│ • Performance    │ • create_style_tool              │
-│   patterns       │ • preview_style_tool             │
-│ • Token security │ • directions_tool                │
-│ • iOS/Android    │ • search_and_geocode_tool        │
-│   best practices │ • validate_style_tool            │
-│ • Cartography    │ • isochrone_tool                 │
-│   principles     │ • static_map_image_tool          │
-└──────────────────┴──────────────────────────────────┘
-```
+<div class="grid grid-cols-2 gap-6 mt-6">
+<div class="bg-blue-900/30 rounded-xl p-6">
+
+**Agent Skills — know-how**
+
+- Performance patterns
+- Token security
+- iOS/Android best practices
+- Cartography principles
+- Migration guides
+- Search integration
+
+</div>
+<div class="bg-green-900/30 rounded-xl p-6">
+
+**MCP Tools — capability**
+
+- `create_style_tool`
+- `preview_style_tool`
+- `directions_tool`
+- `search_and_geocode_tool`
+- `validate_style_tool`
+- `isochrone_tool`
+
+</div>
+</div>
+
+<div class="mt-6 text-center text-lg">
 
 Skills provide the **judgment**. MCP provides the **capability**.
+
+</div>
 
 ---
 

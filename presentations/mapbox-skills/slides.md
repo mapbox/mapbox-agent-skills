@@ -234,7 +234,7 @@ Once installed, AI assistants automatically apply skill knowledge when the trigg
 
 **[skills.sh](https://skills.sh)** is the registry for Agent Skills — browse and search the full catalog.
 
-<div class="grid grid-cols-2 gap-6 mt-4">
+<div class="grid grid-cols-3 gap-6 mt-4">
 <div>
 
 **Find skills on skills.sh**
@@ -259,9 +259,26 @@ npx skills add mapbox/mapbox-agent-skills
 # Install one specific skill
 npx skills add mapbox/mapbox-agent-skills \
   --skill mapbox-token-security
+```
 
-# Install from any GitHub repo
-npx skills add owner/repo-name
+</div>
+<div>
+
+**Install as a plugin**
+
+Open Plugins (Cursor, Codex, Copilot, Claude Code):
+
+```
+/plugin marketplace add \
+  mapbox/mapbox-agent-skills
+
+/plugin install mapbox
+```
+
+Claude Code official marketplace:
+
+```
+/plugin install mapbox
 ```
 
 </div>

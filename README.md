@@ -654,6 +654,14 @@ npx skills add mapbox/mapbox-agent-skills -a vscode
 
 The `skills` CLI supports: OpenCode, Codex, Antigravity, and more. Run `npx skills add --help` for full list.
 
+### Open Plugins (Cursor, Codex, GitHub Copilot)
+
+This repository conforms to the [Open Plugins specification](https://open-plugins.com/). The `.plugin/plugin.json` manifest is recognized by any Open Plugins-conformant tool, giving you skills and MCP servers in one installable unit.
+
+Supported tools: **Cursor**, **Claude Code**, **Codex**, **GitHub Copilot**
+
+See [open-plugins.com/supported-agents](https://open-plugins.com/supported-agents) for tool-specific install instructions.
+
 ### Manual Installation
 
 If your AI assistant doesn't support the `skills` CLI, you can copy skill files directly:

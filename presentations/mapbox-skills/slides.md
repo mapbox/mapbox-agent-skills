@@ -827,11 +827,17 @@ You don't need to be a Mapbox employee — community skills are welcome.
 </div>
 </div>
 
-<div class="mt-8 text-center text-2xl">
+<div class="mt-8 text-center">
 
 ```bash
 npx skills add mapbox/mapbox-agent-skills
 ```
+
+```
+/plugin install mapbox
+```
+
+<span class="text-sm text-gray-400">Skills + MCP servers included with the plugin</span>
 
 </div>
 

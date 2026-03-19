@@ -1,0 +1,57 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    if: >
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      actions: read
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        if: github.event_name == 'pull_request'
+        id: pr-size
+        run: |
+          CHANGED_LINES=$(git diff --stat origin/${{ github.event.pull_request.base.ref }}...origin/${{ github.event.pull_request.head.ref }} | tail -1 | awk '{gsub(/[^0-9]/, " "); print $1 + $2}')
+          CHANGED_LINES=${CHANGED_LINES:-0}
+          echo "changed_lines=$CHANGED_LINES" >> "$GITHUB_OUTPUT"
+          echo "PR has $CHANGED_LINES changed lines"
+
+      - name: Claude Code Review
+        if: >
+          github.event_name == 'issue_comment' ||
+          (github.event_name == 'pull_request' && fromJSON(steps.pr-size.outputs.changed_lines) >= 300)
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          trigger_phrase: "@claude"
+          track_progress: true
+          prompt: |
+            Review this PR focusing on:
+            1. Accuracy - technical content is correct for the Mapbox APIs and SDKs referenced
+            2. Skill structure - each skill has a valid frontmatter block (name, description, triggers, content) matching the schema in CONTRIBUTING.md
+            3. Clarity - guidance is actionable and unambiguous; code examples are complete and runnable
+            4. Consistency - tone, formatting, and depth match existing skills in the repo
+            5. Scope - skills stay focused on their stated topic; no unnecessary overlap with other skills
+
+            Do NOT suggest adding more skills beyond what the PR introduces.
+            Do NOT flag minor prose style preferences as issues.
+
+            Provide detailed inline comments for specific issues.
+          claude_args: '--model claude-opus-4-6 --allowedTools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),mcp__github_inline_comment__create_inline_comment,Read,Grep,Glob,Bash(git log:*),Bash(git diff:*),Bash(git show:*),Bash(git blame:*),Bash(git rev-parse:*),WebFetch(domain:github.com)"'

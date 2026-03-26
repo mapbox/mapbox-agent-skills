@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-search-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a location app and need to handle two different search buttons: one labeled 'Find Starbucks' and one labeled 'Find Coffee Shops'. Both should bias results toward the user's current location at (-122.4194, 37.7749). Which Mapbox search tool should I use for each, and why are they different?",
+      "expectations": [
+        "Uses search_and_geocode_tool for 'Find Starbucks' — Starbucks is a specific brand name, not a category",
+        "Uses category_search_tool for 'Find Coffee Shops' — coffee shops is a generic category/plural type",
+        "Explains that using category_search_tool for a brand name like Starbucks would return an error (brands are not valid category values)",
+        "Sets proximity to the user's coordinates for both calls to bias results toward the user's location"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "A user clicks 'Find restaurants near me' in my app. I have their GPS coordinates. I'm currently calling: `search_and_geocode_tool({ q: 'restaurants', proximity: { longitude: -87.6298, latitude: 41.8781 } })`. Is this the right approach?",
+      "expectations": [
+        "Identifies this as the wrong tool — 'restaurants' is a generic category/plural type, not a specific place name",
+        "Recommends switching to category_search_tool with an appropriate category value (e.g. 'restaurant')",
+        "Confirms that proximity is the correct spatial parameter for 'near me' searches — it biases results without a hard exclusion boundary",
+        "Notes that search_and_geocode_tool is designed for specific names, addresses, and brands — not generic category searches"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm building a hotel finder. When a user searches 'hotels in downtown Chicago', should I use proximity, bbox, or country to spatially constrain the results? What's the difference and which is right here?",
+      "expectations": [
+        "Recommends using proximity (centered on downtown Chicago) as the primary parameter — it biases results toward downtown without hard-excluding nearby hotels",
+        "Explains that bbox creates a hard boundary — ONLY results within the box are returned, which can miss good nearby results or return nothing if the box is too tight",
+        "Notes that combining proximity with bbox is valid when the user specifies a defined area like 'in downtown' — proximity biases, bbox constrains",
+        "Recommends category_search_tool (not search_and_geocode_tool) since 'hotels' is a generic category"
+      ]
+    }
+  ]
+}

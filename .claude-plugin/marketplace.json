@@ -1,6 +1,13 @@
 {
-  "name": "Mapbox Plugin Marketplace",
-  "description": "Official Mapbox plugin for Claude Code - skills and MCP servers for building location-aware applications with AI.",
+  "name": "mapbox-agent-skills",
+  "owner": {
+    "name": "Mapbox Plugin Marketplace",
+    "email": "locationai@mapbox.com"
+  },
+  "metadata": {
+    "description": "Official Mapbox plugin for Claude Code - skills and MCP servers for building location-aware applications with AI.",
+    "version": "1.0.0"
+  },
   "plugins": [
     {
       "name": "mapbox",

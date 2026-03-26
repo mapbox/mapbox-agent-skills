@@ -35,11 +35,13 @@ Returns: neighborhood, city, region, country. This is the anchor for the respons
 ### Step 2 — Retrieve nearby POIs
 
 For specific names or brands:
+
 ```
 search_and_geocode_tool(query, proximity: {longitude, latitude}, limit: 10)
 ```
 
 For generic categories:
+
 ```
 category_search_tool(category, proximity: {longitude, latitude}, limit: 10)
 ```
@@ -80,22 +82,23 @@ Example grounded response:
 > **SoMa, San Francisco, CA** (live Mapbox data)
 >
 > Family-friendly restaurants within 10 minutes walking:
+>
 > - Bix Restaurant — 56 Gold St (8 min walk)
 > - The Bird — 115 New Montgomery St (5 min walk)
 > - Oren's Hummus — 131 Townsend St (9 min walk)
 >
 > 15-minute walking area covers approximately 0.8 sq km.
-> *Sources: Mapbox Search, Mapbox Isochrone API*
+> _Sources: Mapbox Search, Mapbox Isochrone API_
 
 ## What Mapbox Grounding Offers vs. Training Data
 
-| | Training Data | Mapbox Grounding |
-|---|---|---|
-| POI accuracy | Stale, hallucinated | Live, verified |
-| Business hours | Often wrong | Not available — flag this |
-| Travel times | Estimated | Routing-based |
-| New places | Missing | Indexed |
-| Citations | None | Tool + API source |
+|                | Training Data       | Mapbox Grounding          |
+| -------------- | ------------------- | ------------------------- |
+| POI accuracy   | Stale, hallucinated | Live, verified            |
+| Business hours | Often wrong         | Not available — flag this |
+| Travel times   | Estimated           | Routing-based             |
+| New places     | Missing             | Indexed                   |
+| Citations      | None                | Tool + API source         |
 
 ## Important Limitations
 

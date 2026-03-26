@@ -22,17 +22,34 @@ Ground responses when the user asks about:
 
 ## Grounding Tool Composition
 
-Build a grounded response by composing these tools in order:
+### Preferred: single tool call
 
-### Step 1 — Establish place context
+If `ground_location_tool` is available, use it — it handles reverse geocoding, POI search, and isochrone in one parallel call:
 
 ```
-reverse_geocode_tool(longitude, latitude)
+ground_location_tool(
+  longitude, latitude,
+  query: "restaurant",   // optional — category of nearby places to find
+  profile: "walking",    // optional — travel profile for isochrone
+  contours_minutes: [5, 10, 15]
+)
+```
+
+Returns: neighborhood name, nearby POIs with distances, travel-time reachability, and citations. Do not call `reverse_geocode_tool`, `category_search_tool`, or `isochrone_tool` separately — they are already composed inside this tool.
+
+### Fallback: manual composition
+
+If `ground_location_tool` is not available, build the grounded response by composing these tools in order:
+
+#### Step 1 — Establish place context
+
+```
+reverse_geocode_tool(longitude, latitude, types: "neighborhood,locality,place")
 ```
 
 Returns: neighborhood, city, region, country. This is the anchor for the response.
 
-### Step 2 — Retrieve nearby POIs
+#### Step 2 — Retrieve nearby POIs
 
 For specific names or brands:
 
@@ -46,19 +63,19 @@ For generic categories:
 category_search_tool(category, proximity: {longitude, latitude}, limit: 10)
 ```
 
-### Step 3 — Add travel-time context (optional but high-value)
+#### Step 3 — Add travel-time context (optional but high-value)
 
 ```
 isochrone_tool(
-  longitude, latitude,
-  profile: "walking",    // or "driving", "cycling"
+  coordinates: {longitude, latitude},
+  profile: "mapbox/walking",    // or "mapbox/driving", "mapbox/cycling", "mapbox/driving-traffic"
   contours_minutes: [5, 10, 15]
 )
 ```
 
 Returns a polygon showing what's reachable within each time threshold.
 
-### Step 4 — Visual grounding (optional)
+#### Step 4 — Visual grounding (optional)
 
 ```
 static_map_image_tool(longitude, latitude, zoom: 14)
@@ -110,6 +127,6 @@ Example grounded response:
 
 - Answering "what's near X?" from training data without calling search tools
 - Hallucinating business names, hours, or ratings
-- Skipping `reverse_geocode_tool` — always establish place context first
+- Calling `reverse_geocode_tool` + `category_search_tool` separately when `ground_location_tool` is available
 - Returning raw tool output without synthesizing into a readable response
 - Omitting citations — always indicate the response is grounded in live Mapbox data

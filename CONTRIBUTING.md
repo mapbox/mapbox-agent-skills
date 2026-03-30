@@ -32,7 +32,7 @@ When you clone the repository and run `npm install`, git hooks are automatically
 1. **Formatting** - Prettier formatting (all `.md`, `.json`, `.js` files)
 2. **Spelling** - cspell spell checking (all markdown files)
 3. **Markdown linting** - markdownlint validation
-4. **Skills validation** - [Agent Skills Specification](https://agentskills.io/specification) compliance via `skills-ref`
+4. **Skills validation** - Skill structure compliance via `validate-skills.js`
 
 ### Running Checks Manually
 
@@ -94,7 +94,7 @@ skills/your-skill-name/
 └── AGENTS.md             # Optional: Condensed version for Cursor/Copilot
 ```
 
-This follows the [Agent Skills Specification](https://agentskills.io/specification). For best practices on content design, descriptions, scripts, and evaluation, see the [skill creation guides](https://agentskills.io/skill-creation/best-practices).
+This is our convention for progressive skill disclosure — only `name` and `description` at startup, full SKILL.md on activation, and `references/`/`assets/`/`scripts/` on demand.
 
 Skills are loaded progressively — only `name` and `description` at startup (~100 tokens), full SKILL.md on activation (< 5,000 tokens recommended), and `references/`/`assets/`/`scripts/` on demand.
 
@@ -120,7 +120,7 @@ Split into `references/` when SKILL.md exceeds **500 lines** and content has cle
 
 ### 2. SKILL.md Format
 
-Every SKILL.md must have YAML frontmatter followed by markdown content. See the [Agent Skills Specification](https://agentskills.io/specification) for full details.
+Every SKILL.md must have YAML frontmatter followed by markdown content.
 
 ```markdown
 ---
@@ -268,7 +268,7 @@ Before submitting:
 
 ## Skill Evals
 
-Evals measure how much a skill actually improves AI responses by comparing answers with and without the skill loaded. They catch non-discriminating content (things the AI already knows) and guide targeted skill improvements. For the full evaluation methodology, see [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills).
+Evals measure how much a skill actually improves AI responses by comparing answers with and without the skill loaded. They catch non-discriminating content (things the AI already knows) and guide targeted skill improvements.
 
 ### Eval File Structure
 
@@ -308,23 +308,12 @@ Create `skills/your-skill-name/evals/evals.json`:
 
 ### Running Evals
 
-Install the skill-creator benchmark tool:
+Run evals for all skills:
 
 ```bash
-npm install -g skill-creator  # or: npx skill-creator
-```
-
-Run evals for a skill:
-
-```bash
-# Create a workspace directory (gitignored)
-mkdir mapbox-your-skill-name-workspace
-
-# Run with and without the skill
-skill-creator eval \
-  --skill skills/mapbox-your-skill-name/SKILL.md \
-  --evals skills/mapbox-your-skill-name/evals/evals.json \
-  --workspace mapbox-your-skill-name-workspace/iteration-1
+npm run eval           # Run all evals
+npm run eval:verbose   # Run with detailed output
+npm run eval:diff      # Show delta vs baseline
 ```
 
 ### Interpreting Results
@@ -336,10 +325,6 @@ The benchmark reports:
 - **Delta** — the difference; higher is better
 
 **Target: +20pp or higher delta.** If delta is near zero, the evals are testing general knowledge — redesign them to test skill-specific content.
-
-### Workspace Files Are Gitignored
-
-The `*-workspace/` pattern is in `.gitignore`. Never commit workspace output directories — only commit `evals/evals.json`.
 
 ## Pull Request Process
 
@@ -385,7 +370,7 @@ The `*-workspace/` pattern is in `.gitignore`. Never commit workspace output dir
    - Formatting validation
    - Spell checking
    - Markdown linting
-   - Skills validation (Agent Skills Specification compliance)
+   - Skills validation (structure compliance)
    - Link checking
 
    All checks must pass before merge.

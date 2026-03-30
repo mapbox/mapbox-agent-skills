@@ -37,7 +37,6 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "cspell": "^8.0.0",
     "markdownlint-cli": "^0.39.0",
-    "prettier": "^3.8.1",
-    "skills-ref": "^0.1.5"
+    "prettier": "^3.8.1"
   }
 }

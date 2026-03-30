@@ -55,6 +55,7 @@ When the agent processes a directions query, it will call `directions_tool` with
 ```
 
 **Critical parameter rules:**
+
 - `coordinates` is an **array of `{longitude, latitude}` objects** — NOT `[lng, lat]` arrays
 - `routing_profile` must include the **`mapbox/` prefix** (e.g., `mapbox/driving-traffic`, `mapbox/walking`)
 - Do NOT use `origin`/`destination` parameter names — use the `coordinates` array instead

@@ -126,11 +126,11 @@ const map = new mapboxgl.Map({
 
 **Marker strategy by location count:**
 
-| Count | Strategy | Reason |
-|---|---|---|
-| **Fewer than 100** | HTML Markers | Full DOM/CSS control; DOM node count is manageable |
-| **100–1,000** | **Symbol Layer** (default) | Renders on the **GPU via WebGL** — one `<canvas>`, zero per-point DOM elements |
-| **More than 1,000** | Clustering | Reduces visual clutter at large scale |
+| Count               | Strategy                   | Reason                                                                         |
+| ------------------- | -------------------------- | ------------------------------------------------------------------------------ |
+| **Fewer than 100**  | HTML Markers               | Full DOM/CSS control; DOM node count is manageable                             |
+| **100–1,000**       | **Symbol Layer** (default) | Renders on the **GPU via WebGL** — one `<canvas>`, zero per-point DOM elements |
+| **More than 1,000** | Clustering                 | Reduces visual clutter at large scale                                          |
 
 > HTML Markers create one DOM element per point. Beyond ~100 locations the browser spends too much time on layout/paint. Symbol layers bypass the DOM entirely — the GPU draws all points in a single WebGL draw call.
 

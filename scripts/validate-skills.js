@@ -74,9 +74,7 @@ async function validateSkill(skillPath, dirName) {
       errors.push(`name "${meta.name}" contains consecutive hyphens`);
     }
     if (meta.name.length > MAX_NAME_LEN) {
-      errors.push(
-        `name is ${meta.name.length} chars (max ${MAX_NAME_LEN})`
-      );
+      errors.push(`name is ${meta.name.length} chars (max ${MAX_NAME_LEN})`);
     }
   }
 
@@ -124,13 +122,8 @@ async function validateSkill(skillPath, dirName) {
         for (const ev of evalsData.evals) {
           if (!ev.id) errors.push(`eval missing id`);
           if (!ev.prompt) errors.push(`eval ${ev.id ?? '?'} missing prompt`);
-          if (
-            !Array.isArray(ev.expectations) ||
-            ev.expectations.length === 0
-          ) {
-            errors.push(
-              `eval ${ev.id ?? '?'} missing or empty expectations`
-            );
+          if (!Array.isArray(ev.expectations) || ev.expectations.length === 0) {
+            errors.push(`eval ${ev.id ?? '?'} missing or empty expectations`);
           }
         }
       }

@@ -146,3 +146,13 @@ function MapboxSearchComponent({ country, types = 'address,poi' }) {
 - ✅ Cleaner code than direct API calls
 
 **Note:** For React apps, prefer Search JS React (Option 1) unless you need a completely custom UI design.
+
+## Why NOT Direct API Calls (fetch)?
+
+If you bypass Search JS Core and call the Search Box API directly with `fetch()`, you must handle:
+
+1. **Session tokens** — Required for proper billing. The Search Box API uses session-based pricing: one session = one suggest flow + one retrieve. You must generate a unique session token per search session and pass it as `session_token` parameter on every request. Without session tokens, each individual request is billed separately (much more expensive).
+2. **Debouncing** — You must implement your own 300ms debounce to avoid excessive API calls.
+3. **Race conditions** — Later requests may resolve before earlier ones; you need request cancellation or ordering logic.
+
+Search JS Core handles all three automatically — this is why it's recommended over direct `fetch()` calls even for custom UIs.

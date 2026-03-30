@@ -311,6 +311,24 @@ map.removeLayer('layer-id');
 map.removeSource('source-id');
 ```
 
+### Updating Data Without Flash
+
+**Never** remove and re-add layers to update data — this reinitializes WebGL resources and causes a visible flash. Instead:
+
+```javascript
+// ✅ Update data in place (no flash)
+map.getSource('stores').setData(newGeoJSON);
+
+// ✅ Filter existing data (GPU-side, fastest)
+map.setFilter('stores-layer', ['==', ['get', 'category'], 'coffee']);
+
+// ❌ BAD: remove + re-add causes flash
+map.removeLayer('stores-layer');
+map.removeSource('stores');
+map.addSource('stores', { ... });
+map.addLayer({ ... });
+```
+
 ## When NOT to Migrate
 
 Consider staying with Google Maps if:

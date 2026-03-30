@@ -15,20 +15,20 @@
       "id": 2,
       "prompt": "I'm working on a Mapbox style and I need to create separate tokens for development and production environments with different permission scopes. How can I do this with the MCP DevKit?",
       "expectations": [
-        "Use create_token_tool to create scoped tokens for each environment",
+        "Recommends create_token_tool to create scoped tokens for each environment",
         "Development token: broader scopes (styles:read, styles:write, fonts:read, etc.)",
         "Production token: minimal scopes — only what the app needs (typically styles:read, fonts:read, datasets:read)",
-        "Can use list_tokens_tool to view existing tokens and their scopes"
+        "Recommends list_tokens_tool to view existing tokens and their scopes"
       ]
     },
     {
       "id": 3,
       "prompt": "Before shipping a new Mapbox style to production, what validation steps should I take using the MCP DevKit tools?",
       "expectations": [
-        "Use validate_style_tool to check the style JSON is spec-compliant",
-        "Use validate_expression_tool to check data expressions in layer paint/layout properties",
-        "Use check_color_contrast_tool to verify text labels meet WCAG accessibility standards",
-        "Use compare_styles_tool or style_comparison_tool to diff the new style against the current production style before deploying"
+        "Recommends validate_style_tool to check the style JSON is spec-compliant",
+        "Recommends validate_expression_tool to check data expressions in layer paint/layout properties",
+        "Recommends check_color_contrast_tool to verify text labels meet WCAG accessibility standards",
+        "Recommends compare_styles_tool or style_comparison_tool to diff the new style against the current production style before deploying"
       ]
     }
   ]

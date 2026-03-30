@@ -2,8 +2,19 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { readdir, readFile, writeFile, mkdir } from 'fs/promises';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 import { existsSync } from 'fs';
+
+// Load .env file if present
+if (existsSync('.env')) {
+  for (const line of readFileSync('.env', 'utf-8').split('\n')) {
+    const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+    if (match && !process.env[match[1]]) {
+      process.env[match[1]] = (match[2] || '').replace(/^["']|["']$/g, '');
+    }
+  }
+}
 
 const anthropic = new Anthropic();
 

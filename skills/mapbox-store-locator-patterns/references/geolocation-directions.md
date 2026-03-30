@@ -2,10 +2,15 @@
 
 ## Geolocation and Distance Calculation
 
+**Two separate APIs for two separate jobs:**
+
+1. **`mapboxgl.GeolocateControl`** — Adds the blue dot on the map showing the user's live position. This is a UI control only; use it for the visual indicator.
+2. **`navigator.geolocation.getCurrentPosition()`** — Returns the raw coordinates you need for distance calculation and sorting. Call this separately because `GeolocateControl` does not expose coordinates in a convenient way for data processing.
+
 ```javascript
 let userLocation = null;
 
-// Add geolocation control
+// 1. Add GeolocateControl for the blue dot on-map indicator
 map.addControl(
   new mapboxgl.GeolocateControl({
     positionOptions: {
@@ -16,7 +21,8 @@ map.addControl(
   })
 );
 
-// Get user location
+// 2. Use navigator.geolocation.getCurrentPosition() separately to get
+//    coordinates for distance calculation and sorting
 navigator.geolocation.getCurrentPosition(
   (position) => {
     userLocation = [position.coords.longitude, position.coords.latitude];

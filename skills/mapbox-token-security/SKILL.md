@@ -96,6 +96,10 @@ This skill provides security expertise for managing Mapbox access tokens safely 
 {
   scopes: ['styles:read', 'fonts:read'];
 }
+// Add 'styles:tiles' if your map uses raster tile sources
+{
+  scopes: ['styles:read', 'fonts:read', 'styles:tiles'];
+}
 ```
 
 ### Scope Combinations by Use Case

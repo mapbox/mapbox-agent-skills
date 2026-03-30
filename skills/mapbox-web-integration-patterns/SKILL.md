@@ -285,6 +285,38 @@ function MapComponent() {
 
 **Why:** You need to access the map instance for operations like adding layers, markers, or calling `remove()`.
 
+### Mistake 4: Storing map instance in Vue's data() (Vue-specific)
+
+```javascript
+// BAD - Vue's reactivity wraps data() objects in a Proxy, breaking mapbox-gl internals!
+export default {
+  data() {
+    return {
+      map: null  // Will be wrapped in a Proxy
+    }
+  },
+  mounted() {
+    this.map = new mapboxgl.Map({ ... })  // Proxy breaks GL internals
+  }
+}
+
+// GOOD - Assign map as a plain instance property, not in data()
+export default {
+  mounted() {
+    this.map = new mapboxgl.Map({
+      container: this.$refs.mapContainer,
+      center: [-71.05953, 42.3629],
+      zoom: 13
+    })
+  },
+  unmounted() {
+    this.map?.remove()
+  }
+}
+```
+
+**Why:** In Vue (especially Vue 3), `data()` properties are wrapped in a `Proxy` for reactivity. Mapbox GL JS internally checks object identity and uses properties that don't survive proxy wrapping. Storing the map in `data()` causes subtle, hard-to-debug failures. Instead, assign the map instance directly as `this.map` in `mounted()` — properties assigned outside `data()` are not made reactive.
+
 ## Reference Files
 
 Load these for framework-specific patterns and additional details:

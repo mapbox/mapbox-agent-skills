@@ -131,7 +131,7 @@ This skill provides battle-tested style patterns and layer configurations for co
 - Property data/boundaries -> **Real Estate Pattern**
 - Statistical/analytical data -> **Data Visualization Pattern**
 - Routes/directions -> **Navigation Pattern**
-- Real-time tracking/delivery zones -> **Delivery/Logistics Pattern**
+- Real-time tracking/delivery zones -> **Delivery/Logistics Pattern** (customer markers should include a pulse animation via second circle layer + requestAnimationFrame + setPaintProperty; see references/delivery-logistics.md)
 
 **Question 2: What is the viewing environment?**
 

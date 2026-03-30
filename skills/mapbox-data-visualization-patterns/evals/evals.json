@@ -3,12 +3,12 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I'm building a choropleth map showing US population by state. States range from ~500K to ~40M people. I want a smooth color gradient — light blue for low population, dark blue for high. What's the correct Mapbox GL JS expression pattern?",
+      "prompt": "I'm building a choropleth map showing US population by state. States range from ~500K to ~40M people. What are my options for coloring states by population in Mapbox GL JS? I'm considering both smooth gradients and discrete color buckets.",
       "expectations": [
         "Uses the interpolate expression with linear interpolation: ['interpolate', ['linear'], ['get', 'population'], ...]",
         "Provides multiple stop values mapping population numbers to color values (at least 3-4 stops)",
         "Shows the complete addLayer pattern with type 'fill' and the interpolate expression in fill-color paint property",
-        "Notes the alternative step expression for discrete buckets (e.g., ['step', ['get', 'population'], ...]) and when to prefer it over interpolate"
+        "Mentions that step expression is available as an alternative for discrete buckets, or explains when interpolate vs step is appropriate"
       ]
     },
     {
@@ -23,7 +23,7 @@
     },
     {
       "id": 3,
-      "prompt": "I have 50MB of point data (millions of GPS records) I want to visualize on a Mapbox map. I tried loading it as GeoJSON but the map freezes on load. What's the right approach?",
+      "prompt": "I have datasets of varying sizes I need to visualize on Mapbox maps — some are small (500KB), some medium (5MB), and one is huge (50MB of GPS records). The 50MB one freezes when loaded as GeoJSON. What's the right approach for each size?",
       "expectations": [
         "50MB is well above the GeoJSON threshold — use vector tiles (MVT) instead",
         "The rule: <1MB use GeoJSON, 1-10MB consider either, >10MB use vector tiles",

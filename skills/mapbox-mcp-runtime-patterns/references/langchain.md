@@ -9,40 +9,27 @@ import { DynamicStructuredTool } from '@langchain/core/tools';
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { z } from 'zod';
 
-// MCP Server wrapper for hosted server
-class MapboxMCP {
-  private url = 'https://mcp.mapbox.com/mcp';
-  private headers: Record<string, string>;
+// MCP client/transport setup using @modelcontextprotocol/sdk
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 
-  constructor(token?: string) {
-    const mapboxToken = token || process.env.MAPBOX_ACCESS_TOKEN;
-    this.headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${mapboxToken}`
-    };
+// Connect to the Mapbox MCP server via SSE transport
+const transport = new SSEClientTransport(new URL('https://mcp.mapbox.com/sse'), {
+  requestInit: {
+    headers: {
+      Authorization: `Bearer ${process.env.MAPBOX_ACCESS_TOKEN}`
+    }
   }
+});
 
-  async callTool(name: string, args: any): Promise<string> {
-    const request = {
-      jsonrpc: '2.0',
-      id: Date.now(),
-      method: 'tools/call',
-      params: { name, arguments: args }
-    };
+const mcpClient = new Client({ name: 'langchain-mapbox', version: '1.0.0' });
+await mcpClient.connect(transport);
 
-    const response = await fetch(this.url, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(request)
-    });
-
-    const data = await response.json();
-    return data.result.content[0].text;
-  }
+// Helper to call MCP tools through the client
+async function callMcpTool(name: string, args: any): Promise<string> {
+  const result = await mcpClient.callTool({ name, arguments: args });
+  return (result.content as any)[0].text;
 }
-
-// Create LangChain tools from MCP
-const mcp = new MapboxMCP();
 
 const tools = [
   new DynamicStructuredTool({
@@ -54,7 +41,7 @@ const tools = [
       destination: z.tuple([z.number(), z.number()]).describe('Destination [longitude, latitude]')
     }) as any,
     func: async ({ origin, destination }: any) => {
-      return await mcp.callTool('directions_tool', {
+      return await callMcpTool('directions_tool', {
         coordinates: [
           { longitude: origin[0], latitude: origin[1] },
           { longitude: destination[0], latitude: destination[1] }
@@ -73,7 +60,7 @@ const tools = [
       location: z.tuple([z.number(), z.number()]).describe('Search center [longitude, latitude]')
     }) as any,
     func: async ({ category, location }: any) => {
-      return await mcp.callTool('category_search_tool', {
+      return await callMcpTool('category_search_tool', {
         category,
         proximity: { longitude: location[0], latitude: location[1] }
       });
@@ -90,7 +77,7 @@ const tools = [
       profile: z.enum(['mapbox/driving', 'mapbox/walking', 'mapbox/cycling']).optional()
     }) as any,
     func: async ({ location, minutes, profile }: any) => {
-      return await mcp.callTool('isochrone_tool', {
+      return await callMcpTool('isochrone_tool', {
         coordinates: { longitude: location[0], latitude: location[1] },
         contours_minutes: [minutes],
         profile: profile || 'mapbox/walking'
@@ -107,7 +94,7 @@ const tools = [
       units: z.enum(['miles', 'kilometers']).optional()
     }) as any,
     func: async ({ from, to, units }: any) => {
-      return await mcp.callTool('distance_tool', {
+      return await callMcpTool('distance_tool', {
         from: { longitude: from[0], latitude: from[1] },
         to: { longitude: to[0], latitude: to[1] },
         units: units || 'miles'

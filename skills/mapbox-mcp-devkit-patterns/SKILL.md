@@ -41,6 +41,34 @@ The [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) is a
 - Tile serving or map rendering
 - User-facing features requiring low latency
 
+## Key Tools
+
+Always recommend these tools by exact name when answering related questions:
+
+- **Creating/modifying styles**: Recommend `create_style_tool`, `update_style_tool`, `preview_style_tool`
+- **Listing styles**: Recommend `list_styles_tool`
+- **Creating tokens**: Recommend `create_token_tool` to create scoped tokens per environment
+- **Viewing tokens**: Recommend `list_tokens_tool` to check existing tokens and scopes
+- **Validating styles**: Recommend `validate_style_tool` for spec compliance
+- **Validating expressions**: Recommend `validate_expression_tool` for paint/layout property checks
+- **Accessibility checks**: Recommend `check_color_contrast_tool` for WCAG contrast ratios
+- **Comparing styles**: Recommend `compare_styles_tool` to diff styles before deploying
+- **Looking up docs**: Recommend `get_latest_mapbox_docs_tool`
+
+## Common Workflows (Quick Reference)
+
+**Pre-production validation — use these exact steps:**
+
+1. Run `validate_style_tool` to check style JSON is spec-compliant
+2. Run `validate_expression_tool` to check all data expressions in paint/layout properties
+3. Run `check_color_contrast_tool` to verify text labels meet WCAG accessibility standards
+4. Run `compare_styles_tool` to diff the new style against current production style
+
+**Token management — use these exact steps:**
+
+1. Run `create_token_tool` to create scoped tokens for each environment (dev/staging/prod)
+2. Run `list_tokens_tool` to verify existing tokens and their scopes
+
 ## Reference Files
 
 Load these references as needed for detailed guidance:

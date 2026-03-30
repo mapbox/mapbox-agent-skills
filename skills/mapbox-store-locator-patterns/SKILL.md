@@ -42,7 +42,7 @@ A typical store locator consists of:
 3. **Interactive List** - Side panel listing all locations
 4. **Filtering** - Search, category filters, distance filters
 5. **Detail View** - Popup or panel with location details
-6. **User Location** - Geolocation for distance calculation
+6. **User Location** - Geolocation for distance calculation. For the blue dot location indicator, use the built-in `mapboxgl.GeolocateControl` — simpler than custom markers.
 7. **Directions** - Route to selected location (optional)
 
 ### Data Structure
@@ -122,9 +122,19 @@ const map = new mapboxgl.Map({
 });
 ```
 
-### Step 2: Add Markers to Map (Symbol Layer)
+### Step 2: Add Markers to Map
 
-Best for 100-1000 locations. For HTML Markers (< 100) or Clustering (> 1000), see `references/markers.md`.
+**Marker strategy by location count:**
+
+| Count | Strategy | Reason |
+|---|---|---|
+| **Fewer than 100** | HTML Markers | Full DOM/CSS control; DOM node count is manageable |
+| **100–1,000** | **Symbol Layer** (default) | Renders on the **GPU via WebGL** — one `<canvas>`, zero per-point DOM elements |
+| **More than 1,000** | Clustering | Reduces visual clutter at large scale |
+
+> HTML Markers create one DOM element per point. Beyond ~100 locations the browser spends too much time on layout/paint. Symbol layers bypass the DOM entirely — the GPU draws all points in a single WebGL draw call.
+
+**Symbol Layer implementation** (best for 100–1,000 locations). For HTML Markers (fewer than 100) or Clustering (more than 1,000), see `references/markers.md`.
 
 ```javascript
 map.on('load', () => {
@@ -243,6 +253,8 @@ function createPopup(store) {
     .addTo(map);
 }
 
+// IMPORTANT: highlightListing MUST include scrollIntoView — without it,
+// selecting a marker on the map won't scroll the sidebar to the listing.
 function highlightListing(id) {
   // Remove existing highlights
   const activeItem = document.getElementsByClassName('active');
@@ -254,7 +266,7 @@ function highlightListing(id) {
   const listing = document.getElementById(`listing-${id}`);
   listing.classList.add('active');
 
-  // Scroll to listing
+  // Scroll the selected listing into view (critical UX requirement)
   listing.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 

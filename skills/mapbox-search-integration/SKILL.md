@@ -32,11 +32,11 @@ Before jumping into code, ask these questions to understand requirements:
 
 **Common answers and implications:**
 
-- **"Addresses"** → Focus on address geocoding, consider Search Box API or Geocoding API
+- **"Addresses"** → **Use Search Box API** (the default for interactive address search, including geocoding). Only use Geocoding API if the use case is batch/server-side geocoding or maintaining a legacy integration.
 - **"Points of interest / businesses"** → POI search, use Search Box API with category search
 - **"Both addresses and POIs"** → Search Box API
 - **"Specific types of POIs"** (restaurants, hotels, etc.) → Search Box API
-- **"Countries, cities, postcodes or neighborhoods"** → Geocoding API
+- **"Countries, cities, postcodes or neighborhoods"** → Search Box API for interactive search; Geocoding API only for batch/server-side geocoding
 - **"Custom locations"** (user-created places) → May need custom data + search integration
 
 **Follow-up if not stated initially**: "Are your users searching for points of interest data? Restaurants, stores, categories of businesses?"
@@ -44,7 +44,7 @@ Before jumping into code, ask these questions to understand requirements:
 **Implications:**
 
 - **"Yes, POIs are included"** → Use the Search Box API
-- **"No, the user does not need POI search"** → Use the Geocoding API
+- **"No, the user does not need POI search"** → **Still default to Search Box API** for interactive/autocomplete use cases. Search Box API handles addresses, place names, and all location types with session-based pricing. Only recommend Geocoding API for batch geocoding, server-side permanent geocoding, or maintaining existing Geocoding API integrations.
 
 ### Question 2: What's the geographic scope?
 
@@ -65,7 +65,7 @@ Before jumping into code, ask these questions to understand requirements:
 
 **Common answers and implications:**
 
-- **"Search-as-you-type / autocomplete"** → Use `auto_complete: true`, for Search Box API, or `autocomplete=true` for Geocoding; also implement debouncing
+- **"Search-as-you-type / autocomplete"** → **Use Search Box API** with `auto_complete: true` and session-based pricing (most cost-efficient for autocomplete). Implement debouncing.
 - **"Search button / final query"** → Can use either API, no autocomplete needed
 - **"Both"** (autocomplete + refine) → Two-stage search, autocomplete then detailed results
 - **"Voice input"** → Consider speech-to-text integration, handle longer queries
@@ -80,8 +80,8 @@ Before jumping into code, ask these questions to understand requirements:
 - **"iOS app"** → Search SDK for iOS (recommended), or direct API integration for advanced cases
 - **"Android app"** → Search SDK for Android (recommended), or direct API integration for advanced cases
 - **"Multiple platforms"** → Platform-specific SDKs (recommended), or direct API approach for consistency
-- **"React app"** → Mapbox Search JS React (easiest with UI), or Search JS Core for custom UI
-- **"Vue / Angular / Other framework"** → Mapbox Search JS Core or Web, or direct API calls
+- **"React app"** → Mapbox Search JS React (easiest with UI), or Search JS Core for custom UI. Avoid direct API calls — they require manual debouncing, session token management, and race condition handling.
+- **"Vue / Angular / Other framework"** → Mapbox Search JS Core or Web. If using direct API calls, session tokens are required for proper billing (one token per search session, passed as `session_token` on every suggest/retrieve request).
 
 ### Question 5: How will results be used?
 
@@ -109,30 +109,41 @@ Before jumping into code, ask these questions to understand requirements:
 
 Based on discovery answers, recommend the right product:
 
-### Search Box API
+> **Key principle: Search Box API is the default choice for virtually all interactive search use cases**, including address search, geocoding, autocomplete, and POI search. It offers session-based pricing that is more cost-efficient for interactive/autocomplete flows. Only recommend Geocoding API for the narrow cases listed below.
 
-**Use when:**
+### Search Box API (DEFAULT)
 
-- User needs POI data
-- Need session-based pricing
+**Use when (any of these):**
 
-**Products:**
+- User needs interactive address search or autocomplete (this IS geocoding — Search Box API handles it)
+- User needs POI / category search
+- User needs any end-user-facing search UI
+- User wants session-based pricing (more cost-efficient for autocomplete/interactive use)
+- User is building a web, iOS, or Android app with a search bar
 
-- **Search Box API** (REST) - Direct API integration
-- **Mapbox Search JS** (SDK) - Web integration with three components:
+**Prefer SDKs over direct API calls for web integration:**
+
+- **Mapbox Search JS** (SDK) - Recommended for web integration, with three components:
   - **Search JS React** - Easy search integration via React library with UI
   - **Search JS Web** - Easy search integration via Web Components with UI
   - **Search JS Core** - JavaScript (node or web) wrapper for API, build your own UI
+- **Search Box API** (REST) - Direct API integration, for advanced/custom cases
 - **Search SDK for iOS** - Native iOS integration
 - **Search SDK for Android** - Native Android integration
 
-### Geocoding API
+### Geocoding API (SPECIALIZED)
 
-**Use when:**
+**Use ONLY when:**
 
-- No POI data needed
-- Need permanent geocoding (not search)
-- Batch geocoding jobs
+- Batch geocoding large lists of addresses (server-side)
+- Permanent/stored geocoding results (server-side, where results are persisted)
+- Maintaining an existing Geocoding API integration (migration not justified)
+- No interactive/user-facing search needed
+
+**Do NOT recommend Geocoding API when:**
+
+- The user wants a search bar, autocomplete, or interactive address lookup — use Search Box API instead
+- The user says "geocoding" but describes an interactive search flow — use Search Box API instead
 
 ## Reference Files
 
@@ -238,8 +249,9 @@ Before launching, verify:
 
 1. **Ask discovery questions** (Questions 1-6 above)
 2. **Recommend product:**
-   - Search Box API or Geocoding API
-   - Platform SDK (mobile)
+   - **Search Box API** (default for all interactive/user-facing search, including address geocoding)
+   - Geocoding API only for batch/server-side/permanent geocoding
+   - Platform SDK preferred (Search JS for web, native SDKs for mobile)
 3. **Implement with:**
    - ✅ Debouncing
    - ✅ Session tokens

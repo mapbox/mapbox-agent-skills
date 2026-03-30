@@ -18,6 +18,8 @@ Before deploying any Mapbox style to production:
 3. **Validate GeoJSON sources** - Ensure data integrity
 4. **Optimize style** - Reduce file size and improve performance
 5. **Compare versions** - Understand what changed
+6. **Remove empty layers** - Delete layers with no visible paint properties as a final cleanup step
+7. **Simplify redundant boolean expressions** - Clean up filters with unnecessary boolean logic (e.g., `["all", expr]` → `expr`, `["any", false, expr]` → `expr`)
 
 ### During Development
 
@@ -55,8 +57,8 @@ Before deploying any Mapbox style to production:
 - Run `optimize_style_tool` to reduce file size
 - Remove unused sources that reference deleted layers
 - Eliminate duplicate layers with identical properties
-- Simplify boolean expressions for better performance
-- Remove empty layers that serve no purpose
+- Simplify redundant boolean expressions in filters (e.g., collapse `["all", expr]` to `expr`, remove tautological conditions)
+- Remove empty layers (layers with no visible paint properties) as a final cleanup step
 
 ## Validation Best Practices
 

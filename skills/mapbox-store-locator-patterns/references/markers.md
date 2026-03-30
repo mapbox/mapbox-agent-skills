@@ -1,6 +1,16 @@
-# Markers: HTML Markers & Clustering
+# Markers: HTML Markers, Symbol Layers & Clustering
 
-**Option 1: HTML Markers (< 100 locations)**
+## Choosing the Right Marker Strategy
+
+| Location Count | Strategy | Why |
+|---|---|---|
+| Fewer than 100 | HTML Markers | Full DOM/CSS control; manageable DOM node count |
+| 100–1,000 | **Symbol Layer** (recommended default) | Renders on the **GPU via WebGL** — no DOM elements created, so performance stays smooth even with hundreds of points |
+| More than 1,000 | Clustering + Symbol Layer | Reduces visual clutter and keeps interaction snappy at large scale |
+
+> **Key insight:** Each HTML Marker creates a real DOM element. At 150+ markers that means 150+ nodes the browser must lay out, paint, and composite every frame. A symbol layer, by contrast, is drawn entirely on the GPU through WebGL — the browser sees only the single `<canvas>` element regardless of point count.
+
+**Option 1: HTML Markers (fewer than 100 locations)**
 
 ```javascript
 const markers = {};
@@ -39,7 +49,9 @@ stores.features.forEach((store) => {
 });
 ```
 
-**Option 3: Clustering (> 1000 locations)**
+**Option 2: Symbol Layer (100–1,000 locations)** — see SKILL.md Step 2 for full implementation.
+
+**Option 3: Clustering (more than 1,000 locations)**
 
 ```javascript
 map.on('load', () => {

@@ -13,3 +13,5 @@ evals/latest.json
 *.xcuserdatad
 .swiftpm/xcode/
 
+
+.env

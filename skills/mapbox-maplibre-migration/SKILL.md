@@ -336,6 +336,8 @@ import MaplibreGeocoder from '@maplibre/maplibre-gl-geocoder';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 ```
 
+> **Important:** This applies to ALL MapLibre plugins, not just the geocoder. Any `@maplibre/*` or `maplibre-gl-*` plugin must be replaced with its Mapbox equivalent. Check the Mapbox ecosystem for Mapbox-specific versions of every plugin you use (see Step 8 above for the full mapping table).
+
 ### Issue 5: CDN URLs
 
 **Problem:**

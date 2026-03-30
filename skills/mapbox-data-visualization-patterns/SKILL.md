@@ -101,6 +101,8 @@ map.on('load', () => {
 });
 ```
 
+> **`step` vs `interpolate`:** The example above uses `interpolate` for smooth color gradients. For **discrete color buckets** (e.g., "low / medium / high"), use `['step', ['get', 'population'], '#f0f0f0', 500000, '#fee0d2', 2000000, '#fc9272', 10000000, '#de2d26']` instead. Prefer `step` when data has natural categories or when exact boundary values matter.
+
 **Color Scale Strategies:**
 
 ```javascript
@@ -271,6 +273,14 @@ map.on('load', () => {
   });
 });
 ```
+
+## Data Size Rule
+
+- **< 1 MB**: Use GeoJSON directly
+- **1–10 MB**: Consider either GeoJSON or vector tiles depending on complexity
+- **> 10 MB**: Use vector tiles (upload to Mapbox as tileset)
+
+See [references/performance.md](references/performance.md) for implementation details.
 
 ## Reference Files
 

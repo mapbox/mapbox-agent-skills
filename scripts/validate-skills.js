@@ -28,7 +28,7 @@ async function validateSkills() {
 
     try {
       execSync(`npx skills-ref validate ${skillPath}`, {
-        stdio: 'pipe',
+        stdio: 'pipe'
       });
       console.log(`  ✅ Valid\n`);
     } catch (error) {

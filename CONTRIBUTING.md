@@ -98,12 +98,12 @@ This follows the [Agent Skills Specification](https://agentskills.io/specificati
 
 Skills are loaded progressively — only `name` and `description` at startup (~100 tokens), full SKILL.md on activation (< 5,000 tokens recommended), and `references/`/`assets/`/`scripts/` on demand.
 
-| Directory     | Purpose                                          | When loaded |
-| ------------- | ------------------------------------------------ | ----------- |
+| Directory     | Purpose                                          | When loaded             |
+| ------------- | ------------------------------------------------ | ----------------------- |
 | `references/` | Additional documentation agents read when needed | On demand via file read |
-| `assets/`     | Templates, images, data files, schemas           | On demand |
-| `scripts/`    | Executable code (Python, Bash, JS)               | On demand |
-| `evals/`      | Evaluation metrics for testing skill quality     | Not loaded at runtime |
+| `assets/`     | Templates, images, data files, schemas           | On demand               |
+| `scripts/`    | Executable code (Python, Bash, JS)               | On demand               |
+| `evals/`      | Evaluation metrics for testing skill quality     | Not loaded at runtime   |
 
 #### When to use `references/`
 
@@ -135,9 +135,9 @@ description: Brief description of what this skill does and when to use it.
 
 **Required fields:**
 
-| Field         | Constraints                                                                                           |
-| ------------- | ----------------------------------------------------------------------------------------------------- |
-| `name`        | Must match directory name. Lowercase letters, numbers, hyphens only. Max 64 chars. Must not start/end with hyphen or contain consecutive hyphens. |
+| Field         | Constraints                                                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | Must match directory name. Lowercase letters, numbers, hyphens only. Max 64 chars. Must not start/end with hyphen or contain consecutive hyphens.                   |
 | `description` | Max 1024 chars. Describe what the skill does AND when to use it. Use imperative phrasing ("Use this skill when..."). Include keywords that help agents match tasks. |
 
 **Optional fields:**

@@ -32,7 +32,7 @@ When you clone the repository and run `npm install`, git hooks are automatically
 1. **Formatting** - Prettier formatting (all `.md`, `.json`, `.js` files)
 2. **Spelling** - cspell spell checking (all markdown files)
 3. **Markdown linting** - markdownlint validation
-4. **Skills validation** - YAML frontmatter and structure checks
+4. **Skills validation** - [Agent Skills Specification](https://agentskills.io/specification) compliance via `skills-ref`
 
 ### Running Checks Manually
 
@@ -81,18 +81,51 @@ Each skill must follow this structure:
 
 ```
 skills/your-skill-name/
-├── SKILL.md              # Required: Main skill file
-└── [optional files]      # Optional: Additional resources, diagrams, etc.
+├── SKILL.md              # Required: Metadata + instructions (<500 lines)
+├── references/           # Optional: Documentation loaded on demand
+│   ├── framework-a.md
+│   └── framework-b.md
+├── assets/               # Optional: Templates, schemas, static resources
+│   └── project-template.md
+├── scripts/              # Optional: Executable code agents can run
+│   └── validate.sh
+├── evals/
+│   └── evals.json        # Required: Skill evaluation metrics (3-5 evals)
+└── AGENTS.md             # Optional: Condensed version for Cursor/Copilot
 ```
+
+This follows the [Agent Skills Specification](https://agentskills.io/specification). For best practices on content design, descriptions, scripts, and evaluation, see the [skill creation guides](https://agentskills.io/skill-creation/best-practices).
+
+Skills are loaded progressively — only `name` and `description` at startup (~100 tokens), full SKILL.md on activation (< 5,000 tokens recommended), and `references/`/`assets/`/`scripts/` on demand.
+
+| Directory     | Purpose                                          | When loaded |
+| ------------- | ------------------------------------------------ | ----------- |
+| `references/` | Additional documentation agents read when needed | On demand via file read |
+| `assets/`     | Templates, images, data files, schemas           | On demand |
+| `scripts/`    | Executable code (Python, Bash, JS)               | On demand |
+| `evals/`      | Evaluation metrics for testing skill quality     | Not loaded at runtime |
+
+#### When to use `references/`
+
+Split into `references/` when SKILL.md exceeds **500 lines** and content has clear, independent sections (e.g., per-framework, per-platform, per-use-case).
+
+**Rules:**
+
+- SKILL.md must be self-contained for general questions — don't require references for simple answers
+- Each reference file covers one independent topic, under 200 lines
+- Use relative paths from skill root (e.g., `references/ios.md`)
+- Tell the agent _when_ to load each file: "Read `references/ios.md` if building an iOS app" — not just "see references/"
+- Keep references one level deep; avoid nested reference chains
+- Do NOT split skills under 500 lines
 
 ### 2. SKILL.md Format
 
-Every SKILL.md must have YAML frontmatter followed by markdown content:
+Every SKILL.md must have YAML frontmatter followed by markdown content. See the [Agent Skills Specification](https://agentskills.io/specification) for full details.
 
 ```markdown
 ---
 name: your-skill-name
-description: Brief one-line description of what this skill covers
+description: Brief description of what this skill does and when to use it.
 ---
 
 # Skill Title
@@ -100,37 +133,52 @@ description: Brief one-line description of what this skill covers
 [Your skill content here]
 ```
 
-**Requirements:**
+**Required fields:**
 
-- `name` must match the directory name exactly
-- `description` should be concise (1-2 sentences)
-- Content must include actionable guidance, not just information
+| Field         | Constraints                                                                                           |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| `name`        | Must match directory name. Lowercase letters, numbers, hyphens only. Max 64 chars. Must not start/end with hyphen or contain consecutive hyphens. |
+| `description` | Max 1024 chars. Describe what the skill does AND when to use it. Use imperative phrasing ("Use this skill when..."). Include keywords that help agents match tasks. |
+
+**Optional fields:**
+
+| Field           | Purpose                                                         |
+| --------------- | --------------------------------------------------------------- |
+| `license`       | License name or reference to bundled license file               |
+| `compatibility` | Environment requirements (e.g., "Requires Python 3.14+ and uv") |
+| `metadata`      | Arbitrary key-value pairs (author, version, etc.)               |
+| `allowed-tools` | Space-delimited pre-approved tools (experimental)               |
+
+**Body content:** Keep under 500 lines; move detailed content to `references/`.
 
 ### 3. Content Guidelines
 
 **Good skills have:**
 
-- ✅ **Clear structure** - Use headings to organize topics
+- ✅ **Mapbox-specific knowledge** - Focus on what the agent wouldn't know without the skill: API patterns, SDK gotchas, non-obvious edge cases
+- ✅ **Gotchas sections** - Environment-specific facts that defy reasonable assumptions (often the highest-value content)
 - ✅ **Actionable guidance** - "Use X when Y" not "X is a thing"
-- ✅ **Decision trees** - Help AI choose between options
+- ✅ **Decision trees** - Help AI choose between options. Pick a clear default, mention alternatives briefly
 - ✅ **Code examples** - Show ❌ anti-patterns and ✅ solutions
-- ✅ **Thresholds/metrics** - "< 100 markers: X, > 100: Y"
+- ✅ **Thresholds/metrics** - "< 100 markers: use HTML Markers, > 100: use Symbol Layer"
 - ✅ **Real scenarios** - "When building a restaurant finder..."
 - ✅ **Priority levels** - Critical vs High Impact vs Optimization
 
 **Avoid:**
 
-- ❌ Generic information available in docs
+- ❌ Generic information the agent already knows
+- ❌ Exhaustive coverage of every edge case — concise stepwise guidance outperforms exhaustive docs
 - ❌ Lists without context or prioritization
 - ❌ Examples without explanation
 - ❌ Ambiguous guidance ("might want to", "could consider")
+- ❌ Presenting multiple options as equal — pick a default, mention alternatives briefly
 
 ### 4. Example Template
 
 ````markdown
 ---
 name: mapbox-example-skill
-description: Expert guidance on [specific domain] for Mapbox applications
+description: Expert guidance on [specific domain] for Mapbox applications. Use when [building/debugging/reviewing] [specific use cases].
 ---
 
 # Mapbox [Domain] Skill
@@ -220,7 +268,7 @@ Before submitting:
 
 ## Skill Evals
 
-Evals measure how much a skill actually improves AI responses by comparing answers with and without the skill loaded. They catch non-discriminating content (things the AI already knows) and guide targeted skill improvements.
+Evals measure how much a skill actually improves AI responses by comparing answers with and without the skill loaded. They catch non-discriminating content (things the AI already knows) and guide targeted skill improvements. For the full evaluation methodology, see [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills).
 
 ### Eval File Structure
 
@@ -337,7 +385,7 @@ The `*-workspace/` pattern is in `.gitignore`. Never commit workspace output dir
    - Formatting validation
    - Spell checking
    - Markdown linting
-   - Skills validation (YAML frontmatter)
+   - Skills validation (Agent Skills Specification compliance)
    - Link checking
 
    All checks must pass before merge.

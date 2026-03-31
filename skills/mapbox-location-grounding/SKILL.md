@@ -173,8 +173,11 @@ Returns a polygon showing the area reachable within each time threshold. Combine
 
 ### Multi-location travel time matrix
 
-> "Which of these three offices is closest to my location by transit?"
+> "Which of these three offices is closest to my location?"
 > "What are travel times from this warehouse to each of our delivery zones?"
+> "Compare commute times to multiple locations"
+
+Use `matrix_tool` — **do NOT call `directions_tool` separately for each pair**. Matrix batches all pairs in a single API call.
 
 ```
 matrix_tool(
@@ -184,7 +187,7 @@ matrix_tool(
 )
 ```
 
-Returns a matrix of durations and distances between every source/destination pair. Useful for ranking locations by travel time or finding the nearest from a set.
+Returns a matrix of durations and distances between every source/destination pair. Rank results by duration to find the nearest location. One `matrix_tool` call replaces N separate `directions_tool` calls.
 
 ### Proximity search with routing context
 

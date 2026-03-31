@@ -66,15 +66,14 @@
     },
     {
       "id": 6,
-      "prompt": "I have three potential office locations in Chicago: Willis Tower (41.8789° N, 87.6359° W), Millennium Park (41.8827° N, 87.6233° W), and River North (41.8946° N, 87.6342° W). My team commutes from O'Hare airport (41.9742° N, 87.9073° W). Which office location has the shortest drive from O'Hare?",
-      "expected_output": "Should call matrix_tool with O'Hare as the source and the three office locations as destinations, using driving profile. Should rank the offices by travel time from the matrix results. Should NOT estimate commute times from training data or call directions_tool three separate times.",
+      "prompt": "I'm building a feature that compares drive times from a user's location to three nearby store locations. I have coordinates for all four points. Should I call directions_tool three times, or is there a better approach with Mapbox MCP tools?",
+      "expected_output": "Should recommend matrix_tool as the correct approach — one call returns all three drive times simultaneously. Should explain that calling directions_tool three times is inefficient and unnecessary. Should mention that matrix_tool accepts multiple sources and destinations and returns a full duration/distance matrix.",
       "files": [],
       "expectations": [
-        "Calls matrix_tool with O'Hare as source and three office locations as destinations",
-        "Uses driving profile in matrix_tool",
-        "Does NOT call directions_tool three times separately",
-        "Does NOT estimate travel times from training data",
-        "Ranks or identifies the closest office based on actual matrix results"
+        "Recommends matrix_tool (not three separate directions_tool calls)",
+        "Explains that matrix_tool returns all travel times in a single API call",
+        "Explains why calling directions_tool separately for each pair is inefficient",
+        "Mentions that matrix_tool results can be used to rank locations by travel time"
       ]
     },
     {

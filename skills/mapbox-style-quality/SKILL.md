@@ -18,6 +18,8 @@ Before deploying any Mapbox style to production:
 3. **Validate GeoJSON sources** - Ensure data integrity
 4. **Optimize style** - Reduce file size and improve performance
 5. **Compare versions** - Understand what changed
+6. **Remove empty layers** - Delete layers with no visible paint properties as a final cleanup step
+7. **Simplify redundant boolean expressions** - Clean up filters with unnecessary boolean logic (e.g., `["all", expr]` → `expr`, `["any", false, expr]` → `expr`)
 
 ### During Development
 
@@ -55,8 +57,8 @@ Before deploying any Mapbox style to production:
 - Run `optimize_style_tool` to reduce file size
 - Remove unused sources that reference deleted layers
 - Eliminate duplicate layers with identical properties
-- Simplify boolean expressions for better performance
-- Remove empty layers that serve no purpose
+- Simplify redundant boolean expressions in filters (e.g., collapse `["all", expr]` to `expr`, remove tautological conditions)
+- Remove empty layers (layers with no visible paint properties) as a final cleanup step
 
 ## Validation Best Practices
 
@@ -138,136 +140,6 @@ Before deploying any Mapbox style to production:
 - Test in different lighting conditions (mobile outdoor use)
 - Verify contrast at different zoom levels
 
-## Optimization Best Practices
-
-### When to Optimize
-
-**Before production deployment:**
-
-- After all development changes are complete
-- After merging multiple feature branches
-- When style has grown significantly over time
-- Before major releases or launches
-
-**Benefits of optimization:**
-
-- Faster initial load times
-- Reduced bandwidth usage
-- Better runtime performance
-- Cleaner, more maintainable code
-
-### Optimization Types
-
-**Remove unused sources:**
-
-- Automatically identifies sources not referenced by any layer
-- Safe to remove without affecting functionality
-- Common after deleting layers or refactoring
-
-**Remove duplicate layers:**
-
-- Finds layers with identical properties (excluding ID)
-- Can occur when copying/pasting layers
-- Reduces style complexity and file size
-
-**Simplify expressions:**
-
-- Converts `["all", true]` → `true`
-- Converts `["any", false]` → `false`
-- Converts `["!", false]` → `true`
-- Converts `["!", true]` → `false`
-- Improves expression evaluation performance
-
-**Remove empty layers:**
-
-- Removes layers with no paint or layout properties
-- Preserves background layers (valid even when empty)
-- Cleans up incomplete or placeholder layers
-
-**Consolidate filters:**
-
-- Identifies groups of layers with identical filter expressions
-- Highlights opportunities for layer consolidation
-- Doesn't automatically consolidate (informational only)
-
-### Optimization Strategy
-
-**Recommended order:**
-
-1. Remove unused sources first (reduces noise for other checks)
-2. Remove duplicate layers (eliminates redundancy)
-3. Simplify expressions (improves readability and performance)
-4. Remove empty layers (final cleanup)
-5. Review consolidation opportunities (manual step)
-
-**Selective optimization:**
-
-```
-// All optimizations (recommended for production)
-optimize_style_tool({ style })
-
-// Specific optimizations only
-optimize_style_tool({
-  style,
-  optimizations: ['remove-unused-sources', 'simplify-expressions']
-})
-```
-
-**Review before deploying:**
-
-- Check the optimization report
-- Verify size savings (percentReduction)
-- Review the list of changes (optimizations array)
-- Test the optimized style before deployment
-
-## Style Comparison Workflow
-
-### When to Compare Styles
-
-**Before merging changes:**
-
-- Review what changed in your feature branch
-- Ensure no unintended modifications
-- Generate change summary for PR description
-
-**When investigating issues:**
-
-- Compare working version vs. broken version
-- Identify what changed between versions
-- Narrow down root cause of problems
-
-**During migrations:**
-
-- Compare old format vs. new format
-- Verify data integrity after conversion
-- Document transformation differences
-
-### Comparison Best Practices
-
-**Use ignoreMetadata flag:**
-
-```
-// Ignore metadata differences (id, owner, created, modified)
-compare_styles_tool({
-  styleA: oldStyle,
-  styleB: newStyle,
-  ignoreMetadata: true
-})
-```
-
-**Focus on meaningful changes:**
-
-- Layer additions/removals
-- Source changes
-- Expression modifications
-- Paint/layout property updates
-
-**Document significant changes:**
-
-- Note breaking changes in documentation
-- Update style version numbers
-- Communicate changes to team/users
-
 ## Quality Workflow Examples
 
 ### Basic Quality Check
@@ -298,17 +170,6 @@ compare_styles_tool({
 3. Validate suspicious expressions
 4. Check GeoJSON data if source-related
 5. Verify color contrast if visibility issue
-```
-
-### Refactoring Workflow
-
-```
-1. Create backup of current style
-2. Make refactoring changes
-3. Compare before vs. after
-4. Validate all modified expressions
-5. Optimize to clean up
-6. Review size impact
 ```
 
 ## Common Issues and Solutions
@@ -343,65 +204,6 @@ compare_styles_tool({
 **Solution:** Use `compare_styles_tool` to generate diff report
 **Prevention:** Compare before/after for all significant changes, document modifications
 
-## Integration with Development Workflow
-
-### Git Pre-Commit Hook
-
-```bash
-# Validate expressions before commit
-npm run validate-style
-
-# Optimize before commit (optional)
-npm run optimize-style
-```
-
-### CI/CD Pipeline
-
-```
-1. Validate all expressions
-2. Check accessibility compliance
-3. Run optimization (warning if significant savings)
-4. Compare with production version
-5. Generate quality report
-```
-
-### Code Review Checklist
-
-- [ ] All expressions validated
-- [ ] Text contrast meets WCAG AA
-- [ ] GeoJSON sources validated
-- [ ] Style optimized for production
-- [ ] Changes documented in comparison report
-
-## Best Practices Summary
-
-**During Development:**
-
-- Validate expressions as you write them
-- Check GeoJSON data when adding sources
-- Test color contrast for new text layers
-
-**Before Committing:**
-
-- Compare with previous version
-- Document significant changes
-- Validate modified expressions
-
-**Before Production:**
-
-- Run full validation suite
-- Check accessibility compliance
-- Optimize style
-- Test optimized version
-- Generate quality report
-
-**Regular Maintenance:**
-
-- Periodically optimize to prevent bloat
-- Review and consolidate similar layers
-- Update expressions to use simpler forms
-- Remove deprecated or unused code
-
 ## Tool Quick Reference
 
 | Tool                        | Use When               | Output                     |
@@ -411,6 +213,16 @@ npm run optimize-style
 | `check_color_contrast_tool` | Styling text labels    | Passes/fails + WCAG levels |
 | `compare_styles_tool`       | Reviewing changes      | Diff report with paths     |
 | `optimize_style_tool`       | Before deployment      | Optimized style + savings  |
+
+## Reference Files
+
+For detailed guidance on specific topics, load the relevant reference:
+
+- **`references/optimization.md`** — Optimization types, strategies, recommended order, and maintenance best practices
+- **`references/comparison.md`** — Style comparison workflows, ignoreMetadata usage, and refactoring workflow
+- **`references/ci-integration.md`** — Git pre-commit hooks, CI/CD pipeline steps, and code review checklist
+
+> **Load instruction:** Read the reference file when the user needs in-depth guidance on that topic.
 
 ## Additional Resources
 

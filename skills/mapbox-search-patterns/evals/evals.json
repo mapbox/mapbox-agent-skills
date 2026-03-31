@@ -1,0 +1,33 @@
+{
+  "skill_name": "mapbox-search-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "A user asks 'Find Starbucks near downtown Seattle'. Which Mapbox search tool should I use — search_and_geocode_tool or category_search_tool?",
+      "expectations": [
+        "Recommends search_and_geocode_tool because 'Starbucks' is a specific brand name",
+        "Does NOT recommend category_search_tool — brand names are not generic categories",
+        "Suggests setting proximity to downtown Seattle coordinates to bias results toward that area"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need to search for 'coffee shops nearby' using Mapbox search tools. The user's current location is 37.7749, -122.4194. How should I set up the search?",
+      "expectations": [
+        "Recommends category_search_tool because 'coffee shops' is a generic category (plural form)",
+        "Uses proximity parameter with the user's coordinates to bias results",
+        "Does NOT use bbox unless the user wants strict geographic limits",
+        "Does NOT recommend search_and_geocode_tool for generic category queries"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have GPS coordinates (40.7484, -73.9857) from a user's device and need to show them a human-readable address. Which tool should I use and how?",
+      "expectations": [
+        "Recommends reverse_geocode_tool for converting coordinates to addresses",
+        "Passes the coordinates (latitude and longitude) to the tool",
+        "Does NOT recommend search_and_geocode_tool or category_search_tool for coordinate-to-address conversion"
+      ]
+    }
+  ]
+}

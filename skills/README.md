@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-This directory contains [Agent Skills](https://agentskills.io) that provide domain expertise for building maps with Mapbox.
+This directory contains Agent Skills that provide domain expertise for building maps with Mapbox.
 
 ## Available Skills
 
@@ -46,7 +46,7 @@ Want to create a new skill or improve an existing one? See the [Contributing Gui
 
 ## Skill Structure
 
-Each skill follows the [Agent Skills specification](https://github.com/anthropics/skills):
+Each skill follows this structure:
 
 ```
 skill-name/
@@ -70,6 +70,4 @@ description: What the skill does and when to use it
 
 ## Resources
 
-- [Agent Skills Overview](https://agentskills.io)
-- [Agent Skills Specification](https://github.com/anthropics/skills)
 - [Mapbox Documentation](https://docs.mapbox.com)

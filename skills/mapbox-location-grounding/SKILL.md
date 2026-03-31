@@ -36,6 +36,7 @@ ground_location_tool(
 ```
 
 Returns:
+
 - Neighborhood/place name from reverse geocoding
 - Nearby POIs with distances, ratings, price levels, and popularity (when available)
 - Travel-time reachability from isochrone
@@ -136,15 +137,15 @@ Example grounded response:
 
 ## What Mapbox Grounding Offers vs. Training Data
 
-|                | Training Data       | Mapbox Grounding          |
-| -------------- | ------------------- | ------------------------- |
-| POI accuracy   | Stale, hallucinated | Live, verified            |
-| Ratings/price  | Often wrong         | Live via Place Details    |
-| Business hours | Often wrong         | Live via Place Details    |
-| Travel times   | Estimated           | Routing-based             |
-| New places     | Missing             | Indexed                   |
-| Map image      | None                | Inline static map         |
-| Citations      | None                | Tool + API source         |
+|                | Training Data       | Mapbox Grounding       |
+| -------------- | ------------------- | ---------------------- |
+| POI accuracy   | Stale, hallucinated | Live, verified         |
+| Ratings/price  | Often wrong         | Live via Place Details |
+| Business hours | Often wrong         | Live via Place Details |
+| Travel times   | Estimated           | Routing-based          |
+| New places     | Missing             | Indexed                |
+| Map image      | None                | Inline static map      |
+| Citations      | None                | Tool + API source      |
 
 ## Important Limitations
 

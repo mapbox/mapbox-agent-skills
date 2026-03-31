@@ -98,7 +98,9 @@ async function main() {
     const raw = await readFile(join(skillDir, 'evals', 'evals.json'), 'utf-8');
     evalsData = JSON.parse(raw);
   } catch {
-    console.error(`Error: Could not read ${join(skillDir, 'evals', 'evals.json')}`);
+    console.error(
+      `Error: Could not read ${join(skillDir, 'evals', 'evals.json')}`
+    );
     process.exit(1);
   }
 
@@ -114,7 +116,9 @@ async function main() {
   const allWith = [];
 
   for (const evalItem of evals) {
-    console.log(`\nEval ${evalItem.id}: ${evalItem.prompt.slice(0, 80)}${evalItem.prompt.length > 80 ? '...' : ''}`);
+    console.log(
+      `\nEval ${evalItem.id}: ${evalItem.prompt.slice(0, 80)}${evalItem.prompt.length > 80 ? '...' : ''}`
+    );
     process.stdout.write('  Running... ');
 
     const { withoutGrades, withGrades } = await runEval(
@@ -128,7 +132,9 @@ async function main() {
     const delta = withRate - withoutRate;
 
     console.log(`done\n`);
-    console.log(`  Without skill: ${withoutRate.toFixed(0)}%  |  With skill: ${withRate.toFixed(0)}%  |  Delta: ${delta >= 0 ? '+' : ''}${delta.toFixed(0)}pp`);
+    console.log(
+      `  Without skill: ${withoutRate.toFixed(0)}%  |  With skill: ${withRate.toFixed(0)}%  |  Delta: ${delta >= 0 ? '+' : ''}${delta.toFixed(0)}pp`
+    );
     console.log(`  Expectations:`);
 
     for (let i = 0; i < evalItem.expectations.length; i++) {
@@ -155,14 +161,20 @@ async function main() {
   console.log('\nOverall Results:');
   console.log(`  Without skill (baseline): ${totalWithout.toFixed(1)}%`);
   console.log(`  With skill:               ${totalWith.toFixed(1)}%`);
-  console.log(`  Delta:                    ${totalDelta >= 0 ? '+' : ''}${totalDelta.toFixed(1)}pp`);
+  console.log(
+    `  Delta:                    ${totalDelta >= 0 ? '+' : ''}${totalDelta.toFixed(1)}pp`
+  );
 
   if (totalDelta >= 20) {
     console.log(`\n  ✅ Strong skill (+20pp target met)`);
   } else if (totalDelta >= 10) {
-    console.log(`\n  ⚠️  Moderate improvement — consider tightening evals or skill content`);
+    console.log(
+      `\n  ⚠️  Moderate improvement — consider tightening evals or skill content`
+    );
   } else {
-    console.log(`\n  ❌ Low delta — evals may be testing general knowledge, not skill-specific content`);
+    console.log(
+      `\n  ❌ Low delta — evals may be testing general knowledge, not skill-specific content`
+    );
   }
 
   console.log('');

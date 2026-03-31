@@ -260,38 +260,46 @@ Create `skills/your-skill-name/evals/evals.json`:
 
 ### Running Evals
 
-Install the skill-creator benchmark tool:
+Set your Anthropic API key, then run:
 
 ```bash
-npm install -g skill-creator  # or: npx skill-creator
+export ANTHROPIC_API_KEY=your-key-here
+npm run eval <skill-name>
 ```
 
-Run evals for a skill:
+Example:
 
 ```bash
-# Create a workspace directory (gitignored)
-mkdir mapbox-your-skill-name-workspace
-
-# Run with and without the skill
-skill-creator eval \
-  --skill skills/mapbox-your-skill-name/SKILL.md \
-  --evals skills/mapbox-your-skill-name/evals/evals.json \
-  --workspace mapbox-your-skill-name-workspace/iteration-1
+npm run eval mapbox-location-grounding
 ```
+
+The runner calls Claude twice per eval — once without the skill (baseline) and once with the
+`SKILL.md` injected as a system prompt — then grades each expectation using Claude as a judge.
 
 ### Interpreting Results
 
-The benchmark reports:
+The runner reports per-eval and overall results:
 
-- **With skill pass rate** — % of expectations met when the skill is loaded
-- **Without skill pass rate** — % met without the skill (baseline)
+- **Without skill (baseline)** — % of expectations met without the skill loaded
+- **With skill** — % met with the skill loaded
 - **Delta** — the difference; higher is better
 
-**Target: +20pp or higher delta.** If delta is near zero, the evals are testing general knowledge — redesign them to test skill-specific content.
+**Target: +20pp or higher delta.** If delta is near zero, the evals are testing general knowledge
+— redesign them to test skill-specific content.
 
-### Workspace Files Are Gitignored
+### Two Types of Evals
 
-The `*-workspace/` pattern is in `.gitignore`. Never commit workspace output directories — only commit `evals/evals.json`.
+**Knowledge evals** test whether the model recommends the right approach, tool, or pattern. These
+run without any live tools and work well in this runner.
+
+**Tool-execution evals** test whether the model actually calls the correct MCP tool. These require
+a live MCP server connection (e.g. Claude Desktop or Claude Code with the Mapbox MCP server
+configured). The runner will still show a delta for these evals, but the model may describe tool
+calls rather than execute them — treat results as directional, not definitive.
+
+When writing evals, prefer knowledge evals where possible. Reserve tool-execution evals for
+critical tool-selection decisions (e.g. "use `matrix_tool` not `directions_tool`") where the
+distinction is high-value enough to test even directionally.
 
 ## Pull Request Process
 

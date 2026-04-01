@@ -98,6 +98,7 @@
     "maxzoom",
     "millis",
     "minzoom",
+    "modelcontextprotocol",
     "MSAA",
     "mouseevents",
     "mouseleave",

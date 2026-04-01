@@ -308,23 +308,49 @@ Create `skills/your-skill-name/evals/evals.json`:
 
 ### Running Evals
 
-Run evals for all skills:
+Set your Anthropic API key, then run:
 
 ```bash
+export ANTHROPIC_API_KEY=your-key-here
+npm run eval <skill-name>
+```
+
+Example:
+
+```bash
+npm run eval mapbox-location-grounding
 npm run eval           # Run all evals
 npm run eval:verbose   # Run with detailed output
 npm run eval:diff      # Show delta vs baseline
 ```
 
+The runner calls Claude twice per eval — once without the skill (baseline) and once with the
+`SKILL.md` injected as a system prompt — then grades each expectation using Claude as a judge.
+
 ### Interpreting Results
 
-The benchmark reports:
+The runner reports per-eval and overall results:
 
-- **With skill pass rate** — % of expectations met when the skill is loaded
-- **Without skill pass rate** — % met without the skill (baseline)
+- **Without skill (baseline)** — % of expectations met without the skill loaded
+- **With skill** — % met with the skill loaded
 - **Delta** — the difference; higher is better
 
-**Target: +20pp or higher delta.** If delta is near zero, the evals are testing general knowledge — redesign them to test skill-specific content.
+**Target: +20pp or higher delta.** If delta is near zero, the evals are testing general knowledge
+— redesign them to test skill-specific content.
+
+### Two Types of Evals
+
+**Knowledge evals** test whether the model recommends the right approach, tool, or pattern. These
+run without any live tools and work well in this runner.
+
+**Tool-execution evals** test whether the model actually calls the correct MCP tool. These require
+a live MCP server connection (e.g. Claude Desktop or Claude Code with the Mapbox MCP server
+configured). The runner will still show a delta for these evals, but the model may describe tool
+calls rather than execute them — treat results as directional, not definitive.
+
+When writing evals, prefer knowledge evals where possible. Reserve tool-execution evals for
+critical tool-selection decisions (e.g. "use `matrix_tool` not `directions_tool`") where the
+distinction is high-value enough to test even directionally.
 
 ## Pull Request Process
 

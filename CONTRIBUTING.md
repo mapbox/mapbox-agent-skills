@@ -352,7 +352,6 @@ When writing evals, prefer knowledge evals where possible. Reserve tool-executio
 critical tool-selection decisions (e.g. "use `matrix_tool` not `directions_tool`") where the
 distinction is high-value enough to test even directionally.
 
-
 ## Pull Request Process
 
 1. **Create a branch:**

@@ -195,502 +195,6 @@ map.on('click', 'points-layer', (e) => {
 });
 ```
 
-## Polygons and Shapes
-
-### Google Maps
-
-```javascript
-const polygon = new google.maps.Polygon({
-  paths: [
-    { lat: 37.7749, lng: -122.4194 },
-    { lat: 37.7849, lng: -122.4094 },
-    { lat: 37.7649, lng: -122.4094 }
-  ],
-  strokeColor: '#FF0000',
-  strokeOpacity: 0.8,
-  strokeWeight: 2,
-  fillColor: '#FF0000',
-  fillOpacity: 0.35,
-  map: map
-});
-```
-
-### Mapbox GL JS
-
-```javascript
-map.addSource('polygon', {
-  type: 'geojson',
-  data: {
-    type: 'Feature',
-    geometry: {
-      type: 'Polygon',
-      coordinates: [
-        [
-          [-122.4194, 37.7749],
-          [-122.4094, 37.7849],
-          [-122.4094, 37.7649],
-          [-122.4194, 37.7749] // Close the ring
-        ]
-      ]
-    }
-  }
-});
-
-map.addLayer({
-  id: 'polygon-layer',
-  type: 'fill',
-  source: 'polygon',
-  paint: {
-    'fill-color': '#FF0000',
-    'fill-opacity': 0.35
-  }
-});
-
-// Add outline
-map.addLayer({
-  id: 'polygon-outline',
-  type: 'line',
-  source: 'polygon',
-  paint: {
-    'line-color': '#FF0000',
-    'line-width': 2,
-    'line-opacity': 0.8
-  }
-});
-```
-
-## Polylines / Lines
-
-### Google Maps
-
-```javascript
-const line = new google.maps.Polyline({
-  path: [
-    { lat: 37.7749, lng: -122.4194 },
-    { lat: 37.7849, lng: -122.4094 }
-  ],
-  strokeColor: '#0000FF',
-  strokeWeight: 3,
-  map: map
-});
-```
-
-### Mapbox GL JS
-
-```javascript
-map.addSource('route', {
-  type: 'geojson',
-  data: {
-    type: 'Feature',
-    geometry: {
-      type: 'LineString',
-      coordinates: [
-        [-122.4194, 37.7749],
-        [-122.4094, 37.7849]
-      ]
-    }
-  }
-});
-
-map.addLayer({
-  id: 'route-layer',
-  type: 'line',
-  source: 'route',
-  paint: {
-    'line-color': '#0000FF',
-    'line-width': 3
-  }
-});
-```
-
-## Custom Icons and Symbols
-
-### Google Maps
-
-```javascript
-const marker = new google.maps.Marker({
-  position: { lat: 37.7749, lng: -122.4194 },
-  map: map,
-  icon: {
-    url: 'marker.png',
-    scaledSize: new google.maps.Size(32, 32)
-  }
-});
-```
-
-### Mapbox GL JS
-
-**Option 1: HTML Marker**
-
-```javascript
-const el = document.createElement('div');
-el.className = 'marker';
-el.style.backgroundImage = 'url(marker.png)';
-el.style.width = '32px';
-el.style.height = '32px';
-
-new mapboxgl.Marker(el).setLngLat([-122.4194, 37.7749]).addTo(map);
-```
-
-**Option 2: Symbol Layer (Better Performance)**
-
-```javascript
-// Load image
-map.loadImage('marker.png', (error, image) => {
-  if (error) throw error;
-  map.addImage('custom-marker', image);
-
-  map.addLayer({
-    id: 'markers',
-    type: 'symbol',
-    source: 'points',
-    layout: {
-      'icon-image': 'custom-marker',
-      'icon-size': 1
-    }
-  });
-});
-```
-
-## Geocoding
-
-### Google Maps
-
-```javascript
-const geocoder = new google.maps.Geocoder();
-
-geocoder.geocode({ address: '1600 Amphitheatre Parkway' }, (results, status) => {
-  if (status === 'OK') {
-    map.setCenter(results[0].geometry.location);
-  }
-});
-```
-
-### Mapbox GL JS
-
-```javascript
-// Use Mapbox Geocoding API v6
-fetch(
-  `https://api.mapbox.com/search/geocode/v6/forward?q=1600+Amphitheatre+Parkway&access_token=${mapboxgl.accessToken}`
-)
-  .then((response) => response.json())
-  .then((data) => {
-    const [lng, lat] = data.features[0].geometry.coordinates;
-    map.setCenter([lng, lat]);
-  });
-
-// Or use mapbox-gl-geocoder plugin
-const geocoder = new MapboxGeocoder({
-  accessToken: mapboxgl.accessToken,
-  mapboxgl: mapboxgl
-});
-
-map.addControl(geocoder);
-```
-
-## Directions / Routing
-
-### Google Maps
-
-```javascript
-const directionsService = new google.maps.DirectionsService();
-const directionsRenderer = new google.maps.DirectionsRenderer();
-directionsRenderer.setMap(map);
-
-directionsService.route(
-  {
-    origin: 'San Francisco, CA',
-    destination: 'Los Angeles, CA',
-    travelMode: 'DRIVING'
-  },
-  (response, status) => {
-    if (status === 'OK') {
-      directionsRenderer.setDirections(response);
-    }
-  }
-);
-```
-
-### Mapbox GL JS
-
-```javascript
-// Use Mapbox Directions API
-const origin = [-122.4194, 37.7749];
-const destination = [-118.2437, 34.0522];
-
-fetch(
-  `https://api.mapbox.com/directions/v5/mapbox/driving/${origin.join(',')};${destination.join(',')}?geometries=geojson&access_token=${mapboxgl.accessToken}`
-)
-  .then((response) => response.json())
-  .then((data) => {
-    const route = data.routes[0].geometry;
-
-    map.addSource('route', {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: route
-      }
-    });
-
-    map.addLayer({
-      id: 'route',
-      type: 'line',
-      source: 'route',
-      paint: {
-        'line-color': '#3887be',
-        'line-width': 5
-      }
-    });
-  });
-
-// Or use @mapbox/mapbox-gl-directions plugin
-const directions = new MapboxDirections({
-  accessToken: mapboxgl.accessToken
-});
-
-map.addControl(directions, 'top-left');
-```
-
-## Controls
-
-### Google Maps
-
-```javascript
-// Controls are automatic, can configure:
-map.setOptions({
-  zoomControl: true,
-  mapTypeControl: true,
-  streetViewControl: false,
-  fullscreenControl: true
-});
-```
-
-### Mapbox GL JS
-
-```javascript
-// Add controls explicitly
-map.addControl(new mapboxgl.NavigationControl()); // Zoom + rotation
-map.addControl(new mapboxgl.FullscreenControl());
-map.addControl(new mapboxgl.GeolocateControl());
-map.addControl(new mapboxgl.ScaleControl());
-
-// Position controls
-map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-```
-
-## Clustering
-
-### Google Maps
-
-```javascript
-// Requires MarkerClusterer library
-import MarkerClusterer from '@googlemaps/markerclustererplus';
-
-const markers = locations.map((loc) => new google.maps.Marker({ position: loc, map: map }));
-
-new MarkerClusterer(map, markers, {
-  imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
-});
-```
-
-### Mapbox GL JS
-
-```javascript
-// Built-in clustering support
-map.addSource('points', {
-  type: 'geojson',
-  data: geojsonData,
-  cluster: true,
-  clusterMaxZoom: 14,
-  clusterRadius: 50
-});
-
-// Cluster circles
-map.addLayer({
-  id: 'clusters',
-  type: 'circle',
-  source: 'points',
-  filter: ['has', 'point_count'],
-  paint: {
-    'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
-    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
-  }
-});
-
-// Cluster count labels
-map.addLayer({
-  id: 'cluster-count',
-  type: 'symbol',
-  source: 'points',
-  filter: ['has', 'point_count'],
-  layout: {
-    'text-field': '{point_count_abbreviated}',
-    'text-size': 12
-  }
-});
-
-// Unclustered points
-map.addLayer({
-  id: 'unclustered-point',
-  type: 'circle',
-  source: 'points',
-  filter: ['!', ['has', 'point_count']],
-  paint: {
-    'circle-color': '#11b4da',
-    'circle-radius': 8
-  }
-});
-```
-
-**Key Advantage:** Mapbox clustering is built-in and highly performant.
-
-## Styling and Appearance
-
-### Map Types vs. Styles
-
-**Google Maps:**
-
-- Limited map types: roadmap, satellite, hybrid, terrain
-- Styling via `styles` array (complex)
-
-**Mapbox GL JS:**
-
-- Full control over every visual element
-- Pre-built styles: standard, standard-satellite, streets, outdoors, light, dark
-- Custom styles via Mapbox Studio for unique branding and design
-- Dynamic styling based on data properties
-- For classic styles (pre Mapbox Standard) you can modify style programmatically by using the setPaintProperty()
-
-### Custom Styling Example
-
-**Google Maps:**
-
-```javascript
-const styledMapType = new google.maps.StyledMapType(
-  [
-    { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-    { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] }
-    // ... many more rules
-  ],
-  { name: 'Dark' }
-);
-
-map.mapTypes.set('dark', styledMapType);
-map.setMapTypeId('dark');
-```
-
-**Mapbox GL JS:**
-
-```javascript
-// Use pre-built style
-map.setStyle('mapbox://styles/mapbox/dark-v11');
-
-// Or create custom style in Mapbox Studio and reference it
-map.setStyle('mapbox://styles/yourusername/your-style-id');
-
-// Modify classic styles programmatically
-map.setPaintProperty('water', 'fill-color', '#242f3e');
-```
-
-## Data Updates
-
-### Google Maps
-
-```javascript
-// Update marker position
-marker.setPosition({ lat: 37.7849, lng: -122.4094 });
-
-// Update polygon path
-polygon.setPath(newCoordinates);
-```
-
-### Mapbox GL JS
-
-```javascript
-// Update source data
-map.getSource('points').setData(newGeojsonData);
-
-// Or update specific features
-const source = map.getSource('points');
-const data = source._data;
-data.features[0].geometry.coordinates = [-122.4094, 37.7849];
-source.setData(data);
-```
-
-## Performance Considerations
-
-### Google Maps
-
-- Individual objects for each feature
-- Can be slow with 1000+ markers
-- Requires MarkerClusterer for performance
-
-### Mapbox GL JS
-
-- Data-driven rendering
-- WebGL-based (hardware accelerated)
-- Handles 10,000+ points smoothly
-- Built-in clustering
-
-**Migration Tip:** If you have performance issues with Google Maps (many markers), Mapbox will likely perform significantly better.
-
-## Common Migration Patterns
-
-### Pattern 1: Store Locator
-
-**Google Maps approach:**
-
-1. Create marker for each store
-2. Add click listeners to each marker
-3. Show info window on click
-
-**Mapbox approach:**
-
-1. Add all stores as GeoJSON source
-2. Add symbol layer for markers
-3. Use layer click event for all markers
-4. More performant, cleaner code
-
-### Pattern 2: Drawing Tools
-
-**Google Maps:**
-
-- Use Drawing Manager library
-- Creates overlay objects
-
-**Mapbox:**
-
-- Use Mapbox Draw plugin
-- More powerful, customizable
-- Better for complex editing
-
-### Pattern 3: Heatmaps
-
-**Google Maps:**
-
-```javascript
-const heatmap = new google.maps.visualization.HeatmapLayer({
-  data: points,
-  map: map
-});
-```
-
-**Mapbox:**
-
-```javascript
-map.addLayer({
-  id: 'heatmap',
-  type: 'heatmap',
-  source: 'points',
-  paint: {
-    'heatmap-intensity': 1,
-    'heatmap-radius': 50,
-    'heatmap-color': ['interpolate', ['linear'], ['heatmap-density'], 0, 'rgba(0,0,255,0)', 0.5, 'lime', 1, 'red']
-  }
-});
-```
-
 ## Migration Strategy
 
 ### Step 1: Audit Current Implementation
@@ -721,7 +225,7 @@ Identify all Google Maps features you use:
 Start with basic map initialization:
 
 1. Replace `new google.maps.Map()` with `new mapboxgl.Map()`
-2. Fix coordinate order (lat,lng → lng,lat)
+2. Fix coordinate order (lat,lng -> lng,lat)
 3. Update zoom/center
 
 ### Step 4: Convert Features One by One
@@ -736,8 +240,8 @@ Prioritize by complexity:
 
 Change event syntax:
 
-- `google.maps.event.addListener()` → `map.on()`
-- Update event property names (`latLng` → `lngLat`)
+- `google.maps.event.addListener()` -> `map.on()`
+- Update event property names (`latLng` -> `lngLat`)
 
 ### Step 6: Optimize for Mapbox
 
@@ -757,7 +261,7 @@ Take advantage of Mapbox features:
 
 ## Gotchas and Common Issues
 
-### ❌ Coordinate Order
+### Coordinate Order
 
 ```javascript
 // Google Maps
@@ -769,7 +273,7 @@ Take advantage of Mapbox features:
 
 **Always double-check coordinate order!**
 
-### ❌ Event Properties
+### Event Properties
 
 ```javascript
 // Google Maps
@@ -783,7 +287,7 @@ map.on('click', (e) => {
 });
 ```
 
-### ❌ Timing Issues
+### Timing Issues
 
 ```javascript
 // Google Maps - immediate
@@ -796,7 +300,7 @@ map.on('load', () => {
 });
 ```
 
-### ❌ Removing Features
+### Removing Features
 
 ```javascript
 // Google Maps
@@ -807,132 +311,23 @@ map.removeLayer('layer-id');
 map.removeSource('source-id');
 ```
 
-## API Services Comparison
+### Updating Data Without Flash
 
-| Service               | Google Maps         | Mapbox         | Notes                            |
-| --------------------- | ------------------- | -------------- | -------------------------------- |
-| **Geocoding**         | Geocoding API       | Geocoding API  | Similar capabilities             |
-| **Reverse Geocoding** | ✅                  | ✅             | Similar                          |
-| **Directions**        | Directions API      | Directions API | Mapbox has traffic-aware routing |
-| **Distance Matrix**   | Distance Matrix API | Matrix API     | Similar                          |
-| **Isochrones**        | ❌                  | ✅             | Mapbox exclusive                 |
-| **Optimization**      | ❌                  | ✅             | Mapbox exclusive (TSP)           |
-| **Street View**       | ✅                  | ❌             | Google exclusive                 |
-| **Static Maps**       | ✅                  | ✅             | Both supported                   |
-| **Satellite Imagery** | ✅                  | ✅             | Both supported                   |
-| **Tilesets**          | Limited             | Full API       | Mapbox more flexible             |
-
-## Pricing Differences
-
-### Google Maps Platform
-
-- Charges per API call
-- Free tier: $200/month credit
-- Different rates for different APIs
-- Can get expensive with high traffic
-
-### Mapbox
-
-- Charges per map load
-- Free tier: 50,000 map loads/month
-- Unlimited API requests per map session
-- More predictable costs
-
-**Migration Tip:** Understand how pricing models differ for your use case.
-
-## Plugins and Extensions
-
-### Google Maps Plugins → Mapbox Alternatives
-
-| Google Maps Plugin | Mapbox Alternative           |
-| ------------------ | ---------------------------- |
-| MarkerClusterer    | Built-in clustering          |
-| Drawing Manager    | @mapbox/mapbox-gl-draw       |
-| Geocoder           | @mapbox/mapbox-gl-geocoder   |
-| Directions         | @mapbox/mapbox-gl-directions |
-| -                  | @mapbox/mapbox-gl-traffic    |
-| -                  | @mapbox/mapbox-gl-compare    |
-
-## Framework Integration
-
-### React
-
-**Google Maps:**
+**Never** remove and re-add layers to update data — this reinitializes WebGL resources and causes a visible flash. Instead:
 
 ```javascript
-import { GoogleMap, Marker } from '@react-google-maps/api';
+// ✅ Update data in place (no flash)
+map.getSource('stores').setData(newGeoJSON);
+
+// ✅ Filter existing data (GPU-side, fastest)
+map.setFilter('stores-layer', ['==', ['get', 'category'], 'coffee']);
+
+// ❌ BAD: remove + re-add causes flash
+map.removeLayer('stores-layer');
+map.removeSource('stores');
+map.addSource('stores', { ... });
+map.addLayer({ ... });
 ```
-
-**Mapbox:**
-
-```javascript
-import Map, { Marker } from 'react-map-gl';
-// or
-import { useMap } from '@mapbox/mapbox-gl-react';
-```
-
-### Vue
-
-**Google Maps:**
-
-```javascript
-import { GoogleMap } from 'vue3-google-map';
-```
-
-**Mapbox:**
-
-```javascript
-import { MglMap } from 'vue-mapbox';
-```
-
-See `mapbox-web-integration-patterns` skill for detailed framework guidance.
-
-## Testing Strategy
-
-### Unit Tests
-
-```javascript
-// Mock mapboxgl
-jest.mock('mapbox-gl', () => ({
-  Map: jest.fn(() => ({
-    on: jest.fn(),
-    addSource: jest.fn(),
-    addLayer: jest.fn()
-  })),
-  Marker: jest.fn()
-}));
-```
-
-### Integration Tests
-
-- Test map initialization
-- Test data loading and updates
-- Test user interactions (click, pan, zoom)
-- Test API integrations (geocoding, directions)
-
-### Visual Regression Tests
-
-- Compare before/after screenshots
-- Ensure visual parity with Google Maps version
-
-## Checklist: Migration Complete
-
-- [ ] Map initializes correctly
-- [ ] All markers/features display
-- [ ] Click/hover interactions work
-- [ ] Popups/info windows display
-- [ ] Geocoding integrated
-- [ ] Directions/routing working
-- [ ] Custom styling applied
-- [ ] Controls positioned correctly
-- [ ] Mobile/touch gestures work
-- [ ] Performance is acceptable
-- [ ] Cross-browser tested
-- [ ] API keys secured
-- [ ] Error handling in place
-- [ ] Analytics/monitoring updated
-- [ ] Documentation updated
-- [ ] Team trained on Mapbox
 
 ## When NOT to Migrate
 
@@ -943,23 +338,6 @@ Consider staying with Google Maps if:
 - **Already heavily optimized** - Migration cost > benefits
 - **Team expertise** - Retraining costs too high
 - **Short-term project** - Not worth migration effort
-
-## Additional Resources
-
-- [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/)
-- [Official Google Maps to Mapbox Migration Guide](https://docs.mapbox.com/help/tutorials/google-to-mapbox/)
-- [Mapbox Examples](https://docs.mapbox.com/mapbox-gl-js/examples/)
-- [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
-
-## Integration with Other Skills
-
-**Works with:**
-
-- **mapbox-web-integration-patterns**: Framework-specific migration guidance
-- **mapbox-web-performance-patterns**: Optimize after migration
-- **mapbox-token-security**: Secure your Mapbox tokens properly
-- **mapbox-geospatial-operations**: Use Mapbox's geospatial tools effectively
-- **mapbox-search-patterns**: Migrate geocoding/search functionality
 
 ## Quick Reference: Side-by-Side Comparison
 
@@ -998,3 +376,36 @@ map.on('click', (e) => {
 ```
 
 **Remember:** lng, lat order in Mapbox!
+
+## Additional Resources
+
+- [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/)
+- [Official Google Maps to Mapbox Migration Guide](https://docs.mapbox.com/help/tutorials/google-to-mapbox/)
+- [Mapbox Examples](https://docs.mapbox.com/mapbox-gl-js/examples/)
+- [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
+
+## Integration with Other Skills
+
+**Works with:**
+
+- **mapbox-web-integration-patterns**: Framework-specific migration guidance
+- **mapbox-web-performance-patterns**: Optimize after migration
+- **mapbox-token-security**: Secure your Mapbox tokens properly
+- **mapbox-geospatial-operations**: Use Mapbox's geospatial tools effectively
+- **mapbox-search-patterns**: Migrate geocoding/search functionality
+
+## Reference Files
+
+The following reference files contain detailed migration guides for specific topics. Load them when working on those areas:
+
+- **`references/shapes-geocoding.md`** — Polygons, Polylines, Custom Icons, Geocoding
+- **`references/directions-controls.md`** — Directions/Routing, Controls
+- **`references/clustering-styling.md`** — Clustering, Styling/Appearance
+- **`references/data-performance.md`** — Data Updates, Performance, Common Migration Patterns (Store Locator, Drawing Tools, Heatmaps)
+- **`references/api-services.md`** — API Services Comparison, Pricing, Plugins, Framework Integration, Testing, Migration Checklist
+
+To load a reference, read the file relative to this skill directory, e.g.:
+
+```
+Load references/shapes-geocoding.md
+```

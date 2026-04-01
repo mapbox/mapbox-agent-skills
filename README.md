@@ -4,6 +4,40 @@
 
 ## Quick Start
 
+### Open Plugins (Cursor, Codex, GitHub Copilot, Claude Code)
+
+This repository conforms to the [Open Plugins specification](https://open-plugins.com/), making it installable in any conformant tool - Cursor, Codex, GitHub Copilot, Claude Code, and more.
+
+Add the marketplace source:
+
+```
+/plugin marketplace add mapbox/mapbox-agent-skills
+```
+
+Then install the plugin:
+
+```
+/plugin install mapbox
+```
+
+### Claude Plugin (Claude Code)
+
+Install as a Claude Code plugin to get skills and MCP servers in one step:
+
+```
+/plugin marketplace add mapbox/mapbox-agent-skills
+```
+
+Then install the plugin:
+
+```
+/plugin install mapbox
+```
+
+This adds all Mapbox skills and connects the `mapbox`, `mapbox-devkit`, and `mapbox-docs` MCP servers automatically.
+
+### Skills CLI
+
 Install all Mapbox Agent Skills:
 
 ```bash
@@ -805,7 +839,7 @@ Each example includes:
 
 ### Structure
 
-Each skill follows the Agent Skills specification:
+Each skill follows this structure:
 
 ```
 skill-name/
@@ -872,12 +906,6 @@ Test with prompts like:
 - "Set up offline regions for Android"
 
 ## Resources
-
-**Agent Skills:**
-
-- [Agent Skills Overview](https://agentskills.io)
-- [Agent Skills Specification](https://github.com/anthropics/skills)
-- [Skills CLI Tool](https://github.com/anthropics/skills)
 
 **Mapbox Documentation:**
 

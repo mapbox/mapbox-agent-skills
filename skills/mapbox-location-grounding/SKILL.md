@@ -33,7 +33,7 @@ If `ground_location_tool` is available, use it — it handles reverse geocoding,
 ground_location_tool(
   longitude, latitude,
   query: "restaurant",   // optional — category or subcategory of nearby places to find
-  profile: "walking",    // optional — travel profile for isochrone
+  profile: "mapbox/walking",    // optional — travel profile for isochrone
   contours_minutes: [5, 10, 15]
 )
 ```
@@ -150,7 +150,7 @@ For questions about travel between two locations, use `directions_tool`. For que
 ```
 directions_tool(
   waypoints: [{longitude, latitude}, {longitude, latitude}],
-  profile: "driving-traffic"   // live traffic; or "walking", "cycling", "driving"
+  profile: "mapbox/driving-traffic"   // live traffic; or "mapbox/walking", "mapbox/cycling", "mapbox/driving"
 )
 ```
 
@@ -183,7 +183,7 @@ Use `matrix_tool` — **do NOT call `directions_tool` separately for each pair**
 matrix_tool(
   sources: [{longitude, latitude}, ...],
   destinations: [{longitude, latitude}, ...],
-  profile: "driving-traffic"
+  profile: "mapbox/driving-traffic"
 )
 ```
 

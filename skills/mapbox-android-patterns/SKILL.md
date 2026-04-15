@@ -384,6 +384,7 @@ mapView.mapboxMap.subscribeStyleLoaded { _ ->
 
 Load these references when you need detailed patterns for specific topics:
 
+- **`references/compose.md`** -- Jetpack Compose: dependencies, token setup, MapboxMap, annotations with click, GeoJSON, MapEffect
 - **`references/annotations.md`** -- Circle, Polyline, and Polygon annotation patterns
 - **`references/location-tracking.md`** -- Camera follow user location + get current location once
 - **`references/custom-data.md`** -- GeoJSON sources and layers: lines, polygons, points, update/remove

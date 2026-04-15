@@ -30,6 +30,36 @@
         "To highlight, use setFeatureState on the building: mapView.mapboxMap.setFeatureState(building, StandardBuildingsState { highlight(true) })",
         "Notes that returning true from the lambda stops propagation to other interactions"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a Mapbox map to my Android Jetpack Compose project. I need the correct dependencies and a basic MapboxMap composable.",
+      "expectations": [
+        "Compose extension dependency uses group com.mapbox.extension, not com.mapbox.maps: implementation(\"com.mapbox.extension:maps-compose:11.x.x\")",
+        "Must NOT use com.mapbox.maps:compose, com.mapbox.maps:extension-compose, or com.mapbox.maps:android-compose",
+        "Both maps SDK and compose extension must use the same version",
+        "Uses MapboxMap composable from com.mapbox.maps.extension.compose, not AndroidView wrapping MapView"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to set the Mapbox access token programmatically in my Compose app before the map loads. What's the correct import and call?",
+      "expectations": [
+        "Import is from com.mapbox.common.MapboxOptions, NOT com.mapbox.maps.MapboxOptions",
+        "Call MapboxOptions.accessToken = \"pk.your_token\" before any map component is created",
+        "Recommends mapbox_access_token string resource as the preferred alternative",
+        "Must NOT use manifest <meta-data> placeholders with ${MAPBOX_ACCESS_TOKEN}"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to add tappable point markers to my Mapbox Compose map. When a marker is tapped, I need to know which one was clicked. Show me the correct pattern.",
+      "expectations": [
+        "Uses PointAnnotation composable from com.mapbox.maps.extension.compose.annotation.generated",
+        "Uses interactionsState.onClicked { ... } inside the init lambda for tap handling, NOT the deprecated onClick parameter",
+        "Uses rememberIconImage(R.drawable.ic_marker) for the marker icon, not BitmapFactory",
+        "PointAnnotation renders nothing without iconImage — must always set it"
+      ]
     }
   ]
 }

@@ -92,7 +92,7 @@ class MapViewController: UIViewController {
 Three options — pick the simplest:
 
 - `Marker` (SwiftUI, experimental SPI) — default pin, no image assets.
-- `PointAnnotation` (SwiftUI + UIKit) — custom **raster** image (PNG/JPEG/PDF). SF Symbols silently fail.
+- `PointAnnotation` (SwiftUI + UIKit) — custom image, scales to hundreds via the underlying symbol layer.
 - View annotations (SwiftUI + UIKit) — arbitrary native view at a coordinate.
 
 ```swift
@@ -104,12 +104,11 @@ Map {
     Marker(coordinate: coord).color(.red).text("Coffee")
 }
 
-// PointAnnotation — UIKit, custom raster image
+// PointAnnotation — UIKit, custom image
 var manager = mapView.annotations.makePointAnnotationManager()
 
 var annotation = PointAnnotation(coordinate: coordinate)
 annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
-// ⚠️ UIImage(systemName:) is vector and will silently fail — rasterize first.
 
 manager.annotations = [annotation]
 ```

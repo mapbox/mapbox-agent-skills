@@ -120,16 +120,57 @@ class MapViewController: UIViewController {
 
 ---
 
-## Add Markers (Point Annotations)
+## Add Markers
 
-Point annotations are the most common way to mark locations on the map.
+The SDK offers three ways to place a point on the map. Pick the simplest one that fits.
+
+### Which API should I use?
+
+| API                                                       | Use it when                                                                                    | Platforms       | Notes                                                                                                                                                                        |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Marker` (Markers API)                                    | You need a default pin and don't have a custom image asset                                     | SwiftUI only    | No image assets required. Experimental SPI — needs `@_spi(Experimental) import MapboxMaps`. Best < 100 markers.                                                              |
+| `PointAnnotation`                                         | You have a custom raster image (PNG/JPEG/PDF) and want layer-level placement                   | SwiftUI + UIKit | **Image must be raster.** SF Symbols (`UIImage(systemName:)`) are vector and fail silently.                                                                                  |
+| View annotations (`ViewAnnotation` / `MapViewAnnotation`) | You want to render a full native view (card, badge, animated content) anchored to a coordinate | SwiftUI + UIKit | SwiftUI uses `MapViewAnnotation`; UIKit uses `mapView.viewAnnotations` with a `ViewAnnotation`. Each annotation is a real view — costs more than `PointAnnotation` at scale. |
+
+For hundreds or thousands of features, use a style layer (`SymbolLayer` on a `GeoJSONSource`) instead of annotations.
+
+### Markers API (recommended for simple cases, SwiftUI)
+
+```swift
+import SwiftUI
+@_spi(Experimental) import MapboxMaps
+
+struct ContentView: View {
+    var body: some View {
+        Map {
+            Marker(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194))
+                .color(.red)
+                .text("San Francisco")
+        }
+    }
+}
+```
+
+Multiple markers from a collection:
+
+```swift
+Map {
+    ForEvery(locations, id: \.id) { location in
+        Marker(coordinate: location.coordinate)
+            .color(.red)
+            .text(location.name)
+    }
+}
+```
+
+### PointAnnotation (custom image)
 
 **SwiftUI:**
 
 ```swift
 Map(viewport: $viewport) {
     PointAnnotation(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194))
-        .iconImage("custom-marker")
+        .image(.init(image: UIImage(named: "marker")!, name: "marker"))
 }
 ```
 
@@ -151,12 +192,6 @@ pointAnnotationManager.annotations = [annotation]
 **Multiple markers:**
 
 ```swift
-let locations = [
-    CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-    CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094),
-    CLLocationCoordinate2D(latitude: 37.7649, longitude: -122.4294)
-]
-
 let annotations = locations.map { coordinate in
     var annotation = PointAnnotation(coordinate: coordinate)
     annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
@@ -165,6 +200,31 @@ let annotations = locations.map { coordinate in
 
 pointAnnotationManager.annotations = annotations
 ```
+
+### Common mistake: vector images (SF Symbols) on PointAnnotation
+
+`PointAnnotation.image` requires a **raster** `UIImage`. SF Symbols and other vector images have a `nil` `cgImage`, so they are rejected and the marker never appears — typically with no visible error.
+
+```swift
+// ❌ Silently fails — SF Symbols are vector images
+annotation.image = .init(image: UIImage(systemName: "mappin")!, name: "pin")
+
+// ✅ Use the Markers API instead (no image needed)
+Map { Marker(coordinate: coord).color(.red) }
+
+// ✅ Or rasterize the SF Symbol before using it
+let config = UIImage.SymbolConfiguration(pointSize: 32)
+let symbol = UIImage(systemName: "mappin", withConfiguration: config)!
+let raster = UIGraphicsImageRenderer(size: symbol.size).image { _ in
+    symbol.draw(at: .zero)
+}
+annotation.image = .init(image: raster, name: "pin")
+
+// ✅ Or ship a PNG/PDF in your asset catalog
+annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
+```
+
+Supported formats for `PointAnnotation.image`: PNG, JPEG, GIF, TIFF, HEIC/HEIF, PDF — anything `UIImage` exposes as a `cgImage`.
 
 ---
 

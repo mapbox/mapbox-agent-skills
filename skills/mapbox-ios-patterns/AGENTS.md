@@ -88,11 +88,27 @@ class MapViewController: UIViewController {
 
 ### 1. Add Markers
 
+Three options — pick the simplest:
+
+- `Marker` (SwiftUI, experimental SPI) — default pin, no image assets.
+- `PointAnnotation` (SwiftUI + UIKit) — custom **raster** image (PNG/JPEG/PDF). SF Symbols silently fail.
+- View annotations (SwiftUI + UIKit) — arbitrary native view at a coordinate.
+
 ```swift
+// Markers API — SwiftUI, simplest
+import SwiftUI
+@_spi(Experimental) import MapboxMaps
+
+Map {
+    Marker(coordinate: coord).color(.red).text("Coffee")
+}
+
+// PointAnnotation — UIKit, custom raster image
 var manager = mapView.annotations.makePointAnnotationManager()
 
 var annotation = PointAnnotation(coordinate: coordinate)
 annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
+// ⚠️ UIImage(systemName:) is vector and will silently fail — rasterize first.
 
 manager.annotations = [annotation]
 ```

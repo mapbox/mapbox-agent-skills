@@ -30,6 +30,27 @@
         "The poi object provides typed access to POI properties like poi.name",
         "Notes that returning true from the closure stops propagation to other interactions"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I have a SwiftUI Mapbox map and I want to drop coffee shop markers from a GeoJSON feed. I don't have a custom image — I just need simple pins. What should I use?",
+      "expectations": [
+        "Recommends the Markers API (Marker) as the simplest fit for default pins in SwiftUI without image assets",
+        "Shows `@_spi(Experimental) import MapboxMaps` because Marker is experimental SPI",
+        "Uses `ForEvery(locations, id: \\.id) { Marker(coordinate: ...) }` pattern inside the Map block",
+        "Does NOT recommend PointAnnotation with UIImage(systemName:) — SF Symbols are vector and PointAnnotation requires a raster UIImage",
+        "Mentions that for hundreds or thousands of features a SymbolLayer on a GeoJSONSource is more appropriate"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My PointAnnotation isn't showing up on the iOS map. I set `annotation.image = .init(image: UIImage(systemName: \"mappin\")!, name: \"pin\")` and pushed it to the manager, no errors, nothing renders. What's wrong?",
+      "expectations": [
+        "Identifies the root cause: `UIImage(systemName:)` returns a vector image whose `cgImage` is nil, so the Maps SDK silently fails to convert it into a style image",
+        "PointAnnotation.image requires a raster UIImage (PNG, JPEG, GIF, TIFF, HEIC/HEIF, or a rasterised PDF)",
+        "Suggests at least one of: (a) switching to the Markers API (`Marker`) for a default pin, (b) rasterising the SF Symbol with UIGraphicsImageRenderer before assigning it, or (c) shipping a PNG/PDF asset in the asset catalog",
+        "Does NOT suggest that the symbol name is wrong or that the annotation manager needs to be recreated"
+      ]
     }
   ]
 }

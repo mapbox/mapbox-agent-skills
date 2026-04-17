@@ -211,18 +211,23 @@ flutter:
 
 Use `manager.tapEvents` — this is the current API. `addOnPointAnnotationClickListener` is deprecated.
 
+`tapEvents` returns a `Cancelable` that you store and invoke `.cancel()` on when the listener is no longer needed:
+
 ```dart
-final subscription = pointAnnotationManager!.tapEvents(
+final Cancelable tapSubscription = pointAnnotationManager!.tapEvents(
   onTap: (annotation) {
     debugPrint('Tapped annotation ${annotation.id}');
   },
 );
 
-// Cancel when you no longer need it, typically in dispose():
-// subscription.cancel();
+@override
+void dispose() {
+  tapSubscription.cancel();
+  super.dispose();
+}
 ```
 
-The same pattern exists for every manager: `longPressEvents`, `dragEvents`, and for other annotation types (`CircleAnnotationManager.tapEvents`, etc.).
+The same pattern — returning a `Cancelable` — exists on every manager's `longPressEvents` and `dragEvents`, and across the other annotation types (`CircleAnnotationManager.tapEvents`, etc.).
 
 ### Load annotations from GeoJSON
 

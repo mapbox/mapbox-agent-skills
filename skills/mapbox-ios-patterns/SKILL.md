@@ -28,7 +28,7 @@ Official patterns for integrating Mapbox Maps SDK v11 on iOS with Swift, SwiftUI
 
 ### Requirements
 
-- iOS 12+
+- iOS 14+
 - Xcode 15+
 - Swift 5.9+
 - Free Mapbox account
@@ -57,7 +57,7 @@ Add your public token to `Info.plist`:
 
 ## Map Initialization
 
-### SwiftUI Pattern (iOS 13+)
+### SwiftUI Pattern
 
 **Basic map:**
 

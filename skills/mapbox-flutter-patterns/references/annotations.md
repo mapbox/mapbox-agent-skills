@@ -12,7 +12,7 @@ final manager = await mapboxMap.annotations.createCircleAnnotationManager();
 await manager.create(CircleAnnotationOptions(
   geometry: Point(coordinates: Position(-122.4194, 37.7749)),
   circleRadius: 10,
-  circleColor: Colors.red.value,
+  circleColor: Colors.red.toARGB32(),
 ));
 
 manager.tapEvents(onTap: (annotation) {
@@ -31,7 +31,7 @@ await manager.create(PolylineAnnotationOptions(
     Position(-122.4094, 37.7849),
     Position(-122.3994, 37.7949),
   ]),
-  lineColor: Colors.blue.value,
+  lineColor: Colors.blue.toARGB32(),
   lineWidth: 4,
 ));
 ```
@@ -51,7 +51,7 @@ await manager.create(PolygonAnnotationOptions(
       Position(-122.420, 37.770),
     ],
   ]),
-  fillColor: Colors.green.value,
+  fillColor: Colors.green.toARGB32(),
   fillOpacity: 0.4,
 ));
 ```

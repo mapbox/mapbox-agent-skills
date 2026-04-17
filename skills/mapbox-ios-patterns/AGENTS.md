@@ -49,7 +49,8 @@ Map(viewport: $viewport) {
         latitude: 37.7749,
         longitude: -122.4194
     ))
-    .iconImage("custom-marker")
+    // Register and use the image in one call — raster UIImage only.
+    .image(.init(image: UIImage(named: "marker")!, name: "marker"))
 }
 .mapStyle(.standard)
 ```

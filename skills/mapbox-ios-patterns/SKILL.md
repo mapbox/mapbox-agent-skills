@@ -48,7 +48,7 @@ name: MyApp
 options:
   bundleIdPrefix: com.example
   deploymentTarget:
-    iOS: "16.0"
+    iOS: '16.0'
 
 packages:
   MapboxMaps:
@@ -69,7 +69,7 @@ targets:
       - package: MapboxMaps
     settings:
       base:
-        SWIFT_VERSION: "5.9"
+        SWIFT_VERSION: '5.9'
         PRODUCT_BUNDLE_IDENTIFIER: com.example.MyApp
 ```
 

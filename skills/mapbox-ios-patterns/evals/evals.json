@@ -35,9 +35,9 @@
       "id": 4,
       "prompt": "I have a SwiftUI Mapbox map and I want to drop coffee shop markers from a GeoJSON feed. I don't have a custom image — I just need simple pins. What should I use?",
       "expectations": [
-        "Recommends the Markers API (Marker) as the simplest fit for default pins in SwiftUI without image assets",
-        "Shows `@_spi(Experimental) import MapboxMaps` because Marker is experimental SPI",
-        "Uses `ForEvery(locations, id: \\.id) { Marker(coordinate: ...) }` pattern inside the Map block",
+        "Recommends `Marker` (the Markers API) as the simplest fit",
+        "Imports with `@_spi(Experimental) import MapboxMaps`",
+        "Uses `ForEvery` with `Marker` inside the Map block",
         "Mentions that for hundreds or thousands of features a SymbolLayer on a GeoJSONSource is more appropriate"
       ]
     }

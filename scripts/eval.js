@@ -80,42 +80,90 @@ ${assistantResponse}
 ## Expectations
 ${expectations}
 
-Respond in this exact JSON format (no other text):
-{
-  "expectations": [
-    {"index": 1, "score": 0-3, "label": "FULL|PARTIAL|MINIMAL|MISS", "reason": "..."},
-    ...
-  ],
-  "totalScore": <sum>,
-  "maxScore": ${evalItem.expectations.length * 3},
-  "summary": "One sentence overall assessment"
-}`;
+Call the submit_scores tool to return your grading.`;
+
+  // Force structured output via tool use. The previous implementation asked
+  // the judge to emit plain-text JSON and then regex-extracted it; on verbose
+  // responses (several long expectations) the JSON got truncated by max_tokens
+  // and the greedy regex produced unparseable output, failing the eval with a
+  // false 0/N. Tool use avoids the regex dance entirely: the SDK returns
+  // typed structured input from the model, or errors loudly.
+  const submitScoresTool = {
+    name: 'submit_scores',
+    description: 'Submit the graded scores for each expectation.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        expectations: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              index: {
+                type: 'integer',
+                description: '1-based expectation number matching the prompt.'
+              },
+              score: { type: 'integer', minimum: 0, maximum: 3 },
+              label: { enum: ['FULL', 'PARTIAL', 'MINIMAL', 'MISS'] },
+              reason: {
+                type: 'string',
+                description:
+                  'One short sentence explaining the score. Keep under 200 characters.'
+              }
+            },
+            required: ['index', 'score', 'label', 'reason']
+          }
+        },
+        summary: {
+          type: 'string',
+          description: 'One sentence overall assessment.'
+        }
+      },
+      required: ['expectations', 'summary']
+    }
+  };
 
   const judgeResponse = await anthropic.messages.create({
     model: JUDGE_MODEL,
     max_tokens: 2048,
+    tools: [submitScoresTool],
+    tool_choice: { type: 'tool', name: 'submit_scores' },
     messages: [{ role: 'user', content: judgePrompt }]
   });
 
-  const judgeText = judgeResponse.content.map((b) => b.text || '').join('\n');
-
-  // Parse structured JSON from judge
+  const toolUseBlock = judgeResponse.content.find((b) => b.type === 'tool_use');
+  const rawInput = toolUseBlock?.input;
   let judgeData;
-  try {
-    const jsonMatch = judgeText.match(/\{[\s\S]*\}/);
-    judgeData = JSON.parse(jsonMatch[0]);
-  } catch {
-    // Fallback if JSON parsing fails
+  if (toolUseBlock && Array.isArray(rawInput?.expectations)) {
+    const totalScore = rawInput.expectations.reduce(
+      (sum, e) => sum + (Number(e?.score) || 0),
+      0
+    );
+    judgeData = {
+      expectations: rawInput.expectations,
+      totalScore,
+      maxScore: evalItem.expectations.length * 3,
+      summary: typeof rawInput.summary === 'string' ? rawInput.summary : ''
+    };
+  } else {
+    // Either no tool_use returned (safety refusal, token limit pre-tool-call,
+    // etc.) or the tool call's input didn't match the declared schema (model
+    // emitted expectations as a non-array). Surface clearly as an eval-infra
+    // failure rather than silently 0-scoring or crashing.
+    const stopReason = judgeResponse.stop_reason;
+    const reason = toolUseBlock
+      ? `Judge tool input did not match schema (stop_reason=${stopReason})`
+      : `Judge did not return a tool_use block (stop_reason=${stopReason})`;
     judgeData = {
       expectations: evalItem.expectations.map((_, i) => ({
         index: i + 1,
         score: 0,
         label: 'UNKNOWN',
-        reason: 'Could not parse judge output'
+        reason
       })),
       totalScore: 0,
       maxScore: evalItem.expectations.length * 3,
-      summary: 'Judge output parsing failed'
+      summary: reason
     };
   }
 

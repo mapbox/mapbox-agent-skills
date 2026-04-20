@@ -163,6 +163,8 @@ Map {
 }
 ```
 
+> **Scaling note.** `Marker` and `PointAnnotation` each create their own view or symbol entry per pin — fine up to about 100 markers. For larger datasets (hundreds or thousands of features — common with open-ended GeoJSON feeds), load the data into a `GeoJSONSource` and render it with a `SymbolLayer` instead. That scales to thousands of features and enables clustering.
+
 ### PointAnnotation (custom image)
 
 **SwiftUI:**

@@ -7,7 +7,7 @@
       "expectations": [
         "Token goes in Info.plist with the key MBXAccessToken",
         "Shows the correct plist entry: <key>MBXAccessToken</key> <string>pk.your_token</string>",
-        "Token is NOT set in code (unlike Mapbox GL JS web apps where mapboxgl.accessToken is set in JavaScript)",
+        "Presents the Info.plist approach as the primary/standard/recommended way for iOS (a programmatic alternative via MapboxOptions.setAccessToken is valid and may be mentioned, but should not be promoted as the main approach)",
         "Notes the token should be a public token (starts with pk.)"
       ]
     },

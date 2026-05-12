@@ -189,7 +189,14 @@ Before deploying any Mapbox style to production:
 ### Large Style File Size
 
 **Problem:** Style takes long to load or transfer
-**Solution:** Run `optimize_style_tool` to remove redundancies and simplify
+**Solution:** Run `optimize_style_tool` with all optimizations enabled. Apply them in order:
+  1. Remove unused sources (deleted layers often leave orphaned sources behind)
+  2. Remove duplicate layers (identical paint/layout, different IDs)
+  3. Simplify redundant boolean expressions (`["all", expr]` → `expr`, `["any", false, expr]` → `expr`)
+  4. Remove empty layers (layers with no paint or layout properties) as a final cleanup step
+
+After optimizing, review the optimization report: check `percentReduction` for size savings and the `changes` list to confirm what was removed before deploying.
+
 **Prevention:** Regularly optimize during development, remove unused sources immediately
 
 ### Invalid GeoJSON Source

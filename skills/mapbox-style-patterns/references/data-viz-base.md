@@ -100,6 +100,7 @@
 **Key features:**
 
 - Grayscale palette (doesn't interfere with data colors)
+- **Water is gray (`#d8d8d8`), not blue** — blue water competes directly with data colors in choropleth maps, especially political/election maps that use red and blue. Desaturate water to a neutral gray so it reads as background context.
 - Minimal detail (roads, borders only)
 - Major cities labeled for orientation
 - Low opacity throughout

@@ -195,7 +195,52 @@ class MapViewController: UIViewController {
 
 ---
 
-## Add Markers (Point Annotations)
+## Add Markers
+
+The SDK offers three ways to place a point on the map. Pick the simplest one that fits.
+
+### Which API should I use?
+
+| API                                                       | Use it when                                                                                    | Platforms       | Notes                                                                                                                                                                        |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Marker` (Markers API)                                    | You need a default pin and don't have a custom image asset                                     | SwiftUI only    | No image assets required. Experimental SPI — needs `@_spi(Experimental) import MapboxMaps`. Best < 100 markers.                                                              |
+| `PointAnnotation`                                         | You have a custom image and want layer-level placement                                         | SwiftUI + UIKit | Backed by a symbol layer, so it scales well to hundreds of markers. Accepts any `UIImage` that `UIKit` can render.                                                           |
+| View annotations (`ViewAnnotation` / `MapViewAnnotation`) | You want to render a full native view (card, badge, animated content) anchored to a coordinate | SwiftUI + UIKit | SwiftUI uses `MapViewAnnotation`; UIKit uses `mapView.viewAnnotations` with a `ViewAnnotation`. Each annotation is a real view — costs more than `PointAnnotation` at scale. |
+
+For hundreds or thousands of features, use a style layer (`SymbolLayer` on a `GeoJSONSource`) instead of annotations.
+
+### Markers API (recommended for simple cases, SwiftUI)
+
+```swift
+import SwiftUI
+@_spi(Experimental) import MapboxMaps
+
+struct ContentView: View {
+    var body: some View {
+        Map {
+            Marker(coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194))
+                .color(.red)
+                .text("San Francisco")
+        }
+    }
+}
+```
+
+Multiple markers from a collection:
+
+```swift
+Map {
+    ForEvery(locations, id: \.id) { location in
+        Marker(coordinate: location.coordinate)
+            .color(.red)
+            .text(location.name)
+    }
+}
+```
+
+> **Scaling note.** `Marker` and `PointAnnotation` each create their own view or symbol entry per pin — fine up to about 100 markers. For larger datasets (hundreds or thousands of features — common with open-ended GeoJSON feeds), load the data into a `GeoJSONSource` and render it with a `SymbolLayer` instead. That scales to thousands of features and enables clustering.
+
+### PointAnnotation (custom image)
 
 **SwiftUI — single annotation:**
 
@@ -235,6 +280,18 @@ annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
 annotation.iconAnchor = .bottom
 
 pointAnnotationManager.annotations = [annotation]
+```
+
+**Multiple markers:**
+
+```swift
+let annotations = locations.map { coordinate in
+    var annotation = PointAnnotation(coordinate: coordinate)
+    annotation.image = .init(image: UIImage(named: "marker")!, name: "marker")
+    return annotation
+}
+
+pointAnnotationManager.annotations = annotations
 ```
 
 ---

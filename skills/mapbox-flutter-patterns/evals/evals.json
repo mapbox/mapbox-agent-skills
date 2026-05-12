@@ -1,0 +1,60 @@
+{
+  "skill_name": "mapbox-flutter-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm adding Mapbox to an existing Flutter app. What are the minimum platform requirements I need to set on iOS and Android before the build succeeds?",
+      "expectations": [
+        "iOS deployment target must be bumped to 14.0 (Runner target in Xcode, and the Podfile platform line if a Podfile exists)",
+        "Identifies the iOS deployment target as the single most common iOS build failure cause",
+        "Android minSdk must be 21 or higher",
+        "Does NOT insist CocoaPods is required — mentions that the plugin supports both CocoaPods and SPM and Flutter chooses automatically (or simply does not force one)",
+        "Does not suggest hard-coding the iOS version only in pbxproj without updating the Runner target in Xcode"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "How should I configure the Mapbox access token in my Flutter app without checking it into the repo?",
+      "expectations": [
+        "Pass the token via `--dart-define=ACCESS_TOKEN=pk.your_token` at `flutter run` / `flutter build` time",
+        "Read it in Dart with `const accessToken = String.fromEnvironment('ACCESS_TOKEN');`",
+        "Call `MapboxOptions.setAccessToken(accessToken)` in `main()` before `runApp`, so the token is set before any `MapWidget` is created",
+        "Does NOT suggest hard-coding the token in source code or putting it in pubspec.yaml",
+        "For CI, suggests reading the token from an environment variable and forwarding it via --dart-define"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have a `PointAnnotationManager` in my Flutter app and I want my annotations to be tappable. What's the current non-deprecated API?",
+      "expectations": [
+        "Use `manager.tapEvents(onTap: (annotation) { ... })` — returns a `Cancelable`",
+        "Explicitly calls out that `addOnPointAnnotationClickListener` is deprecated and should not be used",
+        "Stores the returned Cancelable and calls `.cancel()` when the listener is no longer needed (e.g. in `dispose`)",
+        "Mentions that the same `tapEvents` / `longPressEvents` / `dragEvents` pattern is available on every annotation manager type"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I have a `coffee_shops.geojson` file in my Flutter app assets. How do I display each feature as a point annotation on a Mapbox map?",
+      "expectations": [
+        "Load the file contents with `rootBundle.loadString('assets/coffee_shops.geojson')`",
+        "Register the asset path under `flutter: assets:` in pubspec.yaml",
+        "Decode JSON and iterate `features`, reading each geometry's `coordinates` as `[lng, lat]`",
+        "Create a single `PointAnnotationManager` via `mapboxMap.annotations.createPointAnnotationManager()` and call `createMulti(options)` — not one call per feature",
+        "Wraps coordinates in `Point(coordinates: Position(lng, lat))`",
+        "Mentions that for thousands of features, a `GeoJsonSource` + `SymbolLayer` is more appropriate than annotations"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My Flutter Mapbox map shows a blank grid and no tiles load. I pass --dart-define=ACCESS_TOKEN=... but nothing renders. What's likely wrong?",
+      "expectations": [
+        "Most likely cause: `MapboxOptions.setAccessToken(...)` is never called, or is called after the `MapWidget` is already built",
+        "Verify the token is read with `String.fromEnvironment('ACCESS_TOKEN')` using the exact same key passed to --dart-define",
+        "Call `MapboxOptions.setAccessToken(...)` in `main()` before `runApp`",
+        "Confirm the token is a public token (starts with `pk.`) and has not been revoked",
+        "Does NOT suggest the deployment target is the issue — that would be a compile-time failure, not a runtime blank map"
+      ]
+    }
+  ]
+}

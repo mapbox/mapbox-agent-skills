@@ -3,6 +3,9 @@ package-lock.json
 .git
 CHANGELOG.md
 
+# Slidev presentations (use --- as slide separators, not Markdown HR)
+presentations/
+
 # Build artifacts
 **/build/
 **/.gradle/

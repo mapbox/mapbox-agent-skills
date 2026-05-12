@@ -7,7 +7,7 @@
       "expectations": [
         "Token goes in Info.plist with the key MBXAccessToken",
         "Shows the correct plist entry: <key>MBXAccessToken</key> <string>pk.your_token</string>",
-        "Token is NOT set in code (unlike Mapbox GL JS web apps where mapboxgl.accessToken is set in JavaScript)",
+        "Presents the Info.plist approach as the primary/standard/recommended way for iOS (a programmatic alternative via MapboxOptions.setAccessToken is valid and may be mentioned, but should not be promoted as the main approach)",
         "Notes the token should be a public token (starts with pk.)"
       ]
     },
@@ -29,6 +29,16 @@
         "Shows the SwiftUI or UIKit pattern: TapInteraction(.standardPoi) { poi, context in ... }",
         "The poi object provides typed access to POI properties like poi.name",
         "Notes that returning true from the closure stops propagation to other interactions"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I have a SwiftUI Mapbox map and I want to drop coffee shop markers from a GeoJSON feed. I don't have a custom image — I just need simple pins. What should I use?",
+      "expectations": [
+        "Recommends `Marker` (the Markers API) as the simplest fit",
+        "Imports with `@_spi(Experimental) import MapboxMaps`",
+        "Uses `ForEvery` with `Marker` inside the Map block",
+        "Mentions that for hundreds or thousands of features a SymbolLayer on a GeoJSONSource is more appropriate"
       ]
     }
   ]

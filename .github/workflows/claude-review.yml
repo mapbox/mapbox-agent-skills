@@ -42,9 +42,10 @@ jobs:
           trigger_phrase: "@claude"
           track_progress: true
           prompt: |
+          prompt: |
             Review this PR focusing on:
             1. Accuracy - technical content is correct for the Mapbox APIs and SDKs referenced
-            2. Skill structure - each skill has a valid frontmatter block (name, description, triggers, content) matching the schema in CONTRIBUTING.md
+            2. Skill structure - each skill has a valid frontmatter block (name, description) matching the schema in CONTRIBUTING.md; trigger conditions should be embedded in the description
             3. Clarity - guidance is actionable and unambiguous; code examples are complete and runnable
             4. Consistency - tone, formatting, and depth match existing skills in the repo
             5. Scope - skills stay focused on their stated topic; no unnecessary overlap with other skills

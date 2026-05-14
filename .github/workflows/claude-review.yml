@@ -26,7 +26,7 @@ jobs:
         if: github.event_name == 'pull_request'
         id: pr-size
         run: |
-          CHANGED_LINES=$(git diff --stat origin/${{ github.event.pull_request.base.ref }}...origin/${{ github.event.pull_request.head.ref }} | tail -1 | awk '{gsub(/[^0-9]/, " "); print $1 + $2}')
+          CHANGED_LINES=$(git diff --numstat origin/${{ github.event.pull_request.base.ref }}...origin/${{ github.event.pull_request.head.ref }} | awk '{ added += $1; removed += $2 } END { print added + removed }')
           CHANGED_LINES=${CHANGED_LINES:-0}
           echo "changed_lines=$CHANGED_LINES" >> "$GITHUB_OUTPUT"
           echo "PR has $CHANGED_LINES changed lines"

@@ -15,7 +15,6 @@ jobs:
     permissions:
       id-token: write
       actions: read
-      contents: read
       pull-requests: write
       issues: write
     steps:

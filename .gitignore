@@ -13,5 +13,8 @@ evals/latest.json
 *.xcuserdatad
 .swiftpm/xcode/
 
+# Metrics reports (tracked separately or in data repo)
+metrics/
+
 
 .env

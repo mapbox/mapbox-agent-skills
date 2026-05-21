@@ -1,0 +1,39 @@
+name: Track Metrics
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  track-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate metrics reports
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run metrics
+          npm run metrics:json
+          npm run metrics:csv
+
+      - name: Upload metrics artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-${{ github.run_number }}
+          path: metrics/
+          retention-days: 90
+
+      - name: Display summary
+        run: cat metrics/metrics-latest.md >> $GITHUB_STEP_SUMMARY

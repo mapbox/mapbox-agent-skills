@@ -16,7 +16,10 @@
     "eval:diff": "node scripts/eval.js --diff",
     "eval:update-baseline": "node scripts/eval.js --update-baseline",
     "setup": "node scripts/setup-hooks.js",
-    "postinstall": "node scripts/setup-hooks.js"
+    "postinstall": "node scripts/setup-hooks.js",
+    "metrics": "node scripts/generate-metrics-report.js",
+    "metrics:json": "node scripts/generate-metrics-report.js --format=json",
+    "metrics:csv": "node scripts/generate-metrics-report.js --format=csv"
   },
   "keywords": [
     "agent-skills",

@@ -1,0 +1,44 @@
+{
+  "skill_name": "mapbox-token-security",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our Mapbox secret token is 85 days old and used by 3 production services. We want to rotate it before the recommended 90-day deadline without any downtime. What is the correct zero-downtime rotation process, and what's the most common mistake teams make that causes an outage during rotation?",
+      "expected_output": "Should describe the 7-step zero-downtime process: (1) create new token, (2) deploy to canary/staging, (3) verify with new token, (4) gradually roll out to production, (5) monitor for 24-48 hours, (6) revoke old token only after confirmation, (7) update documentation. The most common mistake is revoking the old token before all services are confirmed working on the new one.",
+      "files": [],
+      "expectations": [
+        "Creates the new token BEFORE revoking the old one",
+        "Deploys to canary or staging environment first to verify the new token works",
+        "Specifies a monitoring period (24-48 hours) after rolling out the new token",
+        "Revokes the old token only AFTER confirming the new one is working in production",
+        "Identifies the common mistake: revoking old token before all services are updated"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm creating a public Mapbox token for my production web app at https://myapp.com. My developer added allowedUrls: ['*'] to 'keep it simple during development'. Why is this wrong, and what should the allowedUrls look like for production, staging, and local development?",
+      "expected_output": "Should explain that '*' means the token works on any website, making it trivially abusable if leaked. Should provide correct patterns: production ('https://myapp.com/*'), staging ('https://staging.myapp.com/*'), and development ('http://localhost:*'). Should recommend separate tokens per environment.",
+      "files": [],
+      "expectations": [
+        "Explains that allowedUrls: ['*'] means the token works on any website (no restriction)",
+        "Recommends 'https://myapp.com/*' for production",
+        "Recommends 'http://localhost:*' or 'http://127.0.0.1:*' for local development",
+        "Recommends separate tokens per environment (dev, staging, production)",
+        "Warns against overly broad patterns like 'http://*' or '*.com/*'"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm building a client-side web app that only needs to display a Mapbox map with custom styles and labels. What is the minimum set of scopes my public token needs? My team lead suggested also adding styles:write and tokens:write 'just in case'. Why is that wrong?",
+      "expected_output": "Should recommend only the scopes needed for map display: styles:read, fonts:read, and styles:tiles. Should explain that styles:write and tokens:write are secret-token-only scopes that should never be on a client-side public token — they could allow an attacker to modify styles or create new tokens if the public token were stolen.",
+      "files": [],
+      "expectations": [
+        "Recommends styles:read as a required scope for map display",
+        "Recommends fonts:read for label/text rendering",
+        "Recommends styles:tiles for raster tile access",
+        "Explains that styles:write and tokens:write should NOT be on a public client-side token",
+        "Explains the principle of least privilege: only grant what the use case actually requires"
+      ]
+    }
+  ]
+}

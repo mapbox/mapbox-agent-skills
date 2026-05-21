@@ -1,0 +1,45 @@
+{
+  "skill_name": "mapbox-cartography",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a Mapbox style for a delivery app and need to know the correct layer order. I have these layers: user's active route line, restaurant POI markers, building footprints, road labels, and hillshade terrain. Put them in the correct bottom-to-top render order and explain why.",
+      "expected_output": "Should produce the exact order from the skill's 10-step layer hierarchy: hillshade/terrain first, then buildings, then road labels, then POI symbols (restaurants), then user-generated content (active route) on top. Should explain that user content always renders above base data, and labels above geometry.",
+      "files": [],
+      "expectations": [
+        "Places hillshade/terrain below building footprints",
+        "Places building footprints below road labels",
+        "Places road labels below restaurant POI markers",
+        "Places restaurant POI markers below the user's active route line",
+        "User route is the topmost layer"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our product manager wants restaurant POI icons to appear starting at zoom 10, but a teammate says that's too early and recommends zoom 14. Who is right? And separately — at what zoom level should house numbers first appear?",
+      "expected_output": "Should say zoom 10 is too early and zoom 14 is too late — restaurants/POIs belong in the zoom 12-15 range per the cartographic zoom strategy. House numbers should appear at zoom 16+. Should explain the rationale: showing POIs before zoom 12 creates visual clutter at the metro/neighborhood scale.",
+      "files": [],
+      "expectations": [
+        "States that zoom 10 is too early for restaurant POIs",
+        "States that zoom 14 is at the late end or acceptable, but zoom 12 is the correct start for POIs",
+        "POI recommendation falls in the zoom 12-15 range",
+        "States house numbers should appear at zoom 16 or later",
+        "Explains the cartographic rationale (clutter, appropriate detail for scale)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Give me a complete dark theme color palette for a Mapbox map with exact hex values for: background/land, water, parks/vegetation, roads, buildings, and text labels. This is for a professional nighttime navigation app.",
+      "expected_output": "Should provide the skill's dark theme template values (or very close): background #1a1a1a, water dark blue (#0d47a1), parks dark green (#2e7d32), roads dark gray (#3a3a3a), buildings slightly lighter gray (#2d2d2d), text white (#ffffff). Should NOT give generic 'use a dark color' advice without specifics.",
+      "files": [],
+      "expectations": [
+        "Provides a dark near-black background value close to #1a1a1a",
+        "Provides a dark blue for water (not light blue — this is a dark theme)",
+        "Provides a dark green for parks/vegetation",
+        "Roads are a mid-dark gray distinct from the background (not the same color)",
+        "Text is white or near-white for readability on dark background",
+        "All 6 values given as specific hex codes, not just descriptions"
+      ]
+    }
+  ]
+}

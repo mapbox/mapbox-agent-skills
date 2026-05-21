@@ -138,6 +138,8 @@ The Mapbox MCP Server provides two categories of geospatial tools:
 | Periodic proximity checks           | Geometric distance   | `distance_tool`                          |
 | Live traffic routing                | Routing with traffic | `directions_tool` (driving-traffic)      |
 
+**Architecture note for high-frequency geofencing:** If the application calls containment checks at very high rates (e.g., 50 vehicles every 2 seconds = 25 checks/second), calling MCP tools over the network adds agent-reasoning overhead that makes it impractical. In those cases, recommend using Turf.js directly in-process (`turf.booleanPointInPolygon`) for the hot path, and reserve MCP tools for peripheral tasks like zone definition (`isochrone_tool`), rerouting (`directions_tool`), or visualization (`static_map_image_tool`).
+
 ## Common Scenarios and Optimal Approaches
 
 ### Scenario 1: Store Locator
@@ -154,14 +156,19 @@ The Mapbox MCP Server provides two categories of geospatial tools:
 
 ### Scenario 2: Delivery Route Optimization
 
-**User: "Optimize delivery to 8 addresses"**
+**User: "Optimize delivery to 8 addresses / stops"**
 
 **Optimal approach:**
 
-1. Geocode addresses → `search_and_geocode_tool`
-2. Optimize route → `optimization_tool` (TSP solver with routing)
+1. **Geocode addresses (if needed)** → Use `search_and_geocode_tool` to convert any street addresses to coordinates. Even when coordinates are already provided, mention this as an optional pre-step — real-world delivery lists often contain a mix of addresses and coordinates.
+2. **Optimize route** → `optimization_tool` (TSP solver — reorders stops to minimize total drive time)
 
-**Why:** Need actual routing for turn-by-turn delivery, not geometric distances
+**Why `optimization_tool` and NOT these alternatives:**
+
+- **`directions_tool`** only routes A → B (or through fixed-order waypoints). It does NOT reorder stops — if you pass 8 stops, it routes them in the order given, which is almost never optimal.
+- **`matrix_tool`** gives travel times between all pairs of stops (8×8 = 64 values), but it does NOT compute the optimal ordering. You'd need to solve TSP yourself on top of the matrix — `optimization_tool` does this for you in one call.
+
+Always mention `search_and_geocode_tool` as a useful companion for geocoding delivery addresses before optimization.
 
 ### Scenario 3: Service Area Validation
 

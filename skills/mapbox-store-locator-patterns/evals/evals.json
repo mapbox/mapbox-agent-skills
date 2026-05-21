@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-store-locator-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this store locator implementation and identify the issues:\n\n```javascript\n// Store locator for 300 coffee shop locations\nmapboxgl.accessToken = TOKEN;\nconst map = new mapboxgl.Map({ container: 'map', style: 'mapbox://styles/mapbox/streets-v12' });\n\n// Display markers\nfunction loadMarkers(storeData) {\n  storeData.features.forEach(store => {\n    new mapboxgl.Marker()\n      .setLngLat(store.geometry.coordinates)\n      .addTo(map);\n  });\n}\n\n// Filter: fetch filtered results from server on each keystroke\nasync function filterStores(searchTerm) {\n  const results = await fetch(`/api/stores?q=${encodeURIComponent(searchTerm)}`).then(r => r.json());\n\n  // Remove old layer and re-add with filtered data\n  if (map.getLayer('stores-layer')) map.removeLayer('stores-layer');\n  if (map.getSource('stores')) map.removeSource('stores');\n  map.addSource('stores', { type: 'geojson', data: results });\n  map.addLayer({ id: 'stores-layer', type: 'symbol', source: 'stores', layout: { 'icon-image': 'marker-15' } });\n\n  document.getElementById('listings').innerHTML = '';\n  buildLocationList(results);\n}\n\n// Highlight selected listing\nfunction highlightListing(id) {\n  document.querySelectorAll('.listing').forEach(l => l.classList.remove('active'));\n  const listing = document.getElementById(`listing-${id}`);\n  listing.classList.add('active');\n}\n\ndocument.getElementById('search-input').addEventListener('input', e => filterStores(e.target.value));\n\nmap.on('load', () => loadMarkers(allStores));\n```",
+      "expectations": [
+        "Identifies 300 HTML markers exceeds the < 100 threshold — recommends switching to a symbol layer",
+        "Identifies the filter function fetches from the server on every keystroke — recommends loading all store data once and filtering in memory",
+        "Identifies remove/re-add layer pattern is expensive — recommends map.getSource('stores').setData(filtered) instead",
+        "Identifies highlightListing is missing scrollIntoView — the selected listing should scroll into view in the sidebar"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building a coffee shop finder. I have 150 locations in a GeoJSON file. I started with `new mapboxgl.Marker()` for each one but the page feels sluggish. My colleague says I should add clustering. What's the right marker strategy for 150 locations?",
+      "expectations": [
+        "Recommends symbol layer (not clustering) for 150 locations",
+        "States HTML markers are appropriate only for fewer than 100 locations",
+        "States clustering is appropriate for more than 1000 locations — 150 does not require it",
+        "Explains symbol layers render on the GPU via WebGL instead of creating 150 DOM elements"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to add a location-aware feature to my store locator: when the user clicks 'Find Stores Near Me', I want to (a) show their location on the map as a blue dot and (b) sort the sidebar listing by distance from their location. What APIs and approach should I use?",
+      "expectations": [
+        "Recommends adding mapboxgl.GeolocateControl to the map for the blue dot / on-map location indicator",
+        "Recommends using navigator.geolocation.getCurrentPosition() separately to get coordinates for distance calculation",
+        "Recommends using Turf.js (turf.distance) for distance calculation rather than a custom Haversine formula",
+        "Shows sorting the stores array by the calculated distance before rebuilding the sidebar list"
+      ]
+    }
+  ]
+}

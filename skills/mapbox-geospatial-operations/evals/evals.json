@@ -1,0 +1,66 @@
+{
+  "skill_name": "mapbox-geospatial-operations",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're an e-commerce company with a warehouse in Austin, TX (30.2672° N, 97.7431° W). We have a list of 500 customer addresses and we want to know which ones are within our 30-minute delivery zone. What's the most efficient approach using the Mapbox MCP tools?",
+      "expected_output": "Should recommend a two-step hybrid approach: (1) use isochrone_tool to create the 30-minute driving zone once, then (2) use point_in_polygon_tool to check each of the 500 addresses against that zone geometrically. Should NOT suggest calling directions_tool 500 times.",
+      "files": [],
+      "expectations": [
+        "Recommends isochrone_tool to generate the 30-minute travel-time zone",
+        "Recommends point_in_polygon_tool for checking addresses against the zone",
+        "Does NOT suggest calling directions_tool 500 times",
+        "Explains why this hybrid approach is efficient (routing for zone creation, geometric for containment checks)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have 8 delivery stops today starting from our depot at 40.7128° N, 74.0060° W in New York City. I want to minimize total drive time. Which Mapbox MCP tool should I use?",
+      "expected_output": "Should recommend optimization_tool for multi-stop route optimization (TSP solver). Should distinguish it from directions_tool (which doesn't reorder stops) and matrix_tool (which only gives travel times, not optimal ordering).",
+      "files": [],
+      "expectations": [
+        "Recommends optimization_tool as the primary tool",
+        "Explains that optimization_tool solves the traveling salesman problem / reorders stops",
+        "Distinguishes optimization_tool from directions_tool (directions doesn't reorder stops)",
+        "Distinguishes optimization_tool from matrix_tool (matrix gives travel times between all pairs but doesn't compute optimal ordering)",
+        "Optionally mentions that search_and_geocode_tool can be used first to geocode any addresses"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "A user asks: 'How far is the Statue of Liberty from Times Square?' I'm building a chatbot — which Mapbox MCP tool should I use, and what should I clarify with the user?",
+      "expected_output": "Should flag the ambiguity between straight-line distance (distance_tool) and driving/transit distance (directions_tool). Should recommend clarifying 'as the crow flies' vs actual road distance before choosing a tool.",
+      "files": [],
+      "expectations": [
+        "Identifies the ambiguity: 'distance' could mean straight-line or road distance",
+        "Recommends distance_tool for straight-line / as-the-crow-flies distance",
+        "Recommends directions_tool for actual road/transit distance",
+        "Suggests clarifying with the user which meaning they intend"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a real-time fleet tracking app. Every 2 seconds I get a GPS coordinate for each of my 50 trucks and need to check if any of them have entered or left our restricted zones (stored as GeoJSON polygons). What's the right Mapbox MCP approach?",
+      "expected_output": "Should recommend point_in_polygon_tool for the containment checks. Ideally also addresses the architectural concern: at 50 trucks × 0.5Hz, calling MCP tools directly may hit overhead limits, so Turf.js in-process is the correct hot-path approach while MCP tools handle peripheral tasks (zone definition, rerouting). Should NOT suggest routing APIs for containment checks.",
+      "files": [],
+      "expectations": [
+        "Recommends point_in_polygon_tool (or equivalent Turf.js booleanPointInPolygon) for the containment checks",
+        "Explains that point_in_polygon_tool is an offline geometric tool with instant results",
+        "Addresses scale/architecture: at high call frequency, direct Turf.js use is preferable to MCP tool overhead",
+        "Does NOT suggest using directions_tool or other routing APIs for geofencing"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to find all coffee shops within 1km of my current location (47.6062° N, 122.3321° W in Seattle), then get the actual walking time from my location to the top 3 closest ones. What's the most efficient set of Mapbox MCP tool calls?",
+      "expected_output": "Should recommend: (1) category_search_tool to find coffee shops nearby (returns results sorted by distance), then (2) matrix_tool or directions_tool with walking profile for the top 3 to get actual walking time — matrix_tool preferred as it batches all 3 in one call. Should not call routing tools for all results.",
+      "files": [],
+      "expectations": [
+        "Recommends category_search_tool to find coffee shops (not distance_tool + separate search)",
+        "Notes that category_search_tool already returns proximity/distance",
+        "Recommends matrix_tool or directions_tool with mapbox/walking profile for the top candidates",
+        "Limits routing tool calls to the top 3 finalists only, not all results"
+      ]
+    }
+  ]
+}

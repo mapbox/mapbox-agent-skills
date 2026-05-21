@@ -1,0 +1,16 @@
+# Mapbox MCP Runtime Integration Examples
+# Python 3.10+
+
+# Core
+requests>=2.32.0
+
+# Agent Frameworks
+pydantic-ai>=0.1.0
+crewai>=0.83.0
+smolagents>=1.0.0
+
+# LLM Providers
+openai>=1.58.1
+
+# Utilities
+python-dotenv>=1.0.1

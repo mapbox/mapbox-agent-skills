@@ -8,3 +8,4 @@ CHANGELOG.md
 **/.gradle/
 **/dist/
 **/.next/
+.claude/settings.local.json

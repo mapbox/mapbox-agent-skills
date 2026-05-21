@@ -1,0 +1,44 @@
+{
+  "skill_name": "mapbox-web-integration-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this React Mapbox component and tell me what's wrong with it:\n\n```jsx\nimport { useState, useEffect } from 'react';\nimport mapboxgl from 'mapbox-gl';\n\nfunction MapComponent() {\n  const [map, setMap] = useState(null);\n  const mapContainerRef = useRef(null);\n\n  useEffect(() => {\n    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;\n    const newMap = new mapboxgl.Map({\n      container: mapContainerRef.current,\n      center: [-122.4194, 37.7749],\n      zoom: 12\n    });\n    setMap(newMap);\n  }, [map]);\n\n  return <div ref={mapContainerRef} style={{ height: '100vh' }} />;\n}\n```",
+      "expected_output": "Should identify four bugs: (1) useState instead of useRef for map instance — storing the map in state triggers a re-render whenever setMap is called; (2) [map] in the dependency array — combined with useState, this creates an infinite loop: map is null → effect runs → setMap(newMap) → re-render → map changes → effect runs again; (3) no cleanup function returning map.remove() — causes memory leak as WebGL contexts accumulate; (4) missing CSS import 'mapbox-gl/dist/mapbox-gl.css' — map renders visually broken without it.",
+      "files": [],
+      "expectations": [
+        "Identifies useState should be useRef for the map instance (map doesn't need to trigger re-renders)",
+        "Identifies [map] dependency array causes an infinite loop when combined with setMap",
+        "Explains the cascading mechanism: setMap triggers re-render, map value changes, effect re-runs, creating a new map each time",
+        "Identifies missing cleanup: no return () => map.remove() causes memory leaks",
+        "Identifies missing CSS import: import 'mapbox-gl/dist/mapbox-gl.css'"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this Vue Mapbox component and tell me what's wrong:\n\n```vue\n<template>\n  <div ref=\"mapContainer\" style=\"height: 100vh;\"></div>\n</template>\n\n<script>\nimport mapboxgl from 'mapbox-gl';\n\nexport default {\n  data() {\n    return {\n      map: null,\n    };\n  },\n  created() {\n    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;\n    this.map = new mapboxgl.Map({\n      container: this.$refs.mapContainer,\n      style: 'mapbox://styles/mapbox/streets-v12',\n      center: [-71.05953, 42.3629],\n      zoom: 13\n    });\n  }\n};\n</script>\n```",
+      "expected_output": "Should identify four issues: (1) created() should be mounted() — this.$refs.mapContainer is undefined in created() because the DOM hasn't rendered yet; (2) map should NOT be stored in data() — Vue's reactivity system wraps data() properties in a Proxy, which can interfere with Mapbox GL JS internal type checks; the correct pattern is to use this.map as a plain instance property assigned in mounted(); (3) missing unmounted() hook with this.map.remove() to prevent memory leaks; (4) missing CSS import 'mapbox-gl/dist/mapbox-gl.css'.",
+      "files": [],
+      "expectations": [
+        "Identifies created() should be mounted() — $refs are not available until the component is mounted",
+        "Identifies that map should NOT be in data() because Vue's reactivity wraps it in a Proxy",
+        "Recommends using this.map as a plain instance property (not in data()) following the Mapbox Vue pattern",
+        "Identifies missing unmounted() hook with this.map.remove() for cleanup",
+        "Identifies missing CSS import: import 'mapbox-gl/dist/mapbox-gl.css'"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have a React component that takes a mapStyle prop so users can switch between map styles. The map works, but every time the style changes the map completely resets — the viewport jumps back to the default position, all markers disappear, and there's a visible flash. How should I fix this?\n\n```jsx\nimport { useRef, useEffect } from 'react';\nimport mapboxgl from 'mapbox-gl';\nimport 'mapbox-gl/dist/mapbox-gl.css';\n\nfunction MapView({ mapStyle }) {\n  const mapRef = useRef(null);\n  const containerRef = useRef(null);\n\n  useEffect(() => {\n    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;\n    mapRef.current = new mapboxgl.Map({\n      container: containerRef.current,\n      style: mapStyle,\n      center: [-122.4194, 37.7749],\n      zoom: 12\n    });\n    return () => mapRef.current.remove();\n  }, [mapStyle]);\n\n  return <div ref={containerRef} style={{ height: '100vh' }} />;\n}\n```",
+      "expected_output": "Should explain that [mapStyle] in the useEffect dependency array causes the entire map to be destroyed and recreated from scratch on every style change — this explains the viewport reset, marker loss, and flash. The fix is the two-effect pattern: initialize the map once with an empty dependency array [], then add a separate useEffect with [mapStyle] that calls mapRef.current.setStyle(mapStyle) to update the style without destroying the map instance.",
+      "files": [],
+      "expectations": [
+        "Identifies that [mapStyle] in the dependency array causes the map to be fully destroyed and recreated on every style change",
+        "Explains why this causes the symptoms: viewport resets, markers disappear, and visible flash",
+        "Recommends splitting into two effects: one with [] for initialization, one with [mapStyle] for updates",
+        "Shows the update effect calling mapRef.current.setStyle(mapStyle) to change the style without recreating the map",
+        "Shows the corrected component with the two-effect pattern"
+      ]
+    }
+  ]
+}

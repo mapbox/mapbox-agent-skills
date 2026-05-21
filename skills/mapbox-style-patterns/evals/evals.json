@@ -1,0 +1,43 @@
+{
+  "skill_name": "mapbox-style-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this delivery map style implementation and tell me what's wrong with it:\n\n```javascript\nmap.addLayer({\n  id: 'delivery-route',\n  type: 'line',\n  source: 'route',\n  paint: {\n    'line-color': '#2196f3',\n    'line-width': 6\n  }\n});\n\nmap.addLayer({\n  id: 'delivery-zones',\n  type: 'fill',\n  source: 'zones',\n  paint: {\n    'fill-color': '#4caf50',\n    'fill-opacity': 0.2\n  }\n});\n\nmap.addLayer({\n  id: 'driver-arrow',\n  type: 'symbol',\n  source: 'drivers',\n  layout: {\n    'icon-image': 'arrow',\n    'icon-rotate': ['get', 'bearing'],\n    'icon-rotation-alignment': 'viewport'\n  }\n});\n\nmap.addLayer({\n  id: 'customer-dot',\n  type: 'circle',\n  source: 'customer',\n  paint: {\n    'circle-radius': 12,\n    'circle-color': '#4caf50',\n    'circle-stroke-color': '#ffffff',\n    'circle-stroke-width': 3\n  }\n});\n```",
+      "expected_output": "Should identify four issues: (1) The route is rendered as a single line layer — the correct pattern is two layers: a wider 'route-casing' layer behind it with a darker color to create a visible outline/border effect; (2) All delivery zones use the same green color — they should use a 'match' expression on the 'status' property to color-code zones (e.g. green=available, orange=busy, red=unavailable); (3) Driver arrow uses 'icon-rotation-alignment': 'viewport' — should be 'map' so the arrow rotates with the map as the user pans/rotates; (4) Customer marker is a static circle — a pulsing ring animation should be added as a second circle layer driven by requestAnimationFrame + setPaintProperty to create the expanding ring effect.",
+      "files": [],
+      "expectations": [
+        "Identifies the missing route-casing layer — route needs two layers (wider casing behind, narrower colored line on top) for a visible outline effect",
+        "Identifies that all delivery zones use the same color and recommends a 'match' expression on zone status (available/busy/unavailable) for color-coding",
+        "Identifies 'icon-rotation-alignment': 'viewport' as wrong for driver direction arrows — should be 'map' so arrows rotate with the map",
+        "Identifies the missing pulse animation on the customer marker — recommends a second circle layer driven by requestAnimationFrame + setPaintProperty"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building a US county-level choropleth map showing election results by party. The data will be shown as colored county fills (red/blue/purple). What base map style pattern should I use, and what layers should I include?",
+      "expected_output": "Should recommend the Data Visualization base map pattern: grayscale palette throughout (no competing colors), water in gray (not blue), only major city/capital labels for orientation, admin boundaries (dashed) for geographic reference, minimal or no road detail (only motorways at low zoom levels), low opacity on all base layers. The goal is a minimal base that doesn't compete with the election data overlay colors. Should NOT recommend a standard streets style or colorful base map.",
+      "files": [],
+      "expectations": [
+        "Recommends a minimal, grayscale base map (not a standard streets or colorful style)",
+        "Recommends gray/desaturated water (not blue) so it doesn't compete with the data colors",
+        "Recommends including admin boundaries (state/county lines) as the primary geographic reference",
+        "Recommends limiting road detail — only major roads (motorways) at low zoom, or no roads at all",
+        "Recommends keeping only major city labels for orientation, not full POI/street label set"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm implementing a food delivery app and need the customer's delivery location to have a pulsing ring animation — like a sonar ping that expands outward and fades. How do I implement this with Mapbox GL JS using a circle layer (not an HTML marker)?",
+      "expected_output": "Should describe the requestAnimationFrame + setPaintProperty pattern: create a second 'pulse' circle layer on the same source as the customer marker, then use a requestAnimationFrame loop that updates circle-radius (expanding from base radius to 2x) and circle-opacity (fading from ~0.3 to 0) on each frame using performance.now() to compute the animation phase. Should NOT suggest CSS animations (only work on HTML elements, not canvas layers), Mapbox Expressions (static, can't animate over time), or loading an animated GIF as a sprite.",
+      "files": [],
+      "expectations": [
+        "Recommends a second circle layer (the 'pulse' layer) on the same source as the customer marker",
+        "Uses requestAnimationFrame for the animation loop",
+        "Uses map.setPaintProperty() to update circle-radius and circle-opacity each frame",
+        "Uses performance.now() or elapsed time to compute animation phase (0 to 1 cycling)",
+        "Does NOT suggest CSS animations, which only work on HTML elements not canvas layers"
+      ]
+    }
+  ]
+}

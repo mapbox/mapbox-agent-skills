@@ -1,6 +1,13 @@
 node_modules/
 demos/ios-demo/.build/
 
+# Skill eval workspaces (runtime data, not for commit)
+*-workspace/
+
+# Eval result files
+evals/eval-*.json
+evals/latest.json
+
 # Xcode user state
 *.xcuserstate
 *.xcuserdatad
@@ -9,3 +16,5 @@ demos/ios-demo/.build/
 # Metrics reports (tracked separately or in data repo)
 metrics/
 
+
+.env

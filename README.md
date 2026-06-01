@@ -18,7 +18,7 @@ codex plugin marketplace list
 
 Then restart Codex and install the `mapbox` plugin from the `Mapbox Agent Skills` marketplace.
 
-The generated `plugins/mapbox/skills/` and `plugins/mapbox/.mcp.json` files are ignored by git. See [Codex plugin submission readiness](./docs/codex-plugin-submission.md) for validation, dashboard metadata, review prompts, and public submission prerequisites.
+The generated `plugins/mapbox/skills/` and `plugins/mapbox/.mcp.json` files are ignored by git.
 
 ### Open Plugins (Cursor, Codex, GitHub Copilot, Claude Code)
 

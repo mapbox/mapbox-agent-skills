@@ -9,3 +9,5 @@ CHANGELOG.md
 **/dist/
 **/.next/
 .claude/settings.local.json
+plugins/mapbox/skills/
+plugins/mapbox/.mcp.json

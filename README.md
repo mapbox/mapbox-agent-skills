@@ -4,6 +4,22 @@
 
 ## Quick Start
 
+### Codex Plugin Local Testing
+
+This repository includes a Codex plugin manifest at `plugins/mapbox/.codex-plugin/plugin.json` and a repo marketplace at `.agents/plugins/marketplace.json`.
+
+Codex marketplaces currently expect a plugin subdirectory such as `plugins/mapbox`. To avoid maintaining a second tracked copy of every skill, keep editing the root `skills/` directory and generate the local plugin package before testing:
+
+```bash
+npm run build:codex-plugin
+codex plugin marketplace add .
+codex plugin marketplace list
+```
+
+Then restart Codex and install the `mapbox` plugin from the `Mapbox Agent Skills` marketplace.
+
+The generated `plugins/mapbox/skills/` and `plugins/mapbox/.mcp.json` files are ignored by git. See [Codex plugin submission readiness](./docs/codex-plugin-submission.md) for validation, dashboard metadata, review prompts, and public submission prerequisites.
+
 ### Open Plugins (Cursor, Codex, GitHub Copilot, Claude Code)
 
 This repository conforms to the [Open Plugins specification](https://open-plugins.com/), making it installable in any conformant tool - Cursor, Codex, GitHub Copilot, Claude Code, and more.

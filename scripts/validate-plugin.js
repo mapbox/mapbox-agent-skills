@@ -133,8 +133,10 @@ function validateMarketplace(errors, marketplace, pluginName) {
   if (plugin.policy?.installation !== 'AVAILABLE') {
     errors.push('marketplace policy.installation must be AVAILABLE');
   }
-  if (plugin.policy?.authentication !== 'ON_INSTALL') {
-    errors.push('marketplace policy.authentication must be ON_INSTALL');
+  if (!['ON_INSTALL', 'ON_USE'].includes(plugin.policy?.authentication)) {
+    errors.push(
+      'marketplace policy.authentication must be ON_INSTALL or ON_USE'
+    );
   }
   requireString(errors, plugin, 'category', 'marketplace.plugins[0]');
 }

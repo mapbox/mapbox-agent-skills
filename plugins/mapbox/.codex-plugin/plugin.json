@@ -1,0 +1,42 @@
+{
+  "name": "mapbox",
+  "version": "1.1.0",
+  "description": "Mapbox skills and MCP servers for building location-aware applications with AI. Includes geospatial tools, style management, search, routing, migration, and patterns for web, iOS, Android, Flutter, and AI agent frameworks.",
+  "author": {
+    "name": "Mapbox",
+    "email": "locationai@mapbox.com",
+    "url": "https://www.mapbox.com"
+  },
+  "homepage": "https://github.com/mapbox/mapbox-agent-skills",
+  "repository": "https://github.com/mapbox/mapbox-agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "mapbox",
+    "maps",
+    "geospatial",
+    "location",
+    "mcp",
+    "gis",
+    "search",
+    "routing"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Mapbox",
+    "shortDescription": "Mapbox skills and MCP servers for location-aware development.",
+    "longDescription": "Build, migrate, optimize, and review Mapbox applications with bundled skills for web, mobile, search, cartography, token security, MCP workflows, and geospatial operations.",
+    "developerName": "Mapbox",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write", "Interactive"],
+    "websiteURL": "https://www.mapbox.com",
+    "privacyPolicyURL": "https://www.mapbox.com/legal/privacy",
+    "termsOfServiceURL": "https://www.mapbox.com/legal/tos",
+    "defaultPrompt": [
+      "Set up Mapbox in my React app.",
+      "Optimize this Mapbox map with many markers.",
+      "Use Mapbox tools to find places near me."
+    ],
+    "brandColor": "#4264FB"
+  }
+}

@@ -4,6 +4,10 @@ demos/ios-demo/.build/
 # Skill eval workspaces (runtime data, not for commit)
 *-workspace/
 
+# Generated Codex plugin package content. Edit root skills/ and run npm run build:codex-plugin.
+plugins/mapbox/skills/
+plugins/mapbox/.mcp.json
+
 # Eval result files
 evals/eval-*.json
 evals/latest.json

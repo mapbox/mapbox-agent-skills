@@ -22,6 +22,8 @@ This directory contains Agent Skills that provide domain expertise for building 
 | [mapbox-style-patterns](./mapbox-style-patterns/)                           | Common style patterns and layer configurations                                                                                   |
 | [mapbox-style-quality](./mapbox-style-quality/)                             | Style validation, accessibility, optimization                                                                                    |
 | [mapbox-token-security](./mapbox-token-security/)                           | Security best practices for access tokens                                                                                        |
+| [mapbox-flutter-patterns](./mapbox-flutter-patterns/)                       | Official integration patterns for the Mapbox Maps Flutter SDK (installation, platform setup, camera, annotations, user location) |
+| [mapbox-location-grounding](./mapbox-location-grounding/)                   | Composing Mapbox MCP tools to produce grounded, cited location-aware responses from live data instead of training data           |
 | [mapbox-store-locator-patterns](./mapbox-store-locator-patterns/)           | Store locator and location finder patterns with markers, filtering, and distance calculation                                     |
 
 ## Documentation

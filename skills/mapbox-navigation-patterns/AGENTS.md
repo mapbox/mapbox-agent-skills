@@ -4,13 +4,13 @@ Quick reference for implementing navigation and routing with Mapbox Directions A
 
 ## Product Decision
 
-| Need                           | Solution                    |
-| ------------------------------ | --------------------------- |
-| **Show a route on a web map** | Directions API              |
-| **Turn-by-turn iOS**          | Navigation SDK for iOS      |
-| **Turn-by-turn Android**      | Navigation SDK for Android  |
-| **Voice guidance**            | Navigation SDK only         |
-| **Multi-stop optimization**   | Optimization API            |
+| Need                          | Solution                   |
+| ----------------------------- | -------------------------- |
+| **Show a route on a web map** | Directions API             |
+| **Turn-by-turn iOS**          | Navigation SDK for iOS     |
+| **Turn-by-turn Android**      | Navigation SDK for Android |
+| **Voice guidance**            | Navigation SDK only        |
+| **Multi-stop optimization**   | Optimization API           |
 
 ## Directions API (Web)
 

@@ -1,0 +1,105 @@
+{
+  "skill_name": "mapbox-location-grounding",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "What restaurants are near -87.6298, 41.8781?",
+      "expected_output": "Should call ground_location_tool with the coordinates and query 'restaurant'. Should NOT call category_search_tool or reverse_geocode_tool separately. Response should include neighborhood name, a list of nearby restaurants with ratings and price levels sourced from live Mapbox data, and cite the Mapbox APIs used.",
+      "files": [],
+      "expectations": [
+        "Calls ground_location_tool — NOT category_search_tool or reverse_geocode_tool",
+        "Passes query: 'restaurant' (or 'restaurants') to ground_location_tool",
+        "Response includes a neighborhood or place name (e.g. 'The Loop, Chicago')",
+        "Response includes nearby restaurant names with distances",
+        "Response includes ratings or price levels (not fabricated — sourced from tool output)",
+        "Response cites Mapbox as the data source"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm at 37.7749° N, 122.4194° W in San Francisco. What coffee shops are nearby and which ones have good ratings?",
+      "expected_output": "Should call ground_location_tool with the coordinates and query 'coffee'. Should return coffee shops enriched with rating and price data from the tool. Should NOT fabricate ratings or recommend specific places from training data without grounding.",
+      "files": [],
+      "expectations": [
+        "Calls ground_location_tool with coordinates and query 'coffee' (or 'coffee shop')",
+        "Does NOT answer from training data (does not name specific coffee shops without calling the tool)",
+        "Returns ratings and/or price levels from the tool output — not from training data",
+        "Response notes that ratings are sourced from live Mapbox data, not fabricated"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Find me family-friendly Italian restaurants near 40.7128° N, 74.0060° W in New York City.",
+      "expected_output": "Should call ground_location_tool with query 'Italian restaurant'. Should NOT claim to filter by 'family-friendly' as a data attribute — that isn't available. Should use rating and price level from the enriched POI results to inform a recommendation about which places seem suitable. Should be transparent that family-friendliness is inferred from available data, not a direct filter.",
+      "files": [],
+      "expectations": [
+        "Calls ground_location_tool with query 'Italian restaurant' (not 'family-friendly Italian restaurant')",
+        "Does NOT claim the search filtered results by 'family-friendly' as a data attribute",
+        "Uses rating and/or price level from results to make a recommendation",
+        "Is transparent that family-friendliness is inferred, not directly filterable"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "How long does it take to walk from Pike Place Market to Capitol Hill in Seattle?",
+      "expected_output": "Should geocode both locations with search_and_geocode_tool (or use known coordinates), then call directions_tool with walking profile. Should return actual walking duration and distance from the routing API — not estimate from training data. Should cite Mapbox Directions API.",
+      "files": [],
+      "expectations": [
+        "Does NOT estimate the walking time from training data",
+        "Calls directions_tool with profile 'mapbox/walking' (or 'walking')",
+        "Returns actual duration and distance from the routing API",
+        "Cites Mapbox Directions API as the source",
+        "If addresses are provided as text, geocodes them first before calling directions_tool"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "What's reachable within a 15-minute drive from 47.6062° N, 122.3321° W in Seattle?",
+      "expected_output": "Should call ground_location_tool with profile 'driving' and contours_minutes [15], or call isochrone_tool directly. Should describe the reachable area based on the isochrone result — not estimate from training data. Should NOT confuse this with a directions query.",
+      "files": [],
+      "expectations": [
+        "Calls ground_location_tool with profile 'driving' and contours_minutes including 15, OR calls isochrone_tool directly",
+        "Does NOT estimate the reachable area from training data",
+        "Describes the reachable area based on isochrone output (e.g. neighborhoods, area coverage)",
+        "Does NOT call directions_tool — this is a reachability question, not point-to-point routing"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm building a feature that compares drive times from a user's location to three nearby store locations. I have coordinates for all four points. Should I call directions_tool three times, or is there a better approach with Mapbox MCP tools?",
+      "expected_output": "Should recommend matrix_tool as the correct approach — one call returns all three drive times simultaneously. Should explain that calling directions_tool three times is inefficient and unnecessary. Should mention that matrix_tool accepts multiple sources and destinations and returns a full duration/distance matrix.",
+      "files": [],
+      "expectations": [
+        "Recommends matrix_tool (not three separate directions_tool calls)",
+        "Explains that matrix_tool returns all travel times in a single API call",
+        "Explains why calling directions_tool separately for each pair is inefficient",
+        "Mentions that matrix_tool results can be used to rank locations by travel time"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Describe the neighborhood around 51.5074° N, 0.1278° W in London.",
+      "expected_output": "Should call ground_location_tool with the coordinates and no query (no specific POI category needed). Should return neighborhood name, place context, and reachability from the tool — not describe the neighborhood from training data knowledge.",
+      "files": [],
+      "expectations": [
+        "Calls ground_location_tool with the coordinates",
+        "Response is grounded in tool output — includes the neighborhood name returned by reverse geocoding",
+        "Does NOT rely solely on training data knowledge about the location",
+        "Cites Mapbox as the data source"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "What's the best route from my hotel at 48.8566° N, 2.3522° E in Paris to the Eiffel Tower, and how long will it take to walk?",
+      "expected_output": "Should geocode 'Eiffel Tower' or use known coordinates, then call directions_tool with walking profile from the hotel coordinates. Should return actual walking duration and turn-by-turn steps. Should NOT estimate walking time from training data.",
+      "files": [],
+      "expectations": [
+        "Does NOT estimate walking time from training data",
+        "Calls directions_tool with walking profile",
+        "Returns actual duration from the routing API",
+        "Optionally geocodes 'Eiffel Tower' with search_and_geocode_tool if coordinates are not known",
+        "Cites Mapbox Directions API as the source"
+      ]
+    }
+  ]
+}

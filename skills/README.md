@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-This directory contains [Agent Skills](https://agentskills.io) that provide domain expertise for building maps with Mapbox.
+This directory contains Agent Skills that provide domain expertise for building maps with Mapbox.
 
 ## Available Skills
 
@@ -23,6 +23,8 @@ This directory contains [Agent Skills](https://agentskills.io) that provide doma
 | [mapbox-style-patterns](./mapbox-style-patterns/)                           | Common style patterns and layer configurations                                                                                   |
 | [mapbox-style-quality](./mapbox-style-quality/)                             | Style validation, accessibility, optimization                                                                                    |
 | [mapbox-token-security](./mapbox-token-security/)                           | Security best practices for access tokens                                                                                        |
+| [mapbox-flutter-patterns](./mapbox-flutter-patterns/)                       | Official integration patterns for the Mapbox Maps Flutter SDK (installation, platform setup, camera, annotations, user location) |
+| [mapbox-location-grounding](./mapbox-location-grounding/)                   | Composing Mapbox MCP tools to produce grounded, cited location-aware responses from live data instead of training data           |
 | [mapbox-store-locator-patterns](./mapbox-store-locator-patterns/)           | Store locator and location finder patterns with markers, filtering, and distance calculation                                     |
 
 ## Documentation
@@ -47,7 +49,7 @@ Want to create a new skill or improve an existing one? See the [Contributing Gui
 
 ## Skill Structure
 
-Each skill follows the [Agent Skills specification](https://github.com/anthropics/skills):
+Each skill follows this structure:
 
 ```
 skill-name/
@@ -71,6 +73,4 @@ description: What the skill does and when to use it
 
 ## Resources
 
-- [Agent Skills Overview](https://agentskills.io)
-- [Agent Skills Specification](https://github.com/anthropics/skills)
 - [Mapbox Documentation](https://docs.mapbox.com)

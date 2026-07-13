@@ -1,0 +1,15 @@
+{
+  "name": "mapbox",
+  "version": "1.0.0",
+  "description": "Mapbox skills and MCP servers for building location-aware applications with AI. Includes geospatial tools, style management, and patterns for web, iOS, Android, and AI agent frameworks.",
+  "author": {
+    "name": "Mapbox",
+    "url": "https://mapbox.com"
+  },
+  "homepage": "https://github.com/mapbox/mapbox-agent-skills",
+  "repository": "https://github.com/mapbox/mapbox-agent-skills",
+  "license": "MIT",
+  "keywords": ["mapbox", "maps", "geospatial", "location", "mcp", "gis"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

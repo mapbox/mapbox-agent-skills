@@ -1,0 +1,20 @@
+{
+  "name": "mapbox-agent-skills",
+  "interface": {
+    "displayName": "Mapbox Agent Skills"
+  },
+  "plugins": [
+    {
+      "name": "mapbox",
+      "source": {
+        "source": "local",
+        "path": "./plugins/mapbox"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

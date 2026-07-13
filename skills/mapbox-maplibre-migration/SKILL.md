@@ -247,7 +247,7 @@ map.flyTo({ center: [lng, lat], zoom: 14 });
 
 **Must change:**
 
-- Package name (`maplibre-gl` → `mapbox-gl`)
+- Package name (`maplibre-gl` -> `mapbox-gl`)
 - Import statements
 - Add `mapboxgl.accessToken` configuration
 - Style URL (switch to `mapbox://` styles)
@@ -262,240 +262,6 @@ map.flyTo({ center: [lng, lat], zoom: 14 });
 - GeoJSON handling
 - Custom styling and expressions
 - Controls (Navigation, Geolocate, Scale, etc.)
-
-## API Compatibility Matrix
-
-### 100% Compatible APIs
-
-These work identically in both libraries:
-
-```javascript
-// Map methods
-map.setCenter([lng, lat]);
-map.setZoom(zoom);
-map.fitBounds(bounds);
-map.panTo([lng, lat]);
-map.flyTo({ center, zoom });
-map.getCenter();
-map.getZoom();
-map.getBounds();
-map.resize();
-
-// Events
-map.on('load', callback);
-map.on('click', callback);
-map.on('move', callback);
-map.on('zoom', callback);
-map.on('rotate', callback);
-
-// Markers
-new mapboxgl.Marker();
-marker.setLngLat([lng, lat]);
-marker.setPopup(popup);
-marker.addTo(map);
-marker.remove();
-marker.setDraggable(true);
-
-// Popups
-new mapboxgl.Popup();
-popup.setLngLat([lng, lat]);
-popup.setHTML(html);
-popup.setText(text);
-popup.addTo(map);
-
-// Sources & Layers
-map.addSource(id, source);
-map.removeSource(id);
-map.addLayer(layer);
-map.removeLayer(id);
-map.getSource(id);
-map.getLayer(id);
-
-// Styling
-map.setPaintProperty(layerId, property, value);
-map.setLayoutProperty(layerId, property, value);
-map.setFilter(layerId, filter);
-
-// Controls
-map.addControl(control, position);
-new mapboxgl.NavigationControl();
-new mapboxgl.GeolocateControl();
-new mapboxgl.FullscreenControl();
-new mapboxgl.ScaleControl();
-```
-
-## Side-by-Side Example
-
-### MapLibre GL JS (Before)
-
-```javascript
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-
-// No token needed for OSM tiles
-
-const map = new maplibregl.Map({
-  container: 'map',
-  style: 'https://demotiles.maplibre.org/style.json',
-  center: [-122.4194, 37.7749],
-  zoom: 12
-});
-
-map.on('load', () => {
-  new maplibregl.Marker()
-    .setLngLat([-122.4194, 37.7749])
-    .setPopup(new maplibregl.Popup().setText('San Francisco'))
-    .addTo(map);
-});
-```
-
-### Mapbox GL JS (After)
-
-```javascript
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-// Add your Mapbox token
-mapboxgl.accessToken = 'pk.your_mapbox_access_token';
-
-const map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
-  center: [-122.4194, 37.7749],
-  zoom: 12
-});
-
-map.on('load', () => {
-  new mapboxgl.Marker()
-    .setLngLat([-122.4194, 37.7749])
-    .setPopup(new mapboxgl.Popup().setText('San Francisco'))
-    .addTo(map);
-});
-```
-
-**What's different:** Package, import, token, and style URL. **Everything else is identical.**
-
-## Mapbox-Exclusive Features
-
-After migration, you gain access to these Mapbox-only features:
-
-### Premium Vector Tiles
-
-- **Streets**: Comprehensive road network with names, shields, and routing data
-- **Satellite**: High-resolution global imagery updated regularly
-- **Terrain**: Elevation data with hillshading and 3D terrain
-- **Traffic**: Real-time traffic data (with Navigation SDK)
-
-### Mapbox APIs
-
-Use these APIs alongside your map for enhanced functionality:
-
-```javascript
-// Geocoding API - Convert addresses to coordinates
-const response = await fetch(
-  `https://api.mapbox.com/search/geocode/v6/forward?q=San+Francisco&access_token=${mapboxgl.accessToken}`
-);
-
-// Directions API - Get turn-by-turn directions
-const directions = await fetch(
-  `https://api.mapbox.com/directions/v5/mapbox/driving/-122.42,37.78;-122.45,37.76?access_token=${mapboxgl.accessToken}`
-);
-
-// Isochrone API - Calculate travel time polygons
-const isochrone = await fetch(
-  `https://api.mapbox.com/isochrone/v1/mapbox/driving/-122.42,37.78?contours_minutes=5,10,15&access_token=${mapboxgl.accessToken}`
-);
-```
-
-### Mapbox Studio
-
-- Visual style editor with live preview
-- Dataset management and editing
-- Tilesets with custom data upload
-- Collaborative team features
-- Style versioning and publishing
-
-### Advanced Features (v2.9+)
-
-- **Globe projection**: Seamless transition from globe to Mercator
-- **3D buildings**: Extrusion with real building footprints
-- **Custom terrain**: Use your own DEM sources
-- **Sky layer**: Realistic atmospheric rendering
-
-## Framework Integration
-
-Migration works identically across all frameworks. See `mapbox-web-integration-patterns` skill for detailed React, Vue, Svelte, Angular patterns.
-
-### React Example
-
-```jsx
-import { useRef, useEffect } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-// Set token once (can be in app initialization)
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
-
-function MapComponent() {
-  const mapRef = useRef(null);
-  const mapContainerRef = useRef(null);
-
-  useEffect(() => {
-    mapRef.current = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-122.4194, 37.7749],
-      zoom: 12
-    });
-
-    return () => {
-      mapRef.current.remove();
-    };
-  }, []);
-
-  return <div ref={mapContainerRef} style={{ height: '100vh' }} />;
-}
-```
-
-Just replace `maplibregl` with `mapboxgl` and update token/style - everything else is identical!
-
-### Vue Example
-
-```vue
-<template>
-  <div ref="mapContainer" class="map-container"></div>
-</template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
-
-const mapContainer = ref(null);
-let map = null;
-
-onMounted(() => {
-  map = new mapboxgl.Map({
-    container: mapContainer.value,
-    style: 'mapbox://styles/mapbox/streets-v12',
-    center: [-122.4194, 37.7749],
-    zoom: 12
-  });
-});
-
-onUnmounted(() => {
-  map?.remove();
-});
-</script>
-
-<style scoped>
-.map-container {
-  height: 100vh;
-}
-</style>
-```
 
 ## Common Migration Issues
 
@@ -570,6 +336,8 @@ import MaplibreGeocoder from '@maplibre/maplibre-gl-geocoder';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 ```
 
+> **Important:** This applies to ALL MapLibre plugins, not just the geocoder. Any `@maplibre/*` or `maplibre-gl-*` plugin must be replaced with its Mapbox equivalent. Check the Mapbox ecosystem for Mapbox-specific versions of every plugin you use (see Step 8 above for the full mapping table).
+
 ### Issue 5: CDN URLs
 
 **Problem:**
@@ -589,12 +357,10 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 
 ## Migration Checklist
 
-Complete these steps for a successful migration:
-
 - [ ] **Create Mapbox account** and get access token
 - [ ] **Update package**: `npm install mapbox-gl` (remove maplibre-gl)
-- [ ] **Update imports**: `maplibre-gl` → `mapbox-gl`
-- [ ] **Update CSS imports**: `maplibre-gl.css` → `mapbox-gl.css`
+- [ ] **Update imports**: `maplibre-gl` -> `mapbox-gl`
+- [ ] **Update CSS imports**: `maplibre-gl.css` -> `mapbox-gl.css`
 - [ ] **Add token**: Set `mapboxgl.accessToken = 'pk.xxx'`
 - [ ] **Use environment variables**: Store token in `.env`
 - [ ] **Update style URL**: Change to `mapbox://styles/mapbox/streets-v12`
@@ -606,86 +372,23 @@ Complete these steps for a successful migration:
 - [ ] **Update documentation**: Document token setup for team
 - [ ] **Add .env to .gitignore**: Ensure tokens not committed
 
-## Why Choose Mapbox
+## Quick Reference
 
-### For Production Applications
+### Key Differences Summary
 
-**Reliability & Support:**
+| What    | MapLibre                               | Mapbox                                      |
+| ------- | -------------------------------------- | ------------------------------------------- |
+| Package | `maplibre-gl`                          | `mapbox-gl`                                 |
+| Import  | `import maplibregl from 'maplibre-gl'` | `import mapboxgl from 'mapbox-gl'`          |
+| Token   | Optional (depends on tiles)            | Required: `mapboxgl.accessToken = 'pk.xxx'` |
+| Style   | Custom URL or OSM tiles                | `mapbox://styles/mapbox/streets-v12`        |
+| License | BSD (Open Source)                      | Proprietary (v2+)                           |
+| Support | Community                              | Official commercial support                 |
+| Tiles   | Requires tile source                   | Premium Mapbox tiles included               |
+| APIs    | Third-party                            | Full Mapbox API ecosystem                   |
+| API     | ~95% compatible                        | ~95% compatible                             |
 
-- 99.9% uptime SLA for enterprise customers
-- 24/7 support with guaranteed response times
-- Dedicated solutions engineers for complex projects
-- Regular platform updates and improvements
-
-**Performance:**
-
-- Global CDN for fast tile delivery
-- Optimized vector tiles for minimal bandwidth
-- Automatic scaling for traffic spikes
-- WebGL-accelerated rendering
-
-**Features:**
-
-- Professional cartography and design
-- Regular map data updates
-- Traffic and routing data
-- Premium satellite imagery
-- 3D terrain and buildings
-
-### For Development Teams
-
-**Developer Experience:**
-
-- Comprehensive documentation with examples
-- Active community and forums
-- Regular SDK updates
-- TypeScript support (via `@types/mapbox-gl`)
-- Extensive example gallery
-
-**Ecosystem Integration:**
-
-- Seamless Studio integration
-- API consistency across services
-- Mobile SDKs (iOS, Android, React Native)
-- Unity and Unreal Engine plugins
-- Analytics and monitoring tools
-
-### For Business
-
-**Predictable Costs:**
-
-- Clear, usage-based pricing
-- Free tier for development and small apps
-- No infrastructure costs
-- Scalable pricing for growth
-
-**Compliance & Security:**
-
-- SOC 2 Type II certified
-- GDPR compliant
-- Enterprise security features
-- Audit logs and monitoring
-
-**No Infrastructure Burden:**
-
-- No tile servers to maintain
-- No storage or bandwidth concerns
-- No update management
-- Focus on your application, not infrastructure
-
-## Performance Comparison
-
-Both libraries have similar rendering performance as they share the same core codebase:
-
-| Metric           | Mapbox GL JS                   | MapLibre GL JS         |
-| ---------------- | ------------------------------ | ---------------------- |
-| **Bundle size**  | ~500KB                         | ~450KB                 |
-| **Initial load** | Similar                        | Similar                |
-| **Rendering**    | WebGL-based                    | WebGL-based            |
-| **Memory usage** | Similar                        | Similar                |
-| **Tile loading** | Faster (CDN + optimized tiles) | Depends on tile source |
-
-**Key insight:** Choose based on features, support, and tile quality, not rendering performance. Mapbox's advantage is in tile delivery speed, data quality, and ecosystem integration.
+**Bottom line:** Migration is easy because APIs are nearly identical. Main changes are packaging, token setup, and style URLs. The result is access to Mapbox's premium tiles, ecosystem, and support.
 
 ## Integration with Other Skills
 
@@ -713,20 +416,10 @@ Both libraries have similar rendering performance as they share the same core co
 - [Style Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
 - [Mapbox Community Support](https://support.mapbox.com/hc/en-us/community/topics)
 
-## Quick Reference
+## Reference Files
 
-### Key Differences Summary
+For detailed information on specific topics, load these reference files:
 
-| What    | MapLibre                               | Mapbox                                      |
-| ------- | -------------------------------------- | ------------------------------------------- |
-| Package | `maplibre-gl`                          | `mapbox-gl`                                 |
-| Import  | `import maplibregl from 'maplibre-gl'` | `import mapboxgl from 'mapbox-gl'`          |
-| Token   | Optional (depends on tiles)            | Required: `mapboxgl.accessToken = 'pk.xxx'` |
-| Style   | Custom URL or OSM tiles                | `mapbox://styles/mapbox/streets-v12`        |
-| License | BSD (Open Source)                      | Proprietary (v2+)                           |
-| Support | Community                              | Official commercial support                 |
-| Tiles   | Requires tile source                   | Premium Mapbox tiles included               |
-| APIs    | Third-party                            | Full Mapbox API ecosystem                   |
-| API     | ~95% compatible                        | ~95% compatible                             |
-
-**Bottom line:** Migration is easy because APIs are nearly identical. Main changes are packaging, token setup, and style URLs. The result is access to Mapbox's premium tiles, ecosystem, and support.
+- **`references/api-compatibility.md`** -- Full list of 100% compatible APIs + side-by-side migration example
+- **`references/exclusive-features.md`** -- Mapbox-exclusive features (APIs, Studio, Advanced) + React/Vue framework examples
+- **`references/why-mapbox.md`** -- Why Choose Mapbox (Production, Dev Teams, Business) + Performance Comparison

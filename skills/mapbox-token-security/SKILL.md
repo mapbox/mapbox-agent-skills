@@ -96,6 +96,10 @@ This skill provides security expertise for managing Mapbox access tokens safely 
 {
   scopes: ['styles:read', 'fonts:read'];
 }
+// Add 'styles:tiles' if your map uses raster tile sources
+{
+  scopes: ['styles:read', 'fonts:read', 'styles:tiles'];
+}
 ```
 
 ### Scope Combinations by Use Case
@@ -249,203 +253,7 @@ const mapboxToken = 'pk.YOUR_MAPBOX_TOKEN_HERE';
 mapboxgl.accessToken = mapboxToken;
 ```
 
-## Token Rotation Strategy
-
-### When to Rotate Tokens
-
-**Mandatory rotation:**
-
-- Token exposed in public repository
-- Team member leaves with token access
-- Suspected compromise or breach
-- Service decommissioning
-- Compliance requirements
-
-**Scheduled rotation:**
-
-- Every 90 days (recommended for production)
-- Every 30 days (high-security environments)
-- After major deployments
-- During security audits
-
-### Rotation Process
-
-**Zero-downtime rotation:**
-
-1. **Create new token** with same scopes
-2. **Deploy new token** to canary/staging environment
-3. **Verify functionality** with new token
-4. **Gradually roll out** to production
-5. **Monitor for issues** for 24-48 hours
-6. **Revoke old token** after confirmation
-7. **Update documentation** with rotation date
-
-**Emergency rotation:**
-
-1. **Immediately revoke** compromised token
-2. **Create replacement** token
-3. **Deploy emergency update** to all services
-4. **Notify team** of incident
-5. **Investigate** how compromise occurred
-6. **Update procedures** to prevent recurrence
-
-## Monitoring and Auditing
-
-### Track Token Usage
-
-**Metrics to monitor:**
-
-- API request volume per token
-- Geographic distribution of requests
-- Error rates by token
-- Unexpected spike patterns
-- Requests from unauthorized domains
-
-**Alert on:**
-
-- Usage from unexpected IPs/regions
-- Sudden traffic spikes (>200% normal)
-- High error rates (>10%)
-- Requests outside allowed URLs
-- Off-hours access patterns
-
-### Regular Security Audits
-
-**Monthly checklist:**
-
-- [ ] Review all active tokens
-- [ ] Verify token scopes are still appropriate
-- [ ] Check for unused tokens (revoke if inactive >30 days)
-- [ ] Confirm URL restrictions are current
-- [ ] Review team member access
-- [ ] Check for tokens in public repositories (GitHub scan)
-- [ ] Verify documentation is up-to-date
-
-**Quarterly checklist:**
-
-- [ ] Rotate production tokens
-- [ ] Full token inventory
-- [ ] Access control review
-- [ ] Update incident response procedures
-- [ ] Security training for team
-
-## Common Security Mistakes
-
-### 1. Exposing Secret Tokens in Client Code
-
-❌ **CRITICAL ERROR:**
-
-```javascript
-// NEVER DO THIS - Secret token in client code
-const map = new mapboxgl.Map({
-  accessToken: 'sk.YOUR_SECRET_TOKEN_HERE' // SECRET TOKEN
-});
-```
-
-✅ **Correct:**
-
-```javascript
-// Public token only in client code
-const map = new mapboxgl.Map({
-  accessToken: 'pk.YOUR_PUBLIC_TOKEN_HERE' // PUBLIC TOKEN
-});
-```
-
-### 2. Overly Permissive Scopes
-
-❌ **Too broad:**
-
-```json
-{
-  "scopes": ["styles:*", "tokens:*"]
-}
-```
-
-✅ **Specific:**
-
-```json
-{
-  "scopes": ["styles:read"]
-}
-```
-
-### 3. Missing URL Restrictions
-
-❌ **No restrictions:**
-
-```json
-{
-  "scopes": ["styles:read"],
-  "allowedUrls": [] // Token works anywhere
-}
-```
-
-✅ **Domain restricted:**
-
-```json
-{
-  "scopes": ["styles:read"],
-  "allowedUrls": ["https://myapp.com/*"]
-}
-```
-
-### 4. Long-Lived Tokens Without Rotation
-
-❌ **Never rotated:**
-
-```
-Token created: Jan 2020
-Last rotation: Never
-Still in production: Yes
-```
-
-✅ **Regular rotation:**
-
-```
-Token created: Dec 2024
-Last rotation: Dec 2024
-Next rotation: Mar 2025
-```
-
-### 5. Tokens in Version Control
-
-❌ **Committed to Git:**
-
-```javascript
-// config.js (committed to repo)
-export const MAPBOX_TOKEN = 'sk.YOUR_SECRET_TOKEN_HERE';
-```
-
-✅ **Environment variables:**
-
-```javascript
-// config.js
-export const MAPBOX_TOKEN = process.env.MAPBOX_SECRET_TOKEN;
-```
-
-```bash
-# .env (in .gitignore)
-MAPBOX_SECRET_TOKEN=sk.YOUR_SECRET_TOKEN_HERE
-```
-
-## Incident Response Plan
-
-### If a Token is Compromised
-
-**Immediate actions (first 15 minutes):**
-
-1. **Revoke the token** via Mapbox dashboard or API
-2. **Create replacement token** with different scopes/restrictions if needed
-3. **Update all services** using the compromised token
-4. **Notify team** via incident channel
-
-**Investigation (within 24 hours):** 5. **Review access logs** to understand exposure 6. **Check for unauthorized usage** in Mapbox dashboard 7. **Identify root cause** (how was it exposed?) 8. **Document incident** with timeline and impact
-
-**Prevention (within 1 week):** 9. **Update procedures** to prevent recurrence 10. **Implement additional safeguards** (CI checks, secret scanning) 11. **Train team** on lessons learned 12. **Update documentation** with new security measures
-
-## Best Practices Summary
-
-### Security Checklist
+## Security Checklist
 
 **Token Creation:**
 
@@ -478,6 +286,13 @@ MAPBOX_SECRET_TOKEN=sk.YOUR_SECRET_TOKEN_HERE
 - [ ] Rotation process documented
 - [ ] Post-incident review template
 - [ ] Team training on security procedures
+
+## Reference Files
+
+For detailed guidance on specific topics, load these references as needed:
+
+- **`references/rotation-monitoring.md`** — Token rotation strategies (zero-downtime + emergency), monitoring metrics, alerting rules, and monthly/quarterly audit checklists. Load when: implementing rotation, setting up monitoring, or conducting audits.
+- **`references/incident-response.md`** — Step-by-step incident response plan and common security mistakes with code examples. Load when: responding to a token compromise, reviewing code for security issues, or training on anti-patterns.
 
 ## When to Use This Skill
 

@@ -1,15 +1,21 @@
 {
   "name": "@mapbox/agent-skills",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Agent Skills for building fast, beautiful, secure Mapbox applications",
   "type": "module",
   "scripts": {
     "format": "prettier --write \"**/*.{md,json,js}\"",
     "format:check": "prettier --check \"**/*.{md,json,js}\"",
+    "build:codex-plugin": "node scripts/build-plugin.js",
     "spellcheck": "cspell \"*.md\" \"skills/**/*.md\"",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules",
+    "validate:codex-plugin": "node scripts/validate-plugin.js",
     "validate:skills": "node scripts/validate-skills.js",
-    "check": "npm run format:check && npm run spellcheck && npm run lint:markdown && npm run validate:skills",
+    "check": "npm run format:check && npm run spellcheck && npm run lint:markdown && npm run build:codex-plugin && npm run validate:codex-plugin && npm run validate:skills",
+    "eval": "node scripts/eval.js",
+    "eval:verbose": "node scripts/eval.js --verbose",
+    "eval:diff": "node scripts/eval.js --diff",
+    "eval:update-baseline": "node scripts/eval.js --update-baseline",
     "setup": "node scripts/setup-hooks.js",
     "postinstall": "node scripts/setup-hooks.js"
   },
@@ -30,6 +36,7 @@
     "url": "https://github.com/mapbox/mapbox-agent-skills.git"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
     "cspell": "^8.0.0",
     "markdownlint-cli": "^0.39.0",
     "prettier": "^3.8.1"

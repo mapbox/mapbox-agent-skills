@@ -4,22 +4,24 @@ Quick reference for implementing navigation and routing with Mapbox Directions A
 
 ## Product Decision
 
-| Need                        | Solution                   |
-| --------------------------- | -------------------------- |
-| **Web routing**             | Directions API             |
-| **Turn-by-turn iOS**        | Navigation SDK for iOS     |
-| **Turn-by-turn Android**    | Navigation SDK for Android |
-| **Voice guidance**          | Navigation SDK only        |
-| **Multi-stop optimization** | Optimization API           |
+| Need                           | Solution                    |
+| ------------------------------ | --------------------------- |
+| **Show a route on a web map** | Directions API              |
+| **Turn-by-turn iOS**          | Navigation SDK for iOS      |
+| **Turn-by-turn Android**      | Navigation SDK for Android  |
+| **Voice guidance**            | Navigation SDK only         |
+| **Multi-stop optimization**   | Optimization API            |
 
 ## Directions API (Web)
+
+Coordinates are always `longitude,latitude` order. Default to the `driving-traffic` profile — it factors in live traffic, congestion, and incidents. Use `driving` only when you need `arrive_by` (not supported by `driving-traffic`); both profiles support `depart_at`.
 
 ### Basic Route
 
 ```javascript
 const query = await fetch(
-  `https://api.mapbox.com/directions/v5/mapbox/driving/` +
-    `${start[0]},${start[1]};${end[0]},${end[1]}?` +
+  `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/` +
+    `${start[0]},${start[1]};${end[0]},${end[1]}?` + // lon,lat
     `steps=true&geometries=geojson&access_token=${token}`
 );
 
@@ -58,9 +60,9 @@ const routes = json.routes; // Returns multiple routes
 ```javascript
 // Up to 25 waypoints
 const waypoints = [start, stop1, stop2, stop3, end];
-const coords = waypoints.map((w) => `${w[0]},${w[1]}`).join(';');
+const coords = waypoints.map((w) => `${w[0]},${w[1]}`).join(';'); // lon,lat
 
-const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}?...`;
+const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?...`;
 ```
 
 ### Route Optimization
@@ -68,17 +70,16 @@ const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coords}?...`;
 ```javascript
 // Optimize waypoint order
 const url =
-  `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coords}?` +
+  `https://api.mapbox.com/optimized-trips/v1/mapbox/driving-traffic/${coords}?` +
   `source=first&destination=last&roundtrip=true&...`;
 
 const optimized = json.trips[0];
 const order = json.waypoints.map((wp) => wp.waypoint_index);
 ```
 
-### Traffic-Aware Routing
+### Congestion-Based Route Coloring
 
 ```javascript
-// Use driving-traffic profile
 const url =
   `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?` +
   `annotations=duration,distance,congestion&...`;

@@ -94,6 +94,8 @@ User says things like:
 
 ## Web: Directions API Patterns
 
+Coordinates are always `longitude,latitude` order. Default to the `driving-traffic` profile — it factors in live traffic, congestion, and incidents. Use `driving` only when you need `arrive_by` (not supported by `driving-traffic`); both profiles support `depart_at`.
+
 ### Basic Route Display
 
 **Use when:** Show driving directions on a web map
@@ -105,14 +107,15 @@ mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
+  style: 'mapbox://styles/mapbox/standard',
   center: [-122.4194, 37.7749],
   zoom: 12
 });
 
 async function getRoute(start, end) {
+  // start/end are [lon, lat]
   const query = await fetch(
-    `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?` +
+    `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${start[0]},${start[1]};${end[0]},${end[1]}?` +
       `steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
     { method: 'GET' }
   );
@@ -168,6 +171,8 @@ const end = [-122.2711, 37.8044]; // Oakland
 getRoute(start, end);
 ```
 
+> **Geometry format:** `geometries=geojson` is used here because the response is fed straight into a GL JS source. It's the largest of the three geometry formats over the wire — when you don't need to render immediately (backend processing, caching, mobile clients), request `geometries=polyline6` instead and decode client-side. See [Performance Optimization](#3-performance-optimization).
+
 ### Turn-by-Turn Instructions Display
 
 ```javascript
@@ -212,7 +217,7 @@ function displayInstructions(route) {
 ```javascript
 async function getRouteWithAlternatives(start, end) {
   const query = await fetch(
-    `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?` +
+    `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${start[0]},${start[1]};${end[0]},${end[1]}?` +
       `alternatives=true&` +
       `geometries=geojson&` +
       `steps=true&` +
@@ -290,7 +295,7 @@ async function getMultiStopRoute(waypoints) {
   const coordinates = waypoints.map((wp) => `${wp[0]},${wp[1]}`).join(';');
 
   const query = await fetch(
-    `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?` +
+    `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coordinates}?` +
       `steps=true&` +
       `geometries=geojson&` +
       `access_token=${mapboxgl.accessToken}`
@@ -343,7 +348,7 @@ async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
   const destination = endIndex === 'last' ? 'last' : 'any';
 
   const query = await fetch(
-    `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coordinates}?` +
+    `https://api.mapbox.com/optimized-trips/v1/mapbox/driving-traffic/${coordinates}?` +
       `source=${source}&` +
       `destination=${destination}&` +
       `roundtrip=true&` +
@@ -371,7 +376,9 @@ async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
 
 **Note:** For advanced use cases requiring time windows, vehicle capacities, and support for up to 1,000 coordinates, see the [Optimization API](https://docs.mapbox.com/api/navigation/optimization/) (async API with enhanced capabilities).
 
-### Traffic-Aware Routing
+### Congestion-Based Route Coloring
+
+**Use when:** Visualize traffic severity along a route (the `driving-traffic` profile above already includes live traffic in ETAs — this adds a `congestion` annotation for per-segment styling)
 
 ```javascript
 async function getTrafficRoute(start, end) {
@@ -999,7 +1006,7 @@ function requestRouteDebounced(start, end) {
 // Simplify route geometry for better performance
 async function getSimplifiedRoute(start, end) {
   const query = await fetch(
-    `https://api.mapbox.com/directions/v5/mapbox/driving/` +
+    `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/` +
       `${start.join(',')};${end.join(',')}?` +
       `geometries=polyline6&` + // More compact than geojson
       `overview=simplified&` + // Simplified geometry

@@ -77,7 +77,7 @@ const end = [-122.2711, 37.8044]; // Oakland
 getRoute(start, end);
 ```
 
-> **Geometry format:** `geometries=geojson` is used here because the response is fed straight into a GL JS source. It's the largest of the three geometry formats over the wire — when you don't need to render immediately (backend processing, caching, mobile clients), request `geometries=polyline6` instead and decode client-side. See [Performance Optimization](#3-performance-optimization).
+> **Geometry format:** `geometries=geojson` is used here because the response is fed straight into a GL JS source. It's the largest of the three geometry formats over the wire — when you don't need to render immediately (backend processing, caching, mobile clients), request `geometries=polyline6` instead and decode client-side. See [Performance Optimization](best-practices.md#performance-optimization).
 
 ## Turn-by-Turn Instructions Display
 

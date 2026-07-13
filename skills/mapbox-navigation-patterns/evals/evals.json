@@ -1,0 +1,54 @@
+{
+  "skill_name": "mapbox-navigation-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a native iOS app that needs turn-by-turn navigation with voice guidance for drivers. Should I use the Mapbox Directions API or the Navigation SDK?",
+      "expectations": [
+        "Recommends the Navigation SDK for iOS, not the Directions API",
+        "Explains that voice guidance is only available through the Navigation SDK, not the Directions API",
+        "Mentions the Navigation SDK provides a complete turn-by-turn UI (NavigationViewController) and real-time rerouting",
+        "Notes Navigation SDK pricing is Monthly Active Users (MAU) based, vs. the Directions API's pay-per-request model"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need to fetch and display a driving route on a Mapbox GL JS web map. What Directions API profile should I request, and what format should the coordinates be in?",
+      "expectations": [
+        "Recommends the `driving-traffic` profile by default (factors in live traffic, congestion, and incidents), not plain `driving`",
+        "States coordinates must be in `longitude,latitude` order",
+        "Mentions `driving` should only be used if the `arrive_by` parameter is needed, since `driving-traffic` doesn't support it",
+        "Shows a Directions API request URL of the form `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/{lon},{lat};{lon},{lat}`"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm planning a delivery route with 8 stops and want the API to figure out the most efficient order to visit them, starting from the warehouse. Which Mapbox API should I use and what parameters matter?",
+      "expectations": [
+        "Recommends the Optimization API (optimized-trips endpoint) rather than the plain Directions API",
+        "Mentions the `source` and `destination` parameters, and that valid values are only `first`/`any` and `last`/`any` respectively (not numeric indices)",
+        "Notes the Optimization v1 API hard limit of 12 coordinates per request",
+        "Mentions `roundtrip=true` for a round trip starting and ending at the warehouse"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to color-code a driving route by traffic congestion severity on a web map (green for free-flow, red for heavy traffic). How do I get that data from Mapbox?",
+      "expectations": [
+        "Uses the `driving-traffic` profile with `annotations=duration,distance,congestion` (and `overview=full`)",
+        "Reads the `congestion` values per-segment from `route.legs[0].annotation.congestion`",
+        "Lists the possible congestion values: 'low', 'moderate', 'heavy', 'severe', 'unknown' (including the 'unknown' case)",
+        "Describes building per-segment GeoJSON features colored by congestion value, e.g. with a `match` expression in a line layer"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My app needs users to specify they want to depart at a specific future time, and I still want traffic-aware ETAs. Which Directions API profile should I use?",
+      "expectations": [
+        "Recommends the `driving-traffic` profile, since it supports `depart_at` and mixes live traffic with historical data",
+        "Does NOT recommend `driving` for this case, since the traffic-aware profile already supports `depart_at`",
+        "Notes that `arrive_by` is different from `depart_at` — `arrive_by` is only supported by the `driving` profile, not `driving-traffic`"
+      ]
+    }
+  ]
+}

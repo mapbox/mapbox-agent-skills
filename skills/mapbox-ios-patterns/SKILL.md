@@ -124,6 +124,8 @@ class MapViewController: UIViewController {
 
 The SDK offers three ways to place a point on the map. Pick the simplest one that fits.
 
+**Agent note:** A SwiftUI Mapbox sketch is incomplete without at least one annotation (`Marker`, `PointAnnotation`, or `MapViewAnnotation`). Do not ship a bare `Map { }` with no pin.
+
 ### Which API should I use?
 
 | API                                                       | Use it when                                                                                    | Platforms       | Notes                                                                                                                                                                        |

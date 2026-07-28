@@ -47,6 +47,14 @@ Create `app/res/values/mapbox_access_token.xml`:
 
 **Get your token:** Sign in at [mapbox.com](https://account.mapbox.com/access-tokens/)
 
+### Step 1b: Internet permission (required)
+
+Maps need network access. Include this in `AndroidManifest.xml` — agents often omit it and only list location permissions later:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
 ### Step 2: Add Maven Repository
 
 In `settings.gradle.kts`:
@@ -272,6 +280,7 @@ pointAnnotationManager.create(annotations)
 **Step 1: Add permissions to AndroidManifest.xml:**
 
 ```xml
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ```

@@ -246,12 +246,28 @@ MAPBOX_SECRET_TOKEN=sk.ey...
 
 ```javascript
 // Public token with URL restrictions - SAFE
-const mapboxToken = 'pk.YOUR_MAPBOX_TOKEN_HERE';
+const mapboxToken =
+  window.MAPBOX_ACCESS_TOKEN ||
+  import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-// This token is restricted to your domain
-// and only has styles:read scope
+// Guard BEFORE constructing the map — missing tokens otherwise yield a silent blank map
+if (!mapboxToken || mapboxToken === 'YOUR_MAPBOX_ACCESS_TOKEN') {
+  throw new Error('Missing MAPBOX_ACCESS_TOKEN — set it in env / config before creating the map');
+}
+
 mapboxgl.accessToken = mapboxToken;
 ```
+
+### Agent anti-pattern: skip the token guard
+
+Agents often assign `mapboxgl.accessToken` and call `new mapboxgl.Map(...)` with no check. That fails closed as a blank canvas with no UI error.
+
+**Always:**
+
+1. Resolve the token from env / `window.MAPBOX_ACCESS_TOKEN` / config (never hardcode a real `pk.` in source)
+2. Validate it is present and not a placeholder
+3. Only then set `accessToken` and construct the map
 
 ## Security Checklist
 
@@ -270,6 +286,7 @@ mapboxgl.accessToken = mapboxToken;
 - [ ] Rotate tokens every 90 days (or per policy)
 - [ ] Remove unused tokens promptly
 - [ ] Separate tokens by environment (dev/staging/prod)
+- [ ] Guard missing tokens in client code before `new mapboxgl.Map`
 
 **Monitoring:**
 

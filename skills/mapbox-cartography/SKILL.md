@@ -1,6 +1,6 @@
 ---
 name: mapbox-cartography
-description: Platform-independent guidance on Mapbox map design — the Standard style and its config-first workflow (themes, light presets, slots, color overrides), and Classic styles and raw style JSON (layer order, palette relationships), plus color, visual hierarchy, typography, and cartographic best practice. Applies across Mapbox GL JS (web), Maps SDK for Android, and Maps SDK for iOS. Use when designing map styles, choosing a theme or light preset, placing custom layers, setting up dark mode, restyling a Classic style, or making cartographic decisions.
+description: Platform-independent guidance on Mapbox map design — the Standard style and its config-first workflow (themes, light presets, slots, color overrides), and Classic styles and raw style JSON (layer order, palette relationships), plus color, visual hierarchy, typography, and cartographic best practice. Applies across Mapbox GL JS (web), Maps SDK for Android, Maps SDK for iOS, and Maps SDK for Flutter. Use when designing map styles, choosing a theme or light preset, placing custom layers, setting up dark mode, restyling a Classic style, or making cartographic decisions.
 ---
 
 # Mapbox Cartography Skill
@@ -141,8 +141,11 @@ the value is the same string on every SDK:
   layers in `middle`** — a route in `middle` reads above roads but under all labels and 3D buildings, so labels
   stay legible; add `line-occlusion-opacity` so buildings don't hide it.
 - Two layers in the same slot keep their insertion order (or use a `beforeId` that is itself inside that slot).
-- Add **`fill-emissive-strength: 1`** / **`line-emissive-strength: 1`** to every non-3D custom layer, or it goes
-  nearly invisible at `dusk`/`night`.
+- Add **emissive strength `1`** to every non-3D custom **fill, line, and circle** layer, or it goes nearly
+  invisible at `dusk`/`night`: `fill-emissive-strength`, `line-emissive-strength`, `circle-emissive-strength`.
+  These default to `0`, so the layer is lit by the scene and falls into shadow. **Symbol layers need nothing** —
+  `icon-emissive-strength` and `text-emissive-strength` already default to `1`, so icons and labels stay legible
+  across all four presets on their own.
 
 Style-spec JSON (shared) — a choropleth and a route, both in `middle`:
 
@@ -212,7 +215,11 @@ route and label legibility. Set `lightPreset:'night'` instead.
 
 ## Typography
 
-**One font family, two weights max** for map labels (regular + medium/bold). DIN Pro is Standard's default. Use
+**One font family, two weights max** for map labels (regular + medium/bold). DIN Pro is Standard's default —
+match it in your own symbol layers rather than introducing a second family. `text-font` takes a **fontstack**, not
+a font name: list your intended face first and a Unicode fallback second (e.g.
+`["DIN Pro Medium", "Arial Unicode MS Bold"]`), and confirm the exact face exists for your account, since a face
+that can't be resolved silently falls through to the next entry. Use
 serif or monospace _only_ as deliberate exceptions for map furniture — a title block or a coordinate readout —
 labeled as such; don't mix families across the label set (it reads as noise on an already busy map).
 
@@ -258,11 +265,26 @@ style-spec expressions (same on all SDKs):
 
 ## Markers & symbols
 
-- **Marker-count rule** — choose the rendering approach by count:
-  - **< 100** → a view/annotation marker (per-element interaction)
-  - **100 – 1,000** → a **symbol layer** (GL-rendered: collision detection + feature-state)
-  - **1,000 – 100,000** → a **clustered** symbol/circle layer (`cluster: true`)
-  - **> 100,000** → a **vector tileset** (a GeoJSON source freezes the browser at this scale)
+Two **independent** decisions here. Point count answers the first one; it does not answer the second.
+
+**1. How to render — driven by cost.**
+
+- **< ~100** → a view/annotation marker (per-element interaction, full DOM/CSS control on web). Each one is a
+  real element; several hundred make a browser sluggish.
+- **~100+** → a **GL layer** (`circle` or `symbol`), drawn on the GPU. Hundreds of points cost essentially
+  nothing, and these layers stay smooth well into the tens of thousands. `circle` is cheaper than `symbol` —
+  no label placement or collision work.
+- **Thousands of points, or a payload past a few MB** → a **vector tileset**, so only the current viewport
+  loads instead of the whole dataset up front. Once you're on tiles, markers are no longer an option.
+
+**2. Whether to aggregate — driven by legibility, not by dataset size.**
+
+**Cluster when points visibly overlap at the zooms your users actually use.** 300 pins on one city block need
+clustering at z12; 50,000 points spread across a continent may not need it at all. Decide by looking at the
+map, not at the row count — there is no point count that makes clustering correct on its own. (Clustering does
+cut per-frame work as a side effect, but that's rarely the reason to reach for it — if rendering cost is the
+problem, the fix on axis 1 is a tileset.)
+
 - **Coordinate-anchor principle:** anchor markers to lng/lat, never to screen pixels, so they track pan/zoom.
 - **Symbol-layer properties (style spec, identical everywhere):** set `icon-allow-overlap: true` when every icon
   must be visible (the default hides colliding icons — the #1 cause of "my icons disappeared"); set
@@ -272,17 +294,6 @@ style-spec expressions (same on all SDKs):
 - **Per-platform small-set marker widget:** Web `mapboxgl.Marker({element})`; Android `ViewAnnotationManager`
   (custom view) or `PointAnnotationManager` (bitmap); iOS `ViewAnnotation` or `PointAnnotationManager`. For 100+,
   switch to a symbol layer on every platform.
-
-## Reference files
-
-Load these only when the task calls for them — SKILL.md answers general design questions on its own.
-
-- **`references/scenarios.md`** — ready-to-apply Standard configs for 16 product segments (logistics, real estate,
-  journalism, telecom, weather, public sector, …). Read it when the user names an industry or product type and you
-  want a starting config plus the reasoning behind it.
-- **`references/performance-testing.md`** — data-source tiers (search vs tileset vs OSM), source and layer budgets,
-  the pre-ship design QA checklist, and Web/GL JS-only marker-drift rules. Read it when choosing how to get data
-  onto the map, when a map is slow or markers drift on pan, or when reviewing a map before it ships.
 
 ## Classic styles & raw style JSON
 
@@ -350,6 +361,11 @@ The style spec is shared; only these imperative calls differ per platform.
 
 > Anything DOM/CSS-based (HTML markers, CSS transforms/filters, CSS `invert()`) is **Web / GL JS only** and is
 > labeled as such wherever it appears — never apply it as universal advice.
+
+**Flutter** (Maps SDK for Flutter) follows the same contract, through `mapboxMap.style`:
+`MapWidget(styleUri: MapboxStyles.STANDARD)` to load it,
+`style.setStyleImportConfigProperty("basemap", key, value)` for config,
+and a `slot` argument on the layer constructor (`FillLayer(..., slot: "middle")`) for placement.
 
 ## Appendix: custom color themes (LUT)
 

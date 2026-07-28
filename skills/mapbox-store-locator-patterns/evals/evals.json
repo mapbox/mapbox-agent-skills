@@ -8,7 +8,9 @@
         "Identifies 300 HTML markers exceeds the < 100 threshold — recommends switching to a symbol layer",
         "Identifies the filter function fetches from the server on every keystroke — recommends loading all store data once and filtering in memory",
         "Identifies remove/re-add layer pattern is expensive — recommends map.getSource('stores').setData(filtered) instead",
-        "Identifies highlightListing is missing scrollIntoView — the selected listing should scroll into view in the sidebar"
+        "Identifies highlightListing is missing scrollIntoView — the selected listing should scroll into view in the sidebar",
+        "The recommended symbol layer sets slot: 'top' and icon-/text-emissive-strength: 1 — without a slot it draws above the basemap labels, and without emissive strength it vanishes at the dusk/night presets",
+        "Recommends the Standard style (mapbox/standard) rather than the Classic streets-v12 in the code under review, and dark mode via lightPreset rather than a second style"
       ]
     },
     {
@@ -17,8 +19,9 @@
       "expectations": [
         "Recommends symbol layer (not clustering) for 150 locations",
         "States HTML markers are appropriate only for fewer than 100 locations",
-        "States clustering is appropriate for more than 1000 locations — 150 does not require it",
-        "Explains symbol layers render on the GPU via WebGL instead of creating 150 DOM elements"
+        "States that 150 locations do not need clustering — at that count the pins are readable and a symbol layer is smooth",
+        "Explains symbol layers render on the GPU via WebGL instead of creating 150 DOM elements",
+        "Frames clustering as a legibility decision — needed when pins visibly overlap at the zooms customers browse — rather than something a location count alone triggers"
       ]
     },
     {

@@ -8,7 +8,8 @@
         "Identifies that mapboxgl.Marker() creates individual DOM elements — 500 DOM markers causes performance issues (not GPU-rendered)",
         "Recommends switching to a GeoJSON source + symbol layer for large marker counts (100+ markers)",
         "Explains that symbol layers are WebGL-rendered and can handle thousands of points efficiently",
-        "Shows the correct pattern: map.addSource() with GeoJSON FeatureCollection, then map.addLayer() with type 'symbol' or 'circle'"
+        "Shows the correct pattern: map.addSource() with GeoJSON FeatureCollection, then map.addLayer() with type 'symbol' or 'circle'",
+        "Sets an explicit `slot` on the recommended layer and explains that without one the layer is placed above the whole basemap — including its labels — because Mapbox owns the Standard style's layer order"
       ]
     },
     {

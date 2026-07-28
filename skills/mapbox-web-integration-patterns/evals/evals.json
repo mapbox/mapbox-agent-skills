@@ -39,6 +39,20 @@
         "Shows the update effect calling mapRef.current.setStyle(mapStyle) to change the style without recreating the map",
         "Shows the corrected component with the two-effect pattern"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our React app has a dark mode toggle. I want the map to follow it. I wired it up like this, but the map hard-resets every time someone flips the toggle — the viewport jumps back to the default, my store markers vanish, and there's a white flash before the dark map appears. What's the right way to do this?\n\n```jsx\nimport { useRef, useEffect } from 'react';\nimport mapboxgl from 'mapbox-gl';\nimport 'mapbox-gl/dist/mapbox-gl.css';\n\nconst LIGHT_STYLE = 'mapbox://styles/mapbox/light-v11';\nconst DARK_STYLE = 'mapbox://styles/mapbox/dark-v11';\n\nfunction MapView({ isDark }) {\n  const mapRef = useRef(null);\n  const containerRef = useRef(null);\n\n  useEffect(() => {\n    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;\n    mapRef.current = new mapboxgl.Map({\n      container: containerRef.current,\n      style: isDark ? DARK_STYLE : LIGHT_STYLE,\n      center: [-122.4194, 37.7749],\n      zoom: 12\n    });\n    addStoreMarkers(mapRef.current);\n    return () => mapRef.current.remove();\n  }, [isDark]);\n\n  return <div ref={containerRef} style={{ height: '100vh' }} />;\n}\n```",
+      "expected_output": "Should identify two distinct problems. (1) The React lifecycle bug: [isDark] in the dependency array destroys and recreates the whole map, which explains the viewport reset, lost markers, and flash. (2) The more important design problem: dark mode should not be a second style at all. On the Mapbox Standard style it is a single config property — load `mapbox://styles/mapbox/standard` once and call `mapRef.current.setConfigProperty('basemap', 'lightPreset', isDark ? 'night' : 'day')` in an effect on [isDark]. That keeps the viewport, sources, layers, and markers intact, because nothing is torn down. Even the two-effect + setStyle() fix is inferior here: setStyle is a full style teardown and rebuild that drops config and re-adds sources. Should not recommend maintaining light-v11/dark-v11 as a pair, and should not suggest a CSS filter/invert() on the canvas. May note that custom layers do not adapt to the light preset and need emissive strength, and that any `color*` config overrides are day values that Standard re-derives per preset.",
+      "files": [],
+      "expectations": [
+        "Identifies that [isDark] in the dependency array destroys and recreates the map, causing the viewport reset, lost markers, and flash",
+        "Recommends the Standard style with a `lightPreset` config property instead of a light/dark style pair — dark mode is config, not a second style",
+        "Shows setConfigProperty('basemap', 'lightPreset', isDark ? 'night' : 'day') in a separate effect keyed on [isDark], with map initialization in an effect with an empty dependency array",
+        "Explains that setConfigProperty preserves viewport, sources, layers, and markers because nothing is torn down — whereas setStyle() is a full teardown that drops config and requires re-adding sources",
+        "Does not recommend keeping light-v11 / dark-v11 as a pair, and does not suggest a CSS filter or invert() on the map canvas",
+        "Notes that the map's own custom layers do not adapt to the light preset and need emissive strength set to 1"
+      ]
     }
   ]
 }

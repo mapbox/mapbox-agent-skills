@@ -10,20 +10,24 @@
         "Identifies the missing route-casing layer — route needs two layers (wider casing behind, narrower colored line on top) for a visible outline effect",
         "Identifies that all delivery zones use the same color and recommends a 'match' expression on zone status (available/busy/unavailable) for color-coding",
         "Identifies 'icon-rotation-alignment': 'viewport' as wrong for driver direction arrows — should be 'map' so arrows rotate with the map",
-        "Identifies the missing pulse animation on the customer marker — recommends a second circle layer driven by requestAnimationFrame + setPaintProperty"
+        "Identifies the missing pulse animation on the customer marker — recommends a second circle layer driven by requestAnimationFrame + setPaintProperty",
+        "Identifies that neither layer sets a `slot` — on the Standard style they will draw above the street labels; route belongs in `middle`, zone fills in `bottom`",
+        "Identifies the missing emissive strength (line-emissive-strength / fill-emissive-strength: 1) — without it both layers nearly disappear under the dusk/night light presets",
+        "Recommends line-occlusion-opacity on the route so 3D buildings don't hide it"
       ]
     },
     {
       "id": 2,
       "prompt": "I'm building a US county-level choropleth map showing election results by party. The data will be shown as colored county fills (red/blue/purple). What base map style pattern should I use, and what layers should I include?",
-      "expected_output": "Should recommend the Data Visualization base map pattern: grayscale palette throughout (no competing colors), water in gray (not blue), only major city/capital labels for orientation, admin boundaries (dashed) for geographic reference, minimal or no road detail (only motorways at low zoom levels), low opacity on all base layers. The goal is a minimal base that doesn't compete with the election data overlay colors. Should NOT recommend a standard streets style or colorful base map.",
+      "expected_output": "Should reach for the Standard style with a quieted basemap via config rather than hand-authoring a grayscale layer stack: theme 'monochrome' (or 'faded'), showPointOfInterestLabels false and show3dObjects false because POIs compete with the thematic layer and 3D occludes it, road labels off while keeping road geometry for orientation, and place labels on so cities still orient the reader. May also name the purpose-built light-2d / dark-2d styles from the Mapbox gallery. The county fills go in the `bottom` slot with fill-emissive-strength 1 and fill-opacity at or below 0.7. Red/blue for parties is a domain convention and is acceptable here, but the answer should not propose a red-to-green ramp for ordered data.",
       "files": [],
       "expectations": [
-        "Recommends a minimal, grayscale base map (not a standard streets or colorful style)",
-        "Recommends gray/desaturated water (not blue) so it doesn't compete with the data colors",
-        "Recommends including admin boundaries (state/county lines) as the primary geographic reference",
-        "Recommends limiting road detail — only major roads (motorways) at low zoom, or no roads at all",
-        "Recommends keeping only major city labels for orientation, not full POI/street label set"
+        "Recommends the Standard style with a quieted basemap via config, not a hand-authored grayscale layer stack",
+        "Names theme 'monochrome' (or 'faded') to desaturate the basemap rather than recoloring individual basemap layers",
+        "Turns off POI labels and 3D objects, because POIs compete with the thematic layer and 3D occludes it",
+        "Keeps place labels (and/or boundaries) for geographic orientation while dropping road label clutter",
+        "Puts the county fill in an explicit slot (`bottom`, so roads draw over it) with fill-emissive-strength: 1",
+        "Caps fill-opacity at or below 0.7 so the basemap still reads through"
       ]
     },
     {

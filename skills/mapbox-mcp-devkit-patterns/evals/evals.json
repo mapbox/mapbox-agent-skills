@@ -8,7 +8,8 @@
         "Identifies create_style_tool for creating new styles, update_style_tool for modifying existing styles",
         "Identifies preview_style_tool or retrieve_style_tool for viewing and inspecting styles",
         "Recommends the iterative workflow: describe style in natural language → create_style_tool → preview_style_tool → update_style_tool to refine",
-        "Mentions validate_style_tool or style_builder_tool for validation during development"
+        "Mentions validate_style_tool or style_builder_tool for validation during development",
+        "Checks first whether Standard config can express the intent (theme, lightPreset, visibility toggles, color overrides) before creating a style at all — create_style_tool produces a Classic style JSON with no slots and no config surface"
       ]
     },
     {

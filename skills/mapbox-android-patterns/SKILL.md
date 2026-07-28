@@ -336,7 +336,7 @@ override fun onDestroy() {
 }
 ```
 
-### Use Standard Style
+### Use Standard Style + config
 
 ```kotlin
 // Standard style is optimized and recommended
@@ -345,6 +345,22 @@ Style.STANDARD
 // Use other styles only when needed for specific use cases
 Style.STANDARD_SATELLITE // Satellite imagery
 ```
+
+Adjust Standard's appearance with **config properties** on the `"basemap"` import rather than loading a different style — a full style reload is the most expensive operation you can perform on a live map, and it drops your configuration:
+
+```kotlin
+// Dark mode — bind to uiMode, don't load Style.DARK
+mapView.mapboxMap.style?.setStyleImportConfigProperty(
+    "basemap", "lightPreset", Value.valueOf("night")   // dawn | day | dusk | night
+)
+
+// Fewer draw calls on low-end devices
+mapView.mapboxMap.style?.setStyleImportConfigProperty(
+    "basemap", "show3dObjects", Value.valueOf(false)
+)
+```
+
+Custom layers need `slot(...)` and an emissive-strength property — see [references/camera-styles.md](references/camera-styles.md) and [references/custom-data.md](references/custom-data.md), and the **mapbox-cartography** skill for the design rules.
 
 ---
 
@@ -374,7 +390,8 @@ mapView.mapboxMap.subscribeStyleLoaded { _ ->
 - Use `Style.STANDARD` (recommended and optimized)
 - Limit visible annotations to viewport
 - Reuse annotation managers
-- Avoid frequent style reloads
+- Avoid frequent style reloads — use `setStyleImportConfigProperty` for appearance changes instead of `loadStyle`
+- Turn off what you don't need via config (`show3dObjects`, `showPointOfInterestLabels`) to cut draw calls and collision work
 - Call lifecycle methods (onStart, onStop, onDestroy)
 - Batch annotation updates
 

@@ -2,6 +2,20 @@
 
 Add your own data to the map using GeoJSON sources and layers.
 
+> **Two properties every custom layer needs on the Standard style.** `slot` decides where the
+> layer sits in the basemap stack — a layer with **no slot draws above everything, including
+> street labels**. On **fill, line, and circle** layers, emissive strength keeps it visible
+> under the `dusk` and `night` light presets — those properties default to `0`, so without
+> them the layer falls into shadow and nearly disappears. Symbol layers need nothing:
+> `iconEmissiveStrength` and `textEmissiveStrength` already default to `1`.
+>
+> - `.bottom` — above land and water, below roads (rasters, choropleth fills)
+> - `.middle` — above roads, behind 3D and labels (**routes**, overlays, custom POIs)
+> - `.top` — above POI labels (markers, active selections)
+>
+> These are style-spec properties, so the values are the same on every SDK. See the
+> **mapbox-cartography** skill.
+
 ---
 
 ## Add Line (Route, Path)
@@ -22,10 +36,13 @@ try? mapView.mapboxMap.addSource(source)
 
 // Create line layer
 var layer = LineLayer(id: "route-layer", source: "route-source")
+layer.slot = .middle                          // above roads, under labels and 3D
 layer.lineColor = .constant(StyleColor(.blue))
 layer.lineWidth = .constant(4)
 layer.lineCap = .constant(.round)
 layer.lineJoin = .constant(.round)
+layer.lineEmissiveStrength = .constant(1)     // stays visible at dusk/night
+layer.lineOcclusionOpacity = .constant(1)     // 3D buildings don't hide the route
 
 try? mapView.mapboxMap.addLayer(layer)
 ```
@@ -41,8 +58,10 @@ source.data = .geometry(.polygon(Polygon([polygonCoordinates])))
 try? mapView.mapboxMap.addSource(source)
 
 var fillLayer = FillLayer(id: "area-fill", source: "area-source")
+fillLayer.slot = .bottom                      // under the road network
 fillLayer.fillColor = .constant(StyleColor(.blue.withAlphaComponent(0.3)))
 fillLayer.fillOutlineColor = .constant(StyleColor(.blue))
+fillLayer.fillEmissiveStrength = .constant(1)
 
 try? mapView.mapboxMap.addLayer(fillLayer)
 ```
@@ -74,9 +93,13 @@ source.data = .string(geojsonString)
 try? mapView.mapboxMap.addSource(source)
 
 var symbolLayer = SymbolLayer(id: "points-layer", source: "points-source")
+symbolLayer.slot = .top                       // markers and selections
 symbolLayer.iconImage = .constant(.name("marker"))
+symbolLayer.iconAllowOverlap = .constant(true) // the default hides colliding icons
 symbolLayer.textField = .constant(.expression(Exp(.get) { "name" }))
+symbolLayer.textFont = .constant(["DIN Pro Medium", "Arial Unicode MS Bold"])
 symbolLayer.textOffset = .constant([0, 1.5])
+symbolLayer.textOptional = .constant(true)     // label drops before the icon
 
 try? mapView.mapboxMap.addLayer(symbolLayer)
 ```

@@ -57,21 +57,59 @@ mapView.camera.ease(to: camera, duration: 1.0)
 
 ### Built-in Styles
 
+`.standard` is the recommended default. You rarely need a different style — Standard's **config surface** covers appearance changes without a reload.
+
 ```swift
 // SwiftUI
 Map(viewport: $viewport)
-    .mapStyle(.standard)        // Mapbox Standard (recommended)
-    .mapStyle(.streets)          // Mapbox Streets
-    .mapStyle(.outdoors)         // Mapbox Outdoors
-    .mapStyle(.light)            // Mapbox Light
-    .mapStyle(.dark)             // Mapbox Dark
-    .mapStyle(.standardSatellite) // Satellite imagery
+    .mapStyle(.standard)          // Mapbox Standard (recommended)
+    .mapStyle(.standardSatellite) // imagery with roads, labels, boundaries on top
 
 // UIKit
 mapView.mapboxMap.loadStyle(.standard)
-mapView.mapboxMap.loadStyle(.streets)
-mapView.mapboxMap.loadStyle(.dark)
 ```
+
+The Classic styles (`.streets`, `.outdoors`, `.light`, `.dark`) are 2D, have **no slots and no config surface**, and you restyle them by editing layer paint. Reach for one only when you need per-layer paint control that config can't express, or a deliberate 2D / low-power fallback.
+
+### Configure Standard: dark mode and visibility
+
+Dark mode is a **light preset**, not a separate style. SwiftUI takes it inline:
+
+```swift
+Map(viewport: $viewport)
+    .mapStyle(.standard(lightPreset: .night))   // .dawn | .day | .dusk | .night
+```
+
+Bind it to the system appearance so the map follows the app:
+
+```swift
+@Environment(\.colorScheme) var colorScheme
+
+Map(viewport: $viewport)
+    .mapStyle(.standard(lightPreset: colorScheme == .dark ? .night : .day))
+```
+
+Imperatively — and for every other config key — set the property on the `"basemap"` import. Never reload the style for an incremental change:
+
+```swift
+try mapView.mapboxMap.setStyleImportConfigProperty(
+    for: "basemap", config: "lightPreset", value: "night"
+)
+try mapView.mapboxMap.setStyleImportConfigProperty(
+    for: "basemap", config: "theme", value: "monochrome"  // default | faded | monochrome
+)
+try mapView.mapboxMap.setStyleImportConfigProperty(
+    for: "basemap", config: "showPointOfInterestLabels", value: false
+)
+try mapView.mapboxMap.setStyleImportConfigProperty(
+    for: "basemap", config: "show3dObjects", value: false
+)
+```
+
+Standard shifts land, buildings, water, roads, and label colors along with the lighting, so the preset alone is a complete dark basemap. Two caveats, both covered in the **mapbox-cartography** skill:
+
+- **Your own layers don't adapt.** They keep the colors you gave them, and fill / line / circle layers go nearly invisible at night without emissive strength (those default to `0`; symbol layers already default to `1`) — see [custom-data.md](custom-data.md).
+- **`color*` config overrides are day values.** Standard re-derives them per preset, so handing it an already-dark `colorLand` double-darkens to near-black.
 
 ### Custom Style URL
 

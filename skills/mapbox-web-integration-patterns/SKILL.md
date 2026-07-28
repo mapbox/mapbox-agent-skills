@@ -78,6 +78,38 @@ const map = new mapboxgl.Map({
 3. **Always call `map.remove()` on cleanup** to prevent memory leaks
 4. Handle token management securely (environment variables)
 5. Import CSS: `import 'mapbox-gl/dist/mapbox-gl.css'`
+6. Default to `mapbox://styles/mapbox/standard` and drive appearance through **config**, not through `setStyle()`
+
+### Style and config
+
+`mapbox/standard` is the recommended basemap. Its appearance is a **config surface** you change at runtime — a full `setStyle()` reload tears down the style, drops your config, and is the most expensive thing you can do to a live map.
+
+```javascript
+const map = new mapboxgl.Map({
+  container: containerRef.current,
+  style: 'mapbox://styles/mapbox/standard',
+  config: { basemap: { theme: 'default', lightPreset: 'day' } },
+  center: [-122.4194, 37.7749],
+  zoom: 12
+});
+
+// ✅ Appearance changes — cheap, no reload
+map.setConfigProperty('basemap', 'lightPreset', 'night');
+map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+```
+
+**Wire dark mode to your framework's theme state, not to a second style URL.** In React, that's an effect on your theme value:
+
+```javascript
+useEffect(() => {
+  if (!mapRef.current) return;
+  mapRef.current.setConfigProperty('basemap', 'lightPreset', isDark ? 'night' : 'day');
+}, [isDark]);
+```
+
+Set config inside the same guard you use for other map calls — config properties require the style to be loaded, so set the initial values via the `config` option at construction and only call `setConfigProperty` after `load`.
+
+**Custom layers need a `slot`** (`bottom` / `middle` / `top`) or they draw above the basemap labels. Fill / line / circle layers also need **emissive strength `1`**, or they disappear under the `dusk` / `night` presets; symbol layers already default to `1`. See the **mapbox-cartography** skill.
 
 ## React Integration (Primary Pattern)
 
@@ -346,7 +378,7 @@ Invoke this skill when:
 
 ## Related Skills
 
-- **mapbox-cartography**: Map design principles and styling
+- **mapbox-cartography**: Map design — Standard config, slots, color, hierarchy, typography, dark mode
 - **mapbox-token-security**: Token management and security
 - **mapbox-style-patterns**: Common map style patterns
 

@@ -73,11 +73,13 @@ map.addSource('large-dataset', {
 map.addLayer({
   id: 'large-dataset-layer',
   type: 'fill',
+  slot: 'bottom',
   source: 'large-dataset',
   'source-layer': 'data', // Layer name in .pbf
   paint: {
     'fill-color': '#088',
-    'fill-opacity': 0.6
+    'fill-opacity': 0.6,
+    'fill-emissive-strength': 1
   }
 });
 ```

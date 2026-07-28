@@ -2,6 +2,24 @@
 
 Quick reference for optimizing Mapbox GL JS applications. Prioritized by impact: 🔴 Critical → 🟡 High Impact → 🟢 Optimization.
 
+## Baseline: Standard style + config
+
+```javascript
+const map = new mapboxgl.Map({ container: 'map', style: 'mapbox://styles/mapbox/standard' });
+
+// ✅ Cheap: one property, no reload
+map.setConfigProperty('basemap', 'show3dObjects', false); // fewer draw calls on low-end devices
+map.setConfigProperty('basemap', 'showPointOfInterestLabels', false); // less collision work
+map.setConfigProperty('basemap', 'lightPreset', 'night'); // dark mode
+
+// ❌ Expensive: full style teardown + rebuild, and it drops your config
+map.setStyle('mapbox://styles/mapbox/dark-v11');
+```
+
+**`setStyle()` is the most expensive call you can make on a live map.** Use config for anything a config property can express — that includes dark mode, POI density, and 3D.
+
+Every custom layer needs a **`slot`** (`bottom`/`middle`/`top`; no slot means it draws above every basemap label). Fill / line / circle layers also need **emissive strength `1`** (they default to `0` and vanish at `dusk`/`night`); symbol layers already default to `1`. See the **mapbox-cartography** skill.
+
 ## 🔴 Critical Performance Patterns (Fix First)
 
 ### 1. Eliminate Initialization Waterfalls
@@ -48,21 +66,25 @@ map.on('load', async () => {
 
 **Decision tree:**
 
-- **< 100 markers:** HTML markers (`new mapboxgl.Marker()`) - OK
-- **100-10,000 markers:** Symbol layers - GPU-accelerated, much faster
-- **10,000+ markers:** Symbol layers + clustering required
-- **100,000+ markers:** Vector tiles with server-side clustering
+**Rendering cost:**
+
+- **< ~100 markers:** HTML markers (`new mapboxgl.Marker()`) - OK
+- **~100 and up:** GL layer (`circle` or `symbol`) - GPU-accelerated, smooth into the tens of thousands. `circle` is cheaper (no collision work)
+- **Thousands, or payload past a few MB:** Vector tileset - only the viewport loads
+
+**Clustering is a separate, legibility-driven decision** — cluster when points visibly overlap at the zooms users actually use, not at a fixed row count. If rendering cost is the problem, the fix is a tileset. For very large datasets you can cluster server-side in the tileset via [Mapbox Tiling Service](https://docs.mapbox.com/help/tutorials/cluster-point-data-with-mts/).
 
 ```javascript
 // ✅ For 100+ markers: Use symbol layer, not HTML markers
 map.addLayer({
   id: 'points',
   type: 'symbol',
+  slot: 'top', // markers belong in `top`; no slot draws over the labels
   source: 'points',
-  layout: { 'icon-image': 'marker' }
+  layout: { 'icon-image': 'marker', 'icon-allow-overlap': true }
 });
 
-// ✅ For 10,000+ markers: Add clustering
+// ✅ When pins visibly overlap at browsing zooms: add clustering
 map.addSource('points', {
   type: 'geojson',
   data: geojson,
@@ -160,7 +182,7 @@ markers = [];
 ## Quick Decision Guide
 
 **Slow initial load?** → Check for waterfalls (data loading), optimize bundle size
-**Jank with many markers?** → Switch to symbol layers + clustering at 100+ markers
+**Jank with many markers?** → GL layer from ~100 markers; vector tileset once you're into the thousands or a multi-MB payload. Clustering is for overlap, not jank
 **Memory leaks in SPA?** → Add proper cleanup (`map.remove()`)
 **Slow with large data?** → Use vector tiles, viewport loading
 **Sluggish interactions?** → Debounce/throttle event handlers
@@ -183,7 +205,7 @@ markers = [];
 
 - Loading data after map initialization (waterfall)
 - Using HTML markers for 100+ points
-- Not clustering 10,000+ markers
+- Leaving thousands of points as a raw GeoJSON source instead of a tileset
 - Loading entire GeoJSON files > 5MB without vector tiles
 - Not debouncing search/geocoding
 - Forgetting to call `map.remove()` in SPAs

@@ -1,83 +1,328 @@
 ---
 name: mapbox-cartography
-description: Expert guidance on map design principles, color theory, visual hierarchy, typography, and cartographic best practices for creating effective and beautiful maps with Mapbox. Use when designing map styles, choosing colors, or making cartographic decisions.
+description: Platform-independent guidance on Mapbox map design — the Standard style and its config-first workflow (themes, light presets, slots, color overrides), and Classic styles and raw style JSON (layer order, palette relationships), plus color, visual hierarchy, typography, and cartographic best practice. Applies across Mapbox GL JS (web), Maps SDK for Android, and Maps SDK for iOS. Use when designing map styles, choosing a theme or light preset, placing custom layers, setting up dark mode, restyling a Classic style, or making cartographic decisions.
 ---
 
 # Mapbox Cartography Skill
 
-This skill provides expert cartographic knowledge to help you design effective, beautiful, and functional maps using Mapbox.
+Map design guidance for Mapbox — legibility, color, visual hierarchy, and typography. The recommended
+workflow is to configure the **Standard** style rather than author a style from scratch. Applies equally to
+**Mapbox GL JS** (web), **Maps SDK for Android**, and **Maps SDK for iOS**.
 
-## Core Cartographic Principles
+It also covers **Classic** styles and raw style JSON, where you author the layer stack yourself — see
+[Classic styles & raw style JSON](#classic-styles--raw-style-json). Sections that apply to only one style family
+are labeled.
 
-### Visual Hierarchy
+All of it is **platform-independent**. The **style spec is the shared contract** — sources, layers, slots, and
+paint/layout **expressions are the same JSON on every SDK**, so every layer and expression example below is shown
+as style-spec JSON. Only the _imperative_ calls differ; those are in the
+[cross-platform API reference](#appendix-cross-platform-api-reference).
 
-Maps must guide the viewer's attention to what matters most:
+## Start here: Standard style + config-first
 
-- **Most important**: POIs, user location, route highlights
-- **Secondary**: Major roads, city labels, landmarks
-- **Tertiary**: Minor streets, administrative boundaries
-- **Background**: Water, land use, terrain
+**Default to the Standard style** — `mapbox://styles/mapbox/standard` (short form `mapbox/standard`; the URL is
+identical on all three SDKs). Sibling: `mapbox/standard-satellite` — satellite imagery with roads, labels, and boundaries drawn on top.
 
-**Implementation:**
+**Config-first is the core principle:** Standard config covers ~95% of design needs. Adjust **config properties**
+at runtime instead of swapping the whole style — set the property, don't reload the style. Only drop to a Classic
+style when you need per-layer paint expressions that config can't express.
 
-- Use size, color intensity, and contrast to establish hierarchy
-- Primary features: high contrast, larger symbols, bold colors
-- Background features: low contrast, muted colors, smaller text
+- **Web:** use `setConfigProperty` — never `setStyle()` for incremental change.
+- **Android / iOS:** use `setStyleImportConfigProperty` — never a full style reload for incremental change.
 
-### Color Theory for Maps
+**Design for day mode first.** Standard handles the other presets for you — it shifts basemap colors along with
+the lighting — so author your palette and custom layers against `day` and leave `lightPreset` alone by default.
 
-**Color Harmony:**
+**Set `lightPreset` when it carries meaning, not for decoration.** Two cases:
 
-- **Analogous colors**: Use colors next to each other on color wheel (blue-green-teal) for cohesive designs
-- **Complementary colors**: Use opposite colors (blue/orange, red/green) for high contrast emphasis
-- **Monochromatic**: Single hue with varying saturation/brightness for elegant, minimal designs
+- **Dark theme / dark mode** — if the app has a dark theme or follows the OS appearance, the map should follow it:
+  `lightPreset:'night'` (or `'dusk'` for a softer, still-lit look). Bind it to the same signal that drives the
+  rest of your UI (`prefers-color-scheme` on web, `UITraitCollection` / `uiMode` on iOS / Android).
+- **Mood** — `dawn` / `dusk` when the user explicitly asks for a time-of-day feel.
 
-**Color Psychology:**
+`lightPreset:'night'` is enough for a dark basemap on its own — your `color*` overrides are day values and the
+style adapts them with the preset. What it doesn't carry over is your **own layers** — see
+[Dark mode](#dark-mode).
 
-- **Blue**: Water, trust, calm, professional (default for water bodies)
-- **Green**: Parks, nature, growth, eco-friendly (vegetation, parks)
-- **Red/Orange**: Urgent, important, dining (alerts, restaurants)
-- **Yellow**: Caution, highlight, attention (warnings, selected items)
-- **Gray**: Neutral, background, roads (infrastructure)
+## The config surface
 
-**Accessibility:**
+These config keys and values are **identical across GL JS / Android / iOS** — only the setter call differs. The
+import id is always `"basemap"`.
 
-- Ensure 4.5:1 contrast ratio for text (WCAG AA)
-- Don't rely solely on color to convey information
-- Test designs with colorblind simulators
-- Avoid red/green combinations for critical distinctions
+- **`lightPreset`**: `dawn | day | dusk | night` — lighting, atmosphere, **and** the basemap colors that follow
+  from them (see [Dark mode](#dark-mode)).
+- **`theme`**: `default | faded | monochrome | custom` — in-config substyles (`custom` takes a LUT, which
+  regrades every color it covers and overrides the rest of this list; see
+  [Custom color themes](#appendix-custom-color-themes-lut)).
+- **`font`**: `DIN Pro` (default).
+- **Visibility toggles (global booleans, not zoom toggles):** `showPlaceLabels`, `showPointOfInterestLabels`,
+  `showRoadLabels`, `showTransitLabels`, `showLandmarkIcons`, `show3dObjects`, `show3dBuildings`,
+  `show3dLandmarks`, `showPedestrianRoads`.
+- **Numeric:** `densityPointOfInterestLabels` `1–5`.
+- **Color overrides:** `colorLand`, `colorWater`, `colorGreenspace`, `colorRoads`, `colorTrunks`,
+  `colorMotorways`, `colorBuildings`, `colorPlaceLabels`, `colorPointOfInterestLabels`, `colorRoadLabels`.
 
-**Color Palette Templates:**
-
-Light Theme (Day/Professional):
+A Standard config object (the `config.basemap` block is the same everywhere):
 
 ```json
 {
-  "background": "#f5f5f5",
-  "water": "#a0c8f0",
-  "parks": "#d4e7c5",
-  "roads": "#ffffff",
-  "buildings": "#e0e0e0",
-  "text": "#333333"
+  "style": "mapbox://styles/mapbox/standard",
+  "config": {
+    "basemap": {
+      "lightPreset": "day",
+      "theme": "faded",
+      "showPlaceLabels": true,
+      "colorWater": "hsl(202, 75%, 70%)"
+    }
+  }
 }
 ```
 
-Dark Theme (Night Mode):
+## Common use cases
+
+Start from the use case that matches what you're building. Config keys are identical on all SDKs. Shorthand:
+**3D** = `show3dObjects`, **POIs** = `showPointOfInterestLabels`, **landmarks** = `showLandmarkIcons`.
+
+| Use case               | Config                                                                                                 | Why                                                                                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **General purpose**    | Standard as it ships — `theme:'default'`, 3D on                                                        | A browsable, self-explanatory map. If nothing below fits, stay here and change nothing.                                                                  |
+| **Navigation**         | `theme:'default'`; 3D on; road + place labels on; `showPedestrianRoads:true` for last-mile and walking | The route and the next maneuver must dominate. Landmarks orient the driver, and 3D earns its cost at z16+, where a footprint identifies the destination. |
+| **Data visualization** | `theme:'monochrome'` (or the `light-2d` / `dark-2d` styles); POIs off; 3D off                          | The base is a canvas, not the subject. POIs compete with the thematic layer for attention and 3D occludes it outright.                                   |
+| **Outdoors**           | The `outdoors` / `outdoors-winter` **styles** — not a config; 3D on                                    | Trails, contours, and terrain shading aren't reachable through Standard config, so this is a style choice rather than a config one.                      |
+| **Tourism & travel**   | `theme:'default'`; POIs on at density 4; landmarks on; 3D on                                           | Here the basemap _is_ the content — POIs and landmarks are what the user came to browse, and 3D landmarks make a place recognizable.                     |
+
+## Substyles & basemaps — priority ladder
+
+Pick the cheapest rung that meets the need, top to bottom:
+
+1. **In-config `theme` values** (`default`/`faded`/`monochrome`/`custom`) — instant, no reload,
+   no new style. Reach here first (e.g. `theme:'faded'` or `'monochrome'` for data-overlay maps).
+2. **Standalone Standard-based styles** hosted under `mapbox-map-design` — `dark-2d` and `light-2d`
+   (purpose-built for data viz / choropleths), `outdoors` (trails, contours, terrain), and `outdoors-winter`
+   (ski runs, alpine). These are **full styles, not `theme:` values**. Find them in the
+   [Mapbox gallery](https://www.mapbox.com/gallery), copy one to your own account, and reference your copy
+   (`yourusername/styleId`) in production.
+3. **[Classic styles](https://docs.mapbox.com/map-styles/guides/)** — `streets-v12`, `light-v11`, `dark-v11`,
+   `outdoors-v12`, `satellite-v9`, `satellite-streets-v12`. 2D, no slots, no config surface; you restyle them by
+   editing layer paint expressions. Reach for one when you need a server-rendered raster (the Static Images API
+   can't render Standard), per-layer paint control config can't express, or a deliberate 2D / low-power fallback.
+   See [Classic styles & raw style JSON](#classic-styles--raw-style-json).
+
+## Visual hierarchy
+
+Guide the viewer's attention to what matters most. The strict order (highest priority first):
+
+1. **User content** — routes, active selections, the user's location, markers (see slots below for exact z-order)
+2. **POIs & place/road labels**
+3. **Roads**
+4. **Buildings**
+5. **Land / land use / water** (background)
+
+**Figure-ground:** the subject must visually separate from its context. Desaturate the base and keep data vivid.
+When your data isn't popping, **lighten/desaturate the basemap, not the data** — `theme:'faded'` or
+`'monochrome'` is the fastest way to do this. `colorBuildings` should be lighter than `colorRoads` in day mode so
+structures read as floating above the road network.
+
+### Placing custom layers on Standard: slots + emissive
+
+On Standard, Mapbox owns the basemap layer order — you don't hand-order it. Insert each _custom_ layer into one of
+three **slots**, using `slot` rather than a `beforeId` against basemap layers. `slot` is a style-spec property, so
+the value is the same string on every SDK:
+
+| Slot     | Position in the Standard stack                          | Put here                                                                                                       |
+| -------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `bottom` | Above land / landuse / water polygons, **below** roads  | Rasters, terrain, choropleth fills that belong under the road network                                          |
+| `middle` | Above roads & lines, **behind** 3D buildings and labels | Most data overlays — polygon fills, geofences, zone boundaries, heatmaps; **routes** and **custom POI layers** |
+| `top`    | Above POI labels, **behind** place & transit labels     | Markers and active selections                                                                                  |
+
+- A layer with **no slot lands on top of everything** — rarely right for a fill or raster, so **always set a
+  slot explicitly**.
+- The `top` slot is designed for **symbol layers** (markers, active selections). Put **routes and custom POI
+  layers in `middle`** — a route in `middle` reads above roads but under all labels and 3D buildings, so labels
+  stay legible; add `line-occlusion-opacity` so buildings don't hide it.
+- Two layers in the same slot keep their insertion order (or use a `beforeId` that is itself inside that slot).
+- Add **`fill-emissive-strength: 1`** / **`line-emissive-strength: 1`** to every non-3D custom layer, or it goes
+  nearly invisible at `dusk`/`night`.
+
+Style-spec JSON (shared) — a choropleth and a route, both in `middle`:
 
 ```json
-{
-  "background": "#1a1a1a",
-  "water": "#0d47a1",
-  "parks": "#2e7d32",
-  "roads": "#3a3a3a",
-  "buildings": "#2d2d2d",
-  "text": "#ffffff"
-}
+{ "id": "zones", "type": "fill", "slot": "middle", "source": "zones",
+  "paint": { "fill-color": "#7b61ff", "fill-opacity": 0.6, "fill-emissive-strength": 1 } }
+
+{ "id": "route", "type": "line", "slot": "middle", "source": "route",
+  "paint": { "line-color": "#3b6df5", "line-width": 4, "line-emissive-strength": 1, "line-occlusion-opacity": 1 } }
 ```
 
-> **Road color rule for dark themes:** Roads must use neutral dark gray (`#3a3a3a`), visibly distinct from the background but not colored. Never style roads with amber, blue, or other hues — reserve color for app data layers (routes, markers). Colored base roads and colored data layers will compete visually. Local roads that blend into the background (`#1e1e1e` on `#1a1a1a`) create a "floating labels" problem where street names appear with no visible road beneath them.
+Docs: [Work with layers — slots](https://docs.mapbox.com/mapbox-gl-js/guides/styles/work-with-layers/) ·
+[Add a layer to a slot](https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-slot/) ·
+[iOS: change a layer's slot](https://docs.mapbox.com/ios/maps/examples/layer-slot/)
 
-High Contrast (Accessibility):
+## Color
+
+**Standard color overrides (day mode).** Standard's defaults are already tuned — override only when brand or
+product needs demand it. Starting values that satisfy the rules below:
+
+| Config key       | Start from                      |                               |
+| ---------------- | ------------------------------- | ----------------------------- |
+| `colorLand`      | `hsl(28, 15%, 95%)`             | warm, desaturated, very light |
+| `colorBuildings` | `hsl(35, 18%, 87%)`             | a step darker than land       |
+| `colorRoads`     | `hsl(218, 18%, 72%)`            | cool blue-gray                |
+| `colorWater`     | `hsl(202, 75%, 70%)`            | blue, clearly saturated       |
+| `colorMotorways` | 5–8% L darker than `colorRoads` |                               |
+
+Rules that keep a map readable:
+
+- **Brand color goes on routes, markers, and pins — never on basemap roads, water, or land.** (This is the single
+  most common map-design mistake.)
+- Keep a **clear lightness step between land and roads** — which one is lighter is a style convention, but they
+  must never sit at the same value. Motorways always a step darker than local roads.
+- Keep water distinguished by **hue + saturation**, not lightness alone — S ≥ 60% in light themes, ≥ 35% in dark
+  ones, where a high saturation floor isn't realistic for a dark surface.
+- **Accessibility:** WCAG AA — 4.5:1 for normal text, 3:1 for large text and road lines. Don't rely on color
+  alone; test with a **deuteranopia** simulator; never use red+green as the sole distinction.
+
+### ColorBrewer for data layers
+
+- **Sequential** (one-direction data): Blues, Greens, Oranges, YlOrRd, BuPu.
+- **Diverging** (bidirectional / political): RdBu, PuOr, BrBG — **never RdGn** (colorblind failure).
+- **Qualitative** (categories, ≤ 8): Set1, Set2, Paired, Dark2.
+- **Never** use rainbow/spectral for ordered data — rainbow has no perceptual ordering. Keep choropleth
+  `fill-opacity ≤ 0.7` so the road network shows through for context.
+
+## Dark mode
+
+**`lightPreset:'night'` gives you a real dark basemap.** Standard shifts land, buildings, water, and roads along
+with the lighting, so the preset on its own is a legitimate dark mode — start there rather than hand-building a
+dark palette.
+
+**Config colors are day values — Standard adapts them.** Every `color*` override is interpreted as its _day_
+appearance, and the style re-derives it for whichever preset is active. So author the overrides once, against
+`day`, and let the preset handle the rest; there is no parallel night set of config colors to maintain.
+
+The failure mode this creates: **never hand Standard an already-dark color.** A night-tuned `colorLand` gets
+darkened _again_ under `night` and collapses to near-black. If a dark surface looks black, check whether you're
+double-darkening it rather than reaching for a darker value.
+
+What the preset does **not** adapt is **your own layers** — they keep the paint colors you gave them, and without
+`fill-emissive-strength` / `line-emissive-strength: 1` they fall into shadow and go nearly invisible.
+
+**Don't fake dark mode by inverting the rendered map** — web CSS `invert()` is the classic offender, and it breaks
+route and label legibility. Set `lightPreset:'night'` instead.
+
+## Typography
+
+**One font family, two weights max** for map labels (regular + medium/bold). DIN Pro is Standard's default. Use
+serif or monospace _only_ as deliberate exceptions for map furniture — a title block or a coordinate readout —
+labeled as such; don't mix families across the label set (it reads as noise on an already busy map).
+
+- **Weight-vs-halo:** medium/bold weight + a subtle thin halo = a clean signal. A thin font + a bright/thick
+  outline = a noise trap. When unsure, go heavier on weight, lighter on halo.
+- **Italic** is reserved for water-body labels. Some styles set road labels in caps to separate them from place
+  names; Standard uses mixed case — treat it as a style choice, not a rule.
+- **Placement:** upper-right first, upper-left second. Point labels center or slightly offset; line labels
+  follow the curve and repeat; area labels center in the polygon.
+- When labels conflict, **drop the lower-priority label — don't shrink it.**
+
+Text sizing:
+
+```
+Place labels (cities, POIs): 11–14px      Map title: 16–20px
+Street labels: 9–11px                     Attribution: 8–9px
+Feature labels (parks): 10–12px
+```
+
+## Zoom strategy
+
+A general scale reference for what belongs at each zoom. On Standard the basemap already does this for you —
+consult it when authoring **your own layers**, or a Classic style, and use it to judge whether a custom layer is
+showing detail the scale can't support:
+
+| Zoom  | Scale             | Belongs here                                                    |
+| ----- | ----------------- | --------------------------------------------------------------- |
+| 0–4   | World → continent | Country boundaries, ocean/sea labels, capital cities            |
+| 5–8   | Country → state   | State/province lines, major cities, major highways, large water |
+| 9–11  | Metro area        | City boundaries, neighborhoods, all highways, parks, landmarks  |
+| 12–15 | Neighborhood      | All streets, building footprints, POIs, street names            |
+| 16–22 | Street level      | House numbers, parking lots, fine-grained amenities             |
+
+**Zoom continuity** is the rule that always applies to your layers: never use hard `minzoom`/`maxzoom` cutoffs —
+fade features in and out over 1–2 zoom levels. 3D buildings should fade in starting at z13, never below. These are
+style-spec expressions (same on all SDKs):
+
+```json
+"fill-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0, 12, 1]      // fade in
+"line-opacity": ["interpolate", ["linear"], ["zoom"], 15, 1, 16, 0]      // fade out
+"line-width":   ["interpolate", ["linear"], ["zoom"], 10, 1, 16, 4]      // scale with zoom
+```
+
+## Markers & symbols
+
+- **Marker-count rule** — choose the rendering approach by count:
+  - **< 100** → a view/annotation marker (per-element interaction)
+  - **100 – 1,000** → a **symbol layer** (GL-rendered: collision detection + feature-state)
+  - **1,000 – 100,000** → a **clustered** symbol/circle layer (`cluster: true`)
+  - **> 100,000** → a **vector tileset** (a GeoJSON source freezes the browser at this scale)
+- **Coordinate-anchor principle:** anchor markers to lng/lat, never to screen pixels, so they track pan/zoom.
+- **Symbol-layer properties (style spec, identical everywhere):** set `icon-allow-overlap: true` when every icon
+  must be visible (the default hides colliding icons — the #1 cause of "my icons disappeared"); set
+  `text-optional: true` so labels drop before icons in collision; make `icon-size` a zoom-interpolate expression,
+  never a flat number. Use **SDF** images for single-color tintable icons (color via `icon-color`); don't bake
+  gradient fills into icon images (they turn muddy after rasterization).
+- **Per-platform small-set marker widget:** Web `mapboxgl.Marker({element})`; Android `ViewAnnotationManager`
+  (custom view) or `PointAnnotationManager` (bitmap); iOS `ViewAnnotation` or `PointAnnotationManager`. For 100+,
+  switch to a symbol layer on every platform.
+
+## Reference files
+
+Load these only when the task calls for them — SKILL.md answers general design questions on its own.
+
+- **`references/scenarios.md`** — ready-to-apply Standard configs for 16 product segments (logistics, real estate,
+  journalism, telecom, weather, public sector, …). Read it when the user names an industry or product type and you
+  want a starting config plus the reasoning behind it.
+- **`references/performance-testing.md`** — data-source tiers (search vs tileset vs OSM), source and layer budgets,
+  the pre-ship design QA checklist, and Web/GL JS-only marker-drift rules. Read it when choosing how to get data
+  onto the map, when a map is slow or markers drift on pan, or when reviewing a map before it ships.
+
+## Classic styles & raw style JSON
+
+Everything in this section applies **only** to non-Standard styles — Classic styles and raw style JSON you author
+yourself. On Standard, use config overrides and slots instead.
+
+### Layer order
+
+You author the full stack, bottom to top:
+
+1. Background (solid color or pattern)
+2. Land use (parks, residential, commercial)
+3. Water bodies (oceans, lakes, rivers)
+4. Terrain / hillshade (if using elevation)
+5. Buildings (3D or 2D footprints)
+6. Roads (highways → local streets)
+7. Borders (country, state lines)
+8. Labels (place names, street names)
+9. POI symbols
+10. User-generated content (routes, markers)
+
+### Palette
+
+Classic layer keys map onto Standard's config keys roughly as: `background` → `colorLand`, `water` →
+`colorWater`, `roads` → `colorRoads` (+ `colorMotorways`), `parks` → `colorGreenspace`, `buildings` →
+`colorBuildings`, `text` → `colorPlaceLabels`/`colorRoadLabels`/`colorPointOfInterestLabels`.
+
+Build a palette that satisfies these relationships rather than copying fixed values (`L` / `S` are HSL lightness
+and saturation):
+
+| Layer key           | Light theme                                                                                                                    | Dark theme                                  | What must hold                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `background` (land) | L 94–97%, slightly warm                                                                                                        | L 8–14%, neutral to cool                    | Never pure white or pure black                                                                                                           |
+| `roads`             | A clear step from land — either near-white over gray land or mid blue-gray over near-white land; pick one convention per style | L 20–28%                                    | Visibly separated from land, or you get "floating labels" — street names with no road under them                                         |
+| `buildings`         | 3–8% L darker than land                                                                                                        | 3–8% L lighter than land                    | Reads as background mass, never competes with roads                                                                                      |
+| `water`             | Hue 195–210°, S ≥ 60%                                                                                                          | Same hue, S ≥ 35%, a step lighter than land | Distinguished by hue + saturation, not lightness alone                                                                                   |
+| `parks`             | Muted green, S ≤ 35%                                                                                                           | Muted green, L 18–25%                       | Quieter than water                                                                                                                       |
+| `text`              | L 20–30%, not `#000`                                                                                                           | L 90–100% with a dark halo                  | 4.5:1 against every surface it crosses; in dark themes halos do the legibility work, since land/road separation runs below 3:1 by design |
+
+High Contrast (Accessibility **only** — not for general use):
 
 ```json
 {
@@ -90,139 +335,48 @@ High Contrast (Accessibility):
 }
 ```
 
-Vintage/Retro:
+## Appendix: cross-platform API reference
 
-```json
-{
-  "background": "#f4e8d0",
-  "water": "#b8d4d4",
-  "parks": "#c8d4a4",
-  "roads": "#d4c4a8",
-  "buildings": "#e4d4c4",
-  "text": "#4a3828"
-}
-```
+The style spec is shared; only these imperative calls differ per platform.
 
-### Typography at Map Scale
+| Operation                          | Web (GL JS)                                                      | Android (Kotlin)                                                                         | iOS (Swift)                                                                                         |
+| ---------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Set a Standard config property     | `map.setConfigProperty('basemap', k, v)`                         | `style.setStyleImportConfigProperty("basemap", k, Value.valueOf(v))`                     | `mapView.mapboxMap.setStyleImportConfigProperty(for: "basemap", config: k, value: v)`               |
+| Set initial config at map creation | `new mapboxgl.Map({ style, config: { basemap: {…} } })`          | `mapboxMap.loadStyle(Style.STANDARD) { style -> style.setStyleImportConfigProperty(…) }` | `Map { }.mapStyle(.standard(lightPreset: .day))` (SwiftUI)                                          |
+| Add a layer to a slot              | `map.addLayer({ id, type, slot: 'middle', source, paint })`      | `style.addLayer(fillLayer("zones", "zones") { slot("middle") })`                         | `layer.slot = .middle; try mapView.mapboxMap.addLayer(layer)`                                       |
+| Register an image                  | `map.addImage('id', img)`                                        | `style.addImage("id", bitmap)`                                                           | `try mapView.mapboxMap.addImage(uiImage, id: "id")`                                                 |
+| Coordinate-anchored marker (<100)  | `new mapboxgl.Marker({element}).setLngLat([lng,lat]).addTo(map)` | `viewAnnotationManager.addViewAnnotation(view, opts)` / `PointAnnotationManager`         | `ViewAnnotation` via `mapView.viewAnnotations` / `mapView.annotations.makePointAnnotationManager()` |
+| 100+ markers                       | symbol layer (style spec)                                        | symbol layer (style spec)                                                                | symbol layer (style spec)                                                                           |
 
-**Font Selection:**
+> Anything DOM/CSS-based (HTML markers, CSS transforms/filters, CSS `invert()`) is **Web / GL JS only** and is
+> labeled as such wherever it appears — never apply it as universal advice.
 
-- **Sans-serif** (Roboto, Open Sans): Modern, clean, high legibility at small sizes - use for labels
-- **Serif** (Noto Serif): Traditional, formal - use sparingly for titles or historic maps
-- **Monospace**: Technical data, coordinates
+## Appendix: custom color themes (LUT)
 
-**Text Sizing:**
+For a global mood beyond `default`/`faded`/`monochrome`, set `theme` to `custom` and supply a **LUT (look-up
+table)** as the `theme-data` config property. A LUT is **not a set of numeric sliders** — it is a base64-encoded
+PNG "cube-strip" that remaps every color on the map, so the mood is baked into the image itself. Produce it in an
+image editor or LUT tool starting from a neutral identity LUT.
 
-```
-Place labels (cities, POIs): 11-14px
-Street labels: 9-11px
-Feature labels (parks): 10-12px
-Map title: 16-20px
-Attribution: 8-9px
-```
+**A LUT is applied last, and it overrides everything.** It regrades the final color of the map, so it sits on top
+of your `color*` config overrides _and_ the paint colors of your own layers — a graded map will shift your brand
+color, route line, and marker hues along with the basemap. Three consequences:
 
-**Label Placement:**
+- **Tune the LUT last**, after config and custom layers are settled; otherwise you're chasing colors that the
+  grade is about to change.
+- **Scope it deliberately.** Applied to the `basemap` import (via `theme:'custom'` + `theme-data`) it grades the
+  basemap only. Applied at style level (`color-theme`) it grades the whole style and its imports — your layers
+  included.
+- If a layer must hold an exact color — a brand route, a category-coded ramp — either scope the LUT to the
+  basemap or don't use one.
 
-- Point labels: Center or slightly offset (avoid overlap with symbol)
-- Line labels: Follow line curve, repeat for long features
-- Area labels: Center in polygon, sized appropriately
-- Prioritize: Major features get labels first, minor features labeled if space allows
+`color-theme` is the style-level form:
 
-### Zoom Level Strategy
+- Style JSON: `"color-theme": { "data": "<base64 PNG>" }`
+- Web (GL JS): `map.setColorTheme({ data: '<base64 PNG>' })`
+- Android: `mapboxMap.setStyleColorTheme(base64 = "<base64 PNG>")` (or `bitmap = …`)
+- iOS: `try mapView.mapboxMap.setColorTheme(ColorTheme(uiimage: UIImage(named: "lut")!))`
 
-**Zoom 0-4** (World to Continent):
-
-- Major country boundaries
-- Ocean and sea labels
-- Capital cities only
-
-**Zoom 5-8** (Country to State):
-
-- State/province boundaries
-- Major cities
-- Major highways
-- Large water bodies
-
-**Zoom 9-11** (Metro Area):
-
-- City boundaries
-- Neighborhoods
-- All highways and major roads
-- Parks and landmarks
-
-**Zoom 12-15** (Neighborhood):
-
-- All streets
-- Building footprints
-- POIs (restaurants, shops)
-- Street names
-
-> **Note:** Mapbox's hosted Streets style defaults to showing most POIs around zoom 14. For custom styles, start POIs at zoom 12 — this is the neighborhood scale where density is manageable and users are browsing. Zoom 14 is late; zoom 10 (metro-area scale) is far too early and creates severe icon clutter.
-
-**Zoom 16-22** (Street Level):
-
-- All detail
-- House numbers
-- Parking lots
-- Fine-grained POIs
-
-## Mapbox-Specific Implementation Guidance
-
-### Style Layer Best Practices
-
-**Layer Ordering (bottom to top):**
-
-1. Background (solid color or pattern)
-2. Landuse (parks, residential, commercial)
-3. Water bodies (oceans, lakes, rivers)
-4. Terrain/hillshade (if using elevation)
-5. Buildings (3D or 2D footprints)
-6. Roads (highways → local streets)
-7. Borders (country, state lines)
-8. Labels (place names, street names)
-9. POI symbols
-10. User-generated content (routes, markers)
-
-> **Common mistake:** Developers often put their app's route line or active markers _below_ POI symbols, reasoning that "POIs must stay visible." This is backwards — user-generated content (your route, selected location, user position) is the most important layer and must render above everything, including POIs. A route line that covers a POI icon is acceptable; a route obscured by POI icons is not.
-
-### Map Context Considerations
-
-**Know Your Audience:**
-
-- **General public**: Simplify, use familiar patterns (Google/Apple style)
-- **Technical users**: Include more detail, technical layers, data precision
-- **Domain experts**: Show specialized data, use domain-specific symbology
-
-**Platform Considerations:**
-
-- **Mobile**: Larger touch targets (44x44px minimum), simpler designs, readable at arm's length
-- **Desktop**: Can include more detail, hover interactions, complex overlays
-- **Print**: Higher contrast, larger text, consider CMYK color space
-- **Outdoor/Bright**: Higher contrast, avoid subtle grays
-
-**Use Case Optimization:**
-
-- **Navigation**: Emphasize roads, clear hierarchy, route visibility
-- **Data visualization**: Muted base map, let data stand out
-- **Storytelling**: Guide viewer attention, establish mood with colors
-- **Location selection**: Show POIs clearly, provide context
-- **Analysis**: Include relevant layers, maintain clarity at different zooms
-
-## Reference Files
-
-For detailed guidance on specific topics, load these references as needed:
-
-- `references/scenarios.md` — Common scenario guidance (Restaurant Finder, Real Estate, Data Visualization, Navigation)
-- `references/performance-testing.md` — Performance optimization, testing checklist, and common mistakes to avoid
-
-## When to Use This Skill
-
-Invoke this skill when:
-
-- Designing a new map style
-- Choosing colors for map elements
-- Making decisions about visual hierarchy
-- Optimizing for specific use cases
-- Troubleshooting visibility issues
-- Ensuring accessibility
-- Creating themed maps (dark mode, vintage, etc.)
+Docs: [Create a custom color theme (LUT)](https://docs.mapbox.com/help/tutorials/create-a-custom-color-theme/) ·
+[iOS color theme](https://docs.mapbox.com/ios/maps/examples/color-theme/) ·
+[Android color theme](https://docs.mapbox.com/android/maps/examples/android-view/using-color-theme/)

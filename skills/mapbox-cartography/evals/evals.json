@@ -3,42 +3,57 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I'm building a Mapbox style for a delivery app and need to know the correct layer order. I have these layers: user's active route line, restaurant POI markers, building footprints, road labels, and hillshade terrain. Put them in the correct bottom-to-top render order and explain why.",
-      "expected_output": "Should produce the exact order from the skill's 10-step layer hierarchy: hillshade/terrain first, then buildings, then road labels, then POI symbols (restaurants), then user-generated content (active route) on top. Should explain that user content always renders above base data, and labels above geometry.",
+      "prompt": "I'm building a delivery app on the Mapbox Standard style. I need to add a choropleth of delivery zones, the driver's active route line, and pin markers for the stops. Where do these three layers go, and what paint properties do I need so they hold up at night?",
+      "expected_output": "Should place layers with `slot`, not `beforeId` and not by hand-ordering the basemap: choropleth in `middle` (or `bottom` if it should sit under roads), route in `middle`, markers in `top`. Should state that a layer with no slot lands above everything including labels. Should require fill-emissive-strength / line-emissive-strength: 1 on all three, and line-occlusion-opacity on the route so 3D buildings don't hide it.",
       "files": [],
       "expectations": [
-        "Places hillshade/terrain below building footprints",
-        "Places building footprints below road labels",
-        "Places road labels below restaurant POI markers",
-        "Places restaurant POI markers below the user's active route line",
-        "User route is the topmost layer"
+        "Uses the `slot` property rather than `beforeId` or a hand-ordered layer stack",
+        "Puts the route line in `middle`, not `top`",
+        "Puts the marker/symbol layer in `top`",
+        "Warns that a layer with no slot renders above everything, including labels",
+        "Requires fill-emissive-strength / line-emissive-strength of 1 on the custom layers",
+        "Mentions line-occlusion-opacity for the route under 3D buildings"
       ]
     },
     {
       "id": 2,
-      "prompt": "Our product manager wants restaurant POI icons to appear starting at zoom 10, but a teammate says that's too early and recommends zoom 14. Who is right? And separately — at what zoom level should house numbers first appear?",
-      "expected_output": "Should say zoom 10 is too early and zoom 14 is too late — restaurants/POIs belong in the zoom 12-15 range per the cartographic zoom strategy. House numbers should appear at zoom 16+. Should explain the rationale: showing POIs before zoom 12 creates visual clutter at the metro/neighborhood scale.",
+      "prompt": "Our app has a dark theme and the map needs to follow it. I already set colorLand to #12181f and colorRoads to #2a3f5a plus lightPreset night, and now the map is basically solid black. What's wrong?",
+      "expected_output": "Should identify the double-darkening failure: Standard interprets every color* override as its day appearance and re-derives it for the active preset, so a night-tuned colorLand gets darkened again under `night`. Fix is to author the overrides as day values (or drop them and let the preset do the work) — lightPreset:'night' alone gives a real dark basemap. Should also note that the developer's own custom layers do NOT adapt and need emissive strength, and should not suggest CSS invert() or a hand-built parallel night palette.",
       "files": [],
       "expectations": [
-        "States that zoom 10 is too early for restaurant POIs",
-        "States that zoom 14 is at the late end or acceptable, but zoom 12 is the correct start for POIs",
-        "POI recommendation falls in the zoom 12-15 range",
-        "States house numbers should appear at zoom 16 or later",
-        "Explains the cartographic rationale (clutter, appropriate detail for scale)"
+        "Identifies that config color overrides are day values that Standard re-derives per light preset",
+        "States that supplying already-dark colors plus lightPreset night double-darkens to near-black",
+        "Says lightPreset:'night' on its own produces a legitimate dark basemap",
+        "Notes that custom layers do not adapt and need fill-/line-emissive-strength: 1",
+        "Does not recommend CSS invert() or inverting the rendered map",
+        "Recommends binding the preset to the OS/UI appearance signal rather than a separate style"
       ]
     },
     {
       "id": 3,
-      "prompt": "Give me a complete dark theme color palette for a Mapbox map with exact hex values for: background/land, water, parks/vegetation, roads, buildings, and text labels. This is for a professional nighttime navigation app.",
-      "expected_output": "Should provide the skill's dark theme template values (or very close): background #1a1a1a, water dark blue (#0d47a1), parks dark green (#2e7d32), roads dark gray (#3a3a3a), buildings slightly lighter gray (#2d2d2d), text white (#ffffff). Should NOT give generic 'use a dark color' advice without specifics.",
+      "prompt": "I'm putting a county-level population-density choropleth on a Mapbox map. Which basemap setup should I use, what color ramp, and what opacity?",
+      "expected_output": "Should pick a quiet base: theme 'monochrome' (or 'faded'), or the purpose-built light-2d / dark-2d styles; POI labels off and 3D off, because POIs compete with the thematic layer and 3D occludes it. Should choose a sequential ColorBrewer ramp (Blues, Greens, Oranges, YlOrRd, BuPu) and explicitly reject rainbow/spectral for ordered data. Should cap fill-opacity at 0.7 so the road network still reads through, and place the fill in a slot (middle, or bottom to sit under roads) with fill-emissive-strength 1.",
       "files": [],
       "expectations": [
-        "Provides a dark near-black background value close to #1a1a1a",
-        "Provides a dark blue for water (not light blue — this is a dark theme)",
-        "Provides a dark green for parks/vegetation",
-        "Roads are a mid-dark gray distinct from the background (not the same color)",
-        "Text is white or near-white for readability on dark background",
-        "All 6 values given as specific hex codes, not just descriptions"
+        "Recommends theme 'monochrome' or 'faded' (or the light-2d / dark-2d styles) rather than the default basemap",
+        "Turns off POI labels and 3D objects",
+        "Chooses a sequential ColorBrewer ramp and names at least one",
+        "Explicitly rejects rainbow/spectral ramps for ordered data",
+        "Caps fill-opacity at or below 0.7",
+        "Assigns an explicit slot to the choropleth fill layer"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We need a server-rendered PNG of our map for an emailed weekly report, and separately a fintech brand wants their brand purple applied to the map. Two questions: which style do I use for the PNG, and where does the brand color go?",
+      "expected_output": "Should say the Static Images API cannot render Standard, so the PNG needs a Classic style (streets-v12, light-v11, dark-v11, outdoors-v12, satellite-v9, satellite-streets-v12) where you author the layer stack yourself — bottom to top: background, land use, water, terrain, buildings, roads, borders, labels, POI symbols, user content. Should say brand color belongs on user content only — routes, markers, pins — and never on basemap roads, water, or land, and should name that as the most common map-design mistake.",
+      "files": [],
+      "expectations": [
+        "States that Standard cannot be rendered by the Static Images API and a Classic style is required",
+        "Names at least one Classic style id",
+        "Gives the bottom-to-top layer order with user content on top for the hand-authored Classic style",
+        "Puts brand color on routes, markers, and pins only",
+        "Explicitly rules out brand color on basemap roads, water, or land"
       ]
     }
   ]

@@ -14,7 +14,7 @@ This directory contains Agent Skills that provide domain expertise for building 
 | [mapbox-search-integration](./mapbox-search-integration/)                   | Complete workflow for implementing Mapbox search with discovery questions and best practices                                     |
 | [mapbox-search-patterns](./mapbox-search-patterns/)                         | Choosing the right search tool and parameters for geocoding and POI search                                                       |
 | [mapbox-web-performance-patterns](./mapbox-web-performance-patterns/)       | Performance optimization for Mapbox GL JS (initialization, markers, data loading, memory)                                        |
-| [mapbox-cartography](./mapbox-cartography/)                                 | Map design principles, color theory, visual hierarchy, typography                                                                |
+| [mapbox-cartography](./mapbox-cartography/)                                 | Map design on the Standard style — config-first workflow, slots, color, hierarchy, typography, dark mode                         |
 | [mapbox-data-visualization-patterns](./mapbox-data-visualization-patterns/) | Data visualization patterns including choropleth, heat maps, clustering, 3D, and animated data                                   |
 | [mapbox-web-integration-patterns](./mapbox-web-integration-patterns/)       | Framework integration (React, Vue, Svelte, Angular, Next.js)                                                                     |
 | [mapbox-ios-patterns](./mapbox-ios-patterns/)                               | iOS integration with Swift, SwiftUI, UIKit                                                                                       |

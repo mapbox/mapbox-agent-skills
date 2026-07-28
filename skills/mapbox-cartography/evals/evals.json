@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I'm building a delivery app on the Mapbox Standard style. I need to add a choropleth of delivery zones, the driver's active route line, and pin markers for the stops. Where do these three layers go, and what paint properties do I need so they hold up at night?",
+      "prompt": "I'm building a delivery app on the Mapbox Standard style. I added a choropleth of delivery zones, the driver's active route line, and pin markers for the stops — but all three are drawing on top of the street labels, and the route disappears when the map switches to the night preset. Why is this happening, and how do I place these three correctly?",
       "expected_output": "Should place layers with `slot`, not `beforeId` and not by hand-ordering the basemap: choropleth in `middle` (or `bottom` if it should sit under roads), route in `middle`, markers in `top`. Should state that a layer with no slot lands above everything including labels. Should require fill-emissive-strength / line-emissive-strength: 1 on all three, and line-occlusion-opacity on the route so 3D buildings don't hide it.",
       "files": [],
       "expectations": [
@@ -45,7 +45,7 @@
     },
     {
       "id": 4,
-      "prompt": "We need a server-rendered PNG of our map for an emailed weekly report, and separately a fintech brand wants their brand purple applied to the map. Two questions: which style do I use for the PNG, and where does the brand color go?",
+      "prompt": "We render a PNG of our map server-side for an emailed weekly report, and our fintech client wants their brand purple in it. I'll be hand-authoring the style JSON — which style should I base it on, what order do I stack the layers in, and where should the brand purple actually be applied?",
       "expected_output": "Should say the Static Images API cannot render Standard, so the PNG needs a Classic style (streets-v12, light-v11, dark-v11, outdoors-v12, satellite-v9, satellite-streets-v12) where you author the layer stack yourself — bottom to top: background, land use, water, terrain, buildings, roads, borders, labels, POI symbols, user content. Should say brand color belongs on user content only — routes, markers, pins — and never on basemap roads, water, or land, and should name that as the most common map-design mistake.",
       "files": [],
       "expectations": [

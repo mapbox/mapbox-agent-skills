@@ -188,27 +188,6 @@ This skill provides battle-tested style patterns and layer configurations for co
 }
 ```
 
-## Survive setStyle (critical)
-
-`map.setStyle(...)` replaces the style tree. Custom sources/layers/handlers added earlier are wiped unless you re-attach them.
-
-```javascript
-function onStyleReady() {
-  // re-add sources, layers, and interaction handlers here
-}
-
-map.on('style.load', onStyleReady);
-
-document.querySelectorAll('[data-style]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    map.setStyle(btn.dataset.style);
-    // do NOT only add layers on the first 'load' — wait for style.load after every switch
-  });
-});
-```
-
-**Agent anti-pattern:** style switcher buttons that call `setStyle` once with no `style.load` rebind. The first style works; every switch after looks broken.
-
 ## Reference Files
 
 Additional patterns and configurations are available in the `references/` directory. Load the relevant file when a specific pattern is needed.

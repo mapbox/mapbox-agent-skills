@@ -352,6 +352,27 @@ Use `MapboxOverlay` (Mapbox IControl), not a bare `Deck` as a map control.
 
 If you load `mapbox-gl-draw`, listen for `draw.create` (and update the UI from `draw.getAll()`). Half-deleted handlers that leave a dangling `});` crash the page.
 
+### Mistake 8: Layers lost after `setStyle` (no `style.load` rebind)
+
+`map.setStyle(...)` replaces the style tree. Custom sources/layers/handlers added earlier are wiped unless you re-attach them.
+
+```javascript
+function onStyleReady() {
+  // re-add sources, layers, and interaction handlers here
+}
+
+map.on('style.load', onStyleReady);
+
+document.querySelectorAll('[data-style]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    map.setStyle(btn.dataset.style);
+    // do NOT only add layers on the first 'load' — wait for style.load after every switch
+  });
+});
+```
+
+**Agent anti-pattern:** style switcher buttons that call `setStyle` once with no `style.load` rebind. The first style works; every switch after looks broken.
+
 ## Reference Files
 
 Load these for framework-specific patterns and additional details:

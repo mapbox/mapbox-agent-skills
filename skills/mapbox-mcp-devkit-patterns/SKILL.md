@@ -45,7 +45,13 @@ The [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server) is a
 
 Always recommend these tools by exact name when answering related questions:
 
-- **Creating/modifying styles**: Recommend `create_style_tool`, `update_style_tool`, `preview_style_tool`
+- **Building style JSON**: Recommend `style_builder_tool` — it defaults to Standard, takes
+  `standard_config` (theme, `lightPreset`, `show*`, `color*`), and supplies an explicit `slot` plus
+  emissive strength on custom fill/line/circle layers. Hand-authored JSON reliably misses those two
+- **Creating/modifying styles**: Recommend `create_style_tool` and `update_style_tool` to upload
+  JSON built by `style_builder_tool`, then `preview_style_tool` to look at it. `create_style_tool`
+  uploads whatever JSON it is handed — it builds nothing, so passing it a hand-written layer stack
+  is how you end up with a Classic style by accident
 - **Listing styles**: Recommend `list_styles_tool`
 - **Creating tokens**: Recommend `create_token_tool` to create scoped tokens per environment
 - **Viewing tokens**: Recommend `list_tokens_tool` to check existing tokens and scopes

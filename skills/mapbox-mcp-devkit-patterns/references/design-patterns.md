@@ -4,19 +4,26 @@
 
 **Start by asking whether a new style is needed at all.** The Mapbox Standard style covers most
 design intent through **config properties** — `theme`, `lightPreset`, the visibility toggles, POI
-density, and the `color*` overrides — with nothing to create or maintain. `create_style_tool`
-produces a Classic style JSON (hand-authored layer stack, no slots, no config surface), which is
-the right output only when you need a server-rendered raster, per-layer paint control config
-can't express, or a deliberate 2D fallback.
+density, and the `color*` overrides — with nothing to create or maintain.
+
+If a style is genuinely needed, **build the JSON with `style_builder_tool`, not by hand.** It
+defaults to `standard`, accepts `standard_config`, and fills in the two things hand-authored styles
+reliably miss: an explicit `slot` on every custom layer, and emissive strength on fill/line/circle
+layers. `create_style_tool` only uploads what you hand it — it builds nothing — so a hand-written
+`version`/`sources`/`layers` object is how you get a Classic style by accident: no `imports`, no
+config surface, no slots. A Classic style is the right output only when you need a server-rendered
+raster, per-layer paint control config can't express, or a deliberate 2D fallback.
 
 **Workflow:**
 
 1. Describe the desired look in natural language
 2. **Map it onto Standard config first** — most requests resolve to a handful of properties
-3. Only if config can't express it, create a Classic style via MCP
-4. View preview URL
-5. Request adjustments
-6. Repeat until satisfied
+3. If custom data is needed, build with `style_builder_tool` (`base_style: "standard"`), which
+   slots your layers and gives them emissive strength
+4. Only if config and Standard together can't express it, fall back to a Classic style
+5. Upload with `create_style_tool`, then view the preview URL
+6. Request adjustments
+7. Repeat until satisfied
 
 **Example conversation — config resolves it:**
 

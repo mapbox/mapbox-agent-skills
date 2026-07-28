@@ -100,10 +100,12 @@ function StoreLocator({ stores }) {
       map.current.addLayer({
         id: 'stores',
         type: 'circle',
+        slot: 'middle',
         source: 'stores',
         paint: {
           'circle-color': '#2196f3',
-          'circle-radius': 8
+          'circle-radius': 8,
+          'circle-emissive-strength': 1
         }
       });
 

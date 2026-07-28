@@ -40,11 +40,36 @@ Quick reference for building store locators and location finders with Mapbox.
 
 ## Marker Strategies
 
-| Locations    | Strategy     | Implementation                 |
-| ------------ | ------------ | ------------------------------ |
-| **< 100**    | HTML Markers | `new mapboxgl.Marker()`        |
-| **100-1000** | Symbol Layer | `addLayer({ type: 'symbol' })` |
-| **> 1000**   | Clustering   | `cluster: true` in source      |
+**How to render (cost):**
+
+| Locations                               | Strategy       | Implementation                                                     |
+| --------------------------------------- | -------------- | ------------------------------------------------------------------ |
+| **< ~100**                              | HTML Markers   | `new mapboxgl.Marker()`                                            |
+| **~100 and up**                         | Symbol Layer   | `addLayer({ type: 'symbol' })` — smooth into the tens of thousands |
+| **Thousands, or payload past a few MB** | Vector tileset | Upload to Mapbox; only the viewport loads                          |
+
+**Whether to cluster (legibility, not count):** `cluster: true` on the source when pins visibly overlap at the zooms customers browse. A 300-location chain in one metro needs it; 5,000 nationwide may not. No row count decides this — look at the map.
+
+## Basemap: Standard + config
+
+```javascript
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/standard',
+  center: [-77.034084, 38.909671],
+  zoom: 11
+});
+
+// Dark theme — change config, never load a different style
+map.setConfigProperty('basemap', 'lightPreset', 'night');
+```
+
+**Every custom layer below needs two things**, or it misbehaves on Standard:
+
+- **`slot`** — markers and selections → `top`; routes, clusters, overlays → `middle`; fills under roads → `bottom`. No slot = draws above every basemap label.
+- **emissive strength `1`** on fill / line / circle layers (`fill-`, `line-`, `circle-emissive-strength`) — these default to `0` and go nearly invisible under the `dusk` and `night` presets. Symbol layers already default to `1`.
+
+Brand color belongs on **markers and routes**, never on basemap roads, water, or land. Never code categories by color alone, and never red + green as the sole distinction. See the **mapbox-cartography** skill.
 
 ## HTML Markers Pattern
 
@@ -74,12 +99,16 @@ map.on('load', () => {
   map.addLayer({
     id: 'stores',
     type: 'symbol',
+    slot: 'top',
     source: 'stores',
     layout: {
       'icon-image': 'custom-marker',
-      'icon-size': 0.8,
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.6, 16, 1],
+      'icon-allow-overlap': true,
       'text-field': ['get', 'name'],
-      'text-offset': [0, 1.5]
+      'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
+      'text-offset': [0, 1.5],
+      'text-optional': true
     }
   });
 
@@ -116,11 +145,13 @@ map.addSource('stores', {
 map.addLayer({
   id: 'clusters',
   type: 'circle',
+  slot: 'middle',
   source: 'stores',
   filter: ['has', 'point_count'],
   paint: {
     'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'],
-    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40]
+    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
+    'circle-emissive-strength': 1
   }
 });
 
@@ -128,9 +159,10 @@ map.addLayer({
 map.addLayer({
   id: 'unclustered-point',
   type: 'circle',
+  slot: 'middle',
   source: 'stores',
   filter: ['!', ['has', 'point_count']],
-  paint: { 'circle-color': '#11b4da', 'circle-radius': 8 }
+  paint: { 'circle-color': '#11b4da', 'circle-radius': 8, 'circle-emissive-strength': 1 }
 });
 ```
 
@@ -267,10 +299,13 @@ async function getDirections(from, to) {
     map.addLayer({
       id: 'route',
       type: 'line',
+      slot: 'middle', // above roads, under labels and 3D buildings
       source: 'route',
       paint: {
         'line-color': '#3b9ddd',
-        'line-width': 5
+        'line-width': 5,
+        'line-emissive-strength': 1,
+        'line-occlusion-opacity': 1 // 3D buildings don't hide the route
       }
     });
   }
@@ -367,7 +402,13 @@ map.addControl(
 ## Quick Decisions
 
 **Need clustering?**
-→ Yes if > 1000 locations
+→ When pins visibly overlap at browsing zooms — judge from the map, not the location count
+
+**Markers drawing over the street labels, or invisible in dark mode?**
+→ Missing `slot` / emissive strength — see the top of this file
+
+**Need a dark map?**
+→ `setConfigProperty('basemap', 'lightPreset', 'night')`, not a different style
 
 **Need search?**
 → Always include for > 10 locations

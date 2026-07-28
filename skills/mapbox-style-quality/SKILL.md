@@ -14,12 +14,48 @@ This skill provides expert guidance on ensuring Mapbox style quality through val
 Before deploying any Mapbox style to production:
 
 1. **Validate all expressions** - Catch syntax errors before runtime
-2. **Check color contrast** - Ensure text is readable (WCAG compliance)
-3. **Validate GeoJSON sources** - Ensure data integrity
-4. **Optimize style** - Reduce file size and improve performance
-5. **Compare versions** - Understand what changed
-6. **Remove empty layers** - Delete layers with no visible paint properties as a final cleanup step
-7. **Simplify redundant boolean expressions** - Clean up filters with unnecessary boolean logic (e.g., `["all", expr]` → `expr`, `["any", false, expr]` → `expr`)
+2. **Check color contrast** - Ensure text is readable (WCAG AA: 4.5:1 normal text, 3:1 large text and line work)
+3. **Check color encoding** - No red/green-only distinctions, no rainbow ramps for ordered data, nothing carried by color alone; verify with a deuteranopia simulator
+4. **Validate GeoJSON sources** - Ensure data integrity
+5. **Audit Standard-style layer hygiene** - Every custom layer has an explicit `slot`; every fill / line / circle layer has emissive strength `1` (see below)
+6. **Check all four light presets** - `dawn` / `day` / `dusk` / `night` must all be legible
+7. **Optimize style** - Reduce file size and improve performance
+8. **Compare versions** - Understand what changed
+9. **Remove empty layers** - Delete layers with no visible paint properties as a final cleanup step
+10. **Simplify redundant boolean expressions** - Clean up filters with unnecessary boolean logic (e.g., `["all", expr]` → `expr`, `["any", false, expr]` → `expr`)
+
+### Standard-style layer audit
+
+Two omissions account for most "the map looks broken" reports on the Standard style, and both are cheap to check mechanically before deploying:
+
+```javascript
+// 1. Custom layers with no `slot` render ABOVE everything, including street labels
+map
+  .getStyle()
+  .layers.filter((l) => !l.slot && !l.id.startsWith('basemap'))
+  .forEach((l) => console.warn('missing slot:', l.id));
+
+// 2. fill/line/circle layers default to emissive-strength 0 and vanish at
+//    dusk/night. Symbol layers already default to 1, so they're not checked.
+const emissiveProp = {
+  fill: 'fill-emissive-strength',
+  line: 'line-emissive-strength',
+  circle: 'circle-emissive-strength'
+};
+map
+  .getStyle()
+  .layers.filter((l) => emissiveProp[l.type] && !l.paint?.[emissiveProp[l.type]])
+  .forEach((l) => console.warn('missing emissive strength:', l.id));
+```
+
+Also verify:
+
+- **Routes set `line-occlusion-opacity`** — otherwise 3D buildings hide them block by block in a pitched camera.
+- **No `color*` config override was authored as an already-dark value.** Standard interprets every `color*` override as its **day** appearance and re-derives it per preset, so a night-tuned `colorLand` double-darkens to near-black under `lightPreset: 'night'`.
+- **No hard `minzoom`/`maxzoom` pops.** Keep the bound for the GPU saving, but set it 1–2 levels below where the layer should appear and fade opacity in across that band.
+- **Brand color appears on user content only** — routes, markers, pins — never on basemap roads, water, or land.
+
+Design rules behind these checks live in the **mapbox-cartography** skill.
 
 ### During Development
 
@@ -37,9 +73,11 @@ Before deploying any Mapbox style to production:
 **When styling text/labels:**
 
 - Check foreground/background contrast with `check_color_contrast_tool`
-- Aim for WCAG AA minimum (4.5:1 for normal text, 3:1 for large text)
+- Aim for WCAG AA minimum (4.5:1 for normal text, 3:1 for large text and line work)
 - Use AAA standard (7:1 for normal text) for better accessibility
 - Consider different background scenarios (map tiles, overlays)
+- Keep to **one font family, two weights max**. DIN Pro is the Standard style's family — mixing in a second family reads as noise on an already busy map
+- Prefer **heavier weight with a thin halo** over a thin font with a thick bright halo. In dark themes halos do the legibility work, since land/road separation runs below 3:1 by design
 
 ### Before Committing Changes
 
@@ -116,8 +154,15 @@ Before deploying any Mapbox style to production:
 
 **WCAG Levels:**
 
-- **AA** (minimum): 4.5:1 for normal text, 3:1 for large text
+- **AA** (minimum): 4.5:1 for normal text, 3:1 for large text and road/line work
 - **AAA** (enhanced): 7:1 for normal text, 4.5:1 for large text
+
+**Color-encoding rules — contrast ratios alone won't catch these:**
+
+- **Never rely on color alone** to distinguish features. Pair it with size, shape, icon, dash pattern, or a label.
+- **Never use red + green as the sole distinction.** Roughly 1 in 12 men cannot separate them. For diverging data use **RdBu**, **PuOr**, or **BrBG** — never RdYlGn or a green-yellow-red "traffic light" ramp.
+- **Never use rainbow or spectral ramps for ordered data.** Rainbow has no perceptual ordering, so readers cannot tell which end means "more".
+- **Test with a deuteranopia simulator**, not just a contrast checker.
 
 **Text size categories:**
 
@@ -135,10 +180,11 @@ Before deploying any Mapbox style to production:
 
 **Testing strategy:**
 
-- Test against both light and dark map tiles
+- Test against both light and dark map tiles — on Standard, that means checking every `lightPreset`, not loading a second style
 - Consider overlay backgrounds (popups, modals)
 - Test in different lighting conditions (mobile outdoor use)
 - Verify contrast at different zoom levels
+- Run a deuteranopia simulation over the rendered map, including your data layers
 
 ## Quality Workflow Examples
 
@@ -185,6 +231,24 @@ Before deploying any Mapbox style to production:
 **Problem:** Text labels are hard to read on map
 **Solution:** Check contrast with `check_color_contrast_tool`, adjust colors to meet WCAG AA
 **Prevention:** Test text on both light and dark backgrounds, check at different zoom levels
+
+### Custom Layer Draws Over the Street Labels
+
+**Problem:** A choropleth, route, or marker layer covers the basemap labels
+**Solution:** Give the layer an explicit `slot` — `bottom` for fills under roads, `middle` for overlays and routes, `top` for markers and selections
+**Prevention:** A layer with no slot lands above everything on the Standard style. Audit for missing slots before deploying (see the pre-production checklist)
+
+### Layer Nearly Invisible in Dark Mode
+
+**Problem:** Custom layers disappear when `lightPreset` is `dusk` or `night`
+**Solution:** Set the matching emissive-strength property to `1` — `fill-`, `line-`, or `circle-emissive-strength`, which all default to `0` (symbol layers already default to `1`)
+**Prevention:** The light preset relights the basemap but does not touch your layers' paint colors. Switch to `night` as a standing part of visual review
+
+### Dark Map Renders Near-Black
+
+**Problem:** Setting `lightPreset: 'night'` produces an almost entirely black map
+**Solution:** Author `color*` config overrides as **day** values, or drop them and let the preset do the work
+**Prevention:** Standard re-derives every `color*` override for the active preset, so an already-dark value gets darkened twice
 
 ### Large Style File Size
 

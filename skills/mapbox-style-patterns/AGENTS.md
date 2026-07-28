@@ -2,6 +2,33 @@
 
 Quick reference for common style patterns, layer configurations, and data-driven styling.
 
+## Standard style + config first
+
+```javascript
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/standard',
+  config: { basemap: { theme: 'default' } }
+});
+
+map.setConfigProperty('basemap', 'theme', 'faded'); // never setStyle() for an incremental change
+map.setConfigProperty('basemap', 'lightPreset', 'night'); // dark mode
+```
+
+Config covers ~95% of design needs. Keys (identical on GL JS / Android / iOS / Flutter): `lightPreset` (`dawn|day|dusk|night`), `theme` (`default|faded|monochrome|custom`), `showPlaceLabels`, `showPointOfInterestLabels`, `showRoadLabels`, `showTransitLabels`, `showLandmarkIcons`, `show3dObjects`, `show3dBuildings`, `show3dLandmarks`, `showPedestrianRoads`, `densityPointOfInterestLabels` (1–5), and the `color*` overrides.
+
+**Every custom layer needs `slot` + emissive strength:**
+
+| Slot     | Position                              | Put here                                     |
+| -------- | ------------------------------------- | -------------------------------------------- |
+| `bottom` | Above land/water, **below** roads     | Rasters, terrain, choropleth fills           |
+| `middle` | Above roads, **behind** 3D and labels | Most overlays, **routes**, custom POI layers |
+| `top`    | Above POI labels                      | Markers, active selections                   |
+
+No slot = draws above **everything**, including labels. On fill / line / circle layers, missing emissive strength (`fill-`, `line-`, `circle-emissive-strength`, all defaulting to `0`) = nearly invisible at `dusk`/`night`; symbol layers already default to `1`. Routes also need `line-occlusion-opacity: 1`. See the **mapbox-cartography** skill.
+
+**Reach for a Classic style** (`streets-v12`, `light-v11`, `dark-v11`, `outdoors-v12`, `satellite-v9`, `satellite-streets-v12`) only when you need a server-rendered raster (the Static Images API can't render Standard), per-layer paint control config can't express, or a deliberate 2D fallback. Classic has no slots and no config surface — you hand-order layers with a `beforeId`.
+
 ## Layer Types Quick Reference
 
 | Layer Type         | Use For                     | Key Properties                       |
@@ -41,12 +68,13 @@ Quick reference for common style patterns, layer configurations, and data-driven
 ### Based on Zoom Level
 
 ```javascript
-// ✅ Show/hide by zoom
-'visibility': [
-  'step',
+// ✅ Fade in by zoom. `visibility` is a plain enum and does NOT accept
+// expressions — vary an opacity property instead, which also gives a fade.
+'fill-opacity': [
+  'interpolate', ['linear'],
   ['zoom'],
-  'none',  // Hidden below zoom 10
-  10, 'visible'
+  10, 0,    // invisible at zoom 10
+  11.5, 1   // fully faded in by 11.5
 ]
 
 // ✅ Size by zoom
@@ -75,11 +103,13 @@ map.addSource('points', {
 map.addLayer({
   id: 'clusters',
   type: 'circle',
+  slot: 'middle',
   source: 'points',
   filter: ['has', 'point_count'],
   paint: {
     'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
-    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
+    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40],
+    'circle-emissive-strength': 1
   }
 });
 ```
@@ -127,12 +157,14 @@ map.setFilter('layer', ['all', ['>=', ['zoom'], 10], ['<', ['zoom'], 14]]);
 ### 4. Expressions
 
 ```javascript
-// ✅ Conditional styling
+// ✅ Conditional styling — sequential ramp, not green/yellow/red.
+// Ordered data needs an ordered ramp, and a green-to-red scale is the most
+// common colorblind failure.
 'circle-color': [
   'case',
-  ['<', ['get', 'value'], 10], '#00ff00',  // Green if < 10
-  ['<', ['get', 'value'], 20], '#ffff00',  // Yellow if < 20
-  '#ff0000'  // Red otherwise
+  ['<', ['get', 'value'], 10], '#deebf7',  // Low
+  ['<', ['get', 'value'], 20], '#6baed6',  // Mid
+  '#08519c'  // High
 ]
 
 // ✅ Math operations
@@ -165,11 +197,20 @@ map.setFilter('layer', ['all', ['>=', ['zoom'], 10], ['<', ['zoom'], 14]]);
 ### Layer Optimization
 
 ```javascript
-// ✅ Set minzoom/maxzoom
+// ✅ minzoom/maxzoom saves real GPU work — but pair it with a fade, or features
+// pop into existence. Set the bound 1-2 levels BELOW where the layer should
+// appear, then interpolate opacity across that band.
 map.addLayer({
   id: 'layer',
-  minzoom: 10, // Only show zoom 10+
-  maxzoom: 16 // Hide above zoom 16
+  type: 'fill',
+  slot: 'bottom',
+  source: 'source',
+  minzoom: 10, // culled below 10
+  maxzoom: 16,
+  paint: {
+    'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0, 11.5, 0.7],
+    'fill-emissive-strength': 1
+  }
 });
 
 // ✅ Use feature state instead of removing/re-adding
@@ -201,18 +242,23 @@ map.once('idle', () => {
 });
 ```
 
-### Before Layers
+### Layer position: slots, not beforeId
 
 ```javascript
-// ✅ Insert layer at specific position
-map.addLayer(
-  {
-    id: 'new-layer',
-    type: 'fill',
-    source: 'source'
-  },
-  'existing-layer-id'
-); // Insert before this layer
+// ✅ On Standard: use a slot. Mapbox owns the basemap layer order.
+map.addLayer({
+  id: 'new-layer',
+  type: 'fill',
+  slot: 'bottom',
+  source: 'source',
+  paint: { 'fill-opacity': 0.7, 'fill-emissive-strength': 1 }
+});
+
+// Two layers in the same slot keep their insertion order.
+
+// ⚠️ beforeId against a *basemap* layer only works on Classic styles, where
+// you own the whole stack. On Standard, use a slot instead.
+map.addLayer({ id: 'new-layer', type: 'fill', source: 'source' }, 'existing-layer-id');
 ```
 
 ## Common Use Cases
@@ -223,10 +269,13 @@ map.addLayer(
 map.addLayer({
   id: 'choropleth',
   type: 'fill',
+  slot: 'bottom', // roads draw over it, keeping the network as context
   source: 'counties',
   paint: {
+    // Sequential ColorBrewer (Blues). Never rainbow for ordered data.
     'fill-color': ['interpolate', ['linear'], ['get', 'density'], 0, '#f7fbff', 100, '#08519c'],
-    'fill-opacity': 0.7
+    'fill-opacity': 0.7, // cap at 0.7 so the basemap reads through
+    'fill-emissive-strength': 1
   }
 });
 ```
@@ -237,23 +286,36 @@ map.addLayer({
 map.addLayer({
   id: 'route',
   type: 'line',
+  slot: 'middle', // above roads, under labels and 3D — NOT `top`
   source: 'route',
+  layout: { 'line-cap': 'round', 'line-join': 'round' },
   paint: {
-    'line-color': '#0080ff',
+    'line-color': '#0080ff', // route = user content, where brand color belongs
     'line-width': 5,
-    'line-opacity': 0.8
+    'line-opacity': 0.8,
+    'line-emissive-strength': 1,
+    'line-occlusion-opacity': 1 // 3D buildings don't hide the route
   }
 });
 ```
 
 ### 3D Buildings
 
+**On Standard this is config, not a layer** — Standard already ships high-detail 3D buildings and landmarks:
+
+```javascript
+map.setConfigProperty('basemap', 'show3dObjects', true);
+// also: show3dBuildings, show3dLandmarks
+```
+
+Extruding **your own** polygons is still a layer. 3D layers are scene-lit, so no emissive override:
+
 ```javascript
 map.addLayer({
   id: 'buildings',
   type: 'fill-extrusion',
-  source: 'composite',
-  'source-layer': 'building',
+  slot: 'middle',
+  source: 'my-buildings',
   paint: {
     'fill-extrusion-color': '#aaa',
     'fill-extrusion-height': ['get', 'height'],
@@ -262,6 +324,8 @@ map.addLayer({
   }
 });
 ```
+
+> The `source: 'composite'` + `source-layer: 'building'` form extrudes the _basemap's_ buildings and is **Classic styles only**. Fade it in from z13, never below.
 
 ## Quick Reference: Expression Types
 
@@ -292,4 +356,24 @@ console.log(map.getStyle().layers);
 
 // ✅ Get layer paint properties
 console.log(map.getPaintProperty('layer', 'fill-color'));
+
+// ✅ Find custom layers missing a slot (they'll draw over the labels)
+map
+  .getStyle()
+  .layers.filter((l) => !l.slot && !l.id.startsWith('basemap'))
+  .forEach((l) => console.warn('no slot:', l.id));
+
+// ✅ Verify night legibility — the fastest way to catch missing emissive strength
+map.setConfigProperty('basemap', 'lightPreset', 'night');
 ```
+
+## Symptom → cause
+
+| Symptom                                    | Cause                                                                                                                |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Custom layer covers the street labels      | Missing `slot`                                                                                                       |
+| Layer nearly invisible at dusk/night       | Missing `*-emissive-strength: 1`                                                                                     |
+| Route disappears behind 3D buildings       | Missing `line-occlusion-opacity`                                                                                     |
+| Dark map came out solid black              | Pre-darkened `color*` override + `lightPreset: 'night'` (config colors are **day** values; Standard re-derives them) |
+| Icons randomly missing                     | `icon-allow-overlap` defaults to `false`                                                                             |
+| Street names float with no road under them | No lightness step between land and roads                                                                             |

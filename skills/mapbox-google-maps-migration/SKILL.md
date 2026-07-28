@@ -43,9 +43,10 @@ const map = new google.maps.Map(document.getElementById('map'), {
 mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12', // or satellite-v9, outdoors-v12
+  style: 'mapbox://styles/mapbox/standard', // the recommended default
   center: [-122.4194, 37.7749], // [lng, lat] - note the order!
-  zoom: 12
+  zoom: 12,
+  config: { basemap: { theme: 'default' } } // Standard's config surface
 });
 ```
 
@@ -53,22 +54,24 @@ const map = new mapboxgl.Map({
 
 - **Coordinate order:** Google uses `{lat, lng}`, Mapbox uses `[lng, lat]`
 - **Authentication:** Google uses API key in script tag, Mapbox uses access token in code
-- **Styling:** Google uses map types, Mapbox uses full style URLs
+- **Styling:** Google uses map types + a `styles` array; Mapbox uses a style URL plus **config properties** on that style
+
+**Default to `mapbox/standard`.** It's the modern basemap — 3D buildings and landmarks, dynamic lighting, and a config surface you adjust at runtime without reloading anything. `standard-satellite` is the imagery sibling. The Classic styles (`streets-v12`, `light-v11`, `dark-v11`, `outdoors-v12`, `satellite-v9`, `satellite-streets-v12`) still exist and are the right call when you need a server-rendered raster from the Static Images API, per-layer paint control that config can't express, or a deliberate 2D fallback.
 
 ## API Equivalents Reference
 
 ### Map Methods
 
-| Google Maps              | Mapbox GL JS                           | Notes                         |
-| ------------------------ | -------------------------------------- | ----------------------------- |
-| `map.setCenter(latLng)`  | `map.setCenter([lng, lat])`            | Coordinate order reversed     |
-| `map.getCenter()`        | `map.getCenter()`                      | Returns LngLat object         |
-| `map.setZoom(zoom)`      | `map.setZoom(zoom)`                    | Same behavior                 |
-| `map.getZoom()`          | `map.getZoom()`                        | Same behavior                 |
-| `map.panTo(latLng)`      | `map.panTo([lng, lat])`                | Animated pan                  |
-| `map.fitBounds(bounds)`  | `map.fitBounds([[lng,lat],[lng,lat]])` | Different bound format        |
-| `map.setMapTypeId(type)` | `map.setStyle(styleUrl)`               | Completely different approach |
-| `map.getBounds()`        | `map.getBounds()`                      | Similar                       |
+| Google Maps              | Mapbox GL JS                                                                                               | Notes                                           |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `map.setCenter(latLng)`  | `map.setCenter([lng, lat])`                                                                                | Coordinate order reversed                       |
+| `map.getCenter()`        | `map.getCenter()`                                                                                          | Returns LngLat object                           |
+| `map.setZoom(zoom)`      | `map.setZoom(zoom)`                                                                                        | Same behavior                                   |
+| `map.getZoom()`          | `map.getZoom()`                                                                                            | Same behavior                                   |
+| `map.panTo(latLng)`      | `map.panTo([lng, lat])`                                                                                    | Animated pan                                    |
+| `map.fitBounds(bounds)`  | `map.fitBounds([[lng,lat],[lng,lat]])`                                                                     | Different bound format                          |
+| `map.setMapTypeId(type)` | `map.setConfigProperty('basemap', k, v)` for appearance; `map.setStyle(url)` only to change basemap family | Prefer config — `setStyle()` is a full teardown |
+| `map.getBounds()`        | `map.getBounds()`                                                                                          | Similar                                         |
 
 ### Map Events
 
@@ -153,10 +156,12 @@ map.addSource('points', {
 map.addLayer({
   id: 'points-layer',
   type: 'circle', // or 'symbol' for icons
+  slot: 'middle', // no slot means it draws above the basemap labels
   source: 'points',
   paint: {
     'circle-radius': 8,
-    'circle-color': '#ff0000'
+    'circle-color': '#ff0000',
+    'circle-emissive-strength': 1 // defaults to 0 — or it vanishes at dusk/night
   }
 });
 ```
@@ -363,7 +368,7 @@ const map = new mapboxgl.Map({
   container: el,
   center: [-122.4194, 37.7749], // REVERSED!
   zoom: 12,
-  style: 'mapbox://styles/mapbox/streets-v12'
+  style: 'mapbox://styles/mapbox/standard'
 });
 
 const marker = new mapboxgl.Marker()

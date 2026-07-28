@@ -25,7 +25,7 @@ function App() {
     mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
     const mapInstance = new mapboxgl.Map({
       container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/standard',
       center: [-122.4194, 37.7749],
       zoom: 12
     });
@@ -72,7 +72,7 @@ function App() {
       mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
       const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v12',
+        style: 'mapbox://styles/mapbox/standard',
         center: [-122.4194, 37.7749],
         zoom: 12
       });
@@ -153,7 +153,7 @@ const search = new SearchSession({
 mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN';
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
+  style: 'mapbox://styles/mapbox/standard',
   center: [-122.4194, 37.7749],
   zoom: 12
 });

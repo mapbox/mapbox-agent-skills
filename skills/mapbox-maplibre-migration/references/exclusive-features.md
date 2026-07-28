@@ -66,7 +66,7 @@ function MapComponent() {
   useEffect(() => {
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/standard',
       center: [-122.4194, 37.7749],
       zoom: 12
     });
@@ -102,7 +102,7 @@ let map = null;
 onMounted(() => {
   map = new mapboxgl.Map({
     container: mapContainer.value,
-    style: 'mapbox://styles/mapbox/streets-v12',
+    style: 'mapbox://styles/mapbox/standard',
     center: [-122.4194, 37.7749],
     zoom: 12
   });

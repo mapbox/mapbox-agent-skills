@@ -89,11 +89,26 @@ const heatmap = new google.maps.visualization.HeatmapLayer({
 map.addLayer({
   id: 'heatmap',
   type: 'heatmap',
+  slot: 'middle',
   source: 'points',
   paint: {
     'heatmap-intensity': 1,
     'heatmap-radius': 50,
-    'heatmap-color': ['interpolate', ['linear'], ['heatmap-density'], 0, 'rgba(0,0,255,0)', 0.5, 'lime', 1, 'red']
+    // Sequential ramp (YlOrRd), not blue->lime->red: a rainbow ramp has no
+    // perceptual ordering, so readers can't tell which end means "more".
+    'heatmap-color': [
+      'interpolate',
+      ['linear'],
+      ['heatmap-density'],
+      0,
+      'rgba(255,255,178,0)',
+      0.4,
+      '#fecc5c',
+      0.7,
+      '#fd8d3c',
+      1,
+      '#e31a1c'
+    ]
   }
 });
 ```

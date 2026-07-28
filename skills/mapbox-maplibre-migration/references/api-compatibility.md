@@ -95,7 +95,7 @@ mapboxgl.accessToken = 'pk.your_mapbox_access_token';
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
+  style: 'mapbox://styles/mapbox/standard',
   center: [-122.4194, 37.7749],
   zoom: 12
 });

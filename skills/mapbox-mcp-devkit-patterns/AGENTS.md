@@ -109,18 +109,18 @@ Configure in Claude Desktop config:
 
 ### Style Management
 
-| Tool                    | Purpose                   | Example Use                                |
-| ----------------------- | ------------------------- | ------------------------------------------ |
-| **create_style_tool**   | Create new style          | "Create dark mode style with 3D buildings" |
-| **list_styles_tool**    | List all styles           | "Show my styles"                           |
-| **retrieve_style_tool** | Get style details         | "Show details of my light style"           |
-| **update_style_tool**   | Modify existing style     | "Make roads more prominent"                |
-| **delete_style_tool**   | Delete a style            | "Delete my test style"                     |
-| **preview_style_tool**  | Generate preview URL      | "Preview this style at downtown SF"        |
-| **style_builder_tool**  | Build style from template | "Create a style for navigation"            |
-| **validate_style_tool** | Check style JSON          | "Validate this style"                      |
-| **compare_styles_tool** | Compare two styles        | "Compare light vs dark style"              |
-| **optimize_style_tool** | Optimize style JSON       | "Optimize this style for performance"      |
+| Tool                    | Purpose                                                                                               | Example Use                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **create_style_tool**   | Create a **Classic** style (no slots, no config surface) — only when Standard config can't express it | "Create a Classic style for our Static Images API report renders" |
+| **list_styles_tool**    | List all styles                                                                                       | "Show my styles"                                                  |
+| **retrieve_style_tool** | Get style details                                                                                     | "Show details of my light style"                                  |
+| **update_style_tool**   | Modify existing style                                                                                 | "Make roads more prominent"                                       |
+| **delete_style_tool**   | Delete a style                                                                                        | "Delete my test style"                                            |
+| **preview_style_tool**  | Generate preview URL                                                                                  | "Preview this style at downtown SF"                               |
+| **style_builder_tool**  | Build style from template                                                                             | "Create a style for navigation"                                   |
+| **validate_style_tool** | Check style JSON                                                                                      | "Validate this style"                                             |
+| **compare_styles_tool** | Compare two styles                                                                                    | "Compare light vs dark style"                                     |
+| **optimize_style_tool** | Optimize style JSON                                                                                   | "Optimize this style for performance"                             |
 
 ### Token Management
 

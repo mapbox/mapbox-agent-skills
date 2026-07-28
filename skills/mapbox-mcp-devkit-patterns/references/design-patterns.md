@@ -2,35 +2,54 @@
 
 ## Pattern 1: Iterative Style Development
 
+**Start by asking whether a new style is needed at all.** The Mapbox Standard style covers most
+design intent through **config properties** — `theme`, `lightPreset`, the visibility toggles, POI
+density, and the `color*` overrides — with nothing to create or maintain. `create_style_tool`
+produces a Classic style JSON (hand-authored layer stack, no slots, no config surface), which is
+the right output only when you need a server-rendered raster, per-layer paint control config
+can't express, or a deliberate 2D fallback.
+
 **Workflow:**
 
-1. Describe desired style in natural language
-2. AI creates initial style via MCP
-3. View preview URL
-4. Request adjustments
-5. AI updates style via MCP
+1. Describe the desired look in natural language
+2. **Map it onto Standard config first** — most requests resolve to a handful of properties
+3. Only if config can't express it, create a Classic style via MCP
+4. View preview URL
+5. Request adjustments
 6. Repeat until satisfied
 
-**Example conversation:**
+**Example conversation — config resolves it:**
 
 ```
-You: "Create a style for a real estate app - emphasize property boundaries,
+You: "Set up a map for a real estate app - emphasize property boundaries,
      show parks prominently, muted roads"
 
-AI: [Creates style, returns ID and preview URL]
+AI: No new style needed. On mapbox/standard:
+      theme: 'faded'                    (mutes roads and the whole base)
+      showPointOfInterestLabels: true   (schools, transit = buying signals)
+      show3dObjects: false              (3D competes with property boundaries)
+    Property boundaries are your own line layer in the `bottom` slot with
+    line-emissive-strength: 1. Purple goes on YOUR boundaries, never on the
+    basemap.
 
 You: "Make the property boundaries purple and thicker"
 
-AI: [Updates style]
+AI: [Updates the custom layer's paint — no style round-trip needed]
+```
 
-You: "Perfect! Now add POI icons for schools and transit"
+**Example conversation — a style is genuinely required:**
 
-AI: [Updates style with symbols]
+```
+You: "We render PNGs of the map server-side for an emailed weekly report."
+
+AI: The Static Images API can't render Standard, so this needs a Classic style.
+    [Creates one via create_style_tool, returns ID and preview URL]
 ```
 
 **Benefits:**
 
-- No manual JSON editing
+- Most requests need no style at all — just config
+- No manual JSON editing when a style is required
 - Visual feedback via preview URLs
 - Rapid iteration
 

@@ -16,8 +16,8 @@ This repo contains specialized Agent Skills for Mapbox development. Skills provi
 
 ### Design & Styling
 
-- **mapbox-cartography**: Map design principles. Covers color theory, visual hierarchy, typography, accessibility, data visualization best practices. Use for creating visually effective, accessible maps.
-- **mapbox-style-patterns**: Common style patterns and layer configurations. Covers data-driven styling, expressions, filters, layer types. Use when building custom map styles or configuring layers.
+- **mapbox-cartography**: Map design. Covers the **Standard** style and its config-first workflow (themes, light presets, slots, color overrides), **Classic styles and raw style JSON** (layer order, palette relationships), plus color, visual hierarchy, typography, dark mode, and accessibility. Platform-independent: applies to GL JS, Android, iOS, and Flutter. Use for creating visually effective, accessible maps.
+- **mapbox-style-patterns**: Style recipes for common use cases (POI finder, real estate, data viz, navigation, delivery), expressed as Standard config plus custom layers in slots. Use when implementing a specific map use case.
 - **mapbox-style-quality**: Style validation, accessibility checks, performance optimization, testing patterns. Use when ensuring style quality and performance.
 
 ### Security
@@ -53,6 +53,6 @@ Common workflows that combine multiple skills:
 **Choose Mapbox GL JS when**: Commercial support needed, Mapbox-hosted tiles/APIs required, latest features important
 **Choose MapLibre GL JS when**: Open-source license required, self-hosted infrastructure, cost optimization, custom tile sources
 
-**Performance priorities**: 1) Eliminate initialization waterfalls 2) Use data-driven symbol layers for 100+ markers 3) Implement clustering for 1000+ points 4) Use vector tiles over large GeoJSON
+**Performance priorities**: 1) Eliminate initialization waterfalls 2) Use data-driven symbol layers for 100+ markers 3) Use a vector tileset once the data runs to thousands of points 4) Cluster when points visibly overlap at the zooms users browse 5) Prefer config properties over `setStyle()` reloads
 
 **Token security**: Always use public tokens (pk.\*) client-side, add URL restrictions, never commit tokens to git, rotate tokens if exposed

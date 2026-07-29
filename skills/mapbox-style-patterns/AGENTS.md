@@ -15,17 +15,17 @@ map.setConfigProperty('basemap', 'theme', 'faded'); // never setStyle() for an i
 map.setConfigProperty('basemap', 'lightPreset', 'night'); // dark mode
 ```
 
-Config covers ~95% of design needs. Keys (identical on GL JS / Android / iOS / Flutter): `lightPreset` (`dawn|day|dusk|night`), `theme` (`default|faded|monochrome|custom`), `showPlaceLabels`, `showPointOfInterestLabels`, `showRoadLabels`, `showTransitLabels`, `showLandmarkIcons`, `show3dObjects`, `show3dBuildings`, `show3dLandmarks`, `showPedestrianRoads`, `densityPointOfInterestLabels` (1–5), and the `color*` overrides.
+Config covers ~95% of design needs. Keys (identical on GL JS / Android / iOS / Flutter): `lightPreset` (`dawn|day|dusk|night`), `theme` (`default|faded|monochrome|custom`), `showPlaceLabels`, `showPointOfInterestLabels`, `showRoadLabels`, `showTransitLabels`, `showLandmarkIcons`, `showAdminBoundaries`, `showPedestrianRoads`, `showIndoor`, `show3dObjects` (+ `show3dBuildings`, `show3dLandmarks`, `show3dTrees`, `show3dFacades`), `densityPointOfInterestLabels` (1–5), and the `color*` overrides. Full list with per-SDK version gates: [Standard API reference](https://docs.mapbox.com/map-styles/standard/api/) — see the **mapbox-cartography** skill for the annotated surface.
 
 **Every custom layer needs `slot` + emissive strength:**
 
-| Slot     | Position                              | Put here                                     |
-| -------- | ------------------------------------- | -------------------------------------------- |
-| `bottom` | Above land/water, **below** roads     | Rasters, terrain, choropleth fills           |
-| `middle` | Above roads, **behind** 3D and labels | Most overlays, **routes**, custom POI layers |
-| `top`    | Above POI labels                      | Markers, active selections                   |
+| Slot     | Position                               | Put here                                     |
+| -------- | -------------------------------------- | -------------------------------------------- |
+| `bottom` | Above land/water, **below** roads      | Rasters, terrain, choropleth fills           |
+| `middle` | Above roads, **behind** 3D and labels  | Most overlays, **routes**, custom POI layers |
+| `top`    | Above POI labels, behind place/transit | Markers, active selections                   |
 
-No slot = draws above **everything**, including labels. On fill / line / circle layers, missing emissive strength (`fill-`, `line-`, `circle-emissive-strength`, all defaulting to `0`) = nearly invisible at `dusk`/`night`; symbol layers already default to `1`. Routes also need `line-occlusion-opacity: 1`. See the **mapbox-cartography** skill.
+No slot = projection-dependent placement (above everything in non-globe projections, below labels under `globe`, GL JS's default) — always set one. On fill / line / circle layers, missing emissive strength (`fill-`, `line-`, `circle-emissive-strength`, all defaulting to `0`) = nearly invisible at `dusk`/`night`; symbol layers already default to `1`. Routes also need `line-occlusion-opacity: 1`. See the **mapbox-cartography** skill.
 
 **Reach for a Classic style** (`streets-v12`, `light-v11`, `dark-v11`, `outdoors-v12`, `satellite-v9`, `satellite-streets-v12`) only when you need a server-rendered raster (the Static Images API can't render Standard), per-layer paint control config can't express, or a deliberate 2D fallback. Classic has no slots and no config surface — you hand-order layers with a `beforeId`.
 

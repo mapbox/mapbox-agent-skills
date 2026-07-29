@@ -4,13 +4,13 @@
     {
       "id": 1,
       "prompt": "I'm building a delivery app on the Mapbox Standard style. I added a choropleth of delivery zones, the driver's active route line, and pin markers for the stops — but all three are drawing on top of the street labels, and the route disappears when the map switches to the night preset. Why is this happening, and how do I place these three correctly?",
-      "expected_output": "Should place layers with `slot`, not `beforeId` and not by hand-ordering the basemap: choropleth in `middle` (or `bottom` if it should sit under roads), route in `middle`, markers in `top`. Should state that a layer with no slot lands above everything including labels. Should require fill-emissive-strength / line-emissive-strength: 1 on all three, and line-occlusion-opacity on the route so 3D buildings don't hide it.",
+      "expected_output": "Should place layers with `slot`, not `beforeId` and not by hand-ordering the basemap: choropleth in `middle` (or `bottom` if it should sit under roads), route in `middle`, markers in `top`. Should state that an unslotted layer's position isn't something to rely on — above every layer in non-globe projections, below labels under `globe` — so every custom layer needs an explicit slot. Should require fill-emissive-strength / line-emissive-strength: 1 on all three, and line-occlusion-opacity on the route so 3D buildings don't hide it.",
       "files": [],
       "expectations": [
         "Uses the `slot` property rather than `beforeId` or a hand-ordered layer stack",
         "Puts the route line in `middle`, not `top`",
         "Puts the marker/symbol layer in `top`",
-        "Warns that a layer with no slot renders above everything, including labels",
+        "Warns that an unslotted layer's placement is projection-dependent and must not be relied on — set a slot explicitly",
         "Requires fill-emissive-strength / line-emissive-strength of 1 on the custom layers",
         "Mentions line-occlusion-opacity for the route under 3D buildings"
       ]

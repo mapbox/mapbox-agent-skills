@@ -96,7 +96,7 @@ mapView.mapboxMap.style?.setStyleImportConfigProperty(
 
 // Other config: theme, label visibility, 3D, POI density
 mapView.mapboxMap.style?.setStyleImportConfigProperty(
-    "basemap", "theme", Value.valueOf("monochrome")    // default | faded | monochrome
+    "basemap", "theme", Value.valueOf("monochrome")    // default | faded | monochrome | custom
 )
 mapView.mapboxMap.style?.setStyleImportConfigProperty(
     "basemap", "showPointOfInterestLabels", Value.valueOf(false)

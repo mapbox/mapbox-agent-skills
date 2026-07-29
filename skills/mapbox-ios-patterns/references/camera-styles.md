@@ -96,7 +96,7 @@ try mapView.mapboxMap.setStyleImportConfigProperty(
     for: "basemap", config: "lightPreset", value: "night"
 )
 try mapView.mapboxMap.setStyleImportConfigProperty(
-    for: "basemap", config: "theme", value: "monochrome"  // default | faded | monochrome
+    for: "basemap", config: "theme", value: "monochrome"  // default | faded | monochrome | custom
 )
 try mapView.mapboxMap.setStyleImportConfigProperty(
     for: "basemap", config: "showPointOfInterestLabels", value: false

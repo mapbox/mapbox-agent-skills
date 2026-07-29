@@ -46,21 +46,64 @@ style adapts them with the preset. What it doesn't carry over is your **own laye
 
 ## The config surface
 
-These config keys and values are **identical across GL JS / Android / iOS** — only the setter call differs. The
-import id is always `"basemap"`.
+These config keys and values are **identical across GL JS / Android / iOS / Flutter** — only the setter call
+differs. The import id is always `"basemap"`. This is the complete surface; the authoritative list, with the
+per-SDK version each property landed in, is the
+[Standard API reference](https://docs.mapbox.com/map-styles/standard/api/).
+
+**Global look**
 
 - **`lightPreset`**: `dawn | day | dusk | night` — lighting, atmosphere, **and** the basemap colors that follow
   from them (see [Dark mode](#dark-mode)).
-- **`theme`**: `default | faded | monochrome | custom` — in-config substyles (`custom` takes a LUT, which
-  regrades every color it covers and overrides the rest of this list; see
-  [Custom color themes](#appendix-custom-color-themes-lut)).
-- **`font`**: `DIN Pro` (default).
-- **Visibility toggles (global booleans, not zoom toggles):** `showPlaceLabels`, `showPointOfInterestLabels`,
-  `showRoadLabels`, `showTransitLabels`, `showLandmarkIcons`, `show3dObjects`, `show3dBuildings`,
-  `show3dLandmarks`, `showPedestrianRoads`.
-- **Numeric:** `densityPointOfInterestLabels` `1–5`.
-- **Color overrides:** `colorLand`, `colorWater`, `colorGreenspace`, `colorRoads`, `colorTrunks`,
-  `colorMotorways`, `colorBuildings`, `colorPlaceLabels`, `colorPointOfInterestLabels`, `colorRoadLabels`.
+- **`theme`**: `default | faded | monochrome | custom` — in-config substyles. `custom` requires **`theme-data`**,
+  a base64 LUT that regrades every color it covers and overrides the rest of this list; see
+  [Custom color themes](#appendix-custom-color-themes-lut).
+- **`font`**: any Mapbox or account-uploaded font family — Standard's own labels are DIN Pro. A family that
+  doesn't ship the weights the basemap uses (`Bold`, `Medium`, `Regular`, `Italic`) silently falls back to the
+  default, so verify the face resolves before shipping.
+
+**Visibility toggles** — global booleans, not zoom toggles:
+
+- **Labels:** `showPlaceLabels`, `showPointOfInterestLabels`, `showRoadLabels`, `showTransitLabels`,
+  `showLandmarkIconLabels`, `showIndoorLabels`.
+- **Features:** `showPedestrianRoads`, `showAdminBoundaries`, `showLandmarkIcons`, `showIndoor` (indoor-mapped
+  areas — 200+ airports).
+- **3D:** `show3dObjects` is the master switch (buildings, landmarks, trees **and** shadows, ambient occlusion,
+  flood lights). Per-layer: `show3dBuildings`, `show3dLandmarks`, `show3dTrees`, `show3dFacades`.
+- `showLandmarkIcons`, `showLandmarkIconLabels`, `showIndoor` and `showIndoorLabels` are **off by default** —
+  opt in. Everything else in this group is on.
+
+**POI label controls** — reach for these before turning POIs off wholesale:
+
+- **`densityPointOfInterestLabels`**: `1–5`, default `3` — thin the POI set instead of hiding it.
+- **`colorModePointOfInterestLabels`**: `default | single` — `single` drops the per-category palette in favor
+  of the one color in `colorPointOfInterestLabels`.
+- **`backgroundPointOfInterestLabels`**: `circle | none`.
+- **`fuelingStationModePointOfInterestLabels`**: which of fuel / EV-charging POIs show; default shows both.
+
+**Color overrides** — each takes a style-spec color:
+
+- **Land & water:** `colorLand`, `colorWater`, `colorGreenspace`.
+- **Land use:** `colorCommercial`, `colorEducation`, `colorMedical`, `colorIndustrial` (industrial also covers
+  airports).
+- **Roads:** `colorMotorways`, `colorTrunks`, `colorRoads`.
+- **Buildings:** `colorBuildings` (2D and 3D).
+- **Labels & boundaries:** `colorPlaceLabels`, `colorRoadLabels`, `colorPointOfInterestLabels`,
+  `colorAdminBoundaries`.
+- **Interaction states:** `colorBuildingHighlight` / `colorBuildingSelect`, `colorPlaceLabelHighlight` /
+  `colorPlaceLabelSelect`, `colorIndoorLabelHighlight` / `colorIndoorLabelSelect` — the colors Standard uses when
+  you set the matching feature state (see [Featuresets](#featuresets-interacting-with-basemap-features)).
+
+> **Check the version gate before using a recent property.** An unknown config key is ignored silently, which
+> reads as "the config doesn't work." The indoor properties need GL JS `v3.21` / Android & iOS `v11.19`; the
+> per-layer `show3d*` toggles, the land-use colors, `colorLand` and `colorBuildings` need GL JS `v3.17` /
+> `v11.17`; `font` needs GL JS `v3.14` / `v11.11`.
+
+**`standard-satellite` has a smaller surface.** Imagery already supplies land, water, greenspace and buildings,
+so it has no `theme`/`theme-data`, no `show3d*`, no landmark or indoor toggles, and none of the land, water,
+land-use or building colors. It keeps `lightPreset`, `font`, every label toggle, the POI label controls, the road
+colors, `colorPlaceLabels` / `colorRoadLabels` / `colorPointOfInterestLabels` / `colorAdminBoundaries`, and adds
+**`showRoadsAndTransit`** — one switch for the whole road and transit network drawn over the imagery.
 
 A Standard config object (the `config.basemap` block is the same everywhere):
 
@@ -135,8 +178,9 @@ the value is the same string on every SDK:
 | `middle` | Above roads & lines, **behind** 3D buildings and labels | Most data overlays — polygon fills, geofences, zone boundaries, heatmaps; **routes** and **custom POI layers** |
 | `top`    | Above POI labels, **behind** place & transit labels     | Markers and active selections                                                                                  |
 
-- A layer with **no slot lands on top of everything** — rarely right for a fill or raster, so **always set a
-  slot explicitly**.
+- A layer with **no slot** lands somewhere that depends on the projection: above every layer in the style in
+  non-globe projections, but **below labels** under `globe` (GL JS's default). Don't rely on either — **always set
+  a slot explicitly**.
 - The `top` slot is designed for **symbol layers** (markers, active selections). Put **routes and custom POI
   layers in `middle`** — a route in `middle` reads above roads but under all labels and 3D buildings, so labels
   stay legible; add `line-occlusion-opacity` so buildings don't hide it.
@@ -160,6 +204,29 @@ Style-spec JSON (shared) — a choropleth and a route, both in `middle`:
 Docs: [Work with layers — slots](https://docs.mapbox.com/mapbox-gl-js/guides/styles/work-with-layers/) ·
 [Add a layer to a slot](https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-slot/) ·
 [iOS: change a layer's slot](https://docs.mapbox.com/ios/maps/examples/layer-slot/)
+
+### Featuresets: interacting with basemap features
+
+Standard exposes five **featuresets** — named groups of basemap layers you can target with interactions and
+**feature states**. This is the only way to restyle individual basemap features, since config colors are global.
+
+| Featureset       | Feature states                | Design use                                                     |
+| ---------------- | ----------------------------- | -------------------------------------------------------------- |
+| `poi`            | `hide`                        | Hide one basemap POI and draw your own annotation in its place |
+| `place-labels`   | `hide`, `highlight`, `select` | Hover and selection affordances on city / town labels          |
+| `buildings`      | `highlight`, `select`         | Highlight the destination footprint                            |
+| `landmark-icons` | — (properties only)           | Read landmark names                                            |
+| `indoor-labels`  | `highlight`, `select`         | Hover and selection inside indoor-mapped areas                 |
+
+- The colors those states paint with are config properties — `colorPlaceLabelHighlight` / `colorPlaceLabelSelect`,
+  `colorBuildingHighlight` / `colorBuildingSelect`, `colorIndoorLabelHighlight` / `colorIndoorLabelSelect`. Set
+  them once; the state just switches them on.
+- `select` outranks `highlight`, so a selected feature keeps its select color while hovered.
+- **Prefer `hide` on the `poi` featureset over a clip layer** when you're replacing a single basemap POI with your
+  own marker — a clip layer removes everything in a geometry, which is a blunter instrument.
+
+Docs: [Featuresets](https://docs.mapbox.com/map-styles/standard/api/#featuresets) ·
+[Standard interactions](https://docs.mapbox.com/mapbox-gl-js/example/standard-interactions/)
 
 ## Color
 

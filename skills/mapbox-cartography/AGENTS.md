@@ -25,12 +25,24 @@ map.setConfigProperty('basemap', 'lightPreset', 'night');
 
 ## Config surface
 
+Complete list; version gates in the [Standard API reference](https://docs.mapbox.com/map-styles/standard/api/).
+
 - **`lightPreset`**: `dawn | day | dusk | night` — lighting, atmosphere, and the basemap colors that follow
-- **`theme`**: `default | faded | monochrome | custom` (`custom` takes a LUT via `theme-data`)
-- **`font`**: `DIN Pro` (default)
-- **Visibility booleans**: `showPlaceLabels`, `showPointOfInterestLabels`, `showRoadLabels`, `showTransitLabels`, `showLandmarkIcons`, `show3dObjects`, `show3dBuildings`, `show3dLandmarks`, `showPedestrianRoads`
-- **Numeric**: `densityPointOfInterestLabels` `1–5`
-- **Colors**: `colorLand`, `colorWater`, `colorGreenspace`, `colorRoads`, `colorTrunks`, `colorMotorways`, `colorBuildings`, `colorPlaceLabels`, `colorPointOfInterestLabels`, `colorRoadLabels`
+- **`theme`**: `default | faded | monochrome | custom` (`custom` requires a LUT via `theme-data`)
+- **`font`**: any Mapbox or account-uploaded family; Standard's own labels are DIN Pro. Missing `Bold`/`Medium`/`Regular`/`Italic` weights fall back silently
+- **Label booleans**: `showPlaceLabels`, `showPointOfInterestLabels`, `showRoadLabels`, `showTransitLabels`, `showLandmarkIconLabels`, `showIndoorLabels`
+- **Feature booleans**: `showPedestrianRoads`, `showAdminBoundaries`, `showLandmarkIcons`, `showIndoor`
+- **3D booleans**: `show3dObjects` (master — also shadows, ambient occlusion, flood lights), `show3dBuildings`, `show3dLandmarks`, `show3dTrees`, `show3dFacades`
+- **Off by default**: `showLandmarkIcons`, `showLandmarkIconLabels`, `showIndoor`, `showIndoorLabels`
+- **POI controls**: `densityPointOfInterestLabels` `1–5` (default `3`), `colorModePointOfInterestLabels` (`default|single`), `backgroundPointOfInterestLabels` (`circle|none`), `fuelingStationModePointOfInterestLabels`
+- **Colors**: `colorLand`, `colorWater`, `colorGreenspace`; `colorCommercial`, `colorEducation`, `colorMedical`, `colorIndustrial`; `colorMotorways`, `colorTrunks`, `colorRoads`; `colorBuildings`; `colorPlaceLabels`, `colorRoadLabels`, `colorPointOfInterestLabels`, `colorAdminBoundaries`
+- **Feature-state colors**: `colorBuildingHighlight`/`Select`, `colorPlaceLabelHighlight`/`Select`, `colorIndoorLabelHighlight`/`Select`
+- **Recent gates** (an unknown key is ignored silently): indoor → GL JS `v3.21` / SDK `v11.19`; per-layer `show3d*`, land-use colors, `colorLand`, `colorBuildings` → `v3.17` / `v11.17`; `font` → `v3.14` / `v11.11`
+- **`standard-satellite`**: subset — no `theme`/`theme-data`, no `show3d*`, no landmark or indoor toggles, no land/water/land-use/building colors. Adds **`showRoadsAndTransit`**
+
+## Featuresets — the only per-feature basemap control
+
+`poi` (`hide`), `place-labels` (`hide`, `highlight`, `select`), `buildings` (`highlight`, `select`), `landmark-icons` (properties only), `indoor-labels` (`highlight`, `select`). `select` outranks `highlight`. The state paints with the matching `color*Highlight`/`color*Select` config. Use `hide` on `poi` — not a clip layer — when swapping one basemap POI for your own marker.
 
 ## Slots — every custom layer needs one
 
@@ -40,7 +52,7 @@ map.setConfigProperty('basemap', 'lightPreset', 'night');
 | `middle` | Above roads, **behind** 3D and labels  | Most overlays, **routes**, custom POI layers |
 | `top`    | Above POI labels, behind place/transit | Markers, active selections                   |
 
-**A layer with no slot draws above everything, including labels.** Two layers in the same slot keep insertion order.
+**A layer with no slot is projection-dependent** — above everything in non-globe projections, below labels under `globe` (GL JS's default). Never rely on it; always set a slot. Two layers in the same slot keep insertion order.
 
 ```json
 {

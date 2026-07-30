@@ -426,8 +426,7 @@ When generating browser demos against Mapbox REST APIs (not only MCP tools):
 const route = data.routes[0];
 // GOOD — meters / seconds from the API
 stats.textContent =
-  `Distance ${(route.distance / 1000).toFixed(2)} km · ` +
-  `Duration ${Math.round(route.duration / 60)} min`;
+  `Distance ${(route.distance / 1000).toFixed(2)} km · ` + `Duration ${Math.round(route.duration / 60)} min`;
 
 // BAD — cosmetic labels or hardcoded ETAs that look like a working demo
 // "Len 0.00 km · Time 2 min" / Math.round(120/60)

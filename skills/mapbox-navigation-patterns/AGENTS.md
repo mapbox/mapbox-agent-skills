@@ -217,14 +217,26 @@ options.distanceMeasurementSystem = .metric
 ### Basic Navigation
 
 ```kotlin
-import com.mapbox.navigation.core.MapboxNavigationProvider
+import com.mapbox.geojson.Point
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.base.route.NavigationRouterCallback
-import com.mapbox.geojson.Point
+import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
+import com.mapbox.navigation.core.lifecycle.MapboxNavigationObserver
+import com.mapbox.navigation.core.lifecycle.requireMapboxNavigation
 
-// Initialize MapboxNavigation
-val mapboxNavigation = MapboxNavigationProvider.create(
-    NavigationOptions.Builder(context).build()
+// Lifecycle-aware handle — prefer this over MapboxNavigationProvider.
+// Survives configuration changes; attaches/detaches automatically.
+val mapboxNavigation: MapboxNavigation by requireMapboxNavigation(
+    onResumedObserver = object : MapboxNavigationObserver {
+        override fun onAttached(mapboxNavigation: MapboxNavigation) {
+            mapboxNavigation.startTripSession()
+        }
+        override fun onDetached(mapboxNavigation: MapboxNavigation) {}
+    },
+    onInitialize = {
+        MapboxNavigationApp.setup(NavigationOptions.Builder(context).build())
+    }
 )
 
 // Request route
@@ -243,8 +255,8 @@ mapboxNavigation.requestRoutes(
             routes: List<NavigationRoute>,
             routerOrigin: String
         ) {
+            // Set routes; startTripSession() already ran in onAttached
             mapboxNavigation.setNavigationRoutes(routes)
-            mapboxNavigation.startTripSession()
         }
 
         override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {
@@ -256,12 +268,6 @@ mapboxNavigation.requestRoutes(
         }
     }
 )
-
-// Cleanup
-override fun onDestroy() {
-    super.onDestroy()
-    MapboxNavigationProvider.destroy()
-}
 ```
 
 ### Custom Navigation UI

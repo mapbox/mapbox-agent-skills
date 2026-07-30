@@ -2,27 +2,47 @@
 
 ## Basic Turn-by-Turn Navigation
 
+**Use `MapboxNavigationApp` + `requireMapboxNavigation`, not `MapboxNavigationProvider`.** The
+provider pattern requires you to manually create/destroy the instance in `onCreate`/`onDestroy`,
+which does not survive configuration changes and is easy to get wrong. The lifecycle-aware
+pattern below is what the official NavSDK examples use.
+
 ```kotlin
-import com.mapbox.navigation.base.options.NavigationOptions
-import com.mapbox.navigation.core.MapboxNavigation
-import com.mapbox.navigation.core.MapboxNavigationProvider
-import com.mapbox.navigation.base.route.NavigationRouterCallback
-import com.mapbox.navigation.base.route.RouterOrigin
-import com.mapbox.navigation.base.route.RouterFailure
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Point
+import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
+import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.base.route.NavigationRoute
+import com.mapbox.navigation.base.route.NavigationRouterCallback
+import com.mapbox.navigation.base.route.RouterFailure
+import com.mapbox.navigation.base.route.RouterOrigin
+import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
+import com.mapbox.navigation.core.lifecycle.MapboxNavigationObserver
+import com.mapbox.navigation.core.lifecycle.requireMapboxNavigation
 
 class NavigationActivity : AppCompatActivity() {
-    private lateinit var mapboxNavigation: MapboxNavigation
+
+    // Lifecycle-aware handle: attaches/detaches automatically as the Activity
+    // moves through the lifecycle and survives configuration changes.
+    private val mapboxNavigation: MapboxNavigation by requireMapboxNavigation(
+        onResumedObserver = object : MapboxNavigationObserver {
+            override fun onAttached(mapboxNavigation: MapboxNavigation) {
+                mapboxNavigation.startTripSession()
+            }
+
+            override fun onDetached(mapboxNavigation: MapboxNavigation) {
+                // Unregister any observers registered in onAttached
+            }
+        },
+        onInitialize = {
+            MapboxNavigationApp.setup(NavigationOptions.Builder(this).build())
+        }
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_navigation)
-
-        // Initialize MapboxNavigation
-        mapboxNavigation = MapboxNavigationProvider.create(
-            NavigationOptions.Builder(this).build()
-        )
 
         // Define origin and destination
         val origin = Point.fromLngLat(-122.4194, 37.7749)
@@ -39,9 +59,8 @@ class NavigationActivity : AppCompatActivity() {
                     routes: List<NavigationRoute>,
                     @RouterOrigin routerOrigin: String
                 ) {
-                    // Set routes and start navigation
+                    // Set routes; startTripSession() already ran in onAttached
                     mapboxNavigation.setNavigationRoutes(routes)
-                    mapboxNavigation.startTripSession()
                 }
 
                 override fun onFailure(
@@ -60,29 +79,49 @@ class NavigationActivity : AppCompatActivity() {
             }
         )
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        MapboxNavigationProvider.destroy()
-    }
 }
 ```
 
 ## Custom Navigation UI
 
 ```kotlin
+import com.mapbox.maps.MapView
+import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
+import com.mapbox.navigation.core.lifecycle.MapboxNavigationObserver
+import com.mapbox.navigation.core.lifecycle.requireMapboxNavigation
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
-import com.mapbox.maps.MapView
 
 class CustomNavigationActivity : AppCompatActivity() {
-    private lateinit var mapboxNavigation: MapboxNavigation
     private lateinit var mapView: MapView
     private lateinit var instructionText: TextView
     private lateinit var distanceText: TextView
     private lateinit var etaText: TextView
+
+    // Lifecycle-aware handle: register/unregister observers here rather than
+    // in onCreate/onDestroy, so they stay correct across configuration changes.
+    private val mapboxNavigation: MapboxNavigation by requireMapboxNavigation(
+        onResumedObserver = object : MapboxNavigationObserver {
+            override fun onAttached(mapboxNavigation: MapboxNavigation) {
+                mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+                mapboxNavigation.registerLocationObserver(locationObserver)
+                mapboxNavigation.startTripSession()
+            }
+
+            override fun onDetached(mapboxNavigation: MapboxNavigation) {
+                mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
+                mapboxNavigation.unregisterLocationObserver(locationObserver)
+            }
+        },
+        onInitialize = {
+            // Note: Access token is configured via MapboxOptions.accessToken
+            // or from mapbox_access_token string resource
+            MapboxNavigationApp.setup(NavigationOptions.Builder(this).build())
+        }
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,18 +132,10 @@ class CustomNavigationActivity : AppCompatActivity() {
         distanceText = findViewById(R.id.distanceText)
         etaText = findViewById(R.id.etaText)
 
-        setupNavigation()
+        requestRoute()
     }
 
-    private fun setupNavigation() {
-        // Initialize MapboxNavigation
-        // Note: Access token is configured via MapboxOptions.accessToken
-        // or from mapbox_access_token string resource
-        mapboxNavigation = MapboxNavigationProvider.create(
-            NavigationOptions.Builder(this).build()
-        )
-
-        // Request route
+    private fun requestRoute() {
         val origin = Point.fromLngLat(-122.4194, 37.7749)
         val destination = Point.fromLngLat(-122.2711, 37.8044)
 
@@ -118,8 +149,8 @@ class CustomNavigationActivity : AppCompatActivity() {
             object : NavigationRouterCallback {
                 override fun onRoutesReady(routes: List<NavigationRoute>,
                                           routerOrigin: RouterOrigin) {
+                    // Set routes; startTripSession() already ran in onAttached
                     mapboxNavigation.setNavigationRoutes(routes)
-                    startNavigation()
                 }
 
                 override fun onFailure(reasons: List<RouterFailure>,
@@ -133,15 +164,6 @@ class CustomNavigationActivity : AppCompatActivity() {
                 }
             }
         )
-    }
-
-    private fun startNavigation() {
-        // Register observers for navigation updates
-        mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
-        mapboxNavigation.registerLocationObserver(locationObserver)
-
-        // Start trip session
-        mapboxNavigation.startTripSession()
     }
 
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
@@ -181,12 +203,14 @@ class CustomNavigationActivity : AppCompatActivity() {
             )
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
-        mapboxNavigation.unregisterLocationObserver(locationObserver)
-        MapboxNavigationProvider.destroy()
-    }
 }
 ```
+
+## Reference
+
+The examples above cover the basic pattern. For a complete, production-grade implementation —
+route line rendering, maneuver arrows, camera transitions, voice guidance, and a replay engine for
+testing without physically moving — see the official
+[Turn-by-Turn Experience example](https://github.com/mapbox/mapbox-navigation-android-examples/blob/main/app/src/main/java/com/mapbox/navigation/examples/standalone/turnbyturn/TurnByTurnExperienceActivity.kt)
+in `mapbox-navigation-android-examples`. That repo is the canonical source for current NavSDK
+Android patterns — check it if the API surface shown here looks out of date.

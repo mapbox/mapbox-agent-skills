@@ -98,3 +98,15 @@ map.on('load', () => {
   0.001  // Scale factor
 ]
 ```
+
+## Anti-pattern: constant extrusion height
+
+```javascript
+// BAD — flat slabs are not data-driven 3D buildings
+'fill-extrusion-height': 40
+
+// GOOD — expression from feature properties
+'fill-extrusion-height': ['get', 'height']
+```
+
+Agents often paste a constant height to “make 3D appear.” Prefer `['get', 'height']` (or an interpolate expression) whenever the challenge asks for data-driven extrusions.

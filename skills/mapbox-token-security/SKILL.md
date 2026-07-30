@@ -242,16 +242,31 @@ MAPBOX_SECRET_TOKEN=sk.ey...
 - Share tokens between unrelated apps
 - Use tokens with excessive scopes
 
-**Example: Safe Client Usage:**
+**Example: Safe Client Usage (Vite):**
+
+> **Note:** This example uses **Vite**. For Next.js, CRA, Angular, or a plain `window.MAPBOX_ACCESS_TOKEN` / CDN setup, see [Token Management](references/token-management.md). Do not chain `import.meta.env` and `process.env` in one expression — the unused path throws `ReferenceError` in the browser.
 
 ```javascript
-// Public token with URL restrictions - SAFE
-const mapboxToken = 'pk.YOUR_MAPBOX_TOKEN_HERE';
+// Public token with URL restrictions - SAFE (Vite)
+const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// This token is restricted to your domain
-// and only has styles:read scope
+// Guard BEFORE constructing the map — missing tokens otherwise yield a silent blank map
+if (!mapboxToken || mapboxToken === 'YOUR_MAPBOX_ACCESS_TOKEN') {
+  throw new Error('Missing VITE_MAPBOX_ACCESS_TOKEN — set it in env before creating the map');
+}
+
 mapboxgl.accessToken = mapboxToken;
 ```
+
+### Agent anti-pattern: skip the token guard
+
+Agents often assign `mapboxgl.accessToken` and call `new mapboxgl.Map(...)` with no check. That fails closed as a blank canvas with no UI error.
+
+**Always:**
+
+1. Resolve the token from the env pattern for your bundler (never hardcode a real `pk.` in source)
+2. Validate it is present and not a placeholder
+3. Only then set `accessToken` and construct the map
 
 ## Security Checklist
 
@@ -270,6 +285,7 @@ mapboxgl.accessToken = mapboxToken;
 - [ ] Rotate tokens every 90 days (or per policy)
 - [ ] Remove unused tokens promptly
 - [ ] Separate tokens by environment (dev/staging/prod)
+- [ ] Guard missing tokens in client code before `new mapboxgl.Map`
 
 **Monitoring:**
 
@@ -291,6 +307,7 @@ mapboxgl.accessToken = mapboxToken;
 
 For detailed guidance on specific topics, load these references as needed:
 
+- **`references/token-management.md`** — Bundler-specific env var names and access patterns (Vite / Next / CRA / Angular / CDN). Load when: wiring tokens in a different framework than the Vite example above.
 - **`references/rotation-monitoring.md`** — Token rotation strategies (zero-downtime + emergency), monitoring metrics, alerting rules, and monthly/quarterly audit checklists. Load when: implementing rotation, setting up monitoring, or conducting audits.
 - **`references/incident-response.md`** — Step-by-step incident response plan and common security mistakes with code examples. Load when: responding to a token compromise, reviewing code for security issues, or training on anti-patterns.
 

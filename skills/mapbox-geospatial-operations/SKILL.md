@@ -416,6 +416,32 @@ Understanding what users mean:
 - Need route optimization
 - Need turn-by-turn directions
 
+## REST API honesty (Directions / Isochrone)
+
+When generating browser demos against Mapbox REST APIs (not only MCP tools):
+
+### Directions — use the route object metrics
+
+```javascript
+const route = data.routes[0];
+// GOOD — meters / seconds from the API
+stats.textContent =
+  `Distance ${(route.distance / 1000).toFixed(2)} km · ` + `Duration ${Math.round(route.duration / 60)} min`;
+
+// BAD — cosmetic labels or hardcoded ETAs that look like a working demo
+// "Len 0.00 km · Time 2 min" / Math.round(120/60)
+```
+
+### Isochrone — request multiple contours when the prompt asks for bands
+
+```javascript
+// GOOD — three travel-time bands
+`contours_minutes=15,30,60`;
+
+// BAD — a single contour when the UX needs 15 / 30 / 60
+`contours_minutes=30`;
+```
+
 ## Integration with Other Skills
 
 **Works with:**

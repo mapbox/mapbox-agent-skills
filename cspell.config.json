@@ -120,6 +120,8 @@
     "recluster",
     "rerouting",
     "rgba",
+    "Scatterplot",
+    "ScatterplotLayer",
     "scroller",
     "searchbox",
     "smolagents",

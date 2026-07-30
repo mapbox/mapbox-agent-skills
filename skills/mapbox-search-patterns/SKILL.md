@@ -262,6 +262,23 @@ category_search_tool({
 });
 ```
 
+### Don't: Geocode ambiguous place names without proximity (REST too)
+
+This applies to Mapbox Geocoding API v5 / Search Box in browser apps — not only MCP tools.
+
+```javascript
+// BAD — limit=1 without proximity can resolve "Lincoln Memorial" to Illinois
+fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${token}&limit=1`);
+
+// GOOD — bias to map center (and optional bbox)
+fetch(
+  `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json` +
+    `?access_token=${token}&proximity=-77.0369,38.9072&bbox=-77.15,38.79,-76.90,38.99&limit=1`
+);
+```
+
+Also debounce search inputs (`clearTimeout` + `setTimeout`) so every keystroke does not fire a geocode.
+
 ### Don't: Use bbox when you mean proximity
 
 ```javascript
@@ -353,13 +370,14 @@ User query contains...
 
 ## Common Mistakes
 
-1. **Forgetting proximity** -> Results are global/IP-based
+1. **Forgetting proximity** -> Results are global/IP-based (or wrong state for ambiguous memorial/park names)
 2. **Using wrong tool** -> category_search for "Starbucks" (use search_and_geocode)
 3. **Invalid category** -> Check category_list first
 4. **Bbox too small** -> No results; use proximity instead
 5. **Requesting ETA unnecessarily** -> Adds API cost
 6. **Limit too high for UI** -> Overwhelming user
 7. **Not filtering types** -> Get cities when you want POIs
+8. **No debounce on typeahead** -> Quota burn and racy UI
 
 ## Reference Files
 

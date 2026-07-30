@@ -317,6 +317,69 @@ export default {
 
 **Why:** In Vue (especially Vue 3), `data()` properties are wrapped in a `Proxy` for reactivity. Mapbox GL JS internally checks object identity and uses properties that don't survive proxy wrapping. Storing the map in `data()` causes subtle, hard-to-debug failures. Instead, assign the map instance directly as `this.map` in `mounted()` — properties assigned outside `data()` are not made reactive.
 
+### Mistake 5: Silent style/tile failures (no error handler)
+
+```javascript
+// BAD — blank map when the token/style fails
+const map = new mapboxgl.Map({ ... });
+
+// GOOD — surface failures
+map.on('error', (e) => {
+  console.error(e.error || e);
+  // optionally show an on-page error message
+});
+```
+
+### Mistake 6: Broken deck.gl CDN via jsDelivr `+esm`
+
+```html
+<!-- BAD — often throws: does not provide export named 'makeBatchFromTable' -->
+<script type="module">
+  import { MapboxOverlay } from 'https://cdn.jsdelivr.net/npm/@deck.gl/mapbox@9.0.0/+esm';
+</script>
+
+<!-- GOOD — UMD bundle (or esm.sh) -->
+<script src="https://unpkg.com/deck.gl@9.1.14/dist.min.js"></script>
+<script>
+  const { MapboxOverlay, ScatterplotLayer } = deck;
+  map.addControl(
+    new MapboxOverlay({
+      interleaved: false,
+      layers: [
+        /* ... */
+      ]
+    })
+  );
+</script>
+```
+
+Use `MapboxOverlay` (Mapbox IControl), not a bare `Deck` as a map control.
+
+### Mistake 7: Draw toolbar without `draw.create`
+
+If you load `mapbox-gl-draw`, listen for `draw.create` (and update the UI from `draw.getAll()`). Half-deleted handlers that leave a dangling `});` crash the page.
+
+### Mistake 8: Layers lost after `setStyle` (no `style.load` rebind)
+
+`map.setStyle(...)` replaces the style tree. Custom sources/layers/handlers added earlier are wiped unless you re-attach them.
+
+```javascript
+function onStyleReady() {
+  // re-add sources, layers, and interaction handlers here
+}
+
+map.on('style.load', onStyleReady);
+
+document.querySelectorAll('[data-style]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    map.setStyle(btn.dataset.style);
+    // do NOT only add layers on the first 'load' — wait for style.load after every switch
+  });
+});
+```
+
+**Agent anti-pattern:** style switcher buttons that call `setStyle` once with no `style.load` rebind. The first style works; every switch after looks broken.
+
 ## Reference Files
 
 Load these for framework-specific patterns and additional details:

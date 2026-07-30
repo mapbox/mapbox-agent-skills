@@ -295,12 +295,18 @@ When building a Mapbox application, verify these optimizations in order:
 
 ### 🟡 High Impact
 
-- [ ] Debounce/throttle map event handlers
+- [ ] Debounce/throttle map event handlers (geocode inputs, `moveend`)
 - [ ] Optimize queryRenderedFeatures with layers filter and bounding box
 - [ ] Use GeoJSON for < 5 MB, vector tiles for > 20 MB
-- [ ] Always call map.remove() on cleanup in SPAs
+- [ ] Always call map.remove() on cleanup in SPAs / page teardown
+- [ ] Attach `map.on('error', …)` (or visible error UI) so style/tile/token failures are not silent
 - [ ] Reuse popup instances (don't create on every interaction)
 - [ ] Use feature state instead of dynamic layers for hover/selection
+- [ ] Cluster demos: generate enough points to stress clustering (thousands, not a few hundred)
+
+### Agent anti-pattern: happy-path only
+
+First-pass agent code often ships a map with no `map.on('error')`, no `map.remove()`, and a tiny point set that never exercises `cluster: true`. Production demos need error visibility, teardown, and realistic scale.
 
 ### 🟢 Optimization
 

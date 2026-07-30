@@ -342,7 +342,14 @@ map.on('error', (e) => {
 <script src="https://unpkg.com/deck.gl@9.1.14/dist.min.js"></script>
 <script>
   const { MapboxOverlay, ScatterplotLayer } = deck;
-  map.addControl(new MapboxOverlay({ interleaved: false, layers: [/* ... */] }));
+  map.addControl(
+    new MapboxOverlay({
+      interleaved: false,
+      layers: [
+        /* ... */
+      ]
+    })
+  );
 </script>
 ```
 

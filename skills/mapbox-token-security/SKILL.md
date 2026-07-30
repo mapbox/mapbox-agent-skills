@@ -242,18 +242,17 @@ MAPBOX_SECRET_TOKEN=sk.ey...
 - Share tokens between unrelated apps
 - Use tokens with excessive scopes
 
-**Example: Safe Client Usage:**
+**Example: Safe Client Usage (Vite):**
+
+> **Note:** This example uses **Vite**. For Next.js, CRA, Angular, or a plain `window.MAPBOX_ACCESS_TOKEN` / CDN setup, see [Token Management Patterns](../mapbox-web-integration-patterns/references/token-management.md). Do not chain `import.meta.env` and `process.env` in one expression — the unused path throws `ReferenceError` in the browser.
 
 ```javascript
-// Public token with URL restrictions - SAFE
-const mapboxToken =
-  window.MAPBOX_ACCESS_TOKEN ||
-  import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+// Public token with URL restrictions - SAFE (Vite)
+const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 // Guard BEFORE constructing the map — missing tokens otherwise yield a silent blank map
 if (!mapboxToken || mapboxToken === 'YOUR_MAPBOX_ACCESS_TOKEN') {
-  throw new Error('Missing MAPBOX_ACCESS_TOKEN — set it in env / config before creating the map');
+  throw new Error('Missing VITE_MAPBOX_ACCESS_TOKEN — set it in env before creating the map');
 }
 
 mapboxgl.accessToken = mapboxToken;
@@ -265,7 +264,7 @@ Agents often assign `mapboxgl.accessToken` and call `new mapboxgl.Map(...)` with
 
 **Always:**
 
-1. Resolve the token from env / `window.MAPBOX_ACCESS_TOKEN` / config (never hardcode a real `pk.` in source)
+1. Resolve the token from the env pattern for your bundler (never hardcode a real `pk.` in source)
 2. Validate it is present and not a placeholder
 3. Only then set `accessToken` and construct the map
 

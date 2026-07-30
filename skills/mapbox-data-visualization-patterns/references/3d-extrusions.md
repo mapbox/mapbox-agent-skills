@@ -99,7 +99,7 @@ map.on('load', () => {
 ]
 ```
 
-### Anti-pattern: constant extrusion height
+## Anti-pattern: constant extrusion height
 
 ```javascript
 // BAD — flat slabs are not data-driven 3D buildings

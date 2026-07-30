@@ -268,9 +268,7 @@ This applies to Mapbox Geocoding API v5 / Search Box in browser apps — not onl
 
 ```javascript
 // BAD — limit=1 without proximity can resolve "Lincoln Memorial" to Illinois
-fetch(
-  `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${token}&limit=1`
-);
+fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${token}&limit=1`);
 
 // GOOD — bias to map center (and optional bbox)
 fetch(
@@ -379,7 +377,7 @@ User query contains...
 5. **Requesting ETA unnecessarily** -> Adds API cost
 6. **Limit too high for UI** -> Overwhelming user
 7. **Not filtering types** -> Get cities when you want POIs
-8. **No debounce on typeahead** -> Quota burn and racey UI
+8. **No debounce on typeahead** -> Quota burn and racy UI
 
 ## Reference Files
 

@@ -245,13 +245,23 @@ getMultiStopRoute(deliveryStops);
 
 **Use when:** Need to optimize the order of waypoints (traveling salesman problem)
 
+**Hard limit: 12 coordinates per request** (Optimization v1 API). `source` and `destination` only
+accept the string values `first`/`any` and `last`/`any` respectively — not numeric indices. If you
+need more than 12 stops, or time windows/vehicle capacities/driver shifts, see the **Optimization
+API v2** note below instead of trying to work around the v1 limit.
+
 ```javascript
-async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
+async function getOptimizedRoute(waypoints, { startAtFirst = true, endAtLast = false } = {}) {
+  // Hard limit: 12 coordinates max for the v1 endpoint.
+  if (waypoints.length > 12) {
+    throw new Error('Optimization v1 API supports a maximum of 12 coordinates per request');
+  }
+
   const coordinates = waypoints.map((wp) => `${wp[0]},${wp[1]}`).join(';');
 
-  // Build waypoint indices for source and destination
-  const source = startIndex === 'first' ? 'first' : 'any';
-  const destination = endIndex === 'last' ? 'last' : 'any';
+  // source/destination only accept 'first'/'any' and 'last'/'any' — no numeric indices
+  const source = startAtFirst ? 'first' : 'any';
+  const destination = endAtLast ? 'last' : 'any';
 
   const query = await fetch(
     `https://api.mapbox.com/optimized-trips/v1/mapbox/driving-traffic/${coordinates}?` +
@@ -280,11 +290,19 @@ async function getOptimizedRoute(waypoints, startIndex = 0, endIndex = null) {
 }
 ```
 
-**Note:** For advanced use cases requiring time windows, vehicle capacities, and support for up to 1,000 coordinates, see the [Optimization API](https://docs.mapbox.com/api/navigation/optimization/) (async API with enhanced capabilities).
+**Note:** For more than 12 locations, or time windows, vehicle capacities, and driver shifts, see
+the [Optimization API v2](https://docs.mapbox.com/api/navigation/optimization/) — a separate,
+async, job-submission API (`POST` a routing problem, then poll for the solution) currently in
+**Public Beta** (requires signing up for early access), supporting up to 1,000 locations per
+routing problem. It is not a drop-in replacement for the v1 endpoint above; it uses a different
+request/response shape entirely.
 
 ## Congestion-Based Route Coloring
 
 **Use when:** Visualize traffic severity along a route (the `driving-traffic` profile above already includes live traffic in ETAs — this adds a `congestion` annotation for per-segment styling)
+
+`annotations` must always be paired with `overview=full` — without it, the API returns a
+simplified geometry that doesn't line up point-for-point with the per-segment annotation array.
 
 ```javascript
 async function getTrafficRoute(start, end) {
@@ -292,6 +310,7 @@ async function getTrafficRoute(start, end) {
     `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${start[0]},${start[1]};${end[0]},${end[1]}?` +
       `steps=true&` +
       `geometries=geojson&` +
+      `overview=full&` +
       `annotations=duration,distance,speed,congestion&` +
       `access_token=${mapboxgl.accessToken}`
   );

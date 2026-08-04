@@ -68,21 +68,27 @@ const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coord
 ### Route Optimization
 
 ```javascript
-// Optimize waypoint order
+// Optimize waypoint order — hard limit: 12 coordinates max (v1 API)
+// source/destination only accept 'first'/'any' and 'last'/'any' — no numeric indices
 const url =
   `https://api.mapbox.com/optimized-trips/v1/mapbox/driving-traffic/${coords}?` +
   `source=first&destination=last&roundtrip=true&...`;
 
 const optimized = json.trips[0];
 const order = json.waypoints.map((wp) => wp.waypoint_index);
+
+// More than 12 stops, or need time windows/vehicle capacities? See Optimization
+// API v2 (separate async job-submission API, Public Beta, up to 1,000 locations)
 ```
 
 ### Congestion-Based Route Coloring
 
 ```javascript
+// annotations must be paired with overview=full or the geometry won't line up
+// point-for-point with the per-segment annotation array
 const url =
   `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}?` +
-  `annotations=duration,distance,congestion&...`;
+  `overview=full&annotations=duration,distance,congestion&...`;
 
 // Color by congestion level
 const congestion = route.legs[0].annotation.congestion;

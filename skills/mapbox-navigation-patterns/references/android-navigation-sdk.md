@@ -255,6 +255,37 @@ override fun onDestroy() {
 }
 ```
 
+## Route Maneuver Arrows
+
+Render the upcoming-turn arrow with `MapboxRouteArrowApi` (computes the arrow geometry from
+`RouteProgress`) and `MapboxRouteArrowView` (renders it to the style).
+
+```kotlin
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowView
+import com.mapbox.navigation.ui.maps.route.arrow.model.RouteArrowOptions
+
+// Instantiate once per Activity/Fragment.
+val routeArrowApi = MapboxRouteArrowApi()
+val routeArrowOptions = RouteArrowOptions.Builder(context).build()
+val routeArrowView = MapboxRouteArrowView(routeArrowOptions)
+
+// Fold the update into the same routeProgressObserver that's registered via
+// onAttached/onDetached in the Custom Navigation UI section above — don't wire
+// up a second observer or unregister it by hand; the lifecycle-aware handle
+// already covers registration and teardown for it.
+private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+    // ...existing banner/ETA updates...
+
+    val updatedManeuverArrow = routeArrowApi.addUpcomingManeuverArrow(routeProgress)
+    routeArrowView.renderManeuverUpdate(mapView.getMapboxMap().getStyle()!!, updatedManeuverArrow)
+}
+```
+
+If you're registering the arrow's observer on its own instead of folding it into an
+existing lifecycle-aware handle, unregister it in `onStop()` or `onDestroy()`.
+
 ## Reference
 
 The examples above cover the basic pattern. For a complete, production-grade implementation —

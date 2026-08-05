@@ -222,13 +222,18 @@ import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
 
-// Instantiate once per Activity/Fragment; defaults render a solid blue line
-// with a darker blue outline.
-val routeLineApiOptions = MapboxRouteLineApiOptions.Builder().build()
-val routeLineApi = MapboxRouteLineApi(routeLineApiOptions)
+// Declared lateinit and built in onCreate()
+private lateinit var routeLineApi: MapboxRouteLineApi
+private lateinit var routeLineView: MapboxRouteLineView
 
-val routeLineViewOptions = MapboxRouteLineViewOptions.Builder(context).build()
-val routeLineView = MapboxRouteLineView(routeLineViewOptions)
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    // ...after setContentView()/view binding...
+
+    // Defaults style render a solid blue line with a darker blue outline.
+    routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().build())
+    routeLineView = MapboxRouteLineView(MapboxRouteLineViewOptions.Builder(this).build())
+}
 
 // Register on the lifecycle-aware MapboxNavigation handle (see above) so
 // route changes — including reroutes and alternatives — redraw the line.
@@ -266,10 +271,17 @@ import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
 import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowView
 import com.mapbox.navigation.ui.maps.route.arrow.model.RouteArrowOptions
 
-// Instantiate once per Activity/Fragment.
-val routeArrowApi = MapboxRouteArrowApi()
-val routeArrowOptions = RouteArrowOptions.Builder(context).build()
-val routeArrowView = MapboxRouteArrowView(routeArrowOptions)
+// Declared lateinit and built in onCreate()
+private lateinit var routeArrowApi: MapboxRouteArrowApi
+private lateinit var routeArrowView: MapboxRouteArrowView
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    // ...after setContentView()/view binding...
+
+    routeArrowApi = MapboxRouteArrowApi()
+    routeArrowView = MapboxRouteArrowView(RouteArrowOptions.Builder(this).build())
+}
 
 // Fold the update into the same routeProgressObserver that's registered via
 // onAttached/onDetached in the Custom Navigation UI section above — don't wire

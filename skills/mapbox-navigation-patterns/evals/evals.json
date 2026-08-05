@@ -69,6 +69,15 @@
         "Flags that the observer is registered as an inline lambda with no stored reference, so it can never be unregistered, which is a leak since `register*Observer` does not remove itself automatically",
         "Recommends storing the observer in a variable and unregistering it in the matching teardown (e.g. `onDetached`/`onDestroy`)"
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "Review this Swift code that's meant to display remaining distance during turn-by-turn navigation on iOS. What's wrong with it?\n\n```swift\nnavigation.routeProgress\n    .sink { [weak self] progressState in\n        guard let progress = progressState?.routeProgress else { return }\n        let remaining = progress.route.legs\n            .flatMap { $0.steps }\n            .dropFirst(progress.legIndex)\n            .reduce(0.0) { $0 + $1.distance }\n        self?.distanceLabel.text = \"\\(Int(remaining))m remaining\"\n    }\n    .store(in: &subscriptions)\n```",
+      "expectations": [
+        "Flags that `RouteProgress` (or `RouteLegProgress`/`RouteStepProgress`) already exposes remaining distance directly (e.g. `distanceRemaining` on the current step/leg progress) — recomputing it by walking `route.legs`/`steps` manually is unnecessary",
+        "Notes the manual computation is easy to get subtly wrong — e.g. it doesn't account for partial progress within the current step, only whole steps dropped by index",
+        "Recommends replacing the manual computation with the SDK-provided field instead of walking the route's legs/steps"
+      ]
     }
   ]
 }

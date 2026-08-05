@@ -241,6 +241,31 @@ class CustomNavigationViewController: UIViewController {
 }
 ```
 
+## Anti-pattern: recomputing progress manually
+
+`RouteProgress`, `RouteLegProgress`, and `RouteStepProgress` already expose `distanceRemaining`,
+`durationRemaining`, `distanceTraveled`, and `fractionTraveled` (see `updateProgress` above). Don't
+recompute these by walking a route's `legs`/`steps`/`shape` coordinates by hand on every
+`routeProgress` publisher update — it duplicates values the SDK already maintains for you and is
+easy to get subtly wrong (leg boundaries, partial progress within the current step).
+
+```swift
+// Avoid — manually summing step distances on every update
+let remaining = progress.route.legs
+    .flatMap { $0.steps }
+    .dropFirst(progress.legIndex)
+    .reduce(0.0) { $0 + $1.distance }
+
+// Prefer — already computed by the SDK
+let remaining = progress.durationRemaining
+```
+
+This is the same underlying principle as Android's `RouteProgress` guidance — a different SDK,
+same idea: read the field the SDK already gives you rather than re-deriving it from raw route
+data. Unlike the Android antipatterns file's native-object accessor cost claims, this hasn't been
+verified against actual iOS SDK internals — treat the correctness/duplication point as solid, but
+don't assume a specific performance cost here without checking the iOS SDK source.
+
 ## Voice Guidance Configuration
 
 ```swift

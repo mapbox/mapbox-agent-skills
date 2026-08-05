@@ -286,6 +286,88 @@ private val routeProgressObserver = RouteProgressObserver { routeProgress ->
 If you're registering the arrow's observer on its own instead of folding it into an
 existing lifecycle-aware handle, unregister it in `onStop()` or `onDestroy()`.
 
+## Navigation Camera
+
+`NavigationCamera` doesn't compute camera positions itself — it consumes targets from a
+`MapboxNavigationViewportDataSource` and transitions to them. Feed the data source from your
+route/location/progress observers and call `evaluate()` after each update, or the camera has
+nothing to transition to.
+
+```kotlin
+import com.mapbox.navigation.core.directions.session.RoutesObserver
+import com.mapbox.navigation.core.trip.session.LocationMatcherResult
+import com.mapbox.navigation.core.trip.session.LocationObserver
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+import com.mapbox.navigation.ui.maps.camera.NavigationCamera
+import com.mapbox.navigation.ui.maps.camera.data.MapboxNavigationViewportDataSource
+import com.mapbox.navigation.ui.maps.camera.transition.NavigationCameraTransitionOptions
+
+// Declared lateinit and built in onCreate(), once mapView exists (see Custom
+// Navigation UI above).
+private lateinit var viewportDataSource: MapboxNavigationViewportDataSource
+private lateinit var navigationCamera: NavigationCamera
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    mapView = findViewById(R.id.mapView)
+    // ...
+
+    viewportDataSource = MapboxNavigationViewportDataSource(mapView.getMapboxMap())
+    navigationCamera = NavigationCamera(
+        mapView.getMapboxMap(),
+        mapView.camera,
+        viewportDataSource
+    )
+}
+
+// Feed route changes into the data source (register alongside the other
+// observers on the lifecycle-aware MapboxNavigation handle).
+private val routesObserver = RoutesObserver { result ->
+    if (result.navigationRoutes.isNotEmpty()) {
+        viewportDataSource.onRouteChanged(result.navigationRoutes.first())
+    } else {
+        viewportDataSource.clearRouteData()
+    }
+    viewportDataSource.evaluate()
+}
+
+// Feed location updates in. Move to Overview once, on the first fix — after
+// that, only request Following in response to explicit user action (e.g. a
+// recenter button), not automatically on every update.
+private var firstLocationUpdateReceived = false
+private val locationObserver = object : LocationObserver {
+    override fun onNewRawLocation(rawLocation: Location) {
+        // not used for the camera
+    }
+
+    override fun onNewLocationMatcherResult(
+        locationMatcherResult: LocationMatcherResult
+    ) {
+        viewportDataSource.onLocationChanged(locationMatcherResult.enhancedLocation)
+        viewportDataSource.evaluate()
+
+        if (!firstLocationUpdateReceived) {
+            firstLocationUpdateReceived = true
+            navigationCamera.requestNavigationCameraToOverview(
+                stateTransitionOptions = NavigationCameraTransitionOptions.Builder()
+                    .maxDuration(0) // instant transition
+                    .build()
+            )
+        }
+    }
+}
+
+// Feed route progress in. This only updates the data the camera reads from —
+// it doesn't request a camera state itself.
+private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+    viewportDataSource.onRouteProgressChanged(routeProgress)
+    viewportDataSource.evaluate()
+}
+
+// Elsewhere — e.g. a recenter button's click listener:
+// navigationCamera.requestNavigationCameraToFollowing()
+```
+
 ## Reference
 
 The examples above cover the basic pattern. For a complete, production-grade implementation —

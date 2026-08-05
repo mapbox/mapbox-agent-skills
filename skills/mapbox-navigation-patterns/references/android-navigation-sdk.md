@@ -380,6 +380,39 @@ private val routeProgressObserver = RouteProgressObserver { routeProgress ->
 // navigationCamera.requestNavigationCameraToFollowing()
 ```
 
+## Voice Guidance
+
+`MapboxAudioGuidance` builds on `MapboxSpeechApi` and `MapboxVoiceInstructionsPlayer` and
+integrates with the `MapboxNavigationApp` lifecycle itself — it registers as an observer, so you
+don't wire it into `requireMapboxNavigation` the way you do route/location/progress observers.
+Fetch the shared instance rather than constructing your own, or you'll end up with two players
+racing to speak.
+
+```kotlin
+import com.mapbox.navigation.voice.api.MapboxAudioGuidance
+
+// Fetches the instance MapboxNavigationApp already registered, or creates and
+// registers one if none exists yet.
+val audioGuidance = MapboxAudioGuidance.getRegisteredInstance()
+
+// Muting still receives voice instructions — it only suppresses playback, so
+// instructions stay in sync with what the driver is currently on.
+audioGuidance.mute()
+audioGuidance.unmute()
+audioGuidance.toggle()
+
+// Observe state (e.g. to reflect mute status in a mute button icon).
+audioGuidance.stateFlow().collect { state ->
+    // Update UI based on the current MapboxAudioGuidanceState
+}
+```
+
+No manual unregistration needed here — the shared instance is tied to `MapboxNavigationApp`'s
+own lifecycle and cleans itself up. That's only required if you build your own instance instead
+(`MapboxAudioGuidance.create(options)` + `MapboxNavigationApp.registerObserver(audioGuidance)`),
+in which case unregister it yourself in `onDestroy()` via
+`MapboxNavigationApp.unregisterObserver(audioGuidance)`.
+
 ## Reference
 
 The examples above cover the basic pattern. For a complete, production-grade implementation —

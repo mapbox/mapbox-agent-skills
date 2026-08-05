@@ -18,8 +18,8 @@ if (existsSync('.env')) {
 
 const anthropic = new Anthropic();
 
-const MODEL = process.env.EVAL_MODEL || 'claude-sonnet-4-20250514';
-const JUDGE_MODEL = process.env.EVAL_JUDGE_MODEL || 'claude-sonnet-4-20250514';
+const MODEL = process.env.EVAL_MODEL || 'claude-sonnet-5';
+const JUDGE_MODEL = process.env.EVAL_JUDGE_MODEL || 'claude-sonnet-5';
 const CONCURRENCY = parseInt(process.env.EVAL_CONCURRENCY || '10', 10);
 const SKILLS_DIR = 'skills';
 

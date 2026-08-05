@@ -206,6 +206,55 @@ class CustomNavigationActivity : AppCompatActivity() {
 }
 ```
 
+## Route Line Rendering
+
+Render the route line explicitly with `MapboxRouteLineApi` (computes what to draw) and
+`MapboxRouteLineView` (renders it to the style). Drive both from a `RoutesObserver` so the line
+updates automatically on reroutes, congestion refreshes, and alternative-route changes — don't call
+`setNavigationRoutes`/`renderRouteDrawData` manually after each route request.
+
+```kotlin
+import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.RoutesObserver
+import com.mapbox.navigation.core.RoutesUpdatedResult
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
+
+// Instantiate once per Activity/Fragment; defaults render a solid blue line
+// with a darker blue outline.
+val routeLineApiOptions = MapboxRouteLineApiOptions.Builder().build()
+val routeLineApi = MapboxRouteLineApi(routeLineApiOptions)
+
+val routeLineViewOptions = MapboxRouteLineViewOptions.Builder(context).build()
+val routeLineView = MapboxRouteLineView(routeLineViewOptions)
+
+// Register on the lifecycle-aware MapboxNavigation handle (see above) so
+// route changes — including reroutes and alternatives — redraw the line.
+private val routesObserver = object : RoutesObserver {
+    override fun onRoutesChanged(result: RoutesUpdatedResult) {
+        val alternativesMetadata = mapboxNavigation.getAlternativeMetadataFor(
+            result.navigationRoutes
+        )
+        routeLineApi.setNavigationRoutes(
+            result.navigationRoutes,
+            alternativesMetadata
+        ) { value ->
+            routeLineView.renderRouteDrawData(mapView.getMapboxMap().getStyle()!!, value)
+        }
+    }
+}
+
+override fun onDestroy() {
+    super.onDestroy()
+    // Release both — MapboxRouteLineApi and MapboxRouteLineView do not stop
+    // work on their own when the screen goes away.
+    routeLineApi.cancel()
+    routeLineView.cancel()
+}
+```
+
 ## Reference
 
 The examples above cover the basic pattern. For a complete, production-grade implementation —

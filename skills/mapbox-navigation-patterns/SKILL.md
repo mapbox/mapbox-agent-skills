@@ -96,7 +96,7 @@ User says things like:
 
 - **[references/web-directions-api.md](references/web-directions-api.md)** - Directions API patterns for the web: basic route display, turn-by-turn instructions, alternative routes, multi-stop routing, route optimization, and congestion-based route coloring
 - **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: basic turn-by-turn navigation, custom navigation UI, voice guidance configuration
-- **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI
+- **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI, route line rendering
 - **[references/best-practices.md](references/best-practices.md)** - Route caching, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)
 
 ## Related Skills

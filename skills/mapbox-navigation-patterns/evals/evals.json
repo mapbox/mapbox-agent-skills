@@ -78,6 +78,76 @@
         "Notes the manual computation is easy to get subtly wrong — e.g. it doesn't account for partial progress within the current step, only whole steps dropped by index",
         "Recommends replacing the manual computation with the SDK-provided field instead of walking the route's legs/steps"
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm building a custom navigation UI on Android — my own map and overlays, not the SDK's drop-in screen. How do I draw the route line, and what happens if I don't respond to route changes correctly?",
+      "expectations": [
+        "Recommends instantiating `MapboxRouteLineApi` (computes what to draw) and `MapboxRouteLineView` (renders it to the style) explicitly, since the Android Navigation SDK has no drop-in screen that draws the route line for you",
+        "Recommends driving both from a `RoutesObserver` rather than calling `setNavigationRoutes`/`renderRouteDrawData` manually after each route request, so reroutes, congestion refreshes, and alternative-route changes are handled automatically",
+        "Mentions fetching alternatives metadata (e.g. `getAlternativeMetadataFor`) and passing it to `routeLineApi.setNavigationRoutes` alongside the routes",
+        "Notes `routeLineApi.cancel()` and `routeLineView.cancel()` must be called during teardown, since neither stops work on its own"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I want to show an arrow on the upcoming turn in my custom Android navigation UI. Which Mapbox APIs handle this, and how often does the arrow need to be recalculated?",
+      "expectations": [
+        "Recommends `MapboxRouteArrowApi` (computes the arrow geometry from `RouteProgress`) together with `MapboxRouteArrowView` (renders it to the style)",
+        "States the arrow must be recomputed on every `RouteProgressObserver` update via `addUpcomingManeuverArrow`, not calculated once",
+        "Recommends unregistering the `RouteProgressObserver` in `onStop()` (not only `onDestroy()`), since otherwise the arrow keeps recomputing on every progress update even while the screen isn't visible",
+        "Identifies this as a distinct API pair from route line rendering (`MapboxRouteLineApi`/`MapboxRouteLineView`), not the same component"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "My Android navigation screen's camera isn't following the driver even though I created a `NavigationCamera` and called `requestNavigationCameraToFollowing()`. What's most likely missing?",
+      "expectations": [
+        "Explains `NavigationCamera` does not compute camera positions itself — it consumes targets produced by a `MapboxNavigationViewportDataSource`",
+        "States the viewport data source must be fed via `onRouteChanged`, `onLocationChanged`, and `onRouteProgressChanged`, with `evaluate()` called after each update",
+        "Identifies that the data source starts empty and has nothing to transition to until real route/location/progress data has been supplied — likely why the camera request had no effect",
+        "Names the observers used to feed the data source: `RoutesObserver`, `LocationObserver`, `RouteProgressObserver`"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "I need voice guidance in my Android navigation app and I'm about to call `MapboxAudioGuidance.create()` directly in my Activity to get an instance. Is that the right approach?",
+      "expectations": [
+        "Recommends `MapboxAudioGuidance.getRegisteredInstance()` instead of constructing a new instance directly, to avoid two players racing to speak",
+        "Notes `MapboxAudioGuidance` self-registers with the `MapboxNavigationApp` lifecycle, unlike route/location/progress observers which are registered manually through `requireMapboxNavigation`",
+        "Mentions `mute()`/`unmute()`/`toggle()` control playback, and that muting still receives voice instructions — only playback is suppressed",
+        "States it builds on `MapboxSpeechApi` and `MapboxVoiceInstructionsPlayer`"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "In my Android app's `RouteProgressObserver`, I have `nativeRouteObject(true)` enabled and I read `route.directionsRoute.legs()?.get(0)?.distance()` and then separately call `legs()?.get(0)?.duration()`. Is this efficient, and what should I check before optimizing this kind of route traversal?",
+      "expectations": [
+        "Notes that many values this code might be recomputing — `distanceRemaining`, `durationRemaining`, `fractionTraveled`, and similar — are already provided pre-computed on `RouteProgress` and should be used instead of manual traversal",
+        "Explains that with NRO (`nativeRouteObject(true)`) enabled, every `legs()`/`steps()`/`annotation()` access re-reads and re-converts data from native memory, so calling `legs()` a second time repeats that conversion",
+        "Recommends reading `legs()` once into a local variable and reusing it, rather than calling the accessor again for each field",
+        "Notes this cost matters most when done on the main thread inside `RouteProgressObserver`, since it blocks frame rendering"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "I want to show upcoming incidents and road closures ahead of the driver on Android. Should I read `RouteLeg.incidents()`/`closures()` and filter them by the driver's current geometry index on every location update?",
+      "expectations": [
+        "Recommends `RouteProgress.upcomingRoadObjects` instead of manually filtering `RouteLeg.incidents()`/`closures()`",
+        "Explains `upcomingRoadObjects` is already recomputed on every update, already filtered to objects ahead of the current position, ordered by distance, with `distanceToStart` already calculated",
+        "Notes `NavigationRoute.upcomingRoadObjects` is the unfiltered whole-route list with the same caveat, so re-filtering that by position on every update is the same antipattern",
+        "States that manually walking route annotations and computing distance to each object on every update duplicates work the SDK already does"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "My Android app stores the `MapboxNavigation` instance in a singleton object so any screen can access it without re-fetching it, and a couple of screens register observers on it directly as inline lambdas. Is this safe?",
+      "expectations": [
+        "Flags storing `MapboxNavigation` in a singleton, `Application`, static field, or `ViewModel` that survives Activity recreation as a leak risk — it must not outlive the navigation session",
+        "Notes `MapboxNavigation` is no longer valid after `onDestroy()`/`MapboxNavigationProvider.destroy()`, so referencing it afterward is a bug",
+        "States every `register*Observer` call needs a matching `unregister*Observer` during teardown, and that observers registered as inline lambdas with no stored reference cannot be unregistered",
+        "Recommends the lifecycle-aware `requireMapboxNavigation`/`MapboxNavigationApp` pattern instead of a manually held singleton reference"
+      ]
     }
   ]
 }

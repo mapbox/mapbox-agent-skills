@@ -265,6 +265,20 @@ override fun onDestroy() {
 Render the upcoming-turn arrow with `MapboxRouteArrowApi` (computes the arrow geometry from
 `RouteProgress`) and `MapboxRouteArrowView` (renders it to the style).
 
+**If arrows are combined with route line rendering (Route Line Rendering above), the route line's
+style layers must exist before any arrow rendering happens** — arrows anchor above the route
+line's top layer. The route line's render call comes from `RoutesObserver`, asynchronously,
+while the arrow's render fires from `RouteProgressObserver` as soon as a route is set — so on the 
+first route, the arrow can render before the route line's layers exist and end up stacked 
+underneath it. Avoid this by calling `initializeLayers` once the style loads, 
+before any route exists:
+
+```kotlin
+mapView.getMapboxMap().loadStyle(Style.STANDARD) { style ->
+    routeLineView.initializeLayers(style)
+}
+```
+
 ```kotlin
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
 import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi

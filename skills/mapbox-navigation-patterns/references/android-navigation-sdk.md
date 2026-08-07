@@ -4,7 +4,7 @@ The snippets below illustrate how the NavSDK pieces fit together — lifecycle-a
 handle, route requests, route line/arrow rendering, camera, voice guidance. They are not
 copy-paste-ready screens: concerns like request cancellation, error/null handling, and permission
 checks are left out so the NavSDK-specific parts stay legible, and other concerns (state
-restoration, DI) depend on your app's architecture. 
+restoration, DI) depend on your app's architecture.
 
 ## Basic Turn-by-Turn Navigation
 
@@ -274,9 +274,9 @@ Render the upcoming-turn arrow with `MapboxRouteArrowApi` (computes the arrow ge
 **If arrows are combined with route line rendering (Route Line Rendering above), the route line's
 style layers must exist before any arrow rendering happens** — arrows anchor above the route
 line's top layer. The route line's render call comes from `RoutesObserver`, asynchronously,
-while the arrow's render fires from `RouteProgressObserver` as soon as a route is set — so on the 
-first route, the arrow can render before the route line's layers exist and end up stacked 
-underneath it. Avoid this by calling `initializeLayers` once the style loads, 
+while the arrow's render fires from `RouteProgressObserver` as soon as a route is set — so on the
+first route, the arrow can render before the route line's layers exist and end up stacked
+underneath it. Avoid this by calling `initializeLayers` once the style loads,
 before any route exists:
 
 ```kotlin

@@ -95,7 +95,7 @@
       "expectations": [
         "Recommends `MapboxRouteArrowApi` (computes the arrow geometry from `RouteProgress`) together with `MapboxRouteArrowView` (renders it to the style)",
         "States the arrow must be recomputed on every `RouteProgressObserver` update via `addUpcomingManeuverArrow`, not calculated once",
-        "Recommends unregistering the `RouteProgressObserver` in `onStop()` (not only `onDestroy()`), since otherwise the arrow keeps recomputing on every progress update even while the screen isn't visible",
+        "Recommends registering/unregistering the observer via the `onAttached`/`onDetached` callbacks of an `onResumedObserver` passed to `requireMapboxNavigation` — a more convenient alternative to manually pairing lifecycle callbacks like `onResume`/`onPause` — since otherwise the arrow keeps recomputing on every progress update even after the screen leaves the foreground",
         "Identifies this as a distinct API pair from route line rendering (`MapboxRouteLineApi`/`MapboxRouteLineView`), not the same component"
       ]
     },
@@ -113,10 +113,9 @@
       "id": 12,
       "prompt": "I need voice guidance in my Android navigation app and I'm about to call `MapboxAudioGuidance.create()` directly in my Activity to get an instance. Is that the right approach?",
       "expectations": [
-        "Recommends `MapboxAudioGuidance.getRegisteredInstance()` instead of constructing a new instance directly, to avoid two players racing to speak",
-        "Notes `MapboxAudioGuidance` self-registers with the `MapboxNavigationApp` lifecycle, unlike route/location/progress observers which are registered manually through `requireMapboxNavigation`",
-        "Mentions `mute()`/`unmute()`/`toggle()` control playback, and that muting still receives voice instructions — only playback is suppressed",
-        "States it builds on `MapboxSpeechApi` and `MapboxVoiceInstructionsPlayer`"
+        "It is correct way, if you need instance which lifecycle you manage yourself",
+        "Notes `MapboxAudioGuidance` self-registers with the `MapboxNavigationApp` lifecycle, unlike `MapboxAudioGuidance.create()`",
+        "Recommends `MapboxAudioGuidance.getRegisteredInstance()` instead of constructing a new instance directly, as it handles prefetching and mute state for you automatically so it is easier to use"
       ]
     },
     {

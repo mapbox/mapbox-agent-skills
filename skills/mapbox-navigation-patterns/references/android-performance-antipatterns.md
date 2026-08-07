@@ -52,7 +52,11 @@ The most costly cases are iterating over `annotation().distance()`, `.duration()
 
 ### NAV-NRO-4. Road objects extracted by walking the route instead of using `RouteProgress.upcomingRoadObjects`
 
-`RouteLeg.incidents()`, `RouteLeg.closures()`, and similar route-level annotations hold every road object for the whole route, without regard to the driver's current position. Filtering these lists down to "what's ahead" on every location update — by leg/step index or geometry index — and computing the distance from the current location to each object duplicates work the SDK already does. `RouteProgress.upcomingRoadObjects` is recomputed for you on every update: it already contains only the objects ahead of the current position, ordered by distance, and each entry's `distanceToStart` is already calculated. `NavigationRoute.upcomingRoadObjects` has the same caveat — it is the unfiltered, whole-route list, so re-filtering it by position on every update is the same antipattern.
+`RouteLeg.incidents()`, `RouteLeg.closures()`, and similar route-level annotations hold every road object for the whole route, without regard to the driver's current position. Filtering these lists down to "what's ahead" on every location update — by leg/step index or geometry index — and computing the distance from the current location to each object duplicates work the SDK already does.
+
+Use `RouteProgress.upcomingRoadObjects` instead. It is recomputed for you on every update: already filtered to only the objects ahead of the current position, already ordered by distance, with each entry's `distanceToStart` already calculated.
+
+`NavigationRoute.upcomingRoadObjects` is the same kind of field but at the whole-route level: it is the unfiltered list for the entire route, not just what's ahead. Re-filtering _that_ by position on every update is the same antipattern this section warns against — the fix is still to read the already-filtered, already-ordered list from `RouteProgress` instead of recomputing it yourself.
 
 ```kotlin
 // Avoid — walking route annotations and filtering/measuring distance manually on every update
@@ -80,7 +84,9 @@ A callback that immediately switches to a background thread and then calls back 
 
 ### NAV-MEMORY-1. MapboxNavigation referenced after destruction, or held too long
 
-After `onDestroy()` (or `MapboxNavigationProvider.destroy()`), the instance is no longer valid. Report storage in a `ViewModel`, `Application`, static field, or dependency-injection singleton that outlives the navigation session.
+**After `onDestroy()` (or `MapboxNavigationProvider.destroy()`), the instance is no longer valid.** Referencing it afterward is a bug on its own, regardless of where the reference was stored.
+
+Separately, flag any storage location that could outlive the navigation session in the first place: a `ViewModel` (it survives Activity recreation), `Application`, a static field, or a dependency-injection singleton.
 
 ### NAV-MEMORY-2. Components that hold a MapboxNavigation reference
 

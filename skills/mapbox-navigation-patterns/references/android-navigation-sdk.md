@@ -315,15 +315,30 @@ private val routeProgressObserver = RouteProgressObserver { routeProgress ->
 }
 ```
 
-If you're registering the arrow's observer on its own instead of folding it into an
-existing lifecycle-aware handle, unregister it in `onStop()` or `onDestroy()`.
+Remember to register/unregister it the same way the observers above do: via
+the `onAttached`/`onDetached` callbacks of an `onResumedObserver` passed to
+`requireMapboxNavigation` (see Basic Turn-by-Turn Navigation). `onAttached` fires on Resumed and
+`onDetached` fires on Paused, so the observer — and the recomputation it triggers on every progress
+update — is torn down as soon as the screen leaves the foreground. **This is a more convenient
+alternative to manually pairing lifecycle callbacks yourself (e.g. `onResume`/`onPause`) to achieve
+the same effect** — no Activity callback override required.
 
 ## Navigation Camera
 
 `NavigationCamera` doesn't compute camera positions itself — it consumes targets from a
-`MapboxNavigationViewportDataSource` and transitions to them. Feed the data source from your
-route/location/progress observers and call `evaluate()` after each update, or the camera has
-nothing to transition to.
+`MapboxNavigationViewportDataSource` and transitions to them. The data source starts empty and has
+nothing to transition to until it's been fed, so all three of the following are required — not
+optional extras — before `requestNavigationCameraToFollowing()`/`...ToOverview()` will have any
+visible effect:
+
+| Observer                | Feeds the data source via                        |
+| ----------------------- | ------------------------------------------------ |
+| `RoutesObserver`        | `viewportDataSource.onRouteChanged(...)`         |
+| `LocationObserver`      | `viewportDataSource.onLocationChanged(...)`      |
+| `RouteProgressObserver` | `viewportDataSource.onRouteProgressChanged(...)` |
+
+Call `viewportDataSource.evaluate()` after each of these three updates — it's what recomputes the
+camera targets from whatever has been fed in so far.
 
 ```kotlin
 import com.mapbox.navigation.core.directions.session.RoutesObserver
@@ -389,8 +404,9 @@ private val locationObserver = object : LocationObserver {
     }
 }
 
-// Feed route progress in. This only updates the data the camera reads from —
-// it doesn't request a camera state itself.
+// Feed route progress in — the third required feed alongside routesObserver
+// and locationObserver above. This only updates the data the camera reads
+// from; it doesn't request a camera state itself.
 private val routeProgressObserver = RouteProgressObserver { routeProgress ->
     viewportDataSource.onRouteProgressChanged(routeProgress)
     viewportDataSource.evaluate()
@@ -402,11 +418,26 @@ private val routeProgressObserver = RouteProgressObserver { routeProgress ->
 
 ## Voice Guidance
 
-`MapboxAudioGuidance` builds on `MapboxSpeechApi` and `MapboxVoiceInstructionsPlayer` and
-integrates with the `MapboxNavigationApp` lifecycle itself — it registers as an observer, so you
-don't wire it into `requireMapboxNavigation` the way you do route/location/progress observers.
-Fetch the shared instance rather than constructing your own, or you'll end up with two players
-racing to speak.
+`MapboxAudioGuidance` is the high-level voice guidance component. Key points:
+
+- **Call `MapboxAudioGuidance.getRegisteredInstance()` — this is the recommended way to get an
+  instance.** It handles prefetching and mute state for you automatically, on top of the shared
+  `MapboxNavigationApp` lifecycle. `MapboxAudioGuidance` is built on top of `MapboxSpeechApi`
+  (fetches/synthesizes the instruction audio) and `MapboxVoiceInstructionsPlayer` (plays it).
+- **`MapboxAudioGuidance.getRegisteredInstance()` self-registers** — MapboxAudioGuidance instance
+  fetched via `MapboxAudioGuidance.getRegisteredInstance()` attaches itself to
+  `MapboxNavigationApp`'s lifecycle as an observer and tears itself down automatically.
+  No manual registration is needed for the shared instance.
+- **Muting suppresses playback only, not the instructions themselves.** `mute()`, `unmute()`, and
+  `toggle()` control whether audio is _played_; voice instructions keep arriving and staying in
+  sync with the driver's position the whole time — muting doesn't pause or skip them.
+- **If you need a standalone instance that you manage yourself** — for example to register it
+  conditionally, or with specific options — use `MapboxAudioGuidance.create()`. Keep in mind not
+  to use it together with `MapboxAudioGuidance.getRegisteredInstance()` — you'd end up with two
+  independently-constructed instances, each driving its own voice player, racing to speak over
+  each other.
+- For additional information regarding `MapboxSpeechApi` and `MapboxVoiceInstructionsPlayer` use
+  mapbox-docs mcp.
 
 ```kotlin
 import com.mapbox.navigation.voice.api.MapboxAudioGuidance
@@ -415,8 +446,6 @@ import com.mapbox.navigation.voice.api.MapboxAudioGuidance
 // registers one if none exists yet.
 val audioGuidance = MapboxAudioGuidance.getRegisteredInstance()
 
-// Muting still receives voice instructions — it only suppresses playback, so
-// instructions stay in sync with what the driver is currently on.
 audioGuidance.mute()
 audioGuidance.unmute()
 audioGuidance.toggle()
@@ -432,6 +461,27 @@ own lifecycle and cleans itself up. That's only required if you build your own i
 (`MapboxAudioGuidance.create(options)` + `MapboxNavigationApp.registerObserver(audioGuidance)`),
 in which case unregister it yourself in `onDestroy()` via
 `MapboxNavigationApp.unregisterObserver(audioGuidance)`.
+
+If you need a standalone instance that you manage yourself (for example to register it
+conditionally or with specific options), use create() instead and unregister it
+when it is no longer needed.
+
+```kotlin
+val options = MapboxSpeechApiOptions.Builder()
+    .gender(VoiceGender.MALE)
+    .build()
+
+val audioGuidance = MapboxAudioGuidance.create(options)
+override fun onCreate() {
+  super.onCreate()
+  MapboxNavigationApp.registerObserver(audioGuidance)
+}
+
+override fun onDestroy() {
+  super.onDestroy()
+  MapboxNavigationApp.unregisterObserver(audioGuidance)
+}
+```
 
 ## Reference
 

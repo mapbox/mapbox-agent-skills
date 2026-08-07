@@ -1,5 +1,11 @@
 # Android: Navigation SDK Patterns
 
+The snippets below illustrate how the NavSDK pieces fit together — lifecycle-aware navigation
+handle, route requests, route line/arrow rendering, camera, voice guidance. They are not
+copy-paste-ready screens: concerns like request cancellation, error/null handling, and permission
+checks are left out so the NavSDK-specific parts stay legible, and other concerns (state
+restoration, DI) depend on your app's architecture. 
+
 ## Basic Turn-by-Turn Navigation
 
 **Use `MapboxNavigationApp` + `requireMapboxNavigation`, not `MapboxNavigationProvider`.** The

@@ -1,172 +1,304 @@
-# iOS: Navigation SDK Patterns (Core + SwiftUI)
+# iOS: Navigation SDK Patterns
 
-**Default stack:** SwiftUI + `MapboxNavigationCore`. Do **not** use `MapboxNavigationUIKit` / `NavigationViewController` unless the user explicitly asks for UIKit or a drop-in navigation UI — then load [`ios-navigation-uikit.md`](ios-navigation-uikit.md).
-
-**Canonical sample:** [CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample) (`Navigation.swift` + `Views/`).
-
-## Before answering: validate upstream examples
-
-Examples evolve (e.g. Road Cameras). **Before** answering any iOS Navigation question:
-
-1. List the current tree under [`Examples/`](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples) (`CoreSDKExample`, `UIKitExample`, `CarPlayExample`, `AdditionalExamples`).
-2. For topic samples, list [`AdditionalExamples/Examples/`](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/AdditionalExamples/Examples) and/or read [`Constants.swift`](https://github.com/mapbox/mapbox-navigation-ios/blob/main/Examples/AdditionalExamples/Constants.swift) `listOfExamples` (authoritative titles/descriptions).
-3. Open the matching sample source and ground the answer in that code. Prefer live examples over skill snippets when they diverge.
-
-Use `gh api repos/mapbox/mapbox-navigation-ios/contents/Examples?ref=main` (and nested paths) or equivalent.
-
-## Decision guide
-
-| Need                                                       | Prefer                                                          |
-| ---------------------------------------------------------- | --------------------------------------------------------------- |
-| Custom turn-by-turn UI (default)                           | Core + SwiftUI — CoreSDKExample                                 |
-| Drop-in full-screen navigation UI                          | UIKit — load `ios-navigation-uikit.md`                          |
-| CarPlay                                                    | `Examples/CarPlayExample`                                       |
-| Road cameras, history, e-horizon, offline, styled UI, etc. | Match title in `listOfExamples` / `AdditionalExamples/Examples` |
-
-## Core + SwiftUI pattern
-
-Keep a strong reference to `MapboxNavigationProvider`. Drive UI from Core publishers / `@Published` state (as in CoreSDKExample’s `Navigation` observable).
+## Basic Turn-by-Turn Navigation
 
 ```swift
-import Combine
-import CoreLocation
-import MapboxDirections
 import MapboxNavigationCore
-import SwiftUI
+import MapboxNavigationUIKit
+import CoreLocation
 
-@MainActor
-final class Navigation: ObservableObject {
-    let predictiveCacheManager: PredictiveCacheManager?
+class NavigationManager: UIViewController {
+    // Maintain strong reference to provider
+    private let mapboxNavigationProvider: MapboxNavigationProvider
+    private var navigationViewController: NavigationViewController?
 
-    @Published private(set) var visualInstruction: VisualInstructionBanner?
-    @Published private(set) var routeProgress: RouteProgress?
-    @Published private(set) var currentPreviewRoutes: NavigationRoutes?
-    @Published private(set) var isInActiveNavigation = false
-    @Published var cameraState: NavigationCameraState = .idle
-
-    private let core: MapboxNavigation
-    private let voiceController: RouteVoiceController
-    private var waypoints: [Waypoint] = []
-
-    init() {
-        let provider = MapboxNavigationProvider(
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        // Initialize provider with configuration
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
             coreConfig: CoreConfig(
-                credentials: .init(),
-                locationSource: .live
-                // ttsConfig: .default — voice via provider.routeVoiceController
+                locationSource: .live,
+                ttsConfig: .default  // Voice guidance enabled
             )
         )
-        core = provider.mapboxNavigation
-        voiceController = provider.routeVoiceController
-        predictiveCacheManager = provider.predictiveCacheManager
-        observeNavigation()
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
 
-    private func observeNavigation() {
-        core.navigation().bannerInstructions
-            .map(\.visualInstruction)
-            .assign(to: &$visualInstruction)
-
-        core.navigation().routeProgress
-            .map { $0?.routeProgress }
-            .assign(to: &$routeProgress)
-
-        core.tripSession().session
-            .map {
-                if case .activeGuidance = $0.state { return true }
-                return false
-            }
-            .removeDuplicates()
-            .assign(to: &$isInActiveNavigation)
-    }
-
-    func requestRoutes(to coordinate: CLLocationCoordinate2D) async throws {
-        guard let location = core.navigation().currentLocationMatching?.enhancedLocation
-        else { return }
-
-        waypoints.append(Waypoint(coordinate: coordinate))
-        var userWaypoint = Waypoint(location: location)
-        if location.course >= 0 {
-            userWaypoint.heading = location.course
-            userWaypoint.headingAccuracy = 90
-        }
-
-        var optionsWaypoints = waypoints
-        optionsWaypoints.insert(userWaypoint, at: 0)
-
-        let options = NavigationRouteOptions(
-            waypoints: optionsWaypoints,
-            profileIdentifier: .automobileAvoidingTraffic
+    required init?(coder: NSCoder) {
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
+            coreConfig: CoreConfig()
         )
-        currentPreviewRoutes = try await core.routingProvider()
-            .calculateRoutes(options: options)
-            .value
-        cameraState = .idle
+        super.init(coder: coder)
     }
 
-    func startActiveNavigation() {
-        guard let previewRoutes = currentPreviewRoutes else { return }
-        core.tripSession().startActiveGuidance(with: previewRoutes, startLegIndex: 0)
-        cameraState = .following
-        waypoints = []
+    func startNavigation() {
+        // Define origin and destination
+        let origin = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+        let destination = CLLocationCoordinate2D(latitude: 37.8044, longitude: -122.2711)
+
+        Task {
+            do {
+                // Build route options
+                let routeOptions = NavigationRouteOptions(
+                    coordinates: [origin, destination]
+                )
+
+                // Calculate routes using async/await
+                let navigationRoutes = try await mapboxNavigationProvider
+                    .mapboxNavigation
+                    .routingProvider()
+                    .calculateRoutes(options: routeOptions)
+                    .value
+
+                await showNavigationUI(with: navigationRoutes)
+
+            } catch {
+                print("Error calculating route: \(error.localizedDescription)")
+            }
+        }
     }
 
-    func startFreeDrive() {
-        core.tripSession().startFreeDrive()
-    }
+    @MainActor
+    func showNavigationUI(with navigationRoutes: NavigationRoutes) {
+        // Configure navigation options
+        let navigationOptions = NavigationOptions(
+            mapboxNavigation: mapboxNavigationProvider.mapboxNavigation,
+            voiceController: mapboxNavigationProvider.routeVoiceController,
+            eventsManager: mapboxNavigationProvider.eventsManager(),
+            predictiveCacheManager: mapboxNavigationProvider.predictiveCacheManager
+        )
 
-    func stopActiveNavigation() {
-        core.tripSession().startFreeDrive()
-        cameraState = .following
-        currentPreviewRoutes = nil
+        // Create navigation view controller with full UI
+        navigationViewController = NavigationViewController(
+            navigationRoutes: navigationRoutes,
+            navigationOptions: navigationOptions
+        )
+
+        navigationViewController?.modalPresentationStyle = .fullScreen
+        present(navigationViewController!, animated: true)
     }
 }
 ```
 
-Wire SwiftUI to `@StateObject` / `@ObservedObject` and render instructions from `visualInstruction` and distances from `routeProgress` (see CoreSDKExample `Views/`).
-
-### Session states
-
-- **Free drive** — `tripSession().startFreeDrive()`
-- **Active guidance** — `startActiveGuidance(with:startLegIndex:)` after preview routes
-- **Idle** — `setToIdle()` when pausing a session
-
-### Voice guidance
+## Custom Navigation UI
 
 ```swift
-// Default: Mapbox Voice API with AVSpeechSynthesizer fallback
-MapboxNavigationProvider(coreConfig: CoreConfig(ttsConfig: .default))
+import MapboxNavigationCore
+import MapboxMaps
+import Combine
+import CoreLocation
 
-// Local-only / custom synthesizer
-CoreConfig(ttsConfig: .localOnly)
-CoreConfig(ttsConfig: .custom(MyCustomSpeechSynthesizer()))
+class CustomNavigationViewController: UIViewController {
+    private let mapboxNavigationProvider: MapboxNavigationProvider
+    private var mapView: MapView!
+    private var subscriptions = Set<AnyCancellable>()
 
-var options = NavigationRouteOptions(coordinates: [origin, destination])
-options.locale = Locale(identifier: "es-ES")
-options.distanceMeasurementSystem = .metric
+    // Custom UI elements
+    var instructionLabel: UILabel!
+    var distanceLabel: UILabel!
+    var etaLabel: UILabel!
+
+    init() {
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
+            coreConfig: CoreConfig(
+                locationSource: .live
+            )
+        )
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        self.mapboxNavigationProvider = MapboxNavigationProvider(
+            coreConfig: CoreConfig()
+        )
+        super.init(coder: coder)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        setupMapView()
+        setupCustomUI()
+    }
+
+    func setupCustomUI() {
+        // Custom instruction banner
+        instructionLabel = UILabel()
+        instructionLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        instructionLabel.textAlignment = .center
+        instructionLabel.numberOfLines = 2
+        view.addSubview(instructionLabel)
+
+        // Distance to next maneuver
+        distanceLabel = UILabel()
+        distanceLabel.font = .systemFont(ofSize: 18)
+        view.addSubview(distanceLabel)
+
+        // ETA label
+        etaLabel = UILabel()
+        etaLabel.font = .systemFont(ofSize: 16)
+        view.addSubview(etaLabel)
+
+        // Add constraints (simplified)
+        instructionLabel.frame = CGRect(x: 20, y: 100, width: view.bounds.width - 40, height: 60)
+        distanceLabel.frame = CGRect(x: 20, y: 170, width: view.bounds.width - 40, height: 30)
+        etaLabel.frame = CGRect(x: 20, y: 210, width: view.bounds.width - 40, height: 30)
+    }
+
+    func setupMapView() {
+        mapView = MapView(frame: view.bounds)
+        view.insertSubview(mapView, at: 0)
+    }
+
+    func startCustomNavigation(to destination: CLLocationCoordinate2D) {
+        Task {
+            do {
+                // Get current location
+                guard let origin = mapboxNavigationProvider
+                    .mapboxNavigation
+                    .navigation()
+                    .currentLocationMatching?.location.coordinate else {
+                    print("No current location")
+                    return
+                }
+
+                // Calculate routes
+                let routeOptions = NavigationRouteOptions(
+                    coordinates: [origin, destination]
+                )
+
+                let navigationRoutes = try await mapboxNavigationProvider
+                    .mapboxNavigation
+                    .routingProvider()
+                    .calculateRoutes(options: routeOptions)
+                    .value
+
+                // Start navigation and setup subscriptions
+                await setupNavigationSubscriptions()
+
+            } catch {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    @MainActor
+    func setupNavigationSubscriptions() {
+        let navigation = mapboxNavigationProvider.mapboxNavigation.navigation()
+
+        // Subscribe to route progress updates
+        navigation.routeProgress
+            .sink { [weak self] progressState in
+                guard let progress = progressState?.routeProgress else { return }
+                self?.updateProgress(progress)
+            }
+            .store(in: &subscriptions)
+
+        // Subscribe to location updates
+        navigation.locationMatching
+            .sink { [weak self] matchingState in
+                guard let location = matchingState?.enhancedLocation else { return }
+                self?.updateCamera(location)
+            }
+            .store(in: &subscriptions)
+
+        // Subscribe to banner instructions
+        navigation.bannerInstructions
+            .removeDuplicates()
+            .sink { [weak self] state in
+                guard let instruction = state.visualInstruction else { return }
+                self?.instructionLabel.text = instruction.primaryInstruction.text
+            }
+            .store(in: &subscriptions)
+
+        // Subscribe to waypoint arrivals
+        navigation.waypointsArrival
+            .sink { [weak self] _ in
+                print("Arrived!")
+            }
+            .store(in: &subscriptions)
+    }
+
+    private func updateProgress(_ progress: RouteProgress) {
+        let distanceRemaining = progress.currentLegProgress?.currentStepProgress.distanceRemaining ?? 0
+        distanceLabel.text = "In \(Int(distanceRemaining)) meters"
+
+        let eta = Date().addingTimeInterval(progress.durationRemaining)
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        etaLabel.text = "Arrival: \(formatter.string(from: eta))"
+    }
+
+    private func updateCamera(_ location: CLLocation) {
+        mapView.camera.ease(
+            to: CameraOptions(
+                center: location.coordinate,
+                zoom: 15,
+                bearing: location.course
+            ),
+            duration: 1.0
+        )
+    }
+}
 ```
-
-Retain `provider.routeVoiceController` (as CoreSDKExample does) so TTS stays alive.
 
 ## Anti-pattern: recomputing progress manually
 
-Use SDK fields on `RouteProgress` / leg / step progress — do not walk `legs`/`steps` on every update.
+`RouteProgress`, `RouteLegProgress`, and `RouteStepProgress` already expose `distanceRemaining`,
+`durationRemaining`, `distanceTraveled`, and `fractionTraveled` (see `updateProgress` above). Don't
+recompute these by walking a route's `legs`/`steps`/`shape` coordinates by hand on every
+`routeProgress` publisher update — it duplicates values the SDK already maintains for you and is
+easy to get subtly wrong (leg boundaries, partial progress within the current step).
 
 ```swift
-// ❌ Avoid
+// Avoid — manually summing step distances on every update
 let remaining = progress.route.legs
-    .flatMap(\.steps)
+    .flatMap { $0.steps }
     .dropFirst(progress.legIndex)
     .reduce(0.0) { $0 + $1.distance }
 
-// ✅ Prefer
-let remaining = progress.currentLegProgress?.currentStepProgress.distanceRemaining
-// or progress.durationRemaining / progress.distanceRemaining
+// Prefer — already computed by the SDK
+let remaining = progress.durationRemaining
 ```
 
-## Resources
+This is the same underlying principle as Android's `RouteProgress` guidance — a different SDK,
+same idea: read the field the SDK already gives you rather than re-deriving it from raw route
+data. Unlike the Android antipatterns file's native-object accessor cost claims, this hasn't been
+verified against actual iOS SDK internals — treat the correctness/duplication point as solid, but
+don't assume a specific performance cost here without checking the iOS SDK source.
 
-- [Navigation SDK for iOS](https://docs.mapbox.com/ios/navigation/)
-- [Examples](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples)
-- [CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)
-- UIKit / drop-in UI → [`ios-navigation-uikit.md`](ios-navigation-uikit.md)
+## Voice Guidance Configuration
+
+```swift
+import MapboxNavigationCore
+
+// Configure voice guidance when creating the provider
+
+// Option 1: Default (Mapbox Voice API with AVSpeechSynthesizer fallback)
+let provider = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        ttsConfig: .default
+    )
+)
+
+// Option 2: Local-only (AVSpeechSynthesizer, no internet required)
+let providerLocal = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        ttsConfig: .localOnly
+    )
+)
+
+// Option 3: Custom speech synthesizer
+let customSynthesizer = MyCustomSpeechSynthesizer()
+let providerCustom = MapboxNavigationProvider(
+    coreConfig: CoreConfig(
+        ttsConfig: .custom(customSynthesizer)
+    )
+)
+
+// Set voice language via route options
+var routeOptions = NavigationRouteOptions(
+    coordinates: [origin, destination]
+)
+routeOptions.locale = Locale(identifier: "es-ES")  // Spanish voice
+routeOptions.distanceMeasurementSystem = .metric   // Metric distances
+```

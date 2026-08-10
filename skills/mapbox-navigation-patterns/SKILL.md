@@ -41,14 +41,16 @@ User says things like:
 
 **Best for:** Native iOS apps with turn-by-turn navigation
 
+**Defaults:** SwiftUI + `MapboxNavigationCore` (custom UI). Use UIKit / `NavigationViewController` only when the user explicitly asks.
+
 **Features:**
 
-- Complete turn-by-turn navigation UI
+- Core trip session, routing, and progress publishers (preferred)
+- Optional drop-in `NavigationViewController` UI (UIKit opt-in)
 - Voice guidance (30+ languages)
 - Real-time rerouting
 - Traffic-aware routing
 - Offline maps and routing
-- Custom UI components
 - Route progress tracking
 - Speed limit display
 
@@ -95,7 +97,8 @@ User says things like:
 ## Implementation Patterns
 
 - **[references/web-directions-api.md](references/web-directions-api.md)** - Directions API patterns for the web: basic route display, turn-by-turn instructions, alternative routes, multi-stop routing, route optimization, and congestion-based route coloring
-- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: basic turn-by-turn navigation, custom navigation UI, voice guidance configuration
+- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS (default): list upstream Examples first, then Core + SwiftUI / CoreSDKExample patterns and voice guidance
+- **[references/ios-navigation-uikit.md](references/ios-navigation-uikit.md)** - iOS UIKit / drop-in `NavigationViewController` only when the user explicitly requests UIKit or drop-in navigation UI
 - **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI, route line rendering, maneuver arrows, navigation camera, voice guidance
 - **[references/android-performance-antipatterns.md](references/android-performance-antipatterns.md)** - Android Navigation SDK performance and correctness antipatterns: Native Route Object traversal costs, threading, memory/lifecycle leaks, route management correctness, frequent-callback rendering efficiency, and Coordination API lifecycle
 - **[references/best-practices.md](references/best-practices.md)** - Route caching, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)
@@ -126,7 +129,7 @@ User says things like:
 
 **User says: "I need turn-by-turn navigation"**
 
-- iOS → Navigation SDK for iOS
+- iOS → Navigation SDK for iOS (Core + SwiftUI by default; UIKit only if requested)
 - Android → Navigation SDK for Android
 - Web → Use Directions API + custom UI (no voice guidance)
 

@@ -7,7 +7,8 @@
       "expectations": [
         "Recommends the Navigation SDK for iOS, not the Directions API",
         "Explains that voice guidance is only available through the Navigation SDK, not the Directions API",
-        "Mentions the Navigation SDK provides a complete turn-by-turn UI (NavigationViewController) and real-time rerouting",
+        "Defaults to MapboxNavigationCore with a custom SwiftUI UI (CoreSDKExample-style), not NavigationViewController as the primary path",
+        "May mention NavigationViewController / MapboxNavigationUIKit only as an optional UIKit drop-in when explicitly desired",
         "Notes Navigation SDK pricing is Monthly Active Users (MAU) based, vs. the Directions API's pay-per-request model"
       ]
     },
@@ -146,6 +147,26 @@
         "Notes `MapboxNavigation` is no longer valid after `onDestroy()`/`MapboxNavigationProvider.destroy()`, so referencing it afterward is a bug",
         "States every `register*Observer` call needs a matching `unregister*Observer` during teardown, and that observers registered as inline lambdas with no stored reference cannot be unregistered",
         "Recommends the lifecycle-aware `requireMapboxNavigation`/`MapboxNavigationApp` pattern instead of a manually held singleton reference"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "I'm building a SwiftUI iOS navigation experience with Mapbox. How should I structure route preview and starting turn-by-turn guidance without using NavigationViewController?",
+      "expectations": [
+        "Uses MapboxNavigationCore / MapboxNavigationProvider with CoreConfig — does not require MapboxNavigationUIKit or NavigationViewController",
+        "Shows calculating routes via routingProvider().calculateRoutes and holding NavigationRoutes for preview",
+        "Starts guidance with tripSession().startActiveGuidance(with:startLegIndex:)",
+        "Observes bannerInstructions and/or routeProgress publishers (or equivalent @Published CoreSDKExample-style state) to drive custom SwiftUI UI"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "I want to show road cameras during navigation in my iOS app. How should I find the right Mapbox sample to follow?",
+      "expectations": [
+        "Instructs checking the live mapbox-navigation-ios Examples tree rather than relying only on memorized skill snippets",
+        "Points to AdditionalExamples and/or Constants.swift listOfExamples (or AdditionalExamples/Examples) as the catalog to search",
+        "Identifies or expects a Road Cameras example (RoadCamerasViewController) when present in the current catalog",
+        "Does not invent a stale hardcoded-only approach that ignores newly added examples"
       ]
     }
   ]

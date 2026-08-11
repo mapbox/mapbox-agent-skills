@@ -154,19 +154,19 @@
       "prompt": "I'm building a SwiftUI iOS navigation experience with Mapbox. How should I structure route preview and starting turn-by-turn guidance without using NavigationViewController?",
       "expectations": [
         "Uses MapboxNavigationCore / MapboxNavigationProvider with CoreConfig — does not require MapboxNavigationUIKit or NavigationViewController",
-        "Shows calculating routes via routingProvider().calculateRoutes and holding NavigationRoutes for preview",
-        "Starts guidance with tripSession().startActiveGuidance(with:startLegIndex:)",
-        "Observes bannerInstructions and/or routeProgress publishers (or equivalent @Published CoreSDKExample-style state) to drive custom SwiftUI UI"
+        "Shows calculating routes via the Core routing provider and holding NavigationRoutes for preview",
+        "Starts active guidance through the trip session after preview routes are ready",
+        "Observes banner instructions and/or route progress (publishers or equivalent @Published CoreSDKExample-style state) to drive custom SwiftUI UI"
       ]
     },
     {
       "id": 17,
       "prompt": "I want to show road cameras during navigation in my iOS app. How should I find the right Mapbox sample to follow?",
       "expectations": [
-        "Instructs checking the live mapbox-navigation-ios Examples tree rather than relying only on memorized skill snippets",
-        "Points to AdditionalExamples and/or Constants.swift listOfExamples (or AdditionalExamples/Examples) as the catalog to search",
-        "Identifies or expects a Road Cameras example (RoadCamerasViewController) when present in the current catalog",
-        "Does not invent a stale hardcoded-only approach that ignores newly added examples"
+        "Uses the skill's inline example-patterns catalog (or equivalent guidance) rather than requiring a live GitHub API fetch",
+        "Identifies the Road Cameras example as the matching pattern",
+        "Notes Core/SwiftUI default still applies unless the user asked for UIKit; AdditionalExamples samples are often UIKit-based",
+        "Only suggests opening upstream example source if the user wants the full sample implementation"
       ]
     }
   ]

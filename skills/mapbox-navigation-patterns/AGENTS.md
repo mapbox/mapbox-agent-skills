@@ -111,7 +111,7 @@ steps.forEach((step) => {
 
 **Default:** SwiftUI + `MapboxNavigationCore` ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)). UIKit / `NavigationViewController` only when explicitly requested.
 
-**Before answering:** list upstream [`Examples/`](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples) and `AdditionalExamples` / `listOfExamples` in `Constants.swift`, then open the matching sample.
+For specialized topics (road cameras, history, e-horizon, CarPlay, offline, styled chrome, etc.), use the **Example patterns catalog** in `references/ios-navigation-sdk.md`. Do not fetch upstream sample source unless the user asks to open a specific example.
 
 ### Core + SwiftUI
 

@@ -97,8 +97,7 @@ User says things like:
 ## Implementation Patterns
 
 - **[references/web-directions-api.md](references/web-directions-api.md)** - Directions API patterns for the web: basic route display, turn-by-turn instructions, alternative routes, multi-stop routing, route optimization, and congestion-based route coloring
-- **[references/ios-navigation-swiftui.md](references/ios-navigation-swiftui.md)** - Navigation SDK for iOS (default): list upstream Examples first, then Core + SwiftUI / CoreSDKExample patterns and voice guidance
-- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - iOS UIKit / drop-in `NavigationViewController` only when the user explicitly requests UIKit or drop-in navigation UI
+- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: Core + SwiftUI default (CoreSDKExample); UIKit / `NavigationViewController` only when explicitly requested; inline example-patterns catalog (fetch upstream sample code only if the user asks)
 - **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI, route line rendering, maneuver arrows, navigation camera, voice guidance
 - **[references/android-performance-antipatterns.md](references/android-performance-antipatterns.md)** - Android Navigation SDK performance and correctness antipatterns: Native Route Object traversal costs, threading, memory/lifecycle leaks, route management correctness, frequent-callback rendering efficiency, and Coordination API lifecycle
 - **[references/best-practices.md](references/best-practices.md)** - Route caching, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)

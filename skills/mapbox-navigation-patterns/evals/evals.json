@@ -7,8 +7,8 @@
       "expectations": [
         "Recommends the Navigation SDK for iOS, not the Directions API",
         "Explains that voice guidance is only available through the Navigation SDK, not the Directions API",
-        "Defaults to MapboxNavigationCore with a custom SwiftUI UI (CoreSDKExample-style), not NavigationViewController as the primary path",
-        "May mention NavigationViewController / MapboxNavigationUIKit only as an optional UIKit drop-in when explicitly desired",
+        "Defaults to drop-in NavigationViewController (wrapped with UIViewControllerRepresentable in a SwiftUI app), not a fully custom CoreSDKExample UI",
+        "May mention fully custom Core UI only as an opt-in when the user wants to build their own nav chrome",
         "Notes Navigation SDK pricing is Monthly Active Users (MAU) based, vs. the Directions API's pay-per-request model"
       ]
     },
@@ -151,12 +151,12 @@
     },
     {
       "id": 16,
-      "prompt": "I'm building a SwiftUI iOS navigation experience with Mapbox. How should I structure route preview and starting turn-by-turn guidance without using NavigationViewController?",
+      "prompt": "I'm building a SwiftUI iOS app and want turn-by-turn navigation. What's the recommended way to add it?",
       "expectations": [
-        "Uses MapboxNavigationCore / MapboxNavigationProvider with CoreConfig — does not require MapboxNavigationUIKit or NavigationViewController",
-        "Shows calculating routes via the Core routing provider and holding NavigationRoutes for preview",
-        "Starts active guidance through the trip session after preview routes are ready",
-        "Observes banner instructions and/or route progress (publishers or equivalent @Published CoreSDKExample-style state) to drive custom SwiftUI UI"
+        "Recommends wrapping NavigationViewController with UIViewControllerRepresentable rather than building a fully custom Core UI by default",
+        "Shows calculating routes via MapboxNavigationProvider / routing provider, then presenting NavigationViewController with NavigationOptions",
+        "Keeps a strong reference to MapboxNavigationProvider",
+        "Mentions fully custom Core / CoreSDKExample only as an alternative when the user wants to replace the drop-in nav UI"
       ]
     },
     {
@@ -165,7 +165,7 @@
       "expectations": [
         "Uses the skill's inline example-patterns catalog (or equivalent guidance) rather than requiring a live GitHub API fetch",
         "Identifies the Road Cameras example as the matching pattern",
-        "Notes Core/SwiftUI default still applies unless the user asked for UIKit; AdditionalExamples samples are often UIKit-based",
+        "Notes AdditionalExamples samples are often UIKit-based and distinct from the default SwiftUI + drop-in NavigationViewController path",
         "Only suggests opening upstream example source if the user wants the full sample implementation"
       ]
     }

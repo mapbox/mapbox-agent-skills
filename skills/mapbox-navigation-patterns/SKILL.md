@@ -41,12 +41,12 @@ User says things like:
 
 **Best for:** Native iOS apps with turn-by-turn navigation
 
-**Defaults:** SwiftUI + `MapboxNavigationCore` (custom UI). Use UIKit / `NavigationViewController` only when the user explicitly asks.
+**Defaults:** SwiftUI app shell + wrap drop-in `NavigationViewController` via `UIViewControllerRepresentable` (official getting-started path). Use a fully custom Core UI ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)) only when the user explicitly wants to build their own nav chrome.
 
 **Features:**
 
-- Core trip session, routing, and progress publishers (preferred)
-- Optional drop-in `NavigationViewController` UI (UIKit opt-in)
+- Drop-in turn-by-turn UI (`NavigationViewController`) — default
+- Optional fully custom Core UI (route progress / banner publishers)
 - Voice guidance (30+ languages)
 - Real-time rerouting
 - Traffic-aware routing
@@ -97,7 +97,7 @@ User says things like:
 ## Implementation Patterns
 
 - **[references/web-directions-api.md](references/web-directions-api.md)** - Directions API patterns for the web: basic route display, turn-by-turn instructions, alternative routes, multi-stop routing, route optimization, and congestion-based route coloring
-- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: Core + SwiftUI default (CoreSDKExample); UIKit / `NavigationViewController` only when explicitly requested; inline example-patterns catalog (fetch upstream sample code only if the user asks)
+- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: default SwiftUI + `UIViewControllerRepresentable` wrapping `NavigationViewController`; pure UIKit drop-in; CoreSDKExample custom UI as opt-in; inline example-patterns catalog
 - **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI, route line rendering, maneuver arrows, navigation camera, voice guidance
 - **[references/android-performance-antipatterns.md](references/android-performance-antipatterns.md)** - Android Navigation SDK performance and correctness antipatterns: Native Route Object traversal costs, threading, memory/lifecycle leaks, route management correctness, frequent-callback rendering efficiency, and Coordination API lifecycle
 - **[references/best-practices.md](references/best-practices.md)** - Route caching, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)
@@ -128,7 +128,7 @@ User says things like:
 
 **User says: "I need turn-by-turn navigation"**
 
-- iOS → Navigation SDK for iOS (Core + SwiftUI by default; UIKit only if requested)
+- iOS → Navigation SDK for iOS (SwiftUI + wrapped `NavigationViewController` by default; Core custom UI only if requested)
 - Android → Navigation SDK for Android
 - Web → Use Directions API + custom UI (no voice guidance)
 

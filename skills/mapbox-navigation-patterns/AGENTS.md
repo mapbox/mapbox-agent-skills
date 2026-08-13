@@ -4,13 +4,13 @@ Quick reference for implementing navigation and routing with Mapbox Directions A
 
 ## Product Decision
 
-| Need                          | Solution                                        |
-| ----------------------------- | ----------------------------------------------- |
-| **Show a route on a web map** | Directions API                                  |
-| **Turn-by-turn iOS**          | Navigation SDK for iOS (Core + SwiftUI default) |
-| **Turn-by-turn Android**      | Navigation SDK for Android                      |
-| **Voice guidance**            | Navigation SDK only                             |
-| **Multi-stop optimization**   | Optimization API                                |
+| Need                          | Solution                                               |
+| ----------------------------- | ------------------------------------------------------ |
+| **Show a route on a web map** | Directions API                                         |
+| **Turn-by-turn iOS**          | Navigation SDK for iOS (SwiftUI + drop-in NVC default) |
+| **Turn-by-turn Android**      | Navigation SDK for Android                             |
+| **Voice guidance**            | Navigation SDK only                                    |
+| **Multi-stop optimization**   | Optimization API                                       |
 
 ## Directions API (Web)
 
@@ -109,15 +109,74 @@ steps.forEach((step) => {
 
 ## Navigation SDK for iOS
 
-**Default:** SwiftUI + `MapboxNavigationCore` ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)). UIKit / `NavigationViewController` only when explicitly requested.
+**Default:** SwiftUI app shell + wrap `NavigationViewController` with `UIViewControllerRepresentable` (official getting-started). Fully custom Core UI ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)) only when explicitly requested.
 
 For specialized topics (road cameras, history, e-horizon, CarPlay, offline, styled chrome, etc.), use the **Example patterns catalog** in `references/ios-navigation-sdk.md`. Do not fetch upstream sample source unless the user asks to open a specific example.
 
-### Core + SwiftUI
+### Default: SwiftUI + drop-in NavigationViewController
 
 ```swift
 import MapboxNavigationCore
-import MapboxDirections
+import MapboxNavigationUIKit
+import SwiftUI
+
+struct NavigationViewControllerWrapper: UIViewControllerRepresentable {
+    let navigationRoutes: NavigationRoutes
+    let navigationOptions: NavigationOptions
+
+    func makeUIViewController(context: Context) -> NavigationViewController {
+        NavigationViewController(
+            navigationRoutes: navigationRoutes,
+            navigationOptions: navigationOptions
+        )
+    }
+
+    func updateUIViewController(_ uiViewController: NavigationViewController, context: Context) {}
+}
+
+let provider = MapboxNavigationProvider(
+    coreConfig: CoreConfig(locationSource: .live, ttsConfig: .default)
+)
+let routes = try await provider.mapboxNavigation
+    .routingProvider()
+    .calculateRoutes(options: NavigationRouteOptions(coordinates: [start, end]))
+    .value
+let options = NavigationOptions(
+    mapboxNavigation: provider.mapboxNavigation,
+    voiceController: provider.routeVoiceController,
+    eventsManager: provider.eventsManager()
+)
+// NavigationViewControllerWrapper(navigationRoutes: routes, navigationOptions: options)
+```
+
+### UIKit: present drop-in UI
+
+```swift
+import MapboxNavigationCore
+import MapboxNavigationUIKit
+
+let provider = MapboxNavigationProvider(
+    coreConfig: CoreConfig(locationSource: .live, ttsConfig: .default)
+)
+let navigationRoutes = try await provider.mapboxNavigation
+    .routingProvider()
+    .calculateRoutes(options: NavigationRouteOptions(coordinates: [start, end]))
+    .value
+let navVC = NavigationViewController(
+    navigationRoutes: navigationRoutes,
+    navigationOptions: NavigationOptions(
+        mapboxNavigation: provider.mapboxNavigation,
+        voiceController: provider.routeVoiceController,
+        eventsManager: provider.eventsManager()
+    )
+)
+present(navVC, animated: true)
+```
+
+### Opt-in: fully custom Core UI
+
+```swift
+import MapboxNavigationCore
 import Combine
 
 @MainActor
@@ -145,47 +204,11 @@ final class Navigation: ObservableObject {
             .assign(to: &$routeProgress)
     }
 
-    func requestRoutes(waypoints: [Waypoint]) async throws {
-        let options = NavigationRouteOptions(
-            waypoints: waypoints,
-            profileIdentifier: .automobileAvoidingTraffic
-        )
-        currentPreviewRoutes = try await core.routingProvider()
-            .calculateRoutes(options: options)
-            .value
-    }
-
     func startActiveNavigation() {
         guard let routes = currentPreviewRoutes else { return }
         core.tripSession().startActiveGuidance(with: routes, startLegIndex: 0)
     }
 }
-```
-
-### Drop-in UIKit UI (opt-in only)
-
-```swift
-import MapboxNavigationCore
-import MapboxNavigationUIKit
-
-let provider = MapboxNavigationProvider(
-    coreConfig: CoreConfig(locationSource: .live, ttsConfig: .default)
-)
-
-let navigationRoutes = try await provider.mapboxNavigation
-    .routingProvider()
-    .calculateRoutes(options: NavigationRouteOptions(coordinates: [start, end]))
-    .value
-
-let navVC = NavigationViewController(
-    navigationRoutes: navigationRoutes,
-    navigationOptions: NavigationOptions(
-        mapboxNavigation: provider.mapboxNavigation,
-        voiceController: provider.routeVoiceController,
-        eventsManager: provider.eventsManager()
-    )
-)
-present(navVC, animated: true)
 ```
 
 ### Voice Guidance

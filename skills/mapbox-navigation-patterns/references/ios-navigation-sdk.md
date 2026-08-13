@@ -22,7 +22,11 @@ Note: most `AdditionalExamples` samples are UIKit-based. Prefer adapting the pat
 | Fully custom Core nav UI               | `CoreSDKExample`                     | SwiftUI/Core publishers — opt-in only                                  |
 | CarPlay                                | `CarPlayExample`                     | CarPlay                                                                |
 | Advanced / alt routes + style          | Advanced Implementation              | UIKit; preview → active guidance                                       |
-| Multi-stop route                       | Multiple Waypoints                   | UIKit                                                                  |
+| Multi-stop route                       | Multiple Waypoints                   | UIKit; **inline section below**                                        |
+| Custom route line styling              | Custom Route Lines Styling           | UIKit; **inline section below**                                        |
+| Custom navigation camera               | Custom Navigation Camera             | Custom data source / transitions; **inline section below**             |
+| Road cameras on map                    | Road Cameras                         | Display cameras + camera events; **inline section below**              |
+| Route alerts                           | Route Alerts                         | UIKit; **inline section below**                                        |
 | Custom final waypoint image            | Custom Final Waypoint                | UIKit                                                                  |
 | Custom route callouts                  | Custom Route Callouts                | UIKit                                                                  |
 | Embed `NavigationViewController`       | Embedded View Controller             | UIKit                                                                  |
@@ -31,27 +35,24 @@ Note: most `AdditionalExamples` samples are UIKit-based. Prefer adapting the pat
 | Custom waypoint styling                | Custom Waypoint Styling              | UIKit                                                                  |
 | Custom voice / audio                   | Custom Voice Controller              | Custom TTS recordings                                                  |
 | Custom top/bottom bars                 | Custom Top & Bottom Bars             | UIKit chrome                                                           |
-| Custom route line styling              | Custom Route Lines Styling           | UIKit                                                                  |
 | Offline TileStore / regions            | Offline Regions                      | Offline                                                                |
 | Record trip history                    | History Recording                    | Free drive + active guidance                                           |
 | Replay trip history                    | History Replaying                    | History files (not map-matched)                                        |
-| Route alerts                           | Route Alerts                         | UIKit                                                                  |
-| Custom navigation camera               | Custom Navigation Camera             | Custom data source / transitions                                       |
 | Electronic horizon / MPP               | Electronic Horizon Events            | Upcoming intersections                                                 |
 | Custom road objects (e-horizon)        | Custom Road Objects                  | User-defined objects                                                   |
 | Declarative map styling                | Declarative Map Styling              | Style DSL                                                              |
-| Road cameras on map                    | Road Cameras                         | Display cameras + camera events                                        |
 
 Upstream tree (optional deep dive only): [`Examples/`](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples). Topic list source: `AdditionalExamples/Constants.swift` `listOfExamples`.
 
 ## Decision guide
 
-| Need                                               | Prefer                                                             |
-| -------------------------------------------------- | ------------------------------------------------------------------ |
-| Add turn-by-turn to a SwiftUI app (default)        | Wrap `NavigationViewController` in `UIViewControllerRepresentable` |
-| UIKit app + drop-in nav                            | Present `NavigationViewController` directly                        |
-| Fully custom nav chrome / no drop-in UI            | CoreSDKExample-style Core + publishers (opt-in)                    |
-| Specialized topic (cameras, history, e-horizon, …) | Match row in **Example patterns catalog**                          |
+| Need                                           | Prefer                                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------ |
+| Add turn-by-turn to a SwiftUI app (default)    | Wrap `NavigationViewController` in `UIViewControllerRepresentable` |
+| UIKit app + drop-in nav                        | Present `NavigationViewController` directly                        |
+| Fully custom nav chrome / no drop-in UI        | CoreSDKExample-style Core + publishers (opt-in)                    |
+| Specialized topic with an inline section below | Multi-stop, route line, camera, road cameras, route alerts         |
+| Other specialized topics                       | Match row in **Example patterns catalog** (catalog-only)           |
 
 ---
 
@@ -227,6 +228,174 @@ final class Navigation: ObservableObject {
 ```
 
 Session states: free drive → `startFreeDrive()`; active guidance → start active guidance on the trip session after preview routes; idle → `setToIdle()`.
+
+---
+
+The snippets below are NavSDK-focused patterns (like Android’s reference): not full screens — omit permissions, full error UI, and app architecture.
+
+## Multi-stop waypoints
+
+Append intermediate `Waypoint`s (user first), then `NavigationRouteOptions(waypoints:)`. Catalog: Multiple Waypoints.
+
+```swift
+var waypoints: [Waypoint] = []
+
+func requestRoute(to mapPoint: MapPoint, userLocation: CLLocation) async throws -> NavigationRoutes {
+    waypoints.append(Waypoint(coordinate: mapPoint.coordinate, name: mapPoint.name))
+    var requestWaypoints = waypoints
+    requestWaypoints.insert(Waypoint(location: userLocation), at: 0)
+
+    let options = NavigationRouteOptions(waypoints: requestWaypoints)
+    return try await mapboxNavigation.routingProvider()
+        .calculateRoutes(options: options)
+        .value
+}
+
+// Preview, then drop-in UI as usual:
+// navigationMapView.showcase(navigationRoutes)
+// present(NavigationViewController(navigationRoutes:navigationOptions:))
+```
+
+On arrival during drop-in UI, implement `NavigationViewControllerDelegate.navigationViewController(_:didArriveAt:)`.
+
+## Route line styling
+
+Customize preview and active-guidance route lines via `NavigationMapViewDelegate` / `NavigationViewControllerDelegate` layer factories. Catalog: Custom Route Lines Styling. Use `identifier` (`main` vs `alternative_N`, `.casing`) to pick colors.
+
+```swift
+func navigationMapView(
+    _ navigationMapView: NavigationMapView,
+    routeLineLayerWithIdentifier identifier: String,
+    sourceIdentifier: String
+) -> LineLayer? {
+    var layer = LineLayer(id: identifier, source: sourceIdentifier)
+    let isMain = identifier.contains("main")
+    layer.lineColor = .constant(.init(isMain ? UIColor.systemGreen : UIColor.systemGray))
+    layer.lineWidth = .expression(
+        Exp(.interpolate) {
+            Exp(.linear)
+            Exp(.zoom)
+            RouteLineWidthByZoomLevel.multiplied(by: 1)
+        }
+    )
+    layer.lineJoin = .constant(.round)
+    layer.lineCap = .constant(.round)
+    return layer
+}
+
+func navigationMapView(
+    _ navigationMapView: NavigationMapView,
+    routeCasingLineLayerWithIdentifier identifier: String,
+    sourceIdentifier: String
+) -> LineLayer? {
+    // Same pattern; typically a darker casing with a slightly larger width multiplier.
+    var layer = LineLayer(id: identifier, source: sourceIdentifier)
+    layer.lineColor = .constant(.init(UIColor.darkGray))
+    layer.lineWidth = .expression(
+        Exp(.interpolate) {
+            Exp(.linear)
+            Exp(.zoom)
+            RouteLineWidthByZoomLevel.multiplied(by: 1.2)
+        }
+    )
+    return layer
+}
+
+// Mirror the same two methods on NavigationViewControllerDelegate for active guidance.
+// Optional: navigationView.navigationMapView.traversedRouteColor = .lightGray
+```
+
+## Navigation camera
+
+Default camera works via `NavigationMapView` + `update(navigationCameraState:)` (see CoreSDKExample). To customize framing/transitions, replace `viewportDataSource` and/or `cameraStateTransition`. Catalog: Custom Navigation Camera.
+
+```swift
+let navigationCamera = navigationMapView.navigationCamera
+navigationCamera.viewportDataSource = CustomViewportDataSource(navigationMapView.mapView)
+navigationCamera.cameraStateTransition = CustomCameraStateTransition(navigationMapView.mapView)
+
+// Core / SwiftUI-driven state (CoreSDKExample):
+// navigationMapView.update(navigationCameraState: .following) // or .idle, overview, etc.
+
+// When handing the same map into drop-in UI:
+let navigationOptions = NavigationOptions(
+    mapboxNavigation: mapboxNavigation,
+    voiceController: provider.routeVoiceController,
+    eventsManager: provider.eventsManager(),
+    navigationMapView: navigationMapView // reuse preview map + custom camera
+)
+```
+
+Implement `ViewportDataSource` / `CameraStateTransition` (see example `NavigationCamera/` helpers) — do not only call follow/overview without feeding the data source.
+
+## Road cameras
+
+Request camera attributes on the route, then attach `RoadCamerasManager` + `RoadCamerasMapController` to the nav map. Catalog: Road Cameras. Uses experimental SPI / `MapboxNavigationCppRoadCameras`.
+
+```swift
+import Combine
+@_spi(ExperimentalMapboxAPI) import MapboxDirections
+@_spi(MapboxInternal) import MapboxNavigationCore
+@_spi(ExperimentalMapboxAPI) import MapboxNavigationCppRoadCameras
+
+var options = NavigationRouteOptions(coordinates: [origin, destination])
+options.attributeOptions.insert(.roadCamera)
+
+let routes = try await mapboxNavigation.routingProvider()
+    .calculateRoutes(options: options)
+    .value
+
+let navVC = NavigationViewController(
+    navigationRoutes: routes,
+    navigationOptions: NavigationOptions(
+        mapboxNavigation: mapboxNavigation,
+        voiceController: provider.routeVoiceController,
+        eventsManager: provider.eventsManager()
+    )
+)
+
+guard let mapboxMap = navVC.navigationMapView?.mapView.mapboxMap else { return }
+let manager = RoadCamerasManager(navigatorHandle: provider.navigatorHandle)
+let mapController = RoadCamerasMapController(
+    map: mapboxMap,
+    manager: manager,
+    config: RoadCamerasConfig(
+        displayConfig: RoadCamerasDisplayConfig(startShowDistance: 1000),
+        iconProvider: nil // or custom RoadCamerasIconProvider
+    )
+)
+
+manager.camerasAppearing.sink { /* upcoming cameras */ }.store(in: &subscriptions)
+manager.camerasPassed.sink { _ in /* passed */ }.store(in: &subscriptions)
+mapController.cameraClicked.sink { camera in /* camera.id */ }.store(in: &subscriptions)
+```
+
+## Route alerts
+
+Read `RouteProgress.upcomingRouteAlerts` and optionally host a custom top banner via `NavigationOptions.topBanner`. Catalog: Route Alerts.
+
+```swift
+// Custom ContainerViewController as topBanner:
+navigation.routeProgress
+    .sink { status in
+        guard let progress = status?.routeProgress else { return }
+        let alerts = progress.upcomingRouteAlerts.compactMap { alert -> String? in
+            let distance = Int64(alert.distanceToStart)
+            guard distance > 0, distance < 500 else { return nil }
+            // Use alert.roadObject.kind for a user-facing label
+            return "Alert in \(distance) m"
+        }
+        // Update banner primary label with alerts, or fall back to visual instruction
+    }
+    .store(in: &subscriptions)
+
+let navigationOptions = NavigationOptions(
+    mapboxNavigation: mapboxNavigation,
+    voiceController: provider.routeVoiceController,
+    eventsManager: provider.eventsManager(),
+    topBanner: TopAlertsBarViewController(navigationProvider: provider)
+)
+```
 
 ---
 

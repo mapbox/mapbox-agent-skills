@@ -103,6 +103,7 @@ map.on('mousemove', 'restaurants', (e) => {
 map.addLayer({
   id: 'restaurants',
   type: 'circle',
+  slot: 'middle',
   source: 'restaurants',
   paint: {
     'circle-color': [
@@ -110,7 +111,8 @@ map.addLayer({
       ['boolean', ['feature-state', 'hover'], false],
       '#ffff00', // Yellow when hover
       '#0000ff' // Blue otherwise
-    ]
+    ],
+    'circle-emissive-strength': 1
   }
 });
 ```

@@ -137,6 +137,7 @@ function normalizeData(features, property) {
 map.addLayer({
   id: 'election-results',
   type: 'fill',
+  slot: 'bottom',
   source: 'districts',
   paint: {
     'fill-color': [
@@ -157,8 +158,9 @@ map.addLayer({
       0,
       0.3, // Close race: light
       20,
-      0.9 // Landslide: dark
-    ]
+      0.7 // Landslide: dark — capped at 0.7 so roads still read through
+    ],
+    'fill-emissive-strength': 1
   }
 });
 ```
@@ -169,6 +171,7 @@ map.addLayer({
 map.addLayer({
   id: 'covid-cases',
   type: 'fill',
+  slot: 'bottom',
   source: 'counties',
   paint: {
     'fill-color': [
@@ -187,7 +190,9 @@ map.addLayer({
       '#e31a1c',
       0.1,
       '#b10026'
-    ]
+    ],
+    'fill-opacity': 0.7,
+    'fill-emissive-strength': 1
   }
 });
 ```
@@ -198,6 +203,7 @@ map.addLayer({
 map.addLayer({
   id: 'real-estate',
   type: 'circle',
+  slot: 'middle',
   source: 'properties',
   paint: {
     'circle-radius': ['interpolate', ['exponential', 2], ['get', 'price'], 100000, 5, 1000000, 20, 10000000, 50],
@@ -218,7 +224,8 @@ map.addLayer({
     ],
     'circle-opacity': 0.6,
     'circle-stroke-color': '#ffffff',
-    'circle-stroke-width': 1
+    'circle-stroke-width': 1,
+    'circle-emissive-strength': 1
   }
 });
 ```

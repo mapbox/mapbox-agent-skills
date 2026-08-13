@@ -49,7 +49,11 @@ async function runEval(skillName, skillContent, evalItem) {
   // Step 1: Generate response using skill as system prompt
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 8192,
+    // Thinking is on by default from Sonnet 5 onward and shares the max_tokens
+    // budget with the response. Evals measure the answer text only, so keep it
+    // off — otherwise long answers truncate and the judge scores the cut-off.
+    thinking: { type: 'disabled' },
     system: `You are an expert AI assistant with the following skill knowledge:\n\n${skillContent}`,
     messages: [{ role: 'user', content: evalItem.prompt }]
   });
@@ -94,6 +98,7 @@ Respond in this exact JSON format (no other text):
   const judgeResponse = await anthropic.messages.create({
     model: JUDGE_MODEL,
     max_tokens: 2048,
+    thinking: { type: 'disabled' },
     messages: [{ role: 'user', content: judgePrompt }]
   });
 
@@ -160,6 +165,20 @@ function delta(val) {
   if (val < 0) return `${val}`;
   return '=';
 }
+// Percentage-point delta. Raw point deltas are not comparable across runs:
+// adding an eval raises a skill's totalScore and maxScore together, so a
+// quality regression can read as a point gain. Always compare normalized.
+function pctDelta(currScore, currMax, baseScore, baseMax) {
+  if (!currMax || !baseMax) return null;
+  const d = (currScore / currMax - baseScore / baseMax) * 100;
+  return Math.round(d * 10) / 10;
+}
+function deltaPct(val) {
+  if (val === null) return 'n/a';
+  if (val > 0) return `+${val}pp`;
+  if (val < 0) return `${val}pp`;
+  return '=';
+}
 
 function deltaColor(val) {
   if (val > 0) return `↑${val}`;
@@ -209,6 +228,15 @@ function buildDiffReport(baseline, current) {
     }
     if (!curr) {
       diffs.push({ key, type: 'removed', base });
+      continue;
+    }
+
+    // An eval ID is not a stable identity — rewriting evals.json can put a
+    // different question behind the same id. Diffing expectation-by-expectation
+    // across two different prompts compares unrelated things, so treat a
+    // changed prompt as a replacement instead.
+    if (base.prompt !== curr.prompt) {
+      diffs.push({ key, type: 'replaced', base, curr });
       continue;
     }
 
@@ -504,12 +532,23 @@ async function main() {
 
       const baseTotal = baseline.meta.totalScore;
       const currTotal = totalScore;
-      const overallDelta = currTotal - baseTotal;
       const basePct = ((baseTotal / baseline.meta.maxScore) * 100).toFixed(1);
       const currPct = ((currTotal / maxScore) * 100).toFixed(1);
-      console.log(
-        `Overall: ${basePct}% → ${currPct}% (${delta(overallDelta)} points)`
+      const overallDelta = pctDelta(
+        currTotal,
+        maxScore,
+        baseTotal,
+        baseline.meta.maxScore
       );
+      console.log(
+        `Overall: ${basePct}% → ${currPct}% (${deltaPct(overallDelta)})`
+      );
+      if (baseline.meta.totalEvals !== allResults.length) {
+        console.log(
+          `  ⚠️  eval count changed: ${baseline.meta.totalEvals} → ${allResults.length} ` +
+            `(${baseline.meta.maxScore} → ${maxScore} max points) — point totals are not comparable`
+        );
+      }
 
       // Per-skill diff
       const skillNames = new Set([
@@ -522,18 +561,26 @@ async function main() {
         const c = bySkill[name];
         const bPct = b ? ((b.totalScore / b.maxScore) * 100).toFixed(0) : '—';
         const cPct = c ? ((c.totalScore / c.maxScore) * 100).toFixed(0) : '—';
-        const d = (c?.totalScore || 0) - (b?.totalScore || 0);
+        const d =
+          b && c
+            ? pctDelta(c.totalScore, c.maxScore, b.totalScore, b.maxScore)
+            : null;
+        const countChanged = b && c && b.count !== c.count;
         if (d !== 0 || !b || !c) {
-          skillChanges.push({ name, bPct, cPct, d });
+          skillChanges.push({ name, bPct, cPct, d, countChanged, b, c });
         }
       }
 
       if (skillChanges.length > 0) {
         console.log('\nSkill changes:');
-        for (const s of skillChanges.sort((a, b) => a.d - b.d)) {
-          const arrow = s.d > 0 ? '📈' : s.d < 0 ? '📉' : '🆕';
+        for (const s of skillChanges.sort((a, b) => (a.d ?? 0) - (b.d ?? 0))) {
+          const arrow =
+            !s.b || !s.c ? '🆕' : s.d > 0 ? '📈' : s.d < 0 ? '📉' : '—';
+          const note = s.countChanged
+            ? `  [evals ${s.b.count} → ${s.c.count}]`
+            : '';
           console.log(
-            `  ${arrow} ${s.name}: ${s.bPct}% → ${s.cPct}% (${delta(s.d)})`
+            `  ${arrow} ${s.name}: ${s.bPct}% → ${s.cPct}% (${deltaPct(s.d)})${note}`
           );
         }
       }
@@ -548,6 +595,13 @@ async function main() {
             );
           } else if (d.type === 'removed') {
             console.log(`  🗑️  ${d.key} — removed`);
+          } else if (d.type === 'replaced') {
+            const bp = ((d.base.totalScore / d.base.maxScore) * 100).toFixed(0);
+            const cp = ((d.curr.totalScore / d.curr.maxScore) * 100).toFixed(0);
+            console.log(
+              `  ♻️  ${d.key} — prompt rewritten, not comparable ` +
+                `(old ${d.base.totalScore}/${d.base.maxScore} ${bp}% → new ${d.curr.totalScore}/${d.curr.maxScore} ${cp}%)`
+            );
           } else if (d.type === 'changed' && d.expDiffs) {
             for (const ed of d.expDiffs) {
               if (ed.type === 'changed') {

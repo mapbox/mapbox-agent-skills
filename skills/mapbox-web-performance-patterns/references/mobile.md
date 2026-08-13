@@ -10,7 +10,7 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
+  style: 'mapbox://styles/mapbox/standard',
 
   // Mobile optimizations
   ...(isMobile && {
@@ -31,10 +31,12 @@ map.on('load', () => {
     map.addLayer({
       id: 'markers-mobile',
       type: 'circle',
+      slot: 'middle',
       source: 'data',
       paint: {
         'circle-radius': 8,
-        'circle-color': '#007cbf'
+        'circle-color': '#007cbf',
+        'circle-emissive-strength': 1
       }
     });
   } else {
@@ -42,13 +44,16 @@ map.on('load', () => {
     map.addLayer({
       id: 'markers-desktop',
       type: 'symbol',
+      slot: 'top',
       source: 'data',
       layout: {
         'icon-image': 'marker',
-        'icon-size': 1,
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.7, 16, 1],
+        'icon-allow-overlap': true,
         'text-field': ['get', 'name'],
         'text-size': 12,
-        'text-offset': [0, 1.5]
+        'text-offset': [0, 1.5],
+        'text-optional': true
       }
     });
   }
@@ -77,7 +82,7 @@ map.on('touchmove', () => {
 // These options have real GPU/performance costs -- only enable when needed
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
+  style: 'mapbox://styles/mapbox/standard',
 
   // Default false -- only set true if you need map.getCanvas().toDataURL()
   // Costs: prevents GPU buffer optimization

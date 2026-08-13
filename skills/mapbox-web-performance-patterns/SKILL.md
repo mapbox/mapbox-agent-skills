@@ -33,7 +33,7 @@ async function initMap() {
   const map = new mapboxgl.Map({
     container: 'map',
     accessToken: MAPBOX_TOKEN,
-    style: 'mapbox://styles/mapbox/streets-v12'
+    style: 'mapbox://styles/mapbox/standard'
   });
 
   // Wait for map to load, THEN fetch data
@@ -57,7 +57,7 @@ async function initMap() {
   const map = new mapboxgl.Map({
     container: 'map',
     accessToken: MAPBOX_TOKEN,
-    style: 'mapbox://styles/mapbox/streets-v12'
+    style: 'mapbox://styles/mapbox/standard'
   });
 
   // Data is ready when map loads
@@ -67,7 +67,9 @@ async function initMap() {
     map.addLayer({
       id: 'data-layer',
       type: 'circle',
-      source: 'data'
+      slot: 'middle',
+      source: 'data',
+      paint: { 'circle-emissive-strength': 1 }
     });
   });
 }
@@ -81,7 +83,7 @@ async function initMap() {
 // ✅ Set exact center/zoom so the map fetches the right tiles immediately
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
+  style: 'mapbox://styles/mapbox/standard',
   center: [-122.4194, 37.7749],
   zoom: 13
 });
@@ -151,7 +153,7 @@ const style = {
 
 // ✅ GOOD: Reference Mapbox-hosted styles
 const map = new mapboxgl.Map({
-  style: 'mapbox://styles/mapbox/streets-v12' // Fetched on demand
+  style: 'mapbox://styles/mapbox/standard' // Fetched on demand
 });
 
 // ✅ OR: Store large custom styles externally
@@ -168,12 +170,30 @@ const map = new mapboxgl.Map({
 
 **Problem:** Too many markers causes slow rendering and interaction lag.
 
-### Performance Thresholds
+### Basemap: Standard + config
 
-- **< 100 markers**: HTML markers OK (Marker class)
-- **100-10,000 markers**: Use symbol layers (GPU-accelerated)
-- **10,000+ markers**: Clustering recommended
-- **100,000+ markers**: Vector tiles with server-side clustering
+All examples here load `mapbox://styles/mapbox/standard`. Adjust its appearance with **config properties**, never by reloading the style — `setStyle()` tears down and rebuilds the entire style, which is the most expensive thing you can do to a live map:
+
+```javascript
+// ✅ Cheap: one property, no reload
+map.setConfigProperty('basemap', 'lightPreset', 'night');
+map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+
+// ❌ Expensive: full style teardown + rebuild, and it drops your config
+map.setStyle('mapbox://styles/mapbox/dark-v11');
+```
+
+Config toggles are also a real performance lever: `show3dObjects: false` and `showPointOfInterestLabels: false` cut draw calls and collision work on low-end devices.
+
+## Performance Thresholds
+
+**Rendering cost** — this is the axis performance work lives on:
+
+- **< ~100 markers**: HTML markers OK (Marker class). Each is a DOM element; several hundred make the browser sluggish.
+- **~100 and up**: Use a GL layer — `circle` or `symbol`, GPU-accelerated. Stays smooth from hundreds into the tens of thousands. `circle` is cheaper than `symbol`, which also pays for label placement and collision detection.
+- **Thousands of points, or a payload past a few MB**: Move to a **vector tileset** so only the current viewport loads instead of the whole dataset up front. This — not clustering — is the fix when rendering or load cost is your problem.
+
+> **Clustering is not a rung on this ladder.** It's an aggregation choice driven by **legibility** — cluster when points visibly overlap at the zooms your users actually use, which depends on how your data is distributed, not on how many rows it has. It does cut per-frame work as a side effect, but reaching for it to fix a performance problem usually means you should have reached for a tileset.
 
 ### Anti-Pattern: Thousands of HTML Markers
 
@@ -208,14 +228,18 @@ map.addSource('restaurants', {
 map.addLayer({
   id: 'restaurants',
   type: 'symbol',
+  slot: 'top',
   source: 'restaurants',
   layout: {
     'icon-image': 'restaurant',
-    'icon-size': 0.8,
+    'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.6, 16, 1],
+    'icon-allow-overlap': true,
     'text-field': ['get', 'name'],
+    'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
     'text-size': 12,
     'text-offset': [0, 1.5],
-    'text-anchor': 'top'
+    'text-anchor': 'top',
+    'text-optional': true
   }
 });
 
@@ -244,11 +268,13 @@ map.addSource('restaurants', {
 map.addLayer({
   id: 'clusters',
   type: 'circle',
+  slot: 'middle',
   source: 'restaurants',
   filter: ['has', 'point_count'],
   paint: {
     'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
-    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
+    'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40],
+    'circle-emissive-strength': 1
   }
 });
 
@@ -256,11 +282,16 @@ map.addLayer({
 map.addLayer({
   id: 'cluster-count',
   type: 'symbol',
+  slot: 'top',
   source: 'restaurants',
   filter: ['has', 'point_count'],
   layout: {
-    'text-field': '{point_count_abbreviated}',
+    'text-field': ['get', 'point_count_abbreviated'],
+    'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
     'text-size': 12
+  },
+  paint: {
+    'text-color': '#ffffff'
   }
 });
 
@@ -268,11 +299,13 @@ map.addLayer({
 map.addLayer({
   id: 'unclustered-point',
   type: 'circle',
+  slot: 'middle',
   source: 'restaurants',
   filter: ['!', ['has', 'point_count']],
   paint: {
     'circle-color': '#11b4da',
-    'circle-radius': 6
+    'circle-radius': 6,
+    'circle-emissive-strength': 1
   }
 });
 ```
@@ -290,7 +323,7 @@ When building a Mapbox application, verify these optimizations in order:
 - [ ] Load map library and data in parallel (eliminate waterfalls)
 - [ ] Use dynamic imports for map code (reduce initial bundle)
 - [ ] Defer non-critical features (terrain, custom 3D layers, analytics)
-- [ ] Use symbol layers for > 100 markers (not HTML markers)
+- [ ] Use a GL layer (circle/symbol) above ~100 markers, not HTML markers
 - [ ] Implement viewport-based data loading for large datasets
 
 ### 🟡 High Impact
@@ -312,7 +345,7 @@ First-pass agent code often ships a map with no `map.on('error')`, no `map.remov
 
 - [ ] Consolidate multiple layers with data-driven styling
 - [ ] Add mobile-specific optimizations (circle layers, disabled rotation)
-- [ ] Set minzoom/maxzoom on layers to avoid rendering at irrelevant zoom levels
+- [ ] Set minzoom/maxzoom on layers to avoid rendering at irrelevant zoom levels — but set the bound 1–2 levels below where the layer should appear and fade opacity in across that band, so features don't pop
 - [ ] Avoid enabling preserveDrawingBuffer or antialias unless needed
 
 ### Measurement

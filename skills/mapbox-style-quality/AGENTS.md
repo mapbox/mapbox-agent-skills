@@ -1,5 +1,21 @@
 # Mapbox Style Quality Guide
 
+## Standard-style layer audit (run this first)
+
+Two omissions cause most "the map looks broken" reports:
+
+```javascript
+// Custom layers with no `slot` draw ABOVE everything, including street labels
+map.getStyle().layers.filter((l) => !l.slot && !l.id.startsWith('basemap'));
+
+// fill/line/circle layers default to emissive-strength 0 -> vanish at dusk/night.
+// Symbol layers already default to 1, so they need nothing.
+```
+
+Also check: routes set `line-occlusion-opacity`; no `color*` config override was authored as an already-dark value (Standard treats them as **day** values and re-derives per preset, so a night-tuned color double-darkens); every `lightPreset` (`dawn`/`day`/`dusk`/`night`) is legible.
+
+Design rules: **mapbox-cartography** skill.
+
 Quick reference for style validation, accessibility, performance optimization, and testing.
 
 ## Style Validation Rules
@@ -157,7 +173,9 @@ map.addLayer({
 ✅ Check label collisions
 ✅ Verify symbol/icon rendering
 ✅ Test on desktop and mobile viewports
-✅ Check dark mode compatibility
+✅ Check every light preset — `dawn` / `day` / `dusk` / `night` (on Standard, dark mode is `lightPreset: 'night'`, not a second style)
+✅ Verify every custom layer has an explicit `slot`, and every fill/line/circle layer has emissive strength `1`
+✅ Run a deuteranopia simulation — no red/green-only or rainbow encodings
 
 ### Functional Testing
 
@@ -188,7 +206,8 @@ layers.forEach((layer) => {
 ### Performance Testing
 
 ```javascript
-// ✅ Measure style load time
+// ✅ Measure style load time. Note this is a full reload — for appearance
+// changes use setConfigProperty, which needs no reload at all.
 const startTime = performance.now();
 map.setStyle(style);
 map.once('idle', () => {
@@ -214,8 +233,14 @@ console.log('Layer count:', map.getStyle().layers.length);
 // ✅ Prevent collisions
 'text-allow-overlap': false,
 'text-padding': 2,
-'symbol-spacing': 250
+'symbol-spacing': 250,
+
+// ✅ On an icon+label layer, let the LABEL yield and keep the icon
+'icon-allow-overlap': true,   // every icon must be visible
+'text-optional': true         // drop the label before the icon
 ```
+
+When labels conflict, **drop the lower-priority label — don't shrink it.** `icon-allow-overlap` defaults to `false`, which is the #1 cause of "my icons disappeared.
 
 ### 2. Inconsistent Styling
 

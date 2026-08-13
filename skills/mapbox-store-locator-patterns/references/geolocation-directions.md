@@ -125,11 +125,17 @@ async function getDirections(from, to) {
     map.addLayer({
       id: 'route',
       type: 'line',
+      // Routes go in `middle`: above the road network, but under all labels
+      // and 3D buildings, so street names stay legible over the line.
+      slot: 'middle',
       source: 'route',
       paint: {
+        // The route is user content — this is where a brand color belongs
         'line-color': '#3b9ddd',
         'line-width': 5,
-        'line-opacity': 0.75
+        'line-opacity': 0.75,
+        'line-emissive-strength': 1, // stays visible under dusk/night presets
+        'line-occlusion-opacity': 1 // 3D buildings don't hide the route
       }
     });
   }

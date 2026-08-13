@@ -18,13 +18,14 @@
     {
       "id": 2,
       "prompt": "We're building a map showing 75,000 store locations across the US. The previous implementation used the Mapbox Marker class and was completely unusable. My team is debating whether to switch to clustering or symbol layers — which is the right fix, and why?",
-      "expected_output": "Should recommend symbol layers (GeoJSON source + circle or symbol layer), NOT clustering. 75,000 points is within the symbol layer range (500–100,000 markers) and renders efficiently on the GPU without clustering. Clustering is only needed at 100,000+ markers. Should explain that HTML markers create 75,000 DOM elements (the actual problem) and that symbol layers render all points as a single WebGL draw call at 60 FPS. Clustering at this scale adds complexity without the performance benefit that symbol layers already provide.",
+      "expected_output": "Should recommend a GL layer (GeoJSON source + circle or symbol layer) rather than clustering as the fix for the stated symptom. The actual problem is 75,000 HTML markers creating 75,000 DOM elements; circle/symbol layers draw on the GPU and handle this scale smoothly, so 75,000 points does not require clustering to be performant. Should separate the two axes rather than treating clustering as the next performance rung: the escalation for a dataset this size is a vector tileset, so only the current viewport loads instead of the whole payload up front, while clustering is a legibility choice that depends on whether the pins visibly overlap at the zooms users actually browse — for 75,000 US-wide stores they will at national zooms, so clustering may well be worth adding for readability, but that is a separate decision from the performance fix and not something the row count alone dictates.",
       "files": [],
       "expectations": [
-        "Recommends symbol layers (GeoJSON source + circle or symbol layer) as the primary fix",
-        "Correctly identifies that 75,000 points does NOT require clustering — clustering is for 100,000+ markers",
-        "Explains that the root cause is HTML markers creating 75,000 DOM elements",
-        "Explains that symbol layers render on the GPU and handle this scale efficiently",
+        "Recommends replacing the Marker class with a GL layer (GeoJSON source + circle or symbol layer) as the primary fix",
+        "Identifies the root cause as 75,000 HTML markers creating 75,000 DOM elements",
+        "Explains that circle/symbol layers render on the GPU and handle this scale — 75,000 points does not require clustering to be smooth",
+        "Recommends a vector tileset as the escalation for a dataset this size, so only the current viewport loads rather than the whole payload up front",
+        "Treats clustering as a separate, legibility-driven choice — appropriate if the points visibly overlap at the zooms users browse, not something the row count alone dictates",
         "Shows or describes the GeoJSON source + addLayer pattern"
       ]
     },

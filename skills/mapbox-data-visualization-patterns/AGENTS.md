@@ -2,6 +2,30 @@
 
 Quick reference for visualizing data on Mapbox maps.
 
+## Basemap setup first (Standard style)
+
+The base is a canvas, not the subject. Quiet it with config — POI labels compete with the thematic layer, 3D occludes it.
+
+```javascript
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/standard',
+  config: {
+    basemap: { theme: 'monochrome', showPointOfInterestLabels: false, show3dObjects: false }
+  }
+});
+
+map.setConfigProperty('basemap', 'theme', 'faded'); // change config, never setStyle()
+map.setConfigProperty('basemap', 'lightPreset', 'night'); // dark mode
+```
+
+**Non-negotiable on every `addLayer` below:**
+
+- **`slot`** — no slot means the layer draws above the street labels. Choropleths/rasters → `bottom`; overlays, routes, custom POIs → `middle`; markers and selections → `top`.
+- **emissive strength `1`** on fill / line / circle layers — these default to `0` and the layer vanishes at `dusk`/`night` without it. Symbol layers need nothing (`icon-`/`text-emissive-strength` default to `1`), and 3D `fill-extrusion` layers are scene-lit.
+
+Full guidance: **mapbox-cartography** skill.
+
 ## Visualization Type Decision Matrix
 
 | Data Type             | Visualization | Layer Type       | Use For                             |
@@ -49,6 +73,7 @@ All code snippets below use **Style expressions** to style features based on the
 map.addLayer({
   id: 'choropleth',
   type: 'fill',
+  slot: 'bottom',
   source: 'regions',
   paint: {
     'fill-color': [
@@ -62,7 +87,8 @@ map.addLayer({
       100,
       '#0080ff' // High
     ],
-    'fill-opacity': 0.75
+    'fill-opacity': 0.7, // cap at 0.7 so the basemap reads through
+    'fill-emissive-strength': 1
   }
 });
 ```
@@ -89,6 +115,7 @@ map.addLayer({
 map.addLayer({
   id: 'heatmap',
   type: 'heatmap',
+  slot: 'middle',
   source: 'points',
   paint: {
     'heatmap-weight': ['get', 'intensity'],
@@ -118,11 +145,15 @@ map.addLayer({
 map.addLayer({
   id: 'points',
   type: 'circle',
+  slot: 'middle',
   source: 'points',
-  minzoom: 14,
+  minzoom: 13, // 1-2 levels below where it should appear...
   paint: {
     'circle-radius': 6,
-    'circle-color': '#ff4444'
+    'circle-color': '#ff4444',
+    // ...then fade in. Never pop a layer on at a hard cutoff.
+    'circle-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 14.5, 1],
+    'circle-emissive-strength': 1
   }
 });
 ```
@@ -145,11 +176,13 @@ map.addSource('points', {
 map.addLayer({
   id: 'clusters',
   type: 'circle',
+  slot: 'middle',
   source: 'points',
   filter: ['has', 'point_count'],
   paint: {
     'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'],
-    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40]
+    'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
+    'circle-emissive-strength': 1
   }
 });
 
@@ -157,12 +190,17 @@ map.addLayer({
 map.addLayer({
   id: 'cluster-count',
   type: 'symbol',
+  slot: 'top',
   source: 'points',
   filter: ['has', 'point_count'],
   layout: {
     'text-field': ['get', 'point_count_abbreviated'],
-    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+    // DIN Pro is Standard's font. One family, two weights max.
+    'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
     'text-size': 12
+  },
+  paint: {
+    'text-color': '#ffffff'
   }
 });
 
@@ -170,13 +208,15 @@ map.addLayer({
 map.addLayer({
   id: 'unclustered-point',
   type: 'circle',
+  slot: 'middle',
   source: 'points',
   filter: ['!', ['has', 'point_count']],
   paint: {
     'circle-color': '#11b4da',
     'circle-radius': 6,
     'circle-stroke-width': 1,
-    'circle-stroke-color': '#fff'
+    'circle-stroke-color': '#fff',
+    'circle-emissive-strength': 1
   }
 });
 
@@ -204,13 +244,15 @@ map.on('click', 'clusters', (e) => {
 map.addLayer({
   id: 'bubbles',
   type: 'circle',
+  slot: 'middle',
   source: 'data',
   paint: {
     'circle-radius': ['interpolate', ['exponential', 2], ['get', 'magnitude'], 0, 2, 5, 20, 10, 100],
     'circle-color': ['interpolate', ['linear'], ['get', 'magnitude'], 0, '#ffffcc', 50, '#78c679', 100, '#006837'],
     'circle-opacity': 0.7,
     'circle-stroke-color': '#fff',
-    'circle-stroke-width': 1
+    'circle-stroke-width': 1,
+    'circle-emissive-strength': 1
   }
 });
 ```
@@ -219,7 +261,7 @@ map.addLayer({
 
 **Pattern:** Extrude polygons by height
 
-> **Note:** This example works with **classic styles only** (`streets-v12`, `dark-v11`, `light-v11`, etc.). The **Mapbox Standard style** includes 3D buildings with much greater detail by default.
+> **On Standard, don't add basemap buildings yourself** — Standard ships high-detail 3D buildings and landmarks. Toggle them with config: `map.setConfigProperty('basemap', 'show3dObjects', true)` (also `show3dBuildings`, `show3dLandmarks`). The example below is for **Classic styles only** (`streets-v12`, `dark-v11`, `light-v11`, …), where you hand-order layers with a `beforeId`. Extruding _your own_ data works on both — see the next snippet.
 
 ```javascript
 // Add 3D buildings from basemap
@@ -259,6 +301,7 @@ map.on('load', () => {
 map.addLayer({
   id: '3d-data',
   type: 'fill-extrusion',
+  slot: 'middle',
   source: 'your-data',
   paint: {
     'fill-extrusion-height': ['get', 'height'],
@@ -287,20 +330,23 @@ map.addLayer({
 map.addLayer({
   id: 'traffic',
   type: 'line',
+  slot: 'middle',
   source: 'roads',
   paint: {
     'line-width': ['interpolate', ['exponential', 2], ['get', 'volume'], 0, 1, 10000, 15],
+    // RdBu, not red-to-green: a traffic-light ramp fails for deuteranopia
     'line-color': [
       'interpolate',
       ['linear'],
       ['get', 'speed'],
       0,
-      '#d73027', // Stopped
+      '#b2182b', // Stopped
       30,
-      '#fee08b', // Moderate
+      '#f7f7f7', // Moderate
       60,
-      '#1a9850' // Free flow
-    ]
+      '#2166ac' // Free flow
+    ],
+    'line-emissive-strength': 1
   }
 });
 ```
@@ -349,8 +395,10 @@ map.addSource('large-data', {
 map.addLayer({
   id: 'data',
   type: 'fill',
+  slot: 'bottom',
   source: 'large-data',
-  'source-layer': 'layer-name'
+  'source-layer': 'layer-name',
+  paint: { 'fill-opacity': 0.7, 'fill-emissive-strength': 1 }
 });
 ```
 
@@ -407,15 +455,17 @@ map.on('moveend', () => {
 **Accessible Colors (ColorBrewer):**
 
 ```javascript
-// Sequential (single hue)
+// Sequential — one direction of data (Blues, Greens, Oranges, YlOrRd, BuPu)
 const sequential = ['#f0f9ff', '#bae4ff', '#7fcdff', '#0080ff', '#001f5c'];
 
-// Diverging (two hues)
-const diverging = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
+// Diverging — bidirectional data (RdBu shown; also PuOr, BrBG)
+const diverging = ['#b2182b', '#ef8a62', '#fddbc7', '#d1e5f0', '#67a9cf', '#2166ac'];
 
-// Qualitative (distinct categories)
+// Qualitative — categories, up to 8 (Set1, Set2, Paired, Dark2)
 const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 ```
+
+**Never** red→green (RdYlGn, traffic-light ramps) — the most common colorblind failure. **Never** rainbow/spectral for ordered data — no perceptual ordering. **Never** color as the only cue. Target WCAG AA (4.5:1 text, 3:1 large text and line work); test with a deuteranopia simulator.
 
 ## Legend Component
 
@@ -444,7 +494,9 @@ const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
   'democrat', '#3b82f6',
   'republican', '#ef4444',
   '#94a3b8'
-]
+],
+'fill-opacity': 0.7,
+'fill-emissive-strength': 1
 ```
 
 **COVID Cases:**
@@ -504,7 +556,13 @@ const qualitative = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
 → Use feature state instead of updating data
 
 **Color-blind friendly?**
-→ Use blue-orange or purple-green, avoid red-green
+→ RdBu / PuOr / BrBG for diverging; never red-green, never rainbow for ordered data
+
+**Custom layer invisible at night, or drawing over the labels?**
+→ Missing `slot` and/or emissive strength — see the top of this file
+
+**Need a dark map?**
+→ `setConfigProperty('basemap', 'lightPreset', 'night')`, not a different style
 
 ## Expression Patterns
 

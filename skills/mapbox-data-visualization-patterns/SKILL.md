@@ -7,6 +7,36 @@ description: Patterns for visualizing data on maps including choropleth maps, he
 
 Comprehensive patterns for visualizing data on Mapbox maps. Covers choropleth maps, heat maps, 3D extrusions, data-driven styling, animated visualizations, and performance optimization for data-heavy applications.
 
+## Basemap setup: do this first
+
+Every pattern below assumes the **Mapbox Standard** style with a quieted basemap. The base is a canvas, not the subject — POI labels compete with your thematic layer for attention, and 3D objects occlude it outright.
+
+```javascript
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/standard',
+  config: {
+    basemap: {
+      theme: 'monochrome', // or 'faded' — desaturate the base, not your data
+      showPointOfInterestLabels: false,
+      show3dObjects: false
+    }
+  }
+});
+
+// Change it later with config, never by reloading the style:
+map.setConfigProperty('basemap', 'theme', 'faded');
+```
+
+Alternatives: the purpose-built `light-2d` / `dark-2d` styles in the [Mapbox gallery](https://www.mapbox.com/gallery) (copy to your account first). For dark mode, set `lightPreset: 'night'` — do not swap to a different style.
+
+**Two rules that apply to every `addLayer` call in this skill:**
+
+1. **Always set an explicit `slot`.** A layer with no slot renders above _everything_, including street labels. Choropleths and rasters go in `bottom` (under the road network) or `middle`; routes and custom POI layers in `middle`; markers and active selections in `top`.
+2. **Set emissive strength to `1` on fill, line, and circle layers** (`fill-emissive-strength`, `line-emissive-strength`, `circle-emissive-strength`). These default to `0`, so without it the layer falls into shadow and goes nearly invisible under the `dusk` and `night` light presets. Symbol layers are already fine — `icon-`/`text-emissive-strength` default to `1`.
+
+See the **mapbox-cartography** skill for the full slot table, color rules, and light-preset behavior.
+
 ## When to Use This Skill
 
 Use this skill when:
@@ -39,8 +69,10 @@ map.on('load', () => {
   map.addLayer({
     id: 'states-layer',
     type: 'fill',
+    slot: 'bottom', // under the road network, so roads stay readable as context
     source: 'states',
     paint: {
+      // Sequential ColorBrewer ramp (Blues) — ordered data needs an ordered ramp
       'fill-color': [
         'interpolate',
         ['linear'],
@@ -56,7 +88,8 @@ map.on('load', () => {
         10000000,
         '#001f5c'
       ],
-      'fill-opacity': 0.75
+      'fill-opacity': 0.7, // cap at 0.7 so the basemap reads through for context
+      'fill-emissive-strength': 1 // or the fill disappears at dusk/night
     }
   });
 
@@ -64,10 +97,12 @@ map.on('load', () => {
   map.addLayer({
     id: 'states-border',
     type: 'line',
+    slot: 'bottom',
     source: 'states',
     paint: {
       'line-color': '#ffffff',
-      'line-width': 1
+      'line-width': 1,
+      'line-emissive-strength': 1
     }
   });
 
@@ -173,6 +208,7 @@ map.on('load', () => {
   map.addLayer({
     id: 'incidents-heat',
     type: 'heatmap',
+    slot: 'middle', // above roads, behind labels and 3D
     source: 'incidents',
     maxzoom: 15,
     paint: {
@@ -209,18 +245,23 @@ map.on('load', () => {
   map.addLayer({
     id: 'incidents-point',
     type: 'circle',
+    slot: 'middle',
     source: 'incidents',
-    minzoom: 14,
+    minzoom: 13, // set 1-2 levels below where the layer should appear...
     paint: {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 4, 22, 30],
       'circle-color': '#ff4444',
-      'circle-opacity': 0.8,
+      // ...then fade in across that band. Never pop a layer on at a hard cutoff.
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 14.5, 0.8],
       'circle-stroke-color': '#fff',
-      'circle-stroke-width': 1
+      'circle-stroke-width': 1,
+      'circle-emissive-strength': 1
     }
   });
 });
 ```
+
+> **Zoom continuity:** `minzoom` is worth keeping — it saves real GPU work at zooms where the layer is useless. But a bare `minzoom` makes features pop into existence. Set `minzoom` 1–2 levels _below_ where the layer should become visible, then interpolate opacity from 0 across that band.
 
 ## Best Practices
 
@@ -230,18 +271,22 @@ map.on('load', () => {
 // Use ColorBrewer scales for accessibility
 // https://colorbrewer2.org/
 
-// Good: Sequential (single hue)
+// Good: Sequential, one direction of data (Blues, Greens, Oranges, YlOrRd, BuPu)
 const sequentialScale = ['#f0f9ff', '#bae4ff', '#7fcdff', '#0080ff', '#001f5c'];
 
-// Good: Diverging (two hues)
-const divergingScale = ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#1a9850'];
+// Good: Diverging, bidirectional data (RdBu shown; also PuOr, BrBG)
+const divergingScale = ['#b2182b', '#ef8a62', '#fddbc7', '#d1e5f0', '#67a9cf', '#2166ac'];
 
-// Good: Qualitative (distinct categories)
+// Good: Qualitative, categories up to 8 (Set1, Set2, Paired, Dark2)
 const qualitativeScale = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00'];
-
-// Avoid: Red-green for color-blind accessibility
-// Use: Blue-orange or purple-green instead
 ```
+
+**Hard rules:**
+
+- **Never red→green** (RdYlGn / green-yellow-red "traffic light" ramps). It is the most common colorblind failure — roughly 1 in 12 men cannot separate the endpoints. Use **RdBu**, **PuOr**, or **BrBG** for diverging data instead.
+- **Never rainbow or spectral for ordered data.** Rainbow has no perceptual ordering, so readers cannot tell which end is "more".
+- **Never rely on color alone** to encode a category — pair it with size, shape, icon, or a label.
+- Target **WCAG AA**: 4.5:1 contrast for normal text, 3:1 for large text and line work. Test with a **deuteranopia** simulator.
 
 ### Error Handling
 
@@ -256,6 +301,7 @@ map.on('load', () => {
   map.addLayer({
     id: 'data-viz',
     type: 'fill',
+    slot: 'bottom',
     source: 'data',
     paint: {
       'fill-color': [
@@ -263,7 +309,9 @@ map.on('load', () => {
         ['has', 'value'], // Check if property exists
         ['interpolate', ['linear'], ['get', 'value'], 0, '#f0f0f0', 100, '#0080ff'],
         '#cccccc' // Default color for missing data
-      ]
+      ],
+      'fill-opacity': 0.7,
+      'fill-emissive-strength': 1
     }
   });
 
@@ -276,9 +324,21 @@ map.on('load', () => {
 
 ## Data Size Rule
 
-- **< 1 MB**: Use GeoJSON directly
-- **1–10 MB**: Consider either GeoJSON or vector tiles depending on complexity
-- **> 10 MB**: Use vector tiles (upload to Mapbox as tileset)
+By payload size:
+
+- **< 5 MB**: Use GeoJSON directly
+- **5–20 MB**: Consider vector tiles, depending on geometry complexity
+- **> 20 MB**: Use vector tiles (upload to Mapbox as a tileset)
+
+By **feature count**, for point data — the rendering-cost ladder used across these skills:
+
+| Points                                | Approach                                                                     |
+| ------------------------------------- | ---------------------------------------------------------------------------- |
+| < ~100                                | HTML marker / annotation (per-element interaction)                           |
+| ~100 and up                           | `circle` or `symbol` layer — GPU-rendered, smooth into the tens of thousands |
+| Thousands, or a payload past a few MB | Vector tileset — only the current viewport loads                             |
+
+**Clustering is a separate decision, driven by legibility.** Cluster when points visibly overlap at the zooms your readers use — that depends on how the data is distributed, not on the row count. A heatmap of 50,000 sparse points needs no clustering; 300 incidents on one city block do.
 
 See [references/performance.md](references/performance.md) for implementation details.
 

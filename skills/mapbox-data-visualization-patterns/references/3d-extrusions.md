@@ -4,7 +4,21 @@
 
 **Pattern:** Extrude polygons based on data
 
-> **Note:** The example below works with **classic styles only** (`streets-v12`, `dark-v11`, `light-v11`, etc.). The **Mapbox Standard style** includes 3D buildings with much greater detail by default.
+## On the Standard style: don't add basemap buildings yourself
+
+Standard already ships high-detail 3D buildings and landmarks. Toggle them with config — never re-add them as a custom layer:
+
+```javascript
+map.setConfigProperty('basemap', 'show3dObjects', true); // all 3D
+map.setConfigProperty('basemap', 'show3dBuildings', true); // buildings only
+map.setConfigProperty('basemap', 'show3dLandmarks', true); // landmark models
+```
+
+Custom `fill-extrusion` layers of _your own_ data are still valid on Standard — see [Extruding your own data](#extruding-your-own-data) below. Place them in the `middle` slot.
+
+## Basemap buildings on a Classic style
+
+> **Classic styles only** (`streets-v12`, `dark-v11`, `light-v11`, …). This is the pattern for when you have a reason to be on a Classic style — a server-rendered raster from the Static Images API, or per-layer paint control that Standard config can't express. On Standard, use the config toggles above instead.
 
 ```javascript
 map.on('load', () => {
@@ -38,7 +52,9 @@ map.on('load', () => {
 });
 ```
 
-**Using Custom Data Source:**
+## Extruding your own data
+
+Works on Standard and Classic alike. 3D layers are lit by the scene, so they do **not** need an emissive-strength override — that rule applies to non-3D custom layers.
 
 ```javascript
 map.on('load', () => {
@@ -52,6 +68,7 @@ map.on('load', () => {
   map.addLayer({
     id: '3d-custom-buildings',
     type: 'fill-extrusion',
+    slot: 'middle',
     source: 'custom-buildings',
     paint: {
       // Height in meters

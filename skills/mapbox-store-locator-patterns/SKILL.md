@@ -118,19 +118,33 @@ const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/standard',
   center: [-77.034084, 38.909671],
-  zoom: 11
+  zoom: 11,
+  config: {
+    // A store locator IS a POI-browsing map, so leave the basemap POIs on —
+    // they give the user context around each store.
+    basemap: { showPointOfInterestLabels: true }
+  }
 });
+
+// Follow the app's dark theme with config, never by loading a different style:
+if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  map.setConfigProperty('basemap', 'lightPreset', 'night');
+}
 ```
 
 ### Step 2: Add Markers to Map
 
-**Marker strategy by location count:**
+**Marker strategy.** Two independent decisions — location count answers the first, but not the second.
 
-| Count               | Strategy                   | Reason                                                                         |
-| ------------------- | -------------------------- | ------------------------------------------------------------------------------ |
-| **Fewer than 100**  | HTML Markers               | Full DOM/CSS control; DOM node count is manageable                             |
-| **100–1,000**       | **Symbol Layer** (default) | Renders on the **GPU via WebGL** — one `<canvas>`, zero per-point DOM elements |
-| **More than 1,000** | Clustering                 | Reduces visual clutter at large scale                                          |
+**1. How to render (cost):**
+
+| Count                                     | Strategy                   | Reason                                                                                                                   |
+| ----------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Fewer than ~100**                       | HTML Markers               | Full DOM/CSS control; DOM node count is manageable                                                                       |
+| **~100 and up**                           | **Symbol Layer** (default) | Renders on the **GPU via WebGL** — one `<canvas>`, zero per-point DOM elements. Smooth into the tens of thousands        |
+| **Thousands, or a payload past a few MB** | Vector tileset             | Only the current viewport loads instead of the whole file up front. Markers are no longer an option once you're on tiles |
+
+**2. Whether to cluster (legibility, not count):** cluster when your pins **visibly overlap at the zooms customers actually browse** — for a store locator, usually the city and neighborhood zooms. A 300-location chain concentrated in one metro needs clustering at z12; 5,000 locations spread nationwide may read fine unclustered at z4. Judge it from the map, not the row count.
 
 > HTML Markers create one DOM element per point. Beyond ~100 locations the browser spends too much time on layout/paint. Symbol layers bypass the DOM entirely — the GPU draws all points in a single WebGL draw call.
 
@@ -153,16 +167,23 @@ map.on('load', () => {
     map.addLayer({
       id: 'stores-layer',
       type: 'symbol',
+      // `top` is the slot for markers and active selections. Without a slot
+      // the layer draws above every basemap label.
+      slot: 'top',
       source: 'stores',
       layout: {
         'icon-image': 'custom-marker',
-        'icon-size': 0.8,
-        'icon-allow-overlap': true,
+        // Scale with zoom — a flat icon-size looks wrong across the range
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.6, 16, 1],
+        'icon-allow-overlap': true, // every store must be visible
         'text-field': ['get', 'name'],
-        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+        // DIN Pro is the Standard style's font. One family, two weights max —
+        // pulling in a second family reads as noise on an already busy map.
+        'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
         'text-offset': [0, 1.5],
         'text-anchor': 'top',
-        'text-size': 12
+        'text-size': 12,
+        'text-optional': true // drop the label before the icon when they collide
       }
     });
   });
@@ -288,6 +309,13 @@ Load these references for additional patterns as needed:
 | Styling & Layout          | `references/styling-layout.md`         | Full HTML/CSS layout, custom marker CSS                          |
 | Performance & A11y        | `references/optimization-a11y.md`      | Debounced search, data management, error handling, accessibility |
 | Variations & React        | `references/variations-react.md`       | Mobile-first, fullscreen, map-only, React implementation         |
+
+## Map design
+
+Store-locator styling decisions — where the brand color belongs, marker legibility, dark mode, category color coding — are covered by the **mapbox-cartography** skill. The two rules that bite most often here:
+
+- **Brand color goes on the markers and the route, never on basemap roads, water, or land.** This is the single most common map-design mistake.
+- **Never code categories by color alone**, and never use red + green as the sole distinction — roughly 1 in 12 men cannot separate them. Pair color with a different icon or a label.
 
 ## Resources
 

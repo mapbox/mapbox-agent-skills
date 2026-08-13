@@ -143,18 +143,46 @@ const map = new mapboxgl.Map({
 Mapbox provides professionally designed, maintained styles:
 
 ```javascript
-// Mapbox built-in styles
-style: 'mapbox://styles/mapbox/standard'; // Mapbox Standard (default)
-style: 'mapbox://styles/mapbox/standard-satellite'; // Mapbox Standard Satellite
-style: 'mapbox://styles/mapbox/streets-v12'; // Streets v12
-style: 'mapbox://styles/mapbox/satellite-v9'; // Satellite imagery
-style: 'mapbox://styles/mapbox/satellite-streets-v12'; // Hybrid
-style: 'mapbox://styles/mapbox/outdoors-v12'; // Outdoor/recreation
-style: 'mapbox://styles/mapbox/light-v11'; // Light theme
-style: 'mapbox://styles/mapbox/dark-v11'; // Dark theme
-style: 'mapbox://styles/mapbox/navigation-day-v1'; // Navigation (day)
-style: 'mapbox://styles/mapbox/navigation-night-v1'; // Navigation (night)
+// ✅ Default here — the modern basemap: 3D buildings and landmarks, dynamic
+// lighting, and a config surface you change at runtime with no reload
+style: 'mapbox://styles/mapbox/standard';
+style: 'mapbox://styles/mapbox/standard-satellite'; // imagery + roads, labels, boundaries
+
+// Classic styles: 2D, no slots, no config surface. Restyle by editing layer
+// paint. Reach for one only when you need a server-rendered raster (the Static
+// Images API can't render Standard), per-layer paint control config can't
+// express, or a deliberate 2D / low-power fallback.
+style: 'mapbox://styles/mapbox/standard';
+style: 'mapbox://styles/mapbox/satellite-v9';
+style: 'mapbox://styles/mapbox/satellite-streets-v12';
+style: 'mapbox://styles/mapbox/outdoors-v12';
+style: 'mapbox://styles/mapbox/light-v11';
+style: 'mapbox://styles/mapbox/dark-v11';
+style: 'mapbox://styles/mapbox/navigation-day-v1';
+style: 'mapbox://styles/mapbox/navigation-night-v1';
 ```
+
+**Coming from a MapLibre style JSON, migrate to Standard + config rather than porting the layer stack.** A hand-authored MapLibre style is a full layer stack; Standard replaces most of it with config properties:
+
+```javascript
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/standard',
+  config: {
+    basemap: {
+      theme: 'faded', // desaturated base
+      lightPreset: 'day', // dawn | day | dusk | night — dark mode lives here
+      showPointOfInterestLabels: false,
+      show3dObjects: true
+    }
+  }
+});
+
+// Change config at runtime — never setStyle() for an incremental change
+map.setConfigProperty('basemap', 'lightPreset', 'night');
+```
+
+Your **own** layers port over almost unchanged — the style spec is shared — but on Standard they need two additions: a **`slot`** (`bottom` / `middle` / `top`; without one the layer draws above every basemap label, which MapLibre's flat stack never did to you) and, for fill / line / circle layers, **emissive strength `1`** so they stay visible under the `dusk` / `night` presets (these default to `0`; symbol layers already default to `1`). See the **mapbox-cartography** skill.
 
 **Custom styles:**
 You can also create and use custom styles from Mapbox Studio:
@@ -223,10 +251,12 @@ map.on('load', () => {
   map.addLayer({
     id: 'points-layer',
     type: 'circle',
+    slot: 'middle', // Mapbox-only: no slot means it draws above the basemap labels
     source: 'points',
     paint: {
       'circle-radius': 8,
-      'circle-color': '#ff0000'
+      'circle-color': '#ff0000',
+      'circle-emissive-strength': 1 // Mapbox-only: defaults to 0, vanishes at night
     }
   });
 });
@@ -316,8 +346,8 @@ style: 'https://demotiles.maplibre.org/style.json';
 **Solution:**
 
 ```javascript
-// Use Mapbox style URL for better performance and features
-style: 'mapbox://styles/mapbox/streets-v12';
+// Use a Mapbox style URL for better performance and features
+style: 'mapbox://styles/mapbox/standard';
 ```
 
 ### Issue 4: Plugin Compatibility
@@ -363,7 +393,7 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 - [ ] **Update CSS imports**: `maplibre-gl.css` -> `mapbox-gl.css`
 - [ ] **Add token**: Set `mapboxgl.accessToken = 'pk.xxx'`
 - [ ] **Use environment variables**: Store token in `.env`
-- [ ] **Update style URL**: Change to `mapbox://styles/mapbox/streets-v12`
+- [ ] **Update style URL**: Change to `mapbox://styles/mapbox/standard`
 - [ ] **Update all references**: Replace `maplibregl.` with `mapboxgl.`
 - [ ] **Update plugins**: Install Mapbox versions of plugins (if used)
 - [ ] **Configure token security**: Add URL restrictions in dashboard
@@ -381,7 +411,7 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 | Package | `maplibre-gl`                          | `mapbox-gl`                                 |
 | Import  | `import maplibregl from 'maplibre-gl'` | `import mapboxgl from 'mapbox-gl'`          |
 | Token   | Optional (depends on tiles)            | Required: `mapboxgl.accessToken = 'pk.xxx'` |
-| Style   | Custom URL or OSM tiles                | `mapbox://styles/mapbox/streets-v12`        |
+| Style   | Custom URL or OSM tiles                | `mapbox://styles/mapbox/standard` + config  |
 | License | BSD (Open Source)                      | Proprietary (v2+)                           |
 | Support | Community                              | Official commercial support                 |
 | Tiles   | Requires tile source                   | Premium Mapbox tiles included               |

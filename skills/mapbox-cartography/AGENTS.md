@@ -1,227 +1,188 @@
-# Mapbox Cartography Principles
+# Mapbox Cartography
 
-Quick reference for map design, color theory, visual hierarchy, and accessibility.
+Quick reference for Mapbox map design. Platform-independent — applies to GL JS, Android, iOS, and Flutter. **This is the source of truth for map design guidance across these skills.**
 
-## Core Cartography Principles
+## Start here: Standard + config
 
-### 1. Visual Hierarchy
-
-**Most Important Rule:** Direct user attention to what matters most.
-
-**Priority levels:**
-
-- **Primary:** Main features (roads, labels for user's task)
-- **Secondary:** Supporting context (water, parks)
-- **Tertiary:** Background (minor roads, less important labels)
-
-**Tools:**
-
-- Size: Larger = more important
-- Color: Brighter/saturated = more important
-- Contrast: Higher contrast = more important
-- Position: Foreground > Background
-
-### 2. Figure-Ground Relationship
-
-**Make primary features stand out from background:**
+Default to `mapbox://styles/mapbox/standard`. Config covers ~95% of design needs — set the property, don't reload the style.
 
 ```javascript
-// ✅ Good contrast between features and background
-'background': '#f8f8f8',     // Light gray
-'water': '#a8d5ff',          // Distinct blue
-'roads': '#ffffff',          // Bright white
-'labels': '#333333'          // Dark text
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/standard',
+  config: { basemap: { lightPreset: 'day', theme: 'default' } }
+});
+
+map.setConfigProperty('basemap', 'lightPreset', 'night');
 ```
 
-### 3. Color Theory
+| Platform | Setter                                                                      |
+| -------- | --------------------------------------------------------------------------- |
+| Web      | `map.setConfigProperty('basemap', k, v)`                                    |
+| Android  | `style.setStyleImportConfigProperty("basemap", k, Value.valueOf(v))`        |
+| iOS      | `mapboxMap.setStyleImportConfigProperty(for: "basemap", config: k, value:)` |
+| Flutter  | `mapboxMap.style.setStyleImportConfigProperty('basemap', k, v)`             |
 
-**Color Schemes:**
+## Config surface
 
-- **Sequential:** Light → Dark (population density, elevation)
-- **Diverging:** Low ← Neutral → High (temperature, sentiment)
-- **Categorical:** Distinct colors for categories (never more than 7-8)
+Complete list; version gates in the [Standard API reference](https://docs.mapbox.com/map-styles/standard/api/).
 
-**Rules:**
+- **`lightPreset`**: `dawn | day | dusk | night` — lighting, atmosphere, and the basemap colors that follow
+- **`theme`**: `default | faded | monochrome | custom` (`custom` requires a LUT via `theme-data`)
+- **`font`**: any Mapbox or account-uploaded family; Standard's own labels are DIN Pro. Missing `Bold`/`Medium`/`Regular`/`Italic` weights fall back silently
+- **Label booleans**: `showPlaceLabels`, `showPointOfInterestLabels`, `showRoadLabels`, `showTransitLabels`, `showLandmarkIconLabels`, `showIndoorLabels`
+- **Feature booleans**: `showPedestrianRoads`, `showAdminBoundaries`, `showLandmarkIcons`, `showIndoor`
+- **3D booleans**: `show3dObjects` (master — also shadows, ambient occlusion, flood lights), `show3dBuildings`, `show3dLandmarks`, `show3dTrees`, `show3dFacades`
+- **Off by default**: `showLandmarkIcons`, `showLandmarkIconLabels`, `showIndoor`, `showIndoorLabels`
+- **POI controls**: `densityPointOfInterestLabels` `1–5` (default `3`), `colorModePointOfInterestLabels` (`default|single`), `backgroundPointOfInterestLabels` (`circle|none`), `fuelingStationModePointOfInterestLabels`
+- **Colors**: `colorLand`, `colorWater`, `colorGreenspace`; `colorCommercial`, `colorEducation`, `colorMedical`, `colorIndustrial`; `colorMotorways`, `colorTrunks`, `colorRoads`; `colorBuildings`; `colorPlaceLabels`, `colorRoadLabels`, `colorPointOfInterestLabels`, `colorAdminBoundaries`
+- **Feature-state colors**: `colorBuildingHighlight`/`Select`, `colorPlaceLabelHighlight`/`Select`, `colorIndoorLabelHighlight`/`Select`
+- **Recent gates** (an unknown key is ignored silently): indoor → GL JS `v3.21` / SDK `v11.19`; per-layer `show3d*`, land-use colors, `colorLand`, `colorBuildings` → `v3.17` / `v11.17`; `font` → `v3.14` / `v11.11`
+- **`standard-satellite`**: subset — no `theme`/`theme-data`, no `show3d*`, no landmark or indoor toggles, no land/water/land-use/building colors. Adds **`showRoadsAndTransit`**
 
-- Limit palette to 5-7 colors maximum
-- Use ColorBrewer for data visualization
-- Test for colorblindness (deuteranopia most common)
-- Avoid red/green combinations
+## Featuresets — the only per-feature basemap control
 
-### 4. Label Hierarchy
+`poi` (`hide`), `place-labels` (`hide`, `highlight`, `select`), `buildings` (`highlight`, `select`), `landmark-icons` (properties only), `indoor-labels` (`highlight`, `select`). `select` outranks `highlight`. The state paints with the matching `color*Highlight`/`color*Select` config. Use `hide` on `poi` — not a clip layer — when swapping one basemap POI for your own marker.
 
-**Typography sizing:**
+## Slots — every custom layer needs one
 
-```javascript
-// Cities by population
-'text-size': [
-  'interpolate', ['linear'], ['zoom'],
-  4, ['match', ['get', 'type'],
-    'capital', 16,
-    'city', 12,
-    'town', 10,
-    8
-  ]
-]
+| Slot     | Position                               | Put here                                     |
+| -------- | -------------------------------------- | -------------------------------------------- |
+| `bottom` | Above land/water, **below** roads      | Rasters, terrain, choropleth fills           |
+| `middle` | Above roads, **behind** 3D and labels  | Most overlays, **routes**, custom POI layers |
+| `top`    | Above POI labels, behind place/transit | Markers, active selections                   |
+
+**A layer with no slot is projection-dependent** — above everything in non-globe projections, below labels under `globe` (GL JS's default). Never rely on it; always set a slot. Two layers in the same slot keep insertion order.
+
+```json
+{
+  "id": "route",
+  "type": "line",
+  "slot": "middle",
+  "source": "route",
+  "paint": { "line-color": "#3b6df5", "line-width": 4, "line-emissive-strength": 1, "line-occlusion-opacity": 1 }
+}
 ```
 
-**Label placement rules:**
+**Emissive strength `1` on every custom fill / line / circle layer**, or it nearly vanishes at `dusk`/`night` — `fill-`, `line-`, `circle-emissive-strength` all default to `0`. **Symbol layers need nothing**: `icon-`/`text-emissive-strength` already default to `1`. 3D `fill-extrusion` layers are scene-lit and don't need it either.
 
-- Cities: Above point
-- Roads: Along line
-- Areas: Inside polygon
-- Avoid label collisions (use `text-allow-overlap: false`)
+## Use-case config
 
-## Color Best Practices
+| Use case   | Config                                                                       |
+| ---------- | ---------------------------------------------------------------------------- |
+| General    | Standard as it ships — change nothing                                        |
+| Navigation | `theme:'default'`, 3D on, road + place labels on, `showPedestrianRoads:true` |
+| Data viz   | `theme:'monochrome'` (or `light-2d`/`dark-2d` styles), POIs off, 3D off      |
+| Outdoors   | The `outdoors` / `outdoors-winter` **styles**, not a config                  |
+| Tourism    | `theme:'default'`, POIs at density 4, landmarks on, 3D on                    |
 
-### Accessible Color Contrast
+## Basemap ladder — cheapest rung first
 
-**WCAG 2.1 Standards:**
+1. In-config `theme` (`default`/`faded`/`monochrome`/`custom`) — instant, no reload
+2. Standalone Standard-based styles from the [gallery](https://www.mapbox.com/gallery) — `light-2d`, `dark-2d`, `outdoors`, `outdoors-winter` (copy to your account)
+3. Classic styles — `streets-v12`, `light-v11`, `dark-v11`, `outdoors-v12`, `satellite-v9`, `satellite-streets-v12`. 2D, **no slots, no config**. Only for a server-rendered raster (the Static Images API can't render Standard), per-layer paint control config can't express, or a deliberate 2D fallback.
 
-- Normal text: 4.5:1 contrast ratio
-- Large text: 3:1 contrast ratio
-- Essential graphics: 3:1 contrast ratio
+## Visual hierarchy
 
-```javascript
-// ✅ Good contrast for labels
-'text-color': '#333333',     // Dark text
-'text-halo-color': '#ffffff', // White halo
-'text-halo-width': 2
-```
+1. User content (routes, selections, location, markers) → 2. POIs & labels → 3. Roads → 4. Buildings → 5. Land/water
 
-### Colorblind-Safe Palettes
+**Figure-ground:** when your data isn't popping, **desaturate the basemap, not the data** — `theme:'faded'` or `'monochrome'`.
 
-**Avoid:**
+## Color
 
-- ❌ Red/Green (deuteranopia)
-- ❌ Blue/Yellow (tritanopia)
-- ❌ Pure color differentiation
+| Key              | Start from                      |
+| ---------------- | ------------------------------- |
+| `colorLand`      | `hsl(28, 15%, 95%)`             |
+| `colorBuildings` | `hsl(35, 18%, 87%)`             |
+| `colorRoads`     | `hsl(218, 18%, 72%)`            |
+| `colorWater`     | `hsl(202, 75%, 70%)`            |
+| `colorMotorways` | 5–8% L darker than `colorRoads` |
 
-**Use:**
+- **Brand color goes on routes, markers, and pins — never on basemap roads, water, or land.** The single most common map-design mistake.
+- Keep a clear lightness step between land and roads; motorways a step darker than local roads.
+- Water distinguished by **hue + saturation**, not lightness: S ≥ 60% light themes, ≥ 35% dark.
+- **Sequential**: Blues, Greens, Oranges, YlOrRd, BuPu. **Diverging**: RdBu, PuOr, BrBG — **never RdGn**. **Qualitative** (≤8): Set1, Set2, Paired, Dark2. **Never rainbow for ordered data.** Choropleth `fill-opacity ≤ 0.7`.
+- **WCAG AA**: 4.5:1 normal text, 3:1 large text and road lines. Never color alone; test with a deuteranopia simulator.
 
-- ✅ Pattern/texture in addition to color
-- ✅ Labels for categories
-- ✅ Size/shape variations
-- ✅ Colorblind-safe palettes (ColorBrewer)
+## Dark mode
+
+`lightPreset:'night'` is a complete dark basemap on its own. Bind it to the OS/UI appearance signal.
+
+- **Config colors are DAY values** — Standard re-derives them per preset. **Never hand it an already-dark color**; a night-tuned `colorLand` double-darkens to near-black.
+- **Your own layers don't adapt** — they need emissive strength.
+- **Never** CSS `invert()` (web), a second dark style, or a hand-built parallel night palette.
 
 ## Typography
 
-### Font Selection
+One family, two weights max. DIN Pro is Standard's default. Heavier weight + thin halo beats thin font + thick halo. Italic for water bodies. Placement: upper-right first, upper-left second. When labels conflict, **drop the lower-priority label — don't shrink it.**
 
-**Mapbox fonts:**
-
-- **Roboto**: Clean, modern, web-optimized
-- **Open Sans**: Highly legible, good for labels
-- **DIN Pro**: Professional, geometric
-- **Montserrat**: Elegant headlines
-
-**Rules:**
-
-- Max 2 font families per map
-- Use font-weight for hierarchy
-- Sans-serif for UI, optional serif for labels
-
-### Label Sizing
-
-**Base sizes:**
-
-```javascript
-'text-size': [
-  'interpolate', ['linear'], ['zoom'],
-  8, 10,    // Small at low zoom
-  12, 14,   // Medium at mid zoom
-  16, 18    // Large at high zoom
-]
+```
+Place labels 11–14px    Street labels 9–11px    Feature labels 10–12px
+Map title 16–20px       Attribution 8–9px
 ```
 
-## Data Visualization
+## Zoom
 
-### Choropleth Maps
+| Zoom  | Belongs here                                                   |
+| ----- | -------------------------------------------------------------- |
+| 0–4   | Country boundaries, ocean labels, capitals                     |
+| 5–8   | State lines, major cities, major highways, large water         |
+| 9–11  | City boundaries, neighborhoods, all highways, parks, landmarks |
+| 12–15 | All streets, building footprints, POIs, street names           |
+| 16–22 | House numbers, parking lots, fine-grained amenities            |
 
-**For area data (population, income, etc.):**
+**Zoom continuity:** never a hard `minzoom`/`maxzoom` pop. Keep the bound for the GPU saving, but set it 1–2 levels below where the layer should appear and fade opacity across that band. 3D buildings fade in from z13, never below.
 
-```javascript
-// ✅ Use sequential colors
-'fill-color': [
-  'step',
-  ['get', 'density'],
-  '#f7fbff',  // Light
-  10, '#deebf7',
-  20, '#c6dbef',
-  50, '#9ecae1',
-  100, '#6baed6',
-  200, '#3182bd',
-  500, '#08519c'  // Dark
-]
+```json
+"fill-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0, 12, 1]
 ```
 
-**Rules:**
+> `visibility` is a plain enum and does **not** accept expressions.
 
-- 5-7 data classes maximum
-- Equal intervals or quantiles
-- Include legend
-- Show data source
+## Markers
 
-### Proportional Symbols
+Two independent decisions. Count answers the first, not the second.
 
-**For point data (city size, counts):**
+**1. How to render — cost:**
 
-```javascript
-// ✅ Scale circle size by value
-'circle-radius': [
-  'interpolate', ['linear'], ['get', 'population'],
-  0, 5,           // Min: 5px
-  100000, 15,     // Mid: 15px
-  1000000, 30     // Max: 30px
-]
-```
+| Count                               | Approach                                                                                                               |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| < ~100                              | View/annotation marker (per-element interaction, DOM/CSS control on web)                                               |
+| ~100+                               | GL layer — `circle` or `symbol`, GPU-drawn, smooth into the tens of thousands (`circle` is cheaper: no collision work) |
+| Thousands, or payload past a few MB | Vector tileset — only the viewport loads; markers no longer an option                                                  |
 
-## Map Styles by Use Case
+**2. Whether to aggregate — legibility, not dataset size:** cluster when points **visibly overlap at the zooms users actually use**. 300 pins on one block need it; 50,000 sparse points across a continent may not. No point count makes clustering correct on its own — look at the map. If rendering _cost_ is the problem, the fix is a tileset, not clustering.
 
-### Navigation/Wayfinding
+- Anchor to lng/lat, never screen pixels.
+- `icon-allow-overlap: true` when every icon must be visible (the default hides colliding icons — the #1 cause of "my icons disappeared"). `text-optional: true` so labels drop before icons. `icon-size` as a zoom expression, never a flat number.
+- **SDF** images for single-color tintable icons; don't bake gradients into icon images.
 
-- **Emphasize:** Roads, labels, route
-- **De-emphasize:** Buildings, terrain
-- **Colors:** High contrast, clear hierarchy
+## Classic styles & raw style JSON only
 
-### Data Visualization
+Layer order bottom→top: background, land use, water, terrain/hillshade, buildings, roads, borders, labels, POI symbols, user content.
 
-- **Emphasize:** Data layer, legend
-- **De-emphasize:** Base map (grayscale)
-- **Colors:** Data-appropriate palette
+| Layer key           | Light theme             | Dark theme                 | What must hold                         |
+| ------------------- | ----------------------- | -------------------------- | -------------------------------------- |
+| `background` (land) | L 94–97%, slightly warm | L 8–14%, neutral to cool   | Never pure white or pure black         |
+| `roads`             | Clear step from land    | L 20–28%                   | Or street names appear to float        |
+| `buildings`         | 3–8% L darker than land | 3–8% L lighter than land   | Never competes with roads              |
+| `water`             | Hue 195–210°, S ≥ 60%   | Same hue, S ≥ 35%          | Hue + saturation, not lightness alone  |
+| `parks`             | Muted green, S ≤ 35%    | Muted green, L 18–25%      | Quieter than water                     |
+| `text`              | L 20–30%, not `#000`    | L 90–100% with a dark halo | 4.5:1 against every surface it crosses |
 
-### Storytelling
+## LUT color themes
 
-- **Emphasize:** Story points, annotations
-- **De-emphasize:** Irrelevant features
-- **Colors:** Support narrative mood
+`theme: 'custom'` + `theme-data` (base64 PNG cube-strip). **A LUT is applied last and overrides everything** — it regrades your own layers along with the basemap. Tune it last; scope it to the `basemap` import if a layer must hold an exact color.
 
-### Reference Map
+## Symptom → cause
 
-- **Balanced:** All features proportionate
-- **Clear:** Good labels, readable
-- **Colors:** Conventional (blue water, green parks)
+| Symptom                                    | Cause                                                  |
+| ------------------------------------------ | ------------------------------------------------------ |
+| Custom layer covers the street labels      | Missing `slot`                                         |
+| Fill/line/circle invisible at dusk/night   | Missing `*-emissive-strength: 1` (defaults to `0`)     |
+| Route disappears behind 3D buildings       | Missing `line-occlusion-opacity`                       |
+| Dark map came out solid black              | Pre-darkened `color*` override + `lightPreset:'night'` |
+| Icons randomly missing                     | `icon-allow-overlap` defaults to `false`               |
+| Street names float with no road under them | No lightness step between land and roads               |
 
-## Quick Design Checklist
-
-✅ Clear visual hierarchy (primary features stand out)
-✅ Limited color palette (5-7 colors max)
-✅ Accessible contrast ratios (4.5:1 for text)
-✅ Colorblind-safe colors (avoid red/green alone)
-✅ Appropriate label sizes (scales with zoom)
-✅ No label collisions (readable at all zooms)
-✅ Legend included (for data visualization)
-✅ Consistent styling (similar features look similar)
-✅ Tested at multiple zoom levels
-✅ Mobile-friendly (tap targets, text size)
-
-## Common Mistakes
-
-❌ Too many colors (>7 categories)
-❌ Poor contrast (low visibility)
-❌ Red/green combinations (colorblind users)
-❌ Small text without halos (illegible)
-❌ Cluttered labels (overlapping)
-❌ Inconsistent styling (confusing)
-❌ No legend (data maps unclear)
-❌ Ignoring zoom levels (too much/little detail)
+> Anything DOM/CSS-based (HTML markers, CSS transforms/filters, `invert()`) is **Web / GL JS only** — never universal advice.

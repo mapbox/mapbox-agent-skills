@@ -38,7 +38,7 @@ MapWidget(
     center: Point(coordinates: Position(-122.4194, 37.7749)),
     zoom: 12,
   ),
-  styleUri: MapboxStyles.STANDARD,
+  styleUri: MapboxStyles.STANDARD, // recommended default
 )
 ```
 
@@ -108,3 +108,15 @@ await mapboxMap.flyTo(
 - [Flutter Maps Guides](https://docs.mapbox.com/flutter/maps/guides/)
 - [pub.dev — mapbox_maps_flutter](https://pub.dev/packages/mapbox_maps_flutter)
 - [Example App](https://github.com/mapbox/mapbox-maps-flutter/tree/main/example)
+
+## Standard style config
+
+Adjust appearance with config properties, not by loading a different style:
+
+```dart
+await mapboxMap.style.setStyleImportConfigProperty('basemap', 'lightPreset', 'night'); // dark mode
+await mapboxMap.style.setStyleImportConfigProperty('basemap', 'theme', 'monochrome');
+await mapboxMap.style.setStyleImportConfigProperty('basemap', 'show3dObjects', false);
+```
+
+Custom style layers need `slot:` (`'bottom'` / `'middle'` / `'top'` — no slot draws above every basemap label). Fill / line / circle layers also need an emissive-strength property (`fillEmissiveStrength`, `lineEmissiveStrength`, `circleEmissiveStrength`) or they vanish at the `dusk` / `night` presets; symbol layers already default to `1`. Routes also want `lineOcclusionOpacity: 1.0`. See the **mapbox-cartography** skill.

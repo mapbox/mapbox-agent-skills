@@ -2,11 +2,29 @@
 
 ## 1. Style Management
 
-**Create a style conversationally:**
+> **Before creating a style, check whether you need one.** The **Mapbox Standard** style covers
+> ~95% of design needs through **config properties** you set at runtime — no style to create,
+> upload, or maintain. A dark map is `lightPreset: 'night'`; a desaturated base is
+> `theme: 'monochrome'`; hiding POIs is `showPointOfInterestLabels: false`. `create_style_tool`
+> produces a **Classic** style JSON — a hand-authored layer stack with no slots and no config
+> surface — so reach for it only when you genuinely need one: a server-rendered raster from the
+> Static Images API (which cannot render Standard), per-layer paint control config can't
+> express, or a deliberate 2D fallback. See the **mapbox-cartography** skill.
+
+**Configure Standard instead (the common case):**
 
 ```
-"Create a dark mode Mapbox style with 3D buildings, emphasize parks in green,
-and use blue for water. Name it 'app-dark-mode'."
+"Set up a Standard-style map for a dark-themed app: night light preset, POI labels
+off, 3D buildings on."
+```
+
+No style gets created — this is a `config` block on `mapbox://styles/mapbox/standard`.
+
+**Create a style conversationally** (when you do need a Classic style):
+
+```
+"Create a Classic Mapbox style based on dark-v11 for our Static Images API report
+renders — emphasize parks in green, use blue for water. Name it 'report-dark'."
 ```
 
 The AI will use `create_style_tool` tool to:

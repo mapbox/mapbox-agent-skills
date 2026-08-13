@@ -2,6 +2,20 @@
 
 Deeper reference for annotation managers beyond point annotations, plus the GeoJSON source + style layer approach for large datasets.
 
+> **Style layers on Standard need two properties.** `slot` decides where the layer sits in the
+> basemap stack — a layer with **no slot draws above everything, including street labels**.
+> On **fill, line, and circle** layers, emissive strength keeps it visible under the
+> `dusk` / `night` light presets — those properties default to `0`. Symbol layers need
+> nothing: `iconEmissiveStrength` / `textEmissiveStrength` already default to `1`.
+>
+> - `slot: 'bottom'` — above land and water, below roads (rasters, choropleth fills)
+> - `slot: 'middle'` — above roads, behind 3D and labels (**routes**, overlays, custom POIs)
+> - `slot: 'top'` — above POI labels (markers, active selections)
+>
+> Annotation _managers_ accept a `slot` too — pass it when creating the manager. Routes also
+> want `lineOcclusionOpacity: 1.0` so 3D buildings don't hide them. See the
+> **mapbox-cartography** skill.
+
 ---
 
 ## Circle Annotations
@@ -85,6 +99,7 @@ Future<void> _addGeoJsonLayer(MapboxMap mapboxMap) async {
   await mapboxMap.style.addLayer(SymbolLayer(
     id: 'shops-layer',
     sourceId: 'shops',
+    slot: 'top',                  // markers belong in `top`
     iconImage: 'coffee-icon',
     iconAllowOverlap: true,
   ));
@@ -103,7 +118,33 @@ await mapboxMap.style.addSource(GeoJsonSource(
   clusterRadius: 50,
   clusterMaxZoom: 14,
 ));
+
+// Cluster bubbles — `middle` slot, above roads but behind basemap labels
+await mapboxMap.style.addLayer(CircleLayer(
+  id: 'clusters',
+  sourceId: 'shops',
+  slot: 'middle',
+  filter: ['has', 'point_count'],
+  circleColorExpression: [
+    'step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'
+  ],
+  circleRadiusExpression: ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
+  circleEmissiveStrength: 1.0,
+));
+
+// Count labels — `top` slot
+await mapboxMap.style.addLayer(SymbolLayer(
+  id: 'cluster-count',
+  sourceId: 'shops',
+  slot: 'top',
+  filter: ['has', 'point_count'],
+  textFieldExpression: ['get', 'point_count_abbreviated'],
+  textSize: 12,
+  textColor: 0xFFFFFFFF,
+));
 ```
+
+Cluster when points visibly overlap at the zooms users actually browse — a legibility call, not a row count. Separately, once the dataset runs to thousands of points or a payload of a few MB, serve it as a vector tileset rather than a GeoJSON source.
 
 ---
 

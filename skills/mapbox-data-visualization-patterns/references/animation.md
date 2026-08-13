@@ -18,10 +18,12 @@ map.on('load', () => {
   map.addLayer({
     id: 'data-layer',
     type: 'circle',
+    slot: 'middle',
     source: 'hourly-data',
     paint: {
       'circle-radius': 8,
-      'circle-color': ['get', 'color']
+      'circle-color': ['get', 'color'],
+      'circle-emissive-strength': 1
     }
   });
 
@@ -75,10 +77,12 @@ map.on('load', () => {
   map.addLayer({
     id: 'live-points',
     type: 'circle',
+    slot: 'middle',
     source: 'live-data',
     paint: {
       'circle-radius': 6,
-      'circle-color': '#ff4444'
+      'circle-color': '#ff4444',
+      'circle-emissive-strength': 1
     }
   });
 

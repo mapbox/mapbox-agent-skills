@@ -8,7 +8,11 @@
         "Uses the interpolate expression with linear interpolation: ['interpolate', ['linear'], ['get', 'population'], ...]",
         "Provides multiple stop values mapping population numbers to color values (at least 3-4 stops)",
         "Shows the complete addLayer pattern with type 'fill' and the interpolate expression in fill-color paint property",
-        "Mentions that step expression is available as an alternative for discrete buckets, or explains when interpolate vs step is appropriate"
+        "Mentions that step expression is available as an alternative for discrete buckets, or explains when interpolate vs step is appropriate",
+        "Assigns an explicit slot to the fill layer (bottom, or middle) — a layer with no slot draws above the street labels",
+        "Sets fill-emissive-strength: 1 so the fill stays visible under the dusk/night light presets",
+        "Caps fill-opacity at or below 0.7 so the basemap reads through for context",
+        "Names a sequential ColorBrewer ramp and does not propose a rainbow/spectral or red-to-green ramp for this ordered data"
       ]
     },
     {
@@ -26,9 +30,21 @@
       "prompt": "I have datasets of varying sizes I need to visualize on Mapbox maps — some are small (500KB), some medium (5MB), and one is huge (50MB of GPS records). The 50MB one freezes when loaded as GeoJSON. What's the right approach for each size?",
       "expectations": [
         "50MB is well above the GeoJSON threshold — use vector tiles (MVT) instead",
-        "The rule: <1MB use GeoJSON, 1-10MB consider either, >10MB use vector tiles",
+        "The rule: < 5 MB use GeoJSON, 5-20 MB consider either, > 20 MB use vector tiles",
         "Explains the source type change: type: 'vector' with a tiles URL, and requires source-layer in the addLayer call",
         "Vector tiles support progressive loading — only tiles in the current viewport are fetched, not all 50MB at once"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I put a choropleth of sales by region and a heatmap of customer visits on a Mapbox Standard map. Two problems: both layers cover the street labels, and when I switch the app to dark mode both layers almost disappear. What am I doing wrong?",
+      "expectations": [
+        "Identifies the missing `slot` as the cause of drawing over the labels — a layer with no slot renders above everything, including street labels",
+        "Assigns slots: the choropleth in `bottom` (under the road network) or `middle`, the heatmap in `middle`",
+        "Identifies missing emissive strength as the cause of the layers disappearing in dark mode",
+        "Specifies fill-emissive-strength: 1 for the choropleth (and the matching property for the other layer type)",
+        "States that the light preset relights the basemap but does not touch the paint colors of layers you added",
+        "Does not recommend CSS invert(), a second dark style, or hand-darkening the layer colors"
       ]
     }
   ]

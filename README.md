@@ -275,25 +275,27 @@ Covers initialization waterfalls, bundle size, rendering performance, memory man
 
 ### 🎨 mapbox-cartography
 
-**Expert guidance on map design principles, color theory, visual hierarchy, typography, and cartographic best practices.**
+**Platform-independent map design guidance — the Standard style's config-first workflow, plus color, visual hierarchy, typography, and cartographic best practice.**
 
 **Use when:**
 
-- Designing a new map style
-- Choosing colors for map elements
-- Making decisions about visual hierarchy
-- Optimizing for specific use cases (navigation, data viz, etc.)
+- Designing a map style, or choosing a theme / light preset
+- Placing custom layers on the Standard style (slots, emissive strength)
+- Setting up dark mode
+- Choosing colors, or a data ramp for a thematic layer
+- Restyling a Classic style or raw style JSON
 - Ensuring accessibility
-- Creating themed maps (dark mode, vintage, etc.)
 
 **Key topics:**
 
-- Core cartographic principles (visual hierarchy, color theory)
-- Typography best practices for maps
-- Map context considerations (audience, platform, use case)
-- Zoom level strategies
-- Color palette templates
-- Common mapping scenarios (restaurant finders, real estate, etc.)
+- Standard config-first workflow (`theme`, `lightPreset`, visibility toggles, color overrides)
+- Slot placement and emissive strength for custom layers
+- Visual hierarchy and figure-ground
+- Color relationships, accessibility, and ColorBrewer ramps for data
+- Dark mode without double-darkening
+- Typography, zoom strategy, and markers by count
+- Classic styles and raw style JSON (layer order, palette relationships)
+- Segment archetypes for 16 product types, and a pre-ship design QA checklist
 
 [View skill →](./skills/mapbox-cartography/SKILL.md)
 

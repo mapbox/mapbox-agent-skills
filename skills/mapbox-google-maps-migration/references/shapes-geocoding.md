@@ -44,10 +44,12 @@ map.addSource('polygon', {
 map.addLayer({
   id: 'polygon-layer',
   type: 'fill',
+  slot: 'middle', // no slot means it draws above the street labels
   source: 'polygon',
   paint: {
     'fill-color': '#FF0000',
-    'fill-opacity': 0.35
+    'fill-opacity': 0.35,
+    'fill-emissive-strength': 1 // or it vanishes at dusk/night
   }
 });
 
@@ -55,11 +57,13 @@ map.addLayer({
 map.addLayer({
   id: 'polygon-outline',
   type: 'line',
+  slot: 'middle',
   source: 'polygon',
   paint: {
     'line-color': '#FF0000',
     'line-width': 2,
-    'line-opacity': 0.8
+    'line-opacity': 0.8,
+    'line-emissive-strength': 1
   }
 });
 ```
@@ -100,10 +104,14 @@ map.addSource('route', {
 map.addLayer({
   id: 'route-layer',
   type: 'line',
+  slot: 'middle', // routes go in `middle`: above roads, under labels and 3D
   source: 'route',
+  layout: { 'line-cap': 'round', 'line-join': 'round' },
   paint: {
     'line-color': '#0000FF',
-    'line-width': 3
+    'line-width': 3,
+    'line-emissive-strength': 1,
+    'line-occlusion-opacity': 1 // 3D buildings don't hide the route
   }
 });
 ```
@@ -148,10 +156,12 @@ map.loadImage('marker.png', (error, image) => {
   map.addLayer({
     id: 'markers',
     type: 'symbol',
+    slot: 'top', // markers and active selections belong in `top`
     source: 'points',
     layout: {
       'icon-image': 'custom-marker',
-      'icon-size': 1
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.7, 16, 1],
+      'icon-allow-overlap': true // the default hides colliding icons
     }
   });
 });

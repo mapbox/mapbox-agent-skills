@@ -205,16 +205,22 @@
   transform: scale(1.1);
 }
 
-/* Category-specific marker colors */
+/* Category-specific marker colors.
+   Qualitative ColorBrewer (Set1/Dark2) hues — deliberately NOT red + green,
+   which ~1 in 12 men cannot distinguish. Color alone should never carry the
+   category either: keep a distinct icon or label per category as well. */
 .marker.retail {
-  background-color: #2196f3;
+  background-color: #377eb8; /* blue */
 }
 
 .marker.restaurant {
-  background-color: #f44336;
+  background-color: #ff7f00; /* orange */
 }
 
 .marker.office {
-  background-color: #4caf50;
+  background-color: #984ea3; /* purple */
 }
 ```
+
+> HTML markers and CSS marker styling are **Mapbox GL JS (web) only**. On iOS, Android, and
+> Flutter use the platform annotation APIs or a symbol layer instead.

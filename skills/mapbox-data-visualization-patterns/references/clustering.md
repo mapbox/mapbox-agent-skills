@@ -26,13 +26,15 @@ map.on('load', () => {
   map.addLayer({
     id: 'clusters',
     type: 'circle',
+    slot: 'middle', // above roads, behind labels and 3D buildings
     source: 'locations',
     filter: ['has', 'point_count'],
     paint: {
       // Color clusters by count (step expression)
       'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 10, '#f1f075', 30, '#f28cb1'],
       // Size clusters by count
-      'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40]
+      'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
+      'circle-emissive-strength': 1 // stays visible under the dusk/night presets
     }
   });
 
@@ -40,12 +42,17 @@ map.on('load', () => {
   map.addLayer({
     id: 'cluster-count',
     type: 'symbol',
+    slot: 'top', // symbol layers belong in `top`
     source: 'locations',
     filter: ['has', 'point_count'],
     layout: {
       'text-field': ['get', 'point_count_abbreviated'],
-      'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+      // DIN Pro is the Standard style's font — don't mix in a second family
+      'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
       'text-size': 12
+    },
+    paint: {
+      'text-color': '#ffffff'
     }
   });
 
@@ -53,13 +60,15 @@ map.on('load', () => {
   map.addLayer({
     id: 'unclustered-point',
     type: 'circle',
+    slot: 'middle',
     source: 'locations',
     filter: ['!', ['has', 'point_count']],
     paint: {
       'circle-color': '#11b4da',
       'circle-radius': 6,
       'circle-stroke-width': 1,
-      'circle-stroke-color': '#fff'
+      'circle-stroke-color': '#fff',
+      'circle-emissive-strength': 1
     }
   });
 

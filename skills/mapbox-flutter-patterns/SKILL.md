@@ -164,6 +164,30 @@ class _MapScreenState extends State<MapScreen> {
 }
 ```
 
+### Configure the Standard style
+
+`MapboxStyles.STANDARD` is the recommended default. Adjust its appearance with **config properties** on the `"basemap"` import — never reload the style for an incremental change. The keys and values are identical to GL JS, Android, and iOS; only the setter differs.
+
+```dart
+// Dark mode — follow the platform theme
+final isDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+await mapboxMap.style.setStyleImportConfigProperty(
+  'basemap', 'lightPreset', isDark ? 'night' : 'day', // dawn | day | dusk | night
+);
+
+// Other config: theme, label visibility, 3D, POI density
+await mapboxMap.style.setStyleImportConfigProperty('basemap', 'theme', 'monochrome');
+await mapboxMap.style.setStyleImportConfigProperty('basemap', 'showPointOfInterestLabels', false);
+await mapboxMap.style.setStyleImportConfigProperty('basemap', 'show3dObjects', false);
+```
+
+**Dark mode is `lightPreset`, not a different style.** Standard shifts land, buildings, water, roads, and label colors along with the lighting, so the preset on its own is a complete dark basemap. Two caveats:
+
+- **Your own layers and annotations don't adapt.** They keep the colors you gave them, and fill / line / circle layers go nearly invisible at night without an emissive-strength property (those default to `0`; symbol layers already default to `1`) — see [references/annotations.md](references/annotations.md).
+- **`color*` config overrides are day values.** Standard re-derives them per preset, so passing an already-dark `colorLand` double-darkens to near-black.
+
+Custom style layers also need a `slot`. See the **mapbox-cartography** skill for the design rules — slots, color, hierarchy, and typography — which are platform-independent.
+
 ---
 
 ## Add Annotations

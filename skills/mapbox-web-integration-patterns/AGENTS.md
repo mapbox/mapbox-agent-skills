@@ -1,5 +1,24 @@
 # Mapbox Framework Integration Guide
 
+## Style + config baseline
+
+```javascript
+const map = new mapboxgl.Map({
+  container: el,
+  style: 'mapbox://styles/mapbox/standard', // recommended default
+  config: { basemap: { theme: 'default', lightPreset: 'day' } }
+});
+
+// ✅ Appearance changes go through config — cheap, preserves state
+map.setConfigProperty('basemap', 'lightPreset', 'night'); // dark mode
+map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+
+// ❌ setStyle() is a full teardown and drops your config
+map.setStyle('mapbox://styles/mapbox/dark-v11');
+```
+
+Bind `lightPreset` to your framework's theme state. Custom layers need a **`slot`** (`bottom`/`middle`/`top`); fill / line / circle layers also need **emissive strength `1`** (symbol layers already default to `1`) — see the **mapbox-cartography** skill.
+
 Quick reference for integrating Mapbox GL JS with React, Vue, Svelte, Angular, and Next.js.
 
 ## Critical Integration Rules
@@ -67,7 +86,7 @@ function MapComponent() {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/standard',
       center: [-122.4, 37.8],
       zoom: 12
     });
@@ -116,7 +135,7 @@ export default {
     onMounted(() => {
       map = new mapboxgl.Map({
         container: mapContainer.value,
-        style: 'mapbox://styles/mapbox/streets-v12'
+        style: 'mapbox://styles/mapbox/standard'
       });
     });
 
@@ -142,7 +161,7 @@ export default {
   onMount(() => {
     map = new mapboxgl.Map({
       container: mapContainer,
-      style: 'mapbox://styles/mapbox/streets-v12'
+      style: 'mapbox://styles/mapbox/standard'
     });
   });
 
@@ -171,7 +190,7 @@ export class MapComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.map = new mapboxgl.Map({
       container: this.mapContainer.nativeElement,
-      style: 'mapbox://styles/mapbox/streets-v12'
+      style: 'mapbox://styles/mapbox/standard'
     });
   }
 

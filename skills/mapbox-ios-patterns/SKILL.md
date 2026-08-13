@@ -281,7 +281,7 @@ deinit {
 }
 ```
 
-### Use Standard Style
+### Use Standard Style + config
 
 ```swift
 // ✅ Standard style is optimized and recommended
@@ -290,6 +290,20 @@ deinit {
 // Use other styles only when needed for specific use cases
 .mapStyle(.standardSatellite) // Satellite imagery
 ```
+
+Adjust Standard's appearance with **config properties**, not by loading a different style — a full style reload is the most expensive operation you can perform on a live map, and it drops your configuration:
+
+```swift
+// Dark mode — bind to colorScheme, don't load .dark
+.mapStyle(.standard(lightPreset: colorScheme == .dark ? .night : .day))
+
+// Imperative form, and every other config key
+try mapView.mapboxMap.setStyleImportConfigProperty(
+    for: "basemap", config: "show3dObjects", value: false
+)
+```
+
+Custom layers need a `slot` and an emissive-strength property — see [references/camera-styles.md](references/camera-styles.md) and [references/custom-data.md](references/custom-data.md), and the **mapbox-cartography** skill for the design rules.
 
 ---
 

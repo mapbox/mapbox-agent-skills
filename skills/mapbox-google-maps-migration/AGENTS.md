@@ -19,7 +19,7 @@ Quick reference for migrating from Google Maps Platform to Mapbox GL JS with API
 ✅ Swap coordinate order (lat,lng → lng,lat)
 ✅ Replace Google Maps API with Mapbox equivalents
 ✅ Use Symbol layers for 100+ markers (not HTML markers)
-✅ Add clustering for 500+ points
+✅ Add clustering when pins visibly overlap at browsing zooms (a legibility call, not a row count)
 ✅ Update geocoding to Mapbox Geocoding API
 ✅ Test all functionality
 
@@ -38,7 +38,7 @@ const map = new google.maps.Map(document.getElementById('map'), {
 mapboxgl.accessToken = 'pk.your_token';
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
+  style: 'mapbox://styles/mapbox/standard',
   center: [-122.4194, 37.7749], // Note: [lng, lat]
   zoom: 12
 });
@@ -83,16 +83,18 @@ map.addSource('points', {
 map.addLayer({
   id: 'points',
   type: 'symbol',
+  slot: 'top', // markers belong in `top`; no slot draws over the basemap labels
   source: 'points',
   layout: {
-    'icon-image': 'marker-15'
+    'icon-image': 'marker-15',
+    'icon-allow-overlap': true
   }
 });
 ```
 
 **Performance Note:** Google Maps renders ALL markers as DOM elements (even with Data Layer). Mapbox uses WebGL for Symbol/Circle layers = 10-100x faster for large datasets.
 
-### Clustering (500+ points)
+### Clustering (when points overlap)
 
 ```javascript
 // Google Maps (requires MarkerClusterer library)
@@ -216,10 +218,12 @@ map.addSource('polygon', {
 map.addLayer({
   id: 'polygon',
   type: 'fill',
+  slot: 'middle', // no slot means it draws above the street labels
   source: 'polygon',
   paint: {
     'fill-color': '#088',
-    'fill-opacity': 0.5
+    'fill-opacity': 0.5,
+    'fill-emissive-strength': 1
   }
 });
 ```
@@ -267,18 +271,22 @@ map.addLayer({
 // Google Maps (limited styling)
 const styledMapType = new google.maps.StyledMapType([{ elementType: 'geometry', stylers: [{ color: '#242f3e' }] }]);
 
-// Mapbox (full control)
-map.setStyle('mapbox://styles/mapbox/dark-v11');
-// Or create custom styles in Mapbox Studio
+// Mapbox: config properties on the Standard style — no reload, no second style
+map.setConfigProperty('basemap', 'lightPreset', 'night'); // dark mode
+map.setConfigProperty('basemap', 'theme', 'monochrome'); // desaturated base
+map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
 ```
+
+**Do not migrate a Google dark map to `setStyle('…/dark-v11')`.** That's a full style teardown and it drops your config. Dark mode on Standard is `lightPreset: 'night'`.
 
 **Mapbox Styles:**
 
-- `streets-v12` - Standard streets
-- `outdoors-v12` - Hiking/outdoor
-- `light-v11` / `dark-v11` - Minimal
-- `satellite-v9` / `satellite-streets-v12` - Imagery
+- **`standard`** - the recommended default: 3D, dynamic lighting, config surface
+- **`standard-satellite`** - imagery with roads, labels, and boundaries on top
+- Classic (2D, no slots, no config; restyle by editing layer paint): `streets-v12`, `outdoors-v12`, `light-v11` / `dark-v11`, `satellite-v9` / `satellite-streets-v12`
 - Custom styles via Mapbox Studio
+
+**Reach for Classic** only for a server-rendered raster (the Static Images API can't render Standard), per-layer paint control config can't express, or a deliberate 2D fallback.
 
 ## Common Migration Patterns
 
@@ -355,7 +363,7 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 **Phase 4: Optimization**
 
-- Add clustering (if 500+ points)
+- Add clustering if pins overlap at browsing zooms; move to a vector tileset once the payload is large
 - Implement proper cleanup
 - Test performance
 - Mobile optimization

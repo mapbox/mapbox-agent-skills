@@ -82,7 +82,7 @@ const map = new maplibregl.Map({
 // After (Mapbox with premium tiles)
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12', // Or any Mapbox style
+  style: 'mapbox://styles/mapbox/standard', // Or any Mapbox style
   center: [-122.4194, 37.7749],
   zoom: 12
 });
@@ -107,16 +107,33 @@ map.addLayer(layer);
 **Pre-built styles:**
 
 ```javascript
-'mapbox://styles/mapbox/standard'; // Mapbox Standard
-'mapbox://styles/mapbox/standard-satellite'; // Mapbox Standard Satellite
-'mapbox://styles/mapbox/streets-v12'; // Streets v12
-'mapbox://styles/mapbox/outdoors-v12'; // Hiking/outdoor
-'mapbox://styles/mapbox/light-v11'; // Minimal light
-'mapbox://styles/mapbox/dark-v11'; // Minimal dark
-'mapbox://styles/mapbox/satellite-v9'; // Satellite imagery
-'mapbox://styles/mapbox/satellite-streets-v12'; // Satellite + labels
-'mapbox://styles/mapbox/navigation-day-v1'; // Turn-by-turn navigation
+// ✅ Default: 3D, dynamic lighting, runtime config surface
+'mapbox://styles/mapbox/standard';
+'mapbox://styles/mapbox/standard-satellite'; // imagery + roads, labels, boundaries
+
+// Classic: 2D, no slots, no config surface
+'mapbox://styles/mapbox/streets-v12';
+'mapbox://styles/mapbox/outdoors-v12';
+'mapbox://styles/mapbox/light-v11';
+'mapbox://styles/mapbox/dark-v11';
+'mapbox://styles/mapbox/satellite-v9';
+'mapbox://styles/mapbox/satellite-streets-v12';
+'mapbox://styles/mapbox/navigation-day-v1';
 ```
+
+**Migrate a MapLibre style JSON to Standard + config, not to a ported layer stack:**
+
+```javascript
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/standard',
+  config: { basemap: { theme: 'faded', lightPreset: 'day', showPointOfInterestLabels: false } }
+});
+
+map.setConfigProperty('basemap', 'lightPreset', 'night'); // dark mode — not a second style
+```
+
+Your own layers port over unchanged (shared style spec) but need a **`slot`** (`bottom`/`middle`/`top` — no slot draws above every basemap label) and, on fill / line / circle layers, **emissive strength `1`** (they default to `0` and vanish at `dusk`/`night`; symbol layers already default to `1`). See the **mapbox-cartography** skill.
 
 **Custom styles:**
 
@@ -173,7 +190,7 @@ const map = new mapboxgl.Map({...});
 style: 'https://demotiles.maplibre.org/style.json'; // Won't load Mapbox tiles
 
 // ✅ Use Mapbox style URL
-style: 'mapbox://styles/mapbox/streets-v12';
+style: 'mapbox://styles/mapbox/standard';
 ```
 
 ### Issue: Plugin Compatibility

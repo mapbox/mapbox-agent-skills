@@ -84,7 +84,7 @@ customElements.define('mapbox-map', MapboxMap);
 <!-- Basic usage -->
 <mapbox-map
   access-token="pk.YOUR_TOKEN"
-  map-style="mapbox://styles/mapbox/dark-v11"
+  map-style="mapbox://styles/mapbox/standard"
   center="-122.4194,37.7749"
   zoom="12"
 ></mapbox-map>
@@ -140,7 +140,7 @@ Import the component file, then use directly in template. Vue supports custom ev
   <mapbox-map
     ref="map"
     :access-token="token"
-    map-style="mapbox://styles/mapbox/streets-v12"
+    map-style="mapbox://styles/mapbox/standard"
     center="-71.05953,42.3629"
     zoom="13"
     @mapload="handleMapLoad"
@@ -218,7 +218,15 @@ class MapboxMapReactive extends HTMLElement {
         this.map.setZoom(parseFloat(newValue));
         break;
       case 'map-style':
+        // setStyle() is a full teardown + rebuild. Correct when the consumer
+        // genuinely swaps style families, but don't route appearance changes
+        // through it — expose a `light-preset` attribute instead (below).
         this.map.setStyle(newValue);
+        break;
+      case 'light-preset':
+        // ✅ Dark mode and time-of-day on the Standard style: one config
+        // property, no reload, and it preserves the rest of your config.
+        this.map.setConfigProperty('basemap', 'lightPreset', newValue);
         break;
     }
   }
@@ -227,4 +235,18 @@ class MapboxMapReactive extends HTMLElement {
 customElements.define('mapbox-map-reactive', MapboxMapReactive);
 ```
 
+Remember to add `'light-preset'` to `observedAttributes` alongside the others:
+
+```html
+<mapbox-map
+  access-token="pk.YOUR_TOKEN"
+  map-style="mapbox://styles/mapbox/standard"
+  light-preset="night"
+  center="-71.05953,42.3629"
+  zoom="13"
+></mapbox-map>
+```
+
 **Key points:** Use `connectedCallback()` for init, **always implement `disconnectedCallback()`** with `map.remove()`, read config from HTML attributes, dispatch custom events (`mapload`), use `observedAttributes` + `attributeChangedCallback` for reactive updates. Works in any framework.
+
+**Prefer config over `setStyle()`.** On the Standard style, appearance — dark mode, desaturation, label and 3D visibility — is a set of config properties, not a different style URL. `setConfigProperty` is cheap and preserves state; `setStyle` tears the whole style down and drops your config. See the **mapbox-cartography** skill.

@@ -23,11 +23,13 @@ map.addSource('large-dataset', {
 map.addLayer({
   id: 'data-layer',
   type: 'fill',
+  slot: 'bottom',
   source: 'large-dataset',
   'source-layer': 'data-layer-name', // Layer name in the tileset
   paint: {
     'fill-color': ['get', 'color'],
-    'fill-opacity': 0.7
+    'fill-opacity': 0.7,
+    'fill-emissive-strength': 1
   }
 });
 ```
@@ -47,6 +49,7 @@ map.on('load', () => {
   map.addLayer({
     id: 'states',
     type: 'fill',
+    slot: 'bottom',
     source: 'states',
     paint: {
       'fill-color': [
@@ -54,7 +57,9 @@ map.on('load', () => {
         ['boolean', ['feature-state', 'hover'], false],
         '#ff0000', // Hover color
         '#3b9ddd' // Default color
-      ]
+      ],
+      'fill-opacity': 0.7,
+      'fill-emissive-strength': 1
     }
   });
 
@@ -96,11 +101,13 @@ map.on('load', () => {
   map.addLayer({
     id: 'filtered-data',
     type: 'circle',
+    slot: 'middle',
     source: 'all-data',
     filter: ['>=', ['get', 'value'], 50], // Only show values >= 50
     paint: {
       'circle-radius': 6,
-      'circle-color': '#ff4444'
+      'circle-color': '#ff4444',
+      'circle-emissive-strength': 1
     }
   });
 

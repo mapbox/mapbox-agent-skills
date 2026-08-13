@@ -48,10 +48,13 @@ fetch(
     map.addLayer({
       id: 'route',
       type: 'line',
+      slot: 'middle', // above roads, under labels and 3D buildings
       source: 'route',
       paint: {
         'line-color': '#3887be',
-        'line-width': 5
+        'line-width': 5,
+        'line-emissive-strength': 1, // defaults to 0 — or it vanishes at dusk/night
+        'line-occlusion-opacity': 1 // 3D buildings don't hide the route
       }
     });
   });

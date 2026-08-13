@@ -111,6 +111,8 @@ steps.forEach((step) => {
 
 **Default:** SwiftUI app shell + wrap `NavigationViewController` with `UIViewControllerRepresentable` (official getting-started). Fully custom Core UI ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)) only when explicitly requested.
 
+**Setup first:** SPM (`MapboxNavigationCore` + `MapboxNavigationUIKit`), `.netrc` download token, `MBXAccessToken`, location permissions, background `audio`/`location` — see `references/ios-navigation-sdk.md` checklist and [install guide](https://docs.mapbox.com/ios/navigation/guides/install/).
+
 For specialized topics (road cameras, history, e-horizon, CarPlay, offline, styled chrome, etc.), use the **Example patterns catalog** in `references/ios-navigation-sdk.md`. Do not fetch upstream sample source unless the user asks to open a specific example.
 
 ### Default: SwiftUI + drop-in NavigationViewController
@@ -185,6 +187,8 @@ final class Navigation: ObservableObject {
     @Published private(set) var routeProgress: RouteProgress?
     @Published private(set) var currentPreviewRoutes: NavigationRoutes?
 
+    // Keep a strong reference — do not create the provider only inside init and discard it.
+    private let provider: MapboxNavigationProvider
     private let core: MapboxNavigation
     private let voiceController: RouteVoiceController
 
@@ -192,6 +196,7 @@ final class Navigation: ObservableObject {
         let provider = MapboxNavigationProvider(
             coreConfig: CoreConfig(locationSource: .live, ttsConfig: .default)
         )
+        self.provider = provider
         core = provider.mapboxNavigation
         voiceController = provider.routeVoiceController
 

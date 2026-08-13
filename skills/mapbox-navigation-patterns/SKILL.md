@@ -43,6 +43,8 @@ User says things like:
 
 **Defaults:** SwiftUI app shell + wrap drop-in `NavigationViewController` via `UIViewControllerRepresentable` (official getting-started path). Use a fully custom Core UI ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)) only when the user explicitly wants to build their own nav chrome.
 
+**Before coding:** SPM (`MapboxNavigationCore` + `MapboxNavigationUIKit`), `.netrc` download token, `MBXAccessToken`, location permissions, background `audio`/`location` — see [install guide](https://docs.mapbox.com/ios/navigation/guides/install/) and the iOS reference checklist.
+
 **Features:**
 
 - Drop-in turn-by-turn UI (`NavigationViewController`) — default
@@ -97,7 +99,7 @@ User says things like:
 ## Implementation Patterns
 
 - **[references/web-directions-api.md](references/web-directions-api.md)** - Directions API patterns for the web: basic route display, turn-by-turn instructions, alternative routes, multi-stop routing, route optimization, and congestion-based route coloring
-- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: default SwiftUI + wrapped `NavigationViewController`; Core custom UI opt-in; inline multi-stop, route line, camera, road cameras, route alerts; catalog for the long tail
+- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: setup checklist; default SwiftUI + wrapped `NavigationViewController`; Core custom UI opt-in; inline multi-stop, route line, camera, road cameras, route alerts; catalog for the long tail
 - **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI, route line rendering, maneuver arrows, navigation camera, voice guidance
 - **[references/android-performance-antipatterns.md](references/android-performance-antipatterns.md)** - Android Navigation SDK performance and correctness antipatterns: Native Route Object traversal costs, threading, memory/lifecycle leaks, route management correctness, frequent-callback rendering efficiency, and Coordination API lifecycle
 - **[references/best-practices.md](references/best-practices.md)** - Route caching, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)

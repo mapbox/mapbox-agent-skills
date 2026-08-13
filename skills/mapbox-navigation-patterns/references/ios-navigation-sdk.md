@@ -56,6 +56,22 @@ Upstream tree (optional deep dive only): [`Examples/`](https://github.com/mapbox
 
 ---
 
+## Before you code (iOS setup)
+
+Greenfield apps need install prerequisites before the snippets below will run. See [Get started](https://docs.mapbox.com/ios/navigation/guides/install/) and **mapbox-token-security**.
+
+Checklist:
+
+1. **SPM** — `https://github.com/mapbox/mapbox-navigation-ios.git`; add both `MapboxNavigationCore` and `MapboxNavigationUIKit`
+2. **Secret download token** — `Downloads:Read` scope in `~/.netrc` (SPM auth only; never ship in the app)
+3. **Public token** — `MBXAccessToken` in `Info.plist` (`pk.*`)
+4. **Location** — `NSLocationWhenInUseUsageDescription` (and precise-location temporary usage dictionary when needed)
+5. **Background modes** — `audio` and `location` in `UIBackgroundModes`
+
+The snippets below are NavSDK-focused patterns (like Android’s reference): not full screens — omit permissions, full error UI, and app architecture.
+
+---
+
 ## Default: SwiftUI + drop-in `NavigationViewController`
 
 Keep a strong reference to `MapboxNavigationProvider`. Calculate routes with Core, then present the drop-in UI from SwiftUI via a representable.
@@ -191,6 +207,8 @@ final class Navigation: ObservableObject {
     @Published private(set) var routeProgress: RouteProgress?
     @Published private(set) var currentPreviewRoutes: NavigationRoutes?
 
+    // Keep a strong reference — do not create the provider only inside init and discard it.
+    private let provider: MapboxNavigationProvider
     private let core: MapboxNavigation
     private let voiceController: RouteVoiceController
 
@@ -198,6 +216,7 @@ final class Navigation: ObservableObject {
         let provider = MapboxNavigationProvider(
             coreConfig: CoreConfig(locationSource: .live, ttsConfig: .default)
         )
+        self.provider = provider
         core = provider.mapboxNavigation
         voiceController = provider.routeVoiceController
 
@@ -230,8 +249,6 @@ final class Navigation: ObservableObject {
 Session states: free drive → `startFreeDrive()`; active guidance → start active guidance on the trip session after preview routes; idle → `setToIdle()`.
 
 ---
-
-The snippets below are NavSDK-focused patterns (like Android’s reference): not full screens — omit permissions, full error UI, and app architecture.
 
 ## Multi-stop waypoints
 
@@ -418,14 +435,15 @@ Retain `provider.routeVoiceController` so TTS stays alive.
 Use SDK fields on `RouteProgress` / leg / step progress — do not walk `legs`/`steps` on every update.
 
 ```swift
-// ❌ Avoid
+// ❌ Avoid — walks legs/steps and misses partial progress in the current step
 let remaining = progress.route.legs
     .flatMap(\.steps)
     .dropFirst(progress.legIndex)
     .reduce(0.0) { $0 + $1.distance }
 
-// ✅ Prefer
-let remaining = progress.currentLegProgress?.currentStepProgress.distanceRemaining
+// ✅ Prefer — total distance remaining on the route (use step/leg fields only when that scope is intentional)
+let remaining = progress.distanceRemaining
+// Distance to next maneuver: progress.currentLegProgress?.currentStepProgress.distanceRemaining
 ```
 
 ## Resources

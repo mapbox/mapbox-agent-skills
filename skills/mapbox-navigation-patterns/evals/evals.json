@@ -165,8 +165,18 @@
       "expectations": [
         "Uses the skill's inline example-patterns catalog (or equivalent guidance) rather than requiring a live GitHub API fetch",
         "Identifies the Road Cameras example as the matching pattern",
-        "Notes AdditionalExamples samples are often UIKit-based and distinct from the default SwiftUI + drop-in NavigationViewController path",
+        "Notes that Road Cameras is stack-independent: instantiate `RoadCamerasManager` and `RoadCamerasMapController` on a `MapboxMap` (SwiftUI via `MapReader` / `proxy.map`; the AdditionalExamples sample happens to use UIKit)",
         "Only suggests opening upstream example source if the user wants the full sample implementation"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "I'm building a SwiftUI iOS navigation app and want a custom final waypoint image and custom waypoint styling. The Mapbox AdditionalExamples look UIKit-only — do I have to switch to UIKit?",
+      "expectations": [
+        "Says no — these are NavigationMapView APIs, so they are stack-independent even though AdditionalExamples hosts them in UIKit",
+        "Recommends wrapping NavigationMapView in UIViewRepresentable and configuring waypoint / final-waypoint styling on that view",
+        "Does not tell the user to abandon SwiftUI or rebuild the whole app in UIKit",
+        "May contrast true NVC chrome (top/bottom bars, styled UI elements, embed NavigationViewController) as the things that are drop-in UIKit UI"
       ]
     }
   ]

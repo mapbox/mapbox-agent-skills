@@ -115,6 +115,8 @@ steps.forEach((step) => {
 
 For specialized topics (road cameras, history, e-horizon, CarPlay, offline, styled chrome, etc.), use the **Example patterns catalog** in `references/ios-navigation-sdk.md`. Do not fetch upstream sample source unless the user asks to open a specific example.
 
+**Sample host ≠ API stack:** `AdditionalExamples` are often UIKit demos. APIs on `NavigationMapView` (waypoints, final-waypoint image, route line, camera, callouts) are stack-independent — wrap `NavigationMapView` in `UIViewRepresentable`. Road cameras attach to `MapboxMap` (`MapReader`). True UIKit-only: NVC chrome (top/bottom bars, styled UI elements, embed NVC).
+
 ### Default: SwiftUI + drop-in NavigationViewController
 
 ```swift

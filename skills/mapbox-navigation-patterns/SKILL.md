@@ -99,7 +99,7 @@ User says things like:
 ## Implementation Patterns
 
 - **[references/web-directions-api.md](references/web-directions-api.md)** - Directions API patterns for the web: basic route display, turn-by-turn instructions, alternative routes, multi-stop routing, route optimization, and congestion-based route coloring
-- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: setup checklist; default SwiftUI + wrapped `NavigationViewController`; Core custom UI opt-in; inline multi-stop, route line, camera, road cameras, route alerts; catalog for the long tail
+- **[references/ios-navigation-sdk.md](references/ios-navigation-sdk.md)** - Navigation SDK for iOS: setup checklist; default SwiftUI + wrapped `NavigationViewController`; Core custom UI opt-in; `NavigationMapView` APIs are stack-independent (wrap in SwiftUI representable); catalog for the long tail
 - **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI, route line rendering, maneuver arrows, navigation camera, voice guidance
 - **[references/android-performance-antipatterns.md](references/android-performance-antipatterns.md)** - Android Navigation SDK performance and correctness antipatterns: Native Route Object traversal costs, threading, memory/lifecycle leaks, route management correctness, frequent-callback rendering efficiency, and Coordination API lifecycle
 - **[references/best-practices.md](references/best-practices.md)** - Route caching, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)
@@ -142,3 +142,6 @@ User says things like:
 
 **User says: "I need voice guidance"**
 → Must use Navigation SDK (iOS/Android only)
+
+**User says: "Directions API or Navigation SDK?"**
+→ Native turn-by-turn / voice → Navigation SDK (**MAU** pricing). Web / route display only → Directions API (**pay-per-request**).

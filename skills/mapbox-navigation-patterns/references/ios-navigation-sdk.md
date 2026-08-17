@@ -8,39 +8,60 @@ App UI framework (SwiftUI vs UIKit) and navigation experience (drop-in vs fully 
 
 **Fully custom Core UI (opt-in):** [CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample) — only when the user asks to customize the entire nav UI / avoid `NavigationViewController`.
 
+### Sample host vs API stack
+
+`AdditionalExamples` are UIKit *demo hosts*. A `UIViewController` sample does **not** mean the API is UIKit-only.
+
+- **`NavigationMapView` APIs are stack-independent.** Wrap `NavigationMapView` in `UIViewRepresentable` and configure the same entities (route line, camera, waypoint / final-waypoint image, route callouts).
+- **`MapboxMap` APIs** (road cameras, declarative style) attach to any map: SwiftUI `MapReader` (`proxy.map`) or `navigationMapView.mapView.mapboxMap`.
+- **True drop-in / UIKit chrome:** `NavigationViewController` top/bottom bars, styled NVC UI elements, embedding NVC. Those stay on the drop-in path.
+
+```swift
+struct NavigationMapViewWrapper: UIViewRepresentable {
+    func makeUIView(context: Context) -> NavigationMapView {
+        NavigationMapView(frame: .zero)
+    }
+
+    func updateUIView(_ view: NavigationMapView, context: Context) {
+        // Configure NMV APIs here: waypoint images, route-line delegate, camera, callouts, …
+        view.delegate = context.coordinator
+    }
+}
+```
+
 ## Example patterns catalog
 
 Self-contained like Maps/Search skills. Use the catalog to pick a pattern. **Do not** fetch upstream example source unless the user explicitly asks to open a specific sample file.
 
-Note: most `AdditionalExamples` samples are UIKit-based. Prefer adapting the pattern to the default SwiftUI + wrapped `NavigationViewController` path unless the user asks for UIKit directly or a fully custom Core UI.
+**NMV API** / **MapboxMap** rows are stack-independent even when the sample is a UIKit host. **NVC chrome** rows are drop-in UIKit UI.
 
 | Topic                                  | Example                              | Stack / notes                                                          |
 | -------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------- |
-| Drop-in nav in a SwiftUI app (default) | Docs getting-started + Basic         | SwiftUI + `UIViewControllerRepresentable` → `NavigationViewController` |
-| Minimal drop-in navigation             | `AdditionalExamples` → Basic         | UIKit `NavigationViewController`                                       |
-| Full UIKit app shell                   | `UIKitExample`                       | UIKit                                                                  |
-| Fully custom Core nav UI               | `CoreSDKExample`                     | SwiftUI/Core publishers — opt-in only                                  |
+| Drop-in nav in a SwiftUI app (default) | Docs getting-started + Basic         | Wrap `NavigationViewController` in `UIViewControllerRepresentable`     |
+| Minimal drop-in navigation             | `AdditionalExamples` → Basic         | Drop-in NVC (sample is a UIKit host)                                   |
+| Full UIKit app shell                   | `UIKitExample`                       | UIKit app shell                                                        |
+| Fully custom Core nav UI               | `CoreSDKExample`                     | Core publishers — opt-in only                                          |
 | CarPlay                                | `CarPlayExample`                     | CarPlay                                                                |
-| Advanced / alt routes + style          | Advanced Implementation              | UIKit; preview → active guidance                                       |
-| Multi-stop route                       | Multiple Waypoints                   | UIKit; **inline section below**                                        |
-| Custom route line styling              | Custom Route Lines Styling           | UIKit; **inline section below**                                        |
-| Custom navigation camera               | Custom Navigation Camera             | Custom data source / transitions; **inline section below**             |
-| Road cameras on map                    | Road Cameras                         | Display cameras + camera events; **inline section below**              |
-| Route alerts                           | Route Alerts                         | UIKit; **inline section below**                                        |
-| Custom final waypoint image            | Custom Final Waypoint                | UIKit                                                                  |
-| Custom route callouts                  | Custom Route Callouts                | UIKit                                                                  |
-| Embed `NavigationViewController`       | Embedded View Controller             | UIKit                                                                  |
-| Styled UI + map style                  | Styled UI Elements                   | UIKit                                                                  |
-| Directions beta query params           | Directions API beta query parameters | Subclass `NavigationRouteOptions`                                      |
-| Custom waypoint styling                | Custom Waypoint Styling              | UIKit                                                                  |
-| Custom voice / audio                   | Custom Voice Controller              | Custom TTS recordings                                                  |
-| Custom top/bottom bars                 | Custom Top & Bottom Bars             | UIKit chrome                                                           |
-| Offline TileStore / regions            | Offline Regions                      | Offline                                                                |
-| Record trip history                    | History Recording                    | Free drive + active guidance                                           |
-| Replay trip history                    | History Replaying                    | History files (not map-matched)                                        |
-| Electronic horizon / MPP               | Electronic Horizon Events            | Upcoming intersections                                                 |
-| Custom road objects (e-horizon)        | Custom Road Objects                  | User-defined objects                                                   |
-| Declarative map styling                | Declarative Map Styling              | Style DSL                                                              |
+| Advanced / alt routes + style          | Advanced Implementation              | NMV API (reuse map preview → active)                                   |
+| Multi-stop route                       | Multiple Waypoints                   | Core waypoints; **inline section below**                               |
+| Custom route line styling              | Custom Route Lines Styling           | NMV API; **inline section below**                                      |
+| Custom navigation camera               | Custom Navigation Camera             | NMV API; **inline section below**                                      |
+| Road cameras on map                    | Road Cameras                         | MapboxMap / `MapReader`; **inline section below**                      |
+| Route alerts                           | Route Alerts                         | Core `RouteProgress` (+ optional NVC `topBanner`); **inline**          |
+| Custom final waypoint image            | Custom Final Waypoint                | NMV API — wrap `NavigationMapView` in SwiftUI                          |
+| Custom route callouts                  | Custom Route Callouts                | NMV API — wrap `NavigationMapView` in SwiftUI                          |
+| Embed `NavigationViewController`       | Embedded View Controller             | NVC chrome                                                             |
+| Styled UI + map style                  | Styled UI Elements                   | NVC chrome                                                             |
+| Directions beta query params           | Directions API beta query parameters | Core — subclass `NavigationRouteOptions`                               |
+| Custom waypoint styling                | Custom Waypoint Styling              | NMV API — wrap `NavigationMapView` in SwiftUI                          |
+| Custom voice / audio                   | Custom Voice Controller              | Core TTS                                                               |
+| Custom top/bottom bars                 | Custom Top & Bottom Bars             | NVC chrome                                                             |
+| Offline TileStore / regions            | Offline Regions                      | Core / TileStore                                                       |
+| Record trip history                    | History Recording                    | Core                                                                   |
+| Replay trip history                    | History Replaying                    | Core (history files, not map-matched)                                  |
+| Electronic horizon / MPP               | Electronic Horizon Events            | Core                                                                   |
+| Custom road objects (e-horizon)        | Custom Road Objects                  | Core                                                                   |
+| Declarative map styling                | Declarative Map Styling              | MapboxMap / Style DSL                                                  |
 
 Upstream tree (optional deep dive only): [`Examples/`](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples). Topic list source: `AdditionalExamples/Constants.swift` `listOfExamples`.
 
@@ -51,6 +72,7 @@ Upstream tree (optional deep dive only): [`Examples/`](https://github.com/mapbox
 | Add turn-by-turn to a SwiftUI app (default)    | Wrap `NavigationViewController` in `UIViewControllerRepresentable` |
 | UIKit app + drop-in nav                        | Present `NavigationViewController` directly                        |
 | Fully custom nav chrome / no drop-in UI        | CoreSDKExample-style Core + publishers (opt-in)                    |
+| `NavigationMapView` customization (waypoints, route line, camera, callouts) | Wrap `NavigationMapView` in SwiftUI `UIViewRepresentable` — stack-independent |
 | Specialized topic with an inline section below | Multi-stop, route line, camera, road cameras, route alerts         |
 | Other specialized topics                       | Match row in **Example patterns catalog** (catalog-only)           |
 
@@ -277,7 +299,7 @@ On arrival during drop-in UI, implement `NavigationViewControllerDelegate.naviga
 
 ## Route line styling
 
-Customize preview and active-guidance route lines via `NavigationMapViewDelegate` / `NavigationViewControllerDelegate` layer factories. Catalog: Custom Route Lines Styling. Use `identifier` (`main` vs `alternative_N`, `.casing`) to pick colors.
+`NavigationMapView` API — stack-independent (wrap `NavigationMapView` in a SwiftUI `UIViewRepresentable`). Customize preview and active-guidance route lines via `NavigationMapViewDelegate` / `NavigationViewControllerDelegate` layer factories. Catalog: Custom Route Lines Styling. Use `identifier` (`main` vs `alternative_N`, `.casing`) to pick colors.
 
 ```swift
 func navigationMapView(
@@ -324,7 +346,7 @@ func navigationMapView(
 
 ## Navigation camera
 
-Default camera works via `NavigationMapView` + `update(navigationCameraState:)` (see CoreSDKExample). To customize framing/transitions, replace `viewportDataSource` and/or `cameraStateTransition`. Catalog: Custom Navigation Camera.
+`NavigationMapView` API — stack-independent (wrap `NavigationMapView` in a SwiftUI `UIViewRepresentable`). Default camera works via `NavigationMapView` + `update(navigationCameraState:)` (see CoreSDKExample). To customize framing/transitions, replace `viewportDataSource` and/or `cameraStateTransition`. Catalog: Custom Navigation Camera.
 
 ```swift
 let navigationCamera = navigationMapView.navigationCamera
@@ -347,10 +369,11 @@ Implement `ViewportDataSource` / `CameraStateTransition` (see example `Navigatio
 
 ## Road cameras
 
-Request camera attributes on the route, then attach `RoadCamerasManager` + `RoadCamerasMapController` to the nav map. Catalog: Road Cameras. Uses experimental SPI / `MapboxNavigationCppRoadCameras`.
+Stack-independent: attach `RoadCamerasManager` + `RoadCamerasMapController` to any `MapboxMap`. The AdditionalExamples sample hosts this in UIKit, but that chrome is not required. In SwiftUI, take the map with `MapReader` (`proxy.map`). Catalog: Road Cameras. Uses experimental SPI / `MapboxNavigationCppRoadCameras`.
 
 ```swift
 import Combine
+import MapboxMaps
 @_spi(ExperimentalMapboxAPI) import MapboxDirections
 @_spi(MapboxInternal) import MapboxNavigationCore
 @_spi(ExperimentalMapboxAPI) import MapboxNavigationCppRoadCameras
@@ -362,34 +385,39 @@ let routes = try await mapboxNavigation.routingProvider()
     .calculateRoutes(options: options)
     .value
 
-let navVC = NavigationViewController(
-    navigationRoutes: routes,
-    navigationOptions: NavigationOptions(
-        mapboxNavigation: mapboxNavigation,
-        voiceController: provider.routeVoiceController,
-        eventsManager: provider.eventsManager()
-    )
-)
+// Any MapboxMap — SwiftUI MapReader, drop-in NVC, or Core NavigationMapView
+MapReader { proxy in
+    Map()
+        .onAppear {
+            guard let mapboxMap = proxy.map else { return }
+            setupRoadCameras(on: mapboxMap, provider: provider)
+        }
+}
 
-guard let mapboxMap = navVC.navigationMapView?.mapView.mapboxMap else { return }
-let manager = RoadCamerasManager(navigatorHandle: provider.navigatorHandle)
-let mapController = RoadCamerasMapController(
-    map: mapboxMap,
-    manager: manager,
-    config: RoadCamerasConfig(
-        displayConfig: RoadCamerasDisplayConfig(startShowDistance: 1000),
-        iconProvider: nil // or custom RoadCamerasIconProvider
+func setupRoadCameras(on mapboxMap: MapboxMap, provider: MapboxNavigationProvider) {
+    let manager = RoadCamerasManager(navigatorHandle: provider.navigatorHandle)
+    let mapController = RoadCamerasMapController(
+        map: mapboxMap,
+        manager: manager,
+        config: RoadCamerasConfig(
+            displayConfig: RoadCamerasDisplayConfig(startShowDistance: 1000),
+            iconProvider: nil // or custom RoadCamerasIconProvider
+        )
     )
-)
+    // Keep strong references to manager + mapController
 
-manager.camerasAppearing.sink { /* upcoming cameras */ }.store(in: &subscriptions)
-manager.camerasPassed.sink { _ in /* passed */ }.store(in: &subscriptions)
-mapController.cameraClicked.sink { camera in /* camera.id */ }.store(in: &subscriptions)
+    manager.camerasAppearing.sink { /* upcoming cameras */ }.store(in: &subscriptions)
+    manager.camerasPassed.sink { _ in /* passed */ }.store(in: &subscriptions)
+    mapController.cameraClicked.sink { camera in /* camera.id */ }.store(in: &subscriptions)
+}
+
+// UIKit / drop-in equivalent:
+// let mapboxMap = navVC.navigationMapView?.mapView.mapboxMap
 ```
 
 ## Route alerts
 
-Read `RouteProgress.upcomingRouteAlerts` and optionally host a custom top banner via `NavigationOptions.topBanner`. Catalog: Route Alerts.
+Core `RouteProgress.upcomingRouteAlerts` is stack-independent. Optional custom top banner via `NavigationOptions.topBanner` is NVC chrome. Catalog: Route Alerts.
 
 ```swift
 // Custom ContainerViewController as topBanner:

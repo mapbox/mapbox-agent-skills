@@ -115,7 +115,7 @@ var options = NavigationRouteOptions(coordinates: [origin, destination])
 options.attributeOptions.insert(.roadCamera)
 
 func setupRoadCameras(on navigationMapView: NavigationMapView, provider: MapboxNavigationProvider) {
-    guard let mapboxMap = navigationMapView.mapView.mapboxMap else { return }
+    let mapboxMap = navigationMapView.mapView.mapboxMap
 
     let manager = RoadCamerasManager(navigatorHandle: provider.navigatorHandle)
     let mapController = RoadCamerasMapController(

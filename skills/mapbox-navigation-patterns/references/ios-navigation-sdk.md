@@ -8,7 +8,7 @@ App UI framework (SwiftUI vs UIKit) and navigation experience (drop-in vs fully 
 
 **Fully custom Core UI (opt-in):** [CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample) — only when the user asks to customize the entire nav UI / avoid `NavigationViewController`.
 
-### Sample host vs API stack
+## Sample host vs API stack
 
 `AdditionalExamples` are UIKit _demo hosts_. A `UIViewController` sample does **not** mean the API is UIKit-only.
 

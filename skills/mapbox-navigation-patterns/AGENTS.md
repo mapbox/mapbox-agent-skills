@@ -113,9 +113,9 @@ steps.forEach((step) => {
 
 **Setup first:** SPM (`MapboxNavigationCore` + `MapboxNavigationUIKit`), `.netrc` download token, `MBXAccessToken`, location permissions, background `audio`/`location` — see `references/ios-navigation-sdk.md` checklist and [install guide](https://docs.mapbox.com/ios/navigation/guides/install/).
 
-For specialized topics (road cameras, history, e-horizon, CarPlay, offline, styled chrome, etc.), use the **Example patterns catalog** in `references/ios-navigation-sdk.md`. Do not fetch upstream sample source unless the user asks to open a specific example.
+For specialized topics (road cameras, history, e-horizon, CarPlay, offline, styled chrome, etc.), use the **Example patterns catalog** in `references/ios-navigation-sdk.md`. Load `references/ios-navigation-specialized.md` for multi-stop, route line, camera, road cameras, and route alerts. Do not fetch upstream sample source unless the user asks to open a specific example.
 
-**Sample host ≠ API stack:** `AdditionalExamples` are often UIKit demos. APIs on `NavigationMapView` (waypoints, final-waypoint image, route line, camera, callouts) are stack-independent — wrap `NavigationMapView` in `UIViewRepresentable`. Road cameras attach to `MapboxMap` (`MapReader`). True UIKit-only: NVC chrome (top/bottom bars, styled UI elements, embed NVC).
+**Sample host ≠ API stack:** `AdditionalExamples` are often UIKit demos. APIs on `NavigationMapView` (waypoints, final-waypoint image, route line, camera, callouts, road cameras) are stack-independent — wrap `NavigationMapView` in `UIViewRepresentable`. Road cameras: `navigationMapView.mapView.mapboxMap` + `RoadCamerasManager(navigatorHandle: provider.navigatorHandle)`. True UIKit-only: NVC chrome (top/bottom bars, styled UI elements, embed NVC).
 
 ### Default: SwiftUI + drop-in NavigationViewController
 

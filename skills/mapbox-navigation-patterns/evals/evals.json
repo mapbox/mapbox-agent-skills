@@ -165,7 +165,8 @@
       "expectations": [
         "Uses the skill's inline example-patterns catalog (or equivalent guidance) rather than requiring a live GitHub API fetch",
         "Identifies the Road Cameras example as the matching pattern",
-        "Notes that Road Cameras is stack-independent: instantiate `RoadCamerasManager` and `RoadCamerasMapController` on a `MapboxMap` (SwiftUI via `MapReader` / `proxy.map`; the AdditionalExamples sample happens to use UIKit)",
+        "Notes that Road Cameras is stack-independent: wrap `NavigationMapView` in `UIViewRepresentable`, take `mapboxMap` from `navigationMapView.mapView.mapboxMap`, and create `RoadCamerasManager` with Core `provider.navigatorHandle`",
+        "May load references/ios-navigation-specialized.md for the inline Road Cameras section",
         "Only suggests opening upstream example source if the user wants the full sample implementation"
       ]
     },

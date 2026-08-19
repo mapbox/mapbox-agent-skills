@@ -7,7 +7,8 @@
       "expectations": [
         "Recommends the Navigation SDK for iOS, not the Directions API",
         "Explains that voice guidance is only available through the Navigation SDK, not the Directions API",
-        "Mentions the Navigation SDK provides a complete turn-by-turn UI (NavigationViewController) and real-time rerouting",
+        "Defaults to drop-in NavigationViewController (wrapped with UIViewControllerRepresentable in a SwiftUI app), not a fully custom CoreSDKExample UI",
+        "May mention fully custom Core UI only as an opt-in when the user wants to build their own nav chrome",
         "Notes Navigation SDK pricing is Monthly Active Users (MAU) based, vs. the Directions API's pay-per-request model"
       ]
     },
@@ -146,6 +147,37 @@
         "Notes `MapboxNavigation` is no longer valid after `onDestroy()`/`MapboxNavigationProvider.destroy()`, so referencing it afterward is a bug",
         "States every `register*Observer` call needs a matching `unregister*Observer` during teardown, and that observers registered as inline lambdas with no stored reference cannot be unregistered",
         "Recommends the lifecycle-aware `requireMapboxNavigation`/`MapboxNavigationApp` pattern instead of a manually held singleton reference"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "I'm building a SwiftUI iOS app and want turn-by-turn navigation. What's the recommended way to add it?",
+      "expectations": [
+        "Recommends wrapping NavigationViewController with UIViewControllerRepresentable rather than building a fully custom Core UI by default",
+        "Shows calculating routes via MapboxNavigationProvider / routing provider, then presenting NavigationViewController with NavigationOptions",
+        "Keeps a strong reference to MapboxNavigationProvider",
+        "Mentions fully custom Core / CoreSDKExample only as an alternative when the user wants to replace the drop-in nav UI"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "I want to show road cameras during navigation in my iOS app. How should I find the right Mapbox sample to follow?",
+      "expectations": [
+        "Uses the skill's inline example-patterns catalog (or equivalent guidance) rather than requiring a live GitHub API fetch",
+        "Identifies the Road Cameras example as the matching pattern",
+        "Notes that Road Cameras is stack-independent: wrap `NavigationMapView` in `UIViewRepresentable`, take `mapboxMap` from `navigationMapView.mapView.mapboxMap`, and create `RoadCamerasManager` with Core `provider.navigatorHandle`",
+        "May load references/ios-navigation-specialized.md for the inline Road Cameras section",
+        "Only suggests opening upstream example source if the user wants the full sample implementation"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "I'm building a SwiftUI iOS navigation app and want a custom final waypoint image and custom waypoint styling. The Mapbox AdditionalExamples look UIKit-only — do I have to switch to UIKit?",
+      "expectations": [
+        "Says no — these are NavigationMapView APIs, so they are stack-independent even though AdditionalExamples hosts them in UIKit",
+        "Recommends wrapping NavigationMapView in UIViewRepresentable and configuring waypoint / final-waypoint styling on that view",
+        "Does not tell the user to abandon SwiftUI or rebuild the whole app in UIKit",
+        "May contrast true NVC chrome (top/bottom bars, styled UI elements, embed NavigationViewController) as the things that are drop-in UIKit UI"
       ]
     }
   ]

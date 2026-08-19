@@ -548,7 +548,7 @@ Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, tr
 **Key topics:**
 
 - Directions API for web (basic routes, alternatives, multi-stop, optimization)
-- Navigation SDK for iOS (NavigationViewController, voice guidance, custom UI)
+- Navigation SDK for iOS (SwiftUI + wrapped NavigationViewController default; Core custom UI opt-in)
 - Navigation SDK for Android (NavigationView, custom UI, route progress)
 - Traffic-aware routing with congestion data
 - Route caching and performance optimization
@@ -557,7 +557,7 @@ Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, tr
 **Covers all platforms:**
 
 - Web (Directions API with Mapbox GL JS)
-- iOS (Navigation SDK for iOS with Swift)
+- iOS (Navigation SDK for iOS — SwiftUI + drop-in NavigationViewController by default)
 - Android (Navigation SDK for Android with Kotlin)
 
 **Common patterns:**

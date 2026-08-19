@@ -1,0 +1,184 @@
+{
+  "skill_name": "mapbox-navigation-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a native iOS app that needs turn-by-turn navigation with voice guidance for drivers. Should I use the Mapbox Directions API or the Navigation SDK?",
+      "expectations": [
+        "Recommends the Navigation SDK for iOS, not the Directions API",
+        "Explains that voice guidance is only available through the Navigation SDK, not the Directions API",
+        "Defaults to drop-in NavigationViewController (wrapped with UIViewControllerRepresentable in a SwiftUI app), not a fully custom CoreSDKExample UI",
+        "May mention fully custom Core UI only as an opt-in when the user wants to build their own nav chrome",
+        "Notes Navigation SDK pricing is Monthly Active Users (MAU) based, vs. the Directions API's pay-per-request model"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need to fetch and display a driving route on a Mapbox GL JS web map. What Directions API profile should I request, and what format should the coordinates be in?",
+      "expectations": [
+        "Recommends the `driving-traffic` profile by default (factors in live traffic, congestion, and incidents), not plain `driving`",
+        "States coordinates must be in `longitude,latitude` order",
+        "Mentions `driving` should only be used if the `arrive_by` parameter is needed, since `driving-traffic` doesn't support it",
+        "Shows a Directions API request URL of the form `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/{lon},{lat};{lon},{lat}`"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm planning a delivery route with 8 stops and want the API to figure out the most efficient order to visit them, starting from the warehouse. Which Mapbox API should I use and what parameters matter?",
+      "expectations": [
+        "Recommends the Optimization API (optimized-trips endpoint) rather than the plain Directions API",
+        "Mentions the `source` and `destination` parameters, and that valid values are only `first`/`any` and `last`/`any` respectively (not numeric indices)",
+        "Notes the Optimization v1 API hard limit of 12 coordinates per request",
+        "Mentions `roundtrip=true` for a round trip starting and ending at the warehouse"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to color-code a driving route by traffic congestion severity on a web map (green for free-flow, red for heavy traffic). How do I get that data from Mapbox?",
+      "expectations": [
+        "Uses the `driving-traffic` profile with `annotations=duration,distance,congestion` (and `overview=full`)",
+        "Reads the `congestion` values per-segment from `route.legs[0].annotation.congestion`",
+        "Lists the possible congestion values: 'low', 'moderate', 'heavy', 'severe', 'unknown' (including the 'unknown' case)",
+        "Describes building per-segment GeoJSON features colored by congestion value, e.g. with a `match` expression in a line layer"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My app needs users to specify they want to depart at a specific future time, and I still want traffic-aware ETAs. Which Directions API profile should I use?",
+      "expectations": [
+        "Recommends the `driving-traffic` profile, since it supports `depart_at` and mixes live traffic with historical data",
+        "Does NOT recommend `driving` for this case, since the traffic-aware profile already supports `depart_at`",
+        "Notes that `arrive_by` is different from `depart_at` — `arrive_by` is only supported by the `driving` profile, not `driving-traffic`"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm building an Android turn-by-turn navigation screen with MapboxNavigation and need to draw the route line on the map, including redrawing it correctly when the driver goes off route and a new route is calculated. What APIs should I use and how should I wire it up?",
+      "expectations": [
+        "Recommends `MapboxRouteLineApi` (computes draw data) plus `MapboxRouteLineView` (renders it to the style), not manually building or updating a GeoJSON line layer by hand",
+        "Says to drive the update from a `RoutesObserver` (`onRoutesChanged`), not just once after the initial route request, so reroutes and alternatives redraw automatically",
+        "Shows the data flow: `routeLineApi.setNavigationRoutes(...)` produces draw data that is then passed to `routeLineView.renderRouteDrawData(style, value)`",
+        "Mentions calling `cancel()` on both `MapboxRouteLineApi` and `MapboxRouteLineView` during teardown, since they do not stop work on their own"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Review this Android code for a turn-by-turn navigation screen and tell me what's wrong with it:\n\n```kotlin\nclass NavigationActivity : AppCompatActivity() {\n    private lateinit var mapboxNavigation: MapboxNavigation\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        mapboxNavigation = MapboxNavigationProvider.create(NavigationOptions.Builder(this).build())\n\n        mapboxNavigation.registerRouteProgressObserver { routeProgress ->\n            val distanceRemaining = routeProgress.navigationRoute.directionsRoute.legs()\n                ?.mapNotNull { it.annotation()?.distance() ?: emptyList() }\n                ?.flatten()\n                ?.drop(routeProgress.currentRouteGeometryIndex)\n                ?.fold(0.0) { a, b -> a + b } ?: 0.0\n\n            distanceText.text = \"${distanceRemaining.toInt()}m remaining\"\n        }\n\n        mapboxNavigation.startTripSession()\n    }\n\n    override fun onDestroy() {\n        super.onDestroy()\n        MapboxNavigationProvider.destroy()\n    }\n}\n```",
+      "expectations": [
+        "Flags that `distanceRemaining` is already provided directly by `RouteProgress.distanceRemaining` — recomputing it by traversing `legs()`/`annotation()` manually is unnecessary",
+        "Notes this manual traversal is costly because each accessor call (`legs()`, `annotation()`) re-reads and re-converts data from the native representation, and this runs on every progress update (several times per second)",
+        "Flags that the observer is registered as an inline lambda with no stored reference, so it can never be unregistered, which is a leak since `register*Observer` does not remove itself automatically",
+        "Recommends storing the observer in a variable and unregistering it in the matching teardown (e.g. `onDetached`/`onDestroy`)"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Review this Swift code that's meant to display remaining distance during turn-by-turn navigation on iOS. What's wrong with it?\n\n```swift\nnavigation.routeProgress\n    .sink { [weak self] progressState in\n        guard let progress = progressState?.routeProgress else { return }\n        let remaining = progress.route.legs\n            .flatMap { $0.steps }\n            .dropFirst(progress.legIndex)\n            .reduce(0.0) { $0 + $1.distance }\n        self?.distanceLabel.text = \"\\(Int(remaining))m remaining\"\n    }\n    .store(in: &subscriptions)\n```",
+      "expectations": [
+        "Flags that `RouteProgress` (or `RouteLegProgress`/`RouteStepProgress`) already exposes remaining distance directly (e.g. `distanceRemaining` on the current step/leg progress) — recomputing it by walking `route.legs`/`steps` manually is unnecessary",
+        "Notes the manual computation is easy to get subtly wrong — e.g. it doesn't account for partial progress within the current step, only whole steps dropped by index",
+        "Recommends replacing the manual computation with the SDK-provided field instead of walking the route's legs/steps"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm building a custom navigation UI on Android — my own map and overlays, not the SDK's drop-in screen. How do I draw the route line, and what happens if I don't respond to route changes correctly?",
+      "expectations": [
+        "Recommends instantiating `MapboxRouteLineApi` (computes what to draw) and `MapboxRouteLineView` (renders it to the style) explicitly, since the Android Navigation SDK has no drop-in screen that draws the route line for you",
+        "Recommends driving both from a `RoutesObserver` rather than calling `setNavigationRoutes`/`renderRouteDrawData` manually after each route request, so reroutes, congestion refreshes, and alternative-route changes are handled automatically",
+        "Mentions fetching alternatives metadata (e.g. `getAlternativeMetadataFor`) and passing it to `routeLineApi.setNavigationRoutes` alongside the routes",
+        "Notes `routeLineApi.cancel()` and `routeLineView.cancel()` must be called during teardown, since neither stops work on its own"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I want to show an arrow on the upcoming turn in my custom Android navigation UI. Which Mapbox APIs handle this, and how often does the arrow need to be recalculated?",
+      "expectations": [
+        "Recommends `MapboxRouteArrowApi` (computes the arrow geometry from `RouteProgress`) together with `MapboxRouteArrowView` (renders it to the style)",
+        "States the arrow must be recomputed on every `RouteProgressObserver` update via `addUpcomingManeuverArrow`, not calculated once",
+        "Recommends registering/unregistering the observer via the `onAttached`/`onDetached` callbacks of an `onResumedObserver` passed to `requireMapboxNavigation` — a more convenient alternative to manually pairing lifecycle callbacks like `onResume`/`onPause` — since otherwise the arrow keeps recomputing on every progress update even after the screen leaves the foreground",
+        "Identifies this as a distinct API pair from route line rendering (`MapboxRouteLineApi`/`MapboxRouteLineView`), not the same component"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "My Android navigation screen's camera isn't following the driver even though I created a `NavigationCamera` and called `requestNavigationCameraToFollowing()`. What's most likely missing?",
+      "expectations": [
+        "Explains `NavigationCamera` does not compute camera positions itself — it consumes targets produced by a `MapboxNavigationViewportDataSource`",
+        "States the viewport data source must be fed via `onRouteChanged`, `onLocationChanged`, and `onRouteProgressChanged`, with `evaluate()` called after each update",
+        "Identifies that the data source starts empty and has nothing to transition to until real route/location/progress data has been supplied — likely why the camera request had no effect",
+        "Names the observers used to feed the data source: `RoutesObserver`, `LocationObserver`, `RouteProgressObserver`"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "I need voice guidance in my Android navigation app and I'm about to call `MapboxAudioGuidance.create()` directly in my Activity to get an instance. Is that the right approach?",
+      "expectations": [
+        "It is correct way, if you need instance which lifecycle you manage yourself",
+        "Notes `MapboxAudioGuidance` self-registers with the `MapboxNavigationApp` lifecycle, unlike `MapboxAudioGuidance.create()`",
+        "Recommends `MapboxAudioGuidance.getRegisteredInstance()` instead of constructing a new instance directly, as it handles prefetching and mute state for you automatically so it is easier to use"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "In my Android app's `RouteProgressObserver`, I have `nativeRouteObject(true)` enabled and I read `route.directionsRoute.legs()?.get(0)?.distance()` and then separately call `legs()?.get(0)?.duration()`. Is this efficient, and what should I check before optimizing this kind of route traversal?",
+      "expectations": [
+        "Notes that many values this code might be recomputing — `distanceRemaining`, `durationRemaining`, `fractionTraveled`, and similar — are already provided pre-computed on `RouteProgress` and should be used instead of manual traversal",
+        "Explains that with NRO (`nativeRouteObject(true)`) enabled, every `legs()`/`steps()`/`annotation()` access re-reads and re-converts data from native memory, so calling `legs()` a second time repeats that conversion",
+        "Recommends reading `legs()` once into a local variable and reusing it, rather than calling the accessor again for each field",
+        "Notes this cost matters most when done on the main thread inside `RouteProgressObserver`, since it blocks frame rendering"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "I want to show upcoming incidents and road closures ahead of the driver on Android. Should I read `RouteLeg.incidents()`/`closures()` and filter them by the driver's current geometry index on every location update?",
+      "expectations": [
+        "Recommends `RouteProgress.upcomingRoadObjects` instead of manually filtering `RouteLeg.incidents()`/`closures()`",
+        "Explains `upcomingRoadObjects` is already recomputed on every update, already filtered to objects ahead of the current position, ordered by distance, with `distanceToStart` already calculated",
+        "Notes `NavigationRoute.upcomingRoadObjects` is the unfiltered whole-route list with the same caveat, so re-filtering that by position on every update is the same antipattern",
+        "States that manually walking route annotations and computing distance to each object on every update duplicates work the SDK already does"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "My Android app stores the `MapboxNavigation` instance in a singleton object so any screen can access it without re-fetching it, and a couple of screens register observers on it directly as inline lambdas. Is this safe?",
+      "expectations": [
+        "Flags storing `MapboxNavigation` in a singleton, `Application`, static field, or `ViewModel` that survives Activity recreation as a leak risk — it must not outlive the navigation session",
+        "Notes `MapboxNavigation` is no longer valid after `onDestroy()`/`MapboxNavigationProvider.destroy()`, so referencing it afterward is a bug",
+        "States every `register*Observer` call needs a matching `unregister*Observer` during teardown, and that observers registered as inline lambdas with no stored reference cannot be unregistered",
+        "Recommends the lifecycle-aware `requireMapboxNavigation`/`MapboxNavigationApp` pattern instead of a manually held singleton reference"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "I'm building a SwiftUI iOS app and want turn-by-turn navigation. What's the recommended way to add it?",
+      "expectations": [
+        "Recommends wrapping NavigationViewController with UIViewControllerRepresentable rather than building a fully custom Core UI by default",
+        "Shows calculating routes via MapboxNavigationProvider / routing provider, then presenting NavigationViewController with NavigationOptions",
+        "Keeps a strong reference to MapboxNavigationProvider",
+        "Mentions fully custom Core / CoreSDKExample only as an alternative when the user wants to replace the drop-in nav UI"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "I want to show road cameras during navigation in my iOS app. How should I find the right Mapbox sample to follow?",
+      "expectations": [
+        "Uses the skill's inline example-patterns catalog (or equivalent guidance) rather than requiring a live GitHub API fetch",
+        "Identifies the Road Cameras example as the matching pattern",
+        "Notes that Road Cameras is stack-independent: wrap `NavigationMapView` in `UIViewRepresentable`, take `mapboxMap` from `navigationMapView.mapView.mapboxMap`, and create `RoadCamerasManager` with Core `provider.navigatorHandle`",
+        "May load references/ios-navigation-specialized.md for the inline Road Cameras section",
+        "Only suggests opening upstream example source if the user wants the full sample implementation"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "I'm building a SwiftUI iOS navigation app and want a custom final waypoint image and custom waypoint styling. The Mapbox AdditionalExamples look UIKit-only — do I have to switch to UIKit?",
+      "expectations": [
+        "Says no — these are NavigationMapView APIs, so they are stack-independent even though AdditionalExamples hosts them in UIKit",
+        "Recommends wrapping NavigationMapView in UIViewRepresentable and configuring waypoint / final-waypoint styling on that view",
+        "Does not tell the user to abandon SwiftUI or rebuild the whole app in UIKit",
+        "May contrast true NVC chrome (top/bottom bars, styled UI elements, embed NavigationViewController) as the things that are drop-in UIKit UI"
+      ]
+    }
+  ]
+}

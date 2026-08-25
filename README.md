@@ -1,6 +1,6 @@
 # Mapbox Agent Skills
 
-**Comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, and Android** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, geospatial operations, and security best practices.
+**Comprehensive Agent Skills** that teach AI assistants how to build fast, beautiful, secure Mapbox applications across **Web, iOS, Android, and Flutter** platforms. Covers performance optimization, cartographic design, framework integration, platform migration, search integration, geospatial operations, navigation, and security best practices.
 
 ## Quick Start
 
@@ -87,6 +87,7 @@ Think of skills as giving your AI assistant a specialized education in Mapbox de
 - 🌐 **Web**: React, Vue, Svelte, Angular, Next.js (Mapbox GL JS)
 - 📱 **iOS**: Swift, SwiftUI, UIKit (Maps SDK for iOS)
 - 📱 **Android**: Kotlin, Jetpack Compose, View system (Maps SDK for Android)
+- 📱 **Flutter**: Dart (Maps SDK for Flutter, iOS and Android)
 
 ---
 
@@ -390,6 +391,35 @@ Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling,
 - Common Android mistakes and solutions
 
 [View skill →](./skills/mapbox-android-patterns/SKILL.md)
+
+---
+
+### 📱 mapbox-flutter-patterns
+
+**Official integration patterns for the Mapbox Maps SDK for Flutter (mapbox_maps_flutter) on iOS and Android with Dart.**
+
+Covers installation, iOS/Android platform setup, access token configuration, `MapWidget` initialization, camera control, annotations with tap handling, user location, and loading GeoJSON. Based on official Mapbox documentation.
+
+**Use when:**
+
+- Installing and configuring `mapbox_maps_flutter` in a Flutter app
+- Setting the Mapbox access token the right way
+- Initializing a `MapWidget` with camera / style options
+- Adding annotations (points, circles, lines, polygons) and handling taps
+- Showing the user location puck
+- Loading GeoJSON from app assets
+- Troubleshooting iOS build failures after adding Mapbox
+
+**Key topics:**
+
+- Dependency setup and iOS deployment target requirements
+- Access token configuration for Dart/iOS/Android
+- `MapWidget` and camera/style initialization
+- Annotations (points, circles, lines, polygons) and tap handling
+- User location puck
+- Loading GeoJSON from assets
+
+[View skill →](./skills/mapbox-flutter-patterns/SKILL.md)
 
 ---
 
@@ -697,6 +727,31 @@ Patterns for integrating the [Mapbox MCP Server](https://github.com/mapbox/mcp-s
 - Performance optimization and error handling
 
 [View skill →](./skills/mapbox-mcp-runtime-patterns/SKILL.md)
+
+---
+
+### 🛰️ mapbox-location-grounding
+
+**Compose Mapbox MCP tools to produce grounded, cited location-aware responses from live data instead of training data.**
+
+Teaches AI assistants how to ground location-aware responses in live Mapbox data by composing MCP tools into a structured, cited answer, instead of relying on stale or hallucinated training data for place names, POIs, ratings, or travel times.
+
+**Use when:**
+
+- Answering "what's near [location]?" or describing a neighborhood/area
+- Finding places within walking/driving distance
+- Answering travel-time or distance questions between locations
+- Building real estate, travel, mobility, or local discovery features
+- Any location question where accuracy, recency, or travel time matters
+
+**Key topics:**
+
+- Preferring `ground_location_tool` for one-call grounding (reverse geocoding, POI search, place details, isochrone, static map)
+- Manual tool composition fallback when `ground_location_tool` isn't available
+- Category/subcategory query conventions vs. unsupported attribute preferences
+- Citing data sources in the final response
+
+[View skill →](./skills/mapbox-location-grounding/SKILL.md)
 
 ---
 

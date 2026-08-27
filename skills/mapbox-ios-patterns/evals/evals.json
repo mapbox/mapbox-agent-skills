@@ -5,9 +5,9 @@
       "id": 1,
       "prompt": "I'm setting up Mapbox Maps SDK in my iOS app. Where do I put the access token?",
       "expectations": [
-        "Token goes in Info.plist with the key MBXAccessToken",
-        "Shows the correct plist entry: <key>MBXAccessToken</key> <string>pk.your_token</string>",
-        "Presents the Info.plist approach as the primary/standard/recommended way for iOS (a programmatic alternative via MapboxOptions.setAccessToken is valid and may be mentioned, but should not be promoted as the main approach)",
+        "Covers both approaches: Info.plist (MBXAccessToken key) for Xcode-managed projects, and Config.swift + MapboxOptions.accessToken for SPM/xcodegen projects",
+        "For the Config.swift approach: sets MapboxOptions.accessToken in the App init(), keeps Config.swift gitignored, commits Config.swift.example as a template",
+        "For the Info.plist approach: shows <key>MBXAccessToken</key> <string>pk.your_token</string> and notes the SDK reads it automatically",
         "Notes the token should be a public token (starts with pk.)"
       ]
     },
@@ -33,12 +33,52 @@
     },
     {
       "id": 4,
+      "prompt": "I want to build an iOS app with Mapbox Maps SDK using Swift Package Manager. I created a Package.swift with a .target, added the MapboxMaps dependency, but when I hit Run in Xcode nothing launches. What am I missing?",
+      "expectations": [
+        "A bare SPM .target builds as a library, not an .app bundle — it cannot be launched as an iOS app",
+        "Recommends creating a proper Xcode project using xcodegen with a project.yml, or using File > New > Project in Xcode",
+        "With xcodegen: brew install xcodegen, write project.yml with type: application, run xcodegen generate, open the .xcodeproj",
+        "The generated .xcodeproj should be gitignored; project.yml is committed as the source of truth"
+      ]
+    },
+    {
+      "id": 5,
       "prompt": "I have a SwiftUI Mapbox map and I want to drop coffee shop markers from a GeoJSON feed. I don't have a custom image — I just need simple pins. What should I use?",
       "expectations": [
         "Recommends `Marker` (the Markers API) as the simplest fit",
         "Imports with `@_spi(Experimental) import MapboxMaps`",
         "Uses `ForEvery` with `Marker` inside the Map block",
         "Mentions that for hundreds or thousands of features a SymbolLayer on a GeoJSONSource is more appropriate"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm building a SwiftUI iOS app with Mapbox. I have a list of coffee shops and want to show circle markers on the map. When a user taps a circle, I want to show a callout label above it. How do I do this in SwiftUI without UIViewRepresentable?",
+      "expectations": [
+        "Uses CircleAnnotationGroup(shops) with a closure producing CircleAnnotation per shop — not UIViewRepresentable",
+        "Each CircleAnnotation has .onTapGesture { selectedShop = shop } to handle taps",
+        "Uses MapViewAnnotation(coordinate: selected.coordinate) with a SwiftUI view inside for the callout label",
+        "MapViewAnnotation uses .allowOverlap(true) and .variableAnchors([ViewAnnotationAnchorConfig(anchor: .bottom)]) to position above the marker",
+        "Does NOT use UIViewRepresentable or Coordinator classes"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my SwiftUI Mapbox app, when a user selects a location from a list I want the map to fly to that location with an animated transition. How do I animate the camera in SwiftUI?",
+      "expectations": [
+        "Uses withViewportAnimation(.fly(duration: 0.8)) wrapping a viewport state update",
+        "Sets viewport = .camera(center: coordinate, zoom: 16) inside the withViewportAnimation block",
+        "Does NOT use UIKit mapView.camera.fly(to:) — that's UIKit only",
+        "Triggered via .onChange(of: selectedItem) or a tap handler"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm trying to set a circle color in my SwiftUI Mapbox app using StyleColor(red: 0.44, green: 0.31, blue: 0.22, alpha: 1) but the compiler says the value is optional. How do I fix this?",
+      "expectations": [
+        "StyleColor(red:green:blue:alpha:) returns StyleColor? (optional) — this initializer can fail",
+        "The fix is to use StyleColor(UIColor(red: 0.44, green: 0.31, blue: 0.22, alpha: 1)) which returns a non-optional StyleColor",
+        "Alternatively use StyleColor(.systemBrown) or any UIColor-based initializer"
       ]
     }
   ]

@@ -87,7 +87,7 @@ Checklist:
 2. **Public token** — `MBXAccessToken` in `Info.plist` (`pk.*`). Stable Core, UIKit, and Road Cameras releases do not need a secret download token.
 3. **Location** — `NSLocationWhenInUseUsageDescription` (and precise-location temporary usage dictionary when needed)
 4. **Background modes** — `audio` and `location` in `UIBackgroundModes`
-5. **Download token (only if needed)** — `Downloads:Read` in `~/.netrc` for snapshot builds, Custom Route, MapGPT, or private-preview CPP binaries (resolved when `~/.mapbox-navigation-ios.navigation_sdks_private_beta` is present). Never ship this token in the app.
+5. **Download token (only if needed)** — `Downloads:Read` in `~/.netrc` for snapshot builds, Custom Route, or MapGPT. Never ship this token in the app.
 
 The snippets below are NavSDK-focused patterns (like Android’s reference): not full screens — omit permissions, full error UI, and app architecture.
 

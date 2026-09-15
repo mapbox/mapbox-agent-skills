@@ -43,7 +43,7 @@ User says things like:
 
 **Defaults:** SwiftUI app shell + wrap drop-in `NavigationViewController` via `UIViewControllerRepresentable` (official getting-started path). Use a fully custom Core UI ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)) only when the user explicitly wants to build their own nav chrome.
 
-**Before coding:** SPM (`MapboxNavigationCore` + `MapboxNavigationUIKit`), `MBXAccessToken`, location permissions, background `audio`/`location` — see [install guide](https://docs.mapbox.com/ios/navigation/guides/install/) and the iOS reference checklist. Stable Core/UIKit/Road Cameras releases do not need a `.netrc` download token.
+**Before coding:** SPM (`MapboxNavigationCore` + `MapboxNavigationUIKit`), `MBXAccessToken`, location permissions, background `audio`/`location` — see [install guide](https://docs.mapbox.com/ios/navigation/guides/install/) and the iOS reference checklist. Stable Core/UIKit releases do not need a `.netrc` download token.
 
 **Features:**
 

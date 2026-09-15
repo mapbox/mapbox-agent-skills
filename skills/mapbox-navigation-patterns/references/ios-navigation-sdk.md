@@ -84,7 +84,7 @@ Greenfield apps need install prerequisites before the snippets below will run. S
 Checklist:
 
 1. **SPM** — `https://github.com/mapbox/mapbox-navigation-ios.git`; add both `MapboxNavigationCore` and `MapboxNavigationUIKit`
-2. **Public token** — `MBXAccessToken` in `Info.plist` (`pk.*`). Stable Core, UIKit, and Road Cameras releases do not need a secret download token.
+2. **Public token** — `MBXAccessToken` in `Info.plist` (`pk.*`). Stable Core and UIKit releases do not need a secret download token.
 3. **Location** — `NSLocationWhenInUseUsageDescription` (and precise-location temporary usage dictionary when needed)
 4. **Background modes** — `audio` and `location` in `UIBackgroundModes`
 

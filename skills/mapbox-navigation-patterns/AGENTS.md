@@ -111,7 +111,7 @@ steps.forEach((step) => {
 
 **Default:** SwiftUI app shell + wrap `NavigationViewController` with `UIViewControllerRepresentable` (official getting-started). Fully custom Core UI ([CoreSDKExample](https://github.com/mapbox/mapbox-navigation-ios/tree/main/Examples/CoreSDKExample)) only when explicitly requested.
 
-**Setup first:** SPM (`MapboxNavigationCore` + `MapboxNavigationUIKit`), `MBXAccessToken`, location permissions, background `audio`/`location` — see `references/ios-navigation-sdk.md` checklist and [install guide](https://docs.mapbox.com/ios/navigation/guides/install/). Stable Core/UIKit/Road Cameras releases do not need a `.netrc` download token.
+**Setup first:** SPM (`MapboxNavigationCore` + `MapboxNavigationUIKit`), `MBXAccessToken`, location permissions, background `audio`/`location` — see `references/ios-navigation-sdk.md` checklist and [install guide](https://docs.mapbox.com/ios/navigation/guides/install/). Stable Core/UIKit releases do not need a `.netrc` download token.
 
 For specialized topics (road cameras, history, e-horizon, CarPlay, offline, styled chrome, etc.), use the **Example patterns catalog** in `references/ios-navigation-sdk.md`. Load `references/ios-navigation-specialized.md` for multi-stop, route line, camera, road cameras, and route alerts. Do not fetch upstream sample source unless the user asks to open a specific example.
 

@@ -6,6 +6,8 @@
 
 **Installation:**
 
+Stable Search SDK releases do not require a secret download token or `~/.netrc`. Add a public token (`pk.*`) as `MBXAccessToken` in `Info.plist`.
+
 ```swift
 // Add to Package.swift or SPM
 dependencies: [

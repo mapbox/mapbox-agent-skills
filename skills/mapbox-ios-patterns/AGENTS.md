@@ -12,6 +12,22 @@ https://github.com/mapbox/mapbox-maps-ios.git
 // Version: 11.0.0+
 ```
 
+### XcodeGen (recommended for new projects)
+
+`xcodegen` generates an `.xcodeproj` from a `project.yml`. Commit `project.yml`; gitignore the generated `.xcodeproj` — it is a build artifact, not source of truth.
+
+```bash
+brew install xcodegen
+xcodegen generate
+open MyApp.xcodeproj
+```
+
+Add to `.gitignore`:
+
+```
+*.xcodeproj/
+```
+
 ### Access Token
 
 ```xml

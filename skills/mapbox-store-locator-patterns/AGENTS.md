@@ -101,6 +101,8 @@ map.on('load', () => {
 });
 ```
 
+For why `addInteraction` is preferred over `map.on()`, and how to pair it with `setFeatureState`/`appearances` for hover and selection styling, see [mapbox-style-patterns/references/interactions.md](../mapbox-style-patterns/references/interactions.md).
+
 ## Clustering Pattern
 
 ```javascript

@@ -82,6 +82,8 @@ map.on('load', () => {
 });
 ```
 
+`map.on('mousemove'/'mouseleave', ...)` above can be replaced with the newer `addInteraction` API for binding the events; `setFeatureState` still drives the styling either way. See `mapbox-style-patterns`'s `references/interactions.md` for the full comparison and when each mechanism applies.
+
 ## Filtering Large Datasets
 
 **Pattern:** Filter data client-side for performance

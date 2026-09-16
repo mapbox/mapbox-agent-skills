@@ -385,6 +385,8 @@ map.setFeatureState({ source: 'vector-data', id: featureId, sourceLayer: 'my-sou
 ]
 ```
 
+The event binding above (`map.on('mousemove'/'mouseleave', ...)`) can be replaced with the newer `addInteraction` API; `setFeatureState` still drives the styling either way. See `mapbox-style-patterns`'s `references/interactions.md` for the full comparison.
+
 **Client-Side Filtering:**
 
 ```javascript

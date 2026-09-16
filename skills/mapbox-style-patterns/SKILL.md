@@ -192,15 +192,16 @@ This skill provides battle-tested style patterns and layer configurations for co
 
 Additional patterns and configurations are available in the `references/` directory. Load the relevant file when a specific pattern is needed.
 
-| File                                                                         | Contents                                                                                         |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [references/real-estate.md](references/real-estate.md)                       | Pattern 2: Real Estate Map -- property boundaries, price color-coding, amenity markers           |
-| [references/data-viz-base.md](references/data-viz-base.md)                   | Pattern 3: Data Visualization Base Map -- minimal grayscale base for choropleth/heatmap overlays |
-| [references/navigation.md](references/navigation.md)                         | Pattern 4: Navigation/Routing Map -- route display, user location, turn arrows                   |
-| [references/dark-mode.md](references/dark-mode.md)                           | Pattern 5: Dark Mode / Night Theme -- near-black background, reduced brightness                  |
-| [references/delivery-logistics.md](references/delivery-logistics.md)         | Pattern 6: Delivery/Logistics Map -- real-time tracking, zones, driver markers, ETA badges       |
-| [references/expressions-clustering.md](references/expressions-clustering.md) | Data-driven expression patterns + clustering for dense POIs                                      |
-| [references/common-modifications.md](references/common-modifications.md)     | 3D Buildings, Terrain/Hillshade, Custom Markers                                                  |
+| File                                                                         | Contents                                                                                             |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [references/real-estate.md](references/real-estate.md)                       | Pattern 2: Real Estate Map -- property boundaries, price color-coding, amenity markers               |
+| [references/data-viz-base.md](references/data-viz-base.md)                   | Pattern 3: Data Visualization Base Map -- minimal grayscale base for choropleth/heatmap overlays     |
+| [references/navigation.md](references/navigation.md)                         | Pattern 4: Navigation/Routing Map -- route display, user location, turn arrows                       |
+| [references/dark-mode.md](references/dark-mode.md)                           | Pattern 5: Dark Mode / Night Theme -- near-black background, reduced brightness                      |
+| [references/delivery-logistics.md](references/delivery-logistics.md)         | Pattern 6: Delivery/Logistics Map -- real-time tracking, zones, driver markers, ETA badges           |
+| [references/expressions-clustering.md](references/expressions-clustering.md) | Data-driven expression patterns + clustering for dense POIs                                          |
+| [references/common-modifications.md](references/common-modifications.md)     | 3D Buildings, Terrain/Hillshade, Custom Markers                                                      |
+| [references/interactions.md](references/interactions.md)                     | `addInteraction` vs `setFeatureState` vs `appearances` -- how they fit together and when to use each |
 
 **Loading instructions:** Read the reference file that matches the user's use case. For example, if implementing a delivery tracking map, load `references/delivery-logistics.md`.
 

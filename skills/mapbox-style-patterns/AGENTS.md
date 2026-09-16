@@ -111,6 +111,8 @@ map.on('mousemove', 'layer', (e) => {
 ]
 ```
 
+For binding the event with the newer `addInteraction` API instead of `map.on()`, and for `appearances` (a declarative alternative to the `case`/`feature-state` expression above, symbol layers only), see [references/interactions.md](references/interactions.md).
+
 ### 3. Filters
 
 ```javascript

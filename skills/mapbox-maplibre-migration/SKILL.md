@@ -203,10 +203,14 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 map.addControl(
   new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
-    mapboxgl: mapboxgl
+    mapboxgl: mapboxgl,
+    countries: 'us', // ISO 3166-1 alpha-2 code(s), comma-separated; hard filter, not a soft bias
+    language: 'en' // Also affects which result ranks first, not just the UI/response text
   })
 );
 ```
+
+**Note:** `countries` and `language` change _which_ results come back, not just how they're filtered or displayed. `language` affects result scoring (the same query can rank a different place first depending on language), and `countries` excludes everything outside the listed codes. Carry over any locale/region restrictions from the original MapLibre geocoder.
 
 ### 9. Everything Else Stays the Same
 

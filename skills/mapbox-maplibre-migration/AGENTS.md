@@ -133,6 +133,8 @@ map.addLayer(layer);
 
 **Note:** Most Mapbox plugins work directly, no alternatives needed.
 
+**Geocoder migration tip:** if the original `@maplibre/maplibre-gl-geocoder` was configured with `countries` or `language`, carry those options over to `@mapbox/mapbox-gl-geocoder`. Both affect which results come back.
+
 ## API Compatibility (95%+)
 
 **100% Compatible APIs:**

@@ -184,6 +184,10 @@ map.on('load', () => {
   //   flyToStore(store);
   //   createPopup(store);
   // });
+  //
+  // For why addInteraction is preferred over map.on(), and how to pair it with
+  // setFeatureState/appearances for hover and selection styling, see the
+  // "interactions" reference file in the mapbox-style-patterns skill.
 
   // Change cursor on hover
   map.on('mouseenter', 'stores-layer', () => {

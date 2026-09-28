@@ -1,0 +1,9 @@
+{
+  "name": "mapbox-cli-geospatial-patterns-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Turf.js helper scripts for piping mapbox CLI output through local geometry operations. Run `npm install` here once before using any of them.",
+  "dependencies": {
+    "@turf/turf": "^7.3.1"
+  }
+}

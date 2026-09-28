@@ -127,6 +127,29 @@ Helps AI assistants select the right tool based on problem type (geometric vs ro
 
 ---
 
+### 🛠️ mapbox-cli-geospatial-patterns
+
+**Chaining the mapbox CLI with local Turf.js scripts in a shell pipeline, for when there's no MCP server available.**
+
+The same offline-geometry-vs-routing-API decision framework as `mapbox-geospatial-operations`, but for a bash script, CI job, or agent that only has the `mapbox` CLI, not MCP tool calls — `mapbox ... -o json | node scripts/<op>.mjs` instead of a tool invocation.
+
+**Use when:**
+
+- Writing a shell script or CI job that combines Mapbox data with geometry math
+- No Mapbox MCP server is available, only the CLI
+- Filtering search/isochrone results by containment without a Node project already in place
+- Pre-filtering many candidates by straight-line distance before an expensive `mapbox matrix` call
+
+**Key topics:**
+
+- Ready-to-run Turf.js scripts (buffer, distance, points-within-polygon, nearest-point, centroid, length) that read/write GeoJSON over stdin/stdout
+- Five worked scenarios: store-locator containment, matrix pre-filtering, search-along-route corridors, GPS trace length after map matching, reverse-geocoding an area
+- Why to avoid the abandoned `turf-cli` npm package in favor of `@turf/turf` directly
+
+[View skill →](./skills/mapbox-cli-geospatial-patterns/SKILL.md)
+
+---
+
 ### 🔍 mapbox-search-integration
 
 **Complete workflow for implementing Mapbox search in applications from discovery to production.**

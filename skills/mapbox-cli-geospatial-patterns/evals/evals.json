@@ -1,0 +1,53 @@
+{
+  "skill_name": "mapbox-cli-geospatial-patterns",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have the mapbox CLI installed (no MCP server, just the binary and a shell). I need a bash script that checks which of 300 saved addresses (as lon,lat pairs in a JSON file) are within a 15-minute drive of our warehouse at -97.74,30.27. What should the script actually do, command by command?",
+      "expected_output": "Should recommend calling `mapbox isochrone` exactly once to get the 15-minute driving zone as a polygon, then checking all 300 points against that polygon with a local Turf.js script (e.g. points-within-polygon), not calling a routing command once per address.",
+      "files": [],
+      "expectations": [
+        "Calls `mapbox isochrone` (or equivalent) exactly once to build the travel-time zone",
+        "Uses a local/offline geometric containment check (Turf.js points-within-polygon or equivalent) for the 300 addresses, not 300 separate routing calls",
+        "Describes piping the mapbox command's JSON output into the containment check rather than parsing it by hand",
+        "Does not suggest calling `mapbox directions` or `mapbox isochrone` once per address"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Someone on my team wants to `npm install turf-cli` and use it in a shell pipeline alongside the mapbox CLI to do some buffering and distance checks. Is that a good idea?",
+      "expected_output": "Should flag that turf-cli is a stale, single-maintainer package last published years ago against Turf 2.x, incompatible with the current @turf/turf 7.x API, and recommend a small Node script using @turf/turf directly instead.",
+      "files": [],
+      "expectations": [
+        "States that turf-cli is outdated / built against an old, incompatible Turf API (v2.x vs current 7.x)",
+        "Recommends against using turf-cli for this",
+        "Recommends using @turf/turf directly (e.g. via a small Node/mjs script) instead",
+        "Does not simply endorse turf-cli without qualification"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to rank 150 candidate coordinates by actual driving time from a fixed origin, but mapbox matrix only accepts 25 coordinates at a time and I'd rather not make 6+ matrix calls if I don't have to. What's the efficient approach in a shell script using the mapbox CLI?",
+      "expected_output": "Should recommend using a free, local straight-line distance calculation (Turf.js distance) to narrow 150 candidates down to a much smaller shortlist first, then calling `mapbox matrix` only on that shortlist for the real travel-time ranking.",
+      "files": [],
+      "expectations": [
+        "Recommends computing straight-line distance locally (Turf.js / a turf-based script) as a pre-filter",
+        "Recommends narrowing to a shortlist (well under 25) before calling mapbox matrix",
+        "Explains that straight-line distance is free/instant while matrix calls cost requests and have a coordinate limit",
+        "Does not recommend simply making 6+ sequential matrix calls to cover all 150 candidates"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I have a route from `mapbox directions` (as GeoJSON) and a list of 40 points of interest. I want the ones that are actually near the route, not just near the start or end point. How do I do this with the mapbox CLI and shell tools, no MCP server available?",
+      "expected_output": "Should recommend buffering the route geometry into a corridor polygon (Turf.js buffer) and then checking the 40 points for containment in that corridor (Turf.js points-within-polygon), rather than only checking distance to the two endpoints.",
+      "files": [],
+      "expectations": [
+        "Recommends buffering the route geometry to create a corridor polygon",
+        "Recommends checking the points of interest against the corridor polygon (containment), not just distance to endpoints",
+        "Identifies this as a local/offline geometric operation, not something requiring another API call per point",
+        "Does not suggest computing distance only to the route's start and end coordinates"
+      ]
+    }
+  ]
+}

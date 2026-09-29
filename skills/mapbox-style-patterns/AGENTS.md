@@ -233,19 +233,72 @@ map.addLayer({
 });
 ```
 
+**The base map matters as much as the fill.** Data colors need an uncontested
+background, so pair a choropleth with a minimal grayscale base:
+
+- Grayscale palette throughout — never a standard streets or otherwise colorful style
+- Gray/desaturated water, **not** blue: blue water competes directly with a red/blue
+  political choropleth
+- Minimal road detail — major roads only at low zoom, or none at all
+- Major city labels only for orientation, not the full POI and street label set
+
 ### Route Visualization
 
+A route needs **two** layers: a wider casing behind, and a narrower colored line on
+top. A single line has no contrast against roads of a similar color, and reads as
+just another street.
+
 ```javascript
+// Casing first (wider, darker) so it renders behind
+map.addLayer({
+  id: 'route-casing',
+  type: 'line',
+  source: 'route',
+  paint: { 'line-color': '#0d47a1', 'line-width': 9 }
+});
+
 map.addLayer({
   id: 'route',
   type: 'line',
   source: 'route',
-  paint: {
-    'line-color': '#0080ff',
-    'line-width': 5,
-    'line-opacity': 0.8
-  }
+  paint: { 'line-color': '#0080ff', 'line-width': 5, 'line-opacity': 0.8 }
 });
+```
+
+### Delivery Zones by Status
+
+Zones carry a status, so the fill must be data-driven. A single static `fill-color`
+across all zones throws away the information the user needs.
+
+```javascript
+'fill-color': [
+  'match', ['get', 'status'],
+  'available', '#4caf50',
+  'busy', '#ff9800',
+  'unavailable', '#f44336',
+  '#9e9e9e' // fallback
+]
+```
+
+### Pulsing Marker (Active Delivery / Live Location)
+
+Drive a second circle layer beneath the marker with `requestAnimationFrame`,
+updating paint properties each frame — there is no built-in pulse.
+
+```javascript
+function pulseCustomerMarker() {
+  const duration = 2000;
+  const start = performance.now();
+
+  function animate(time) {
+    const phase = ((time - start) % duration) / duration;
+    map.setPaintProperty('customer-pulse', 'circle-radius', 12 + phase * 12);
+    map.setPaintProperty('customer-pulse', 'circle-opacity', 0.3 * (1 - phase));
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
 ```
 
 ### 3D Buildings

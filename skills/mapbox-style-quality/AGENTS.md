@@ -2,6 +2,41 @@
 
 Quick reference for style validation, accessibility, performance optimization, and testing.
 
+## Validation Tools
+
+These MCP tools do the work described in this guide — reach for them rather than
+eyeballing a style or relying on generic web validators.
+
+| Tool                        | Use it for                                                                                                                       |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `validate_geojson_tool`     | Validate external GeoJSON **before** adding it as a source — catches invalid coordinates, unclosed rings, wrong coordinate order |
+| `validate_expression_tool`  | Validate expressions as you write them, during development, so type mismatches never reach runtime                               |
+| `check_color_contrast_tool` | Check foreground/background contrast for text layers against WCAG AA (4.5:1 normal, 3:1 large)                                   |
+| `compare_styles_tool`       | Diff a style against the previous production version to surface unintended changes                                               |
+| `optimize_style_tool`       | Reduce style size before deploying                                                                                               |
+
+**Pre-deploy order:** validate GeoJSON sources → validate expressions → check label
+contrast → compare against the previous production style → optimize → review the
+report (`percentReduction`, `changes`) and test before shipping.
+
+**What `optimize_style_tool` does, in order:** removes unused sources left behind by
+deleted layers, eliminates duplicate layers with identical paint properties,
+simplifies redundant boolean expressions in filters (collapsing `["all", expr]` to
+`expr`, dropping tautological conditions), then removes empty layers as a final
+cleanup step.
+
+**Automate it.** Catching expression and contrast errors by hand is a losing game —
+wire validation into a pre-commit hook and CI so a broken expression cannot reach
+production:
+
+```
+1. Validate all expressions
+2. Check accessibility compliance
+3. Run optimization (warn if significant savings)
+4. Compare with the production version
+5. Generate a quality report
+```
+
 ## Style Validation Rules
 
 ### Required Elements
@@ -295,11 +330,13 @@ if (!map.getSource('source')) {
 
 **Validation:**
 
+- `validate_geojson_tool`, `validate_expression_tool`, `compare_styles_tool`,
+  `optimize_style_tool` (see [Validation Tools](#validation-tools))
 - Mapbox Style Specification: <https://docs.mapbox.com/mapbox-gl-js/style-spec/>
-- JSON Schema validators
 
 **Accessibility:**
 
+- `check_color_contrast_tool` for WCAG AA/AAA checks on label layers
 - WebAIM Contrast Checker
 - Coblis Color Blindness Simulator
 - WAVE Accessibility Evaluation Tool

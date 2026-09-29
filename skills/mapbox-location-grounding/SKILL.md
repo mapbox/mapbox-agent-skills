@@ -27,7 +27,7 @@ Ground responses when the user asks about:
 
 ### Preferred: single tool call
 
-If `ground_location_tool` is available, use it — it handles reverse geocoding, POI search, place details enrichment, isochrone, and a static map image in one call:
+If `ground_location_tool` is available, use it — it handles reverse geocoding, POI search, and isochrone in one call:
 
 ```
 ground_location_tool(
@@ -41,12 +41,20 @@ ground_location_tool(
 Returns:
 
 - Neighborhood/place name from reverse geocoding
-- Nearby POIs with distances, ratings, price levels, and popularity (when available)
+- Nearby POIs with name, address, category, and distance — plus `mapbox_id` and `external_ids` per place
 - Travel-time reachability from isochrone
-- A static map image for visual context
-- Citations for all data sources
+- A reference the host can render as a map
+- `citations` — the Mapbox APIs used to produce the response
 
-Do not call `reverse_geocode_tool`, `category_search_tool`, `place_details_tool`, or `isochrone_tool` separately — they are already composed inside this tool.
+Do not call `reverse_geocode_tool`, `category_search_tool`, or `isochrone_tool` separately — those three are composed inside this tool.
+
+**Place Details is not composed inside it.** `ground_location_tool` returns no ratings, price levels, popularity, opening hours, or phone numbers. To add those, take the `mapbox_id` off each POI you care about and call `place_details_tool` yourself:
+
+```
+place_details_tool(mapbox_id, attribute_sets: ["visit"])
+```
+
+Call these in parallel, and only for the places you are actually going to mention — one call per place. Two caveats: a POI whose `mapbox_id` is missing cannot be enriched, and an id sourced from OpenStreetMap (it decodes to `urn:mbxpoi-osm:` rather than `urn:mbxpoi:`) is rejected by the details endpoint. Treat both as "no extra detail available" and describe the place from what the grounding call already returned, rather than filling the gap from training data.
 
 ### Query parameter
 
@@ -55,7 +63,7 @@ The `query` parameter accepts **category or subcategory terms** — not attribut
 - Supported: `"restaurant"`, `"coffee"`, `"park"`, `"Italian restaurant"`, `"EV charging station"`
 - Not supported: `"family-friendly"`, `"fast charging"`, `"outdoor seating"` — these are not filterable attributes in Mapbox data
 
-To help users find places matching a preference (e.g. "family-friendly"), search by category (`"restaurant"`) and use the returned rating and price data to inform the recommendation.
+To help users find places matching a preference (e.g. "family-friendly"), search by category (`"restaurant"`), then enrich the results with `place_details_tool` and use the rating and price data it returns to inform the recommendation.
 
 ### Fallback: manual composition
 
@@ -119,7 +127,7 @@ Always structure grounded responses with explicit citations:
 
 ```
 Place: [neighborhood, city from reverse_geocode]
-Nearby [category]: [list from search/category tool, with names, ratings, prices, and distances]
+Nearby [category]: [names and distances from the search/category/grounding tool; ratings and prices from place_details_tool]
 Travel context: [X min walk / Y min drive from isochrone]
 Sources: Mapbox Search, Mapbox Directions (live data)
 ```
@@ -236,7 +244,7 @@ call, which covers most proximity + routing use cases without additional composi
 - Answering "what's near X?" from training data without calling search tools
 - Estimating travel times without calling `directions_tool` or `isochrone_tool`
 - Hallucinating business names, hours, or ratings
-- Calling `reverse_geocode_tool` + `category_search_tool` + `place_details_tool` separately when `ground_location_tool` is available
+- Calling `reverse_geocode_tool`, `category_search_tool`, or `isochrone_tool` separately when `ground_location_tool` is available (`place_details_tool` is the exception — it is not composed inside, so call it for ratings and hours)
 - Using attribute terms like "family-friendly" as the query parameter — use the category instead
 - Returning raw tool output without synthesizing into a readable response
 - Omitting citations — always indicate the response is grounded in live Mapbox data

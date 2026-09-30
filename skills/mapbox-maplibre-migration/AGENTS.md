@@ -131,7 +131,10 @@ map.addLayer(layer);
 | `@maplibre/maplibre-gl-draw`     | `@mapbox/mapbox-gl-draw`     |
 | `maplibre-gl-compare`            | `mapbox-gl-compare`          |
 
-**Note:** Most Mapbox plugins work directly, no alternatives needed.
+**Note:** Audit every MapLibre plugin in the project, not just the geocoder — a
+`@maplibre/*` or `maplibre-gl-*` package generally needs its Mapbox counterpart, and
+the table above is not exhaustive. Check the Mapbox ecosystem for a Mapbox-specific
+version of anything not listed. Plugins that are already Mapbox packages work as-is.
 
 **Geocoder migration tip:** if the original `@maplibre/maplibre-gl-geocoder` was configured with `countries` or `language`, carry those options over to `@mapbox/mapbox-gl-geocoder`. Both affect which results come back.
 

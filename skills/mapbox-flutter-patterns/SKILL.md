@@ -21,7 +21,7 @@ Official patterns for integrating the Mapbox Maps SDK for Flutter (mapbox_maps_f
 
 - [Flutter Maps Guides](https://docs.mapbox.com/flutter/maps/guides/)
 - [API Reference on pub.dev](https://pub.dev/documentation/mapbox_maps_flutter/latest/)
-- [Example App](https://github.com/mapbox/mapbox-maps-flutter/tree/main/example)
+- [Example App](https://github.com/mapbox/mapbox-maps-flutter/tree/main/mapbox_maps_flutter/example)
 
 > Web and desktop are not supported — the Flutter SDK targets iOS and Android only.
 
@@ -330,4 +330,4 @@ iOS/Android will not re-read manifests or Info.plist on hot reload. Fully restar
 - [Flutter Maps Guides](https://docs.mapbox.com/flutter/maps/guides/)
 - [Markers and Annotations guide](https://docs.mapbox.com/flutter/maps/guides/markers-and-annotations/)
 - [User Location guide](https://docs.mapbox.com/flutter/maps/guides/user-location/)
-- [Example App](https://github.com/mapbox/mapbox-maps-flutter/tree/main/example)
+- [Example App](https://github.com/mapbox/mapbox-maps-flutter/tree/main/mapbox_maps_flutter/example)

@@ -107,4 +107,4 @@ await mapboxMap.flyTo(
 
 - [Flutter Maps Guides](https://docs.mapbox.com/flutter/maps/guides/)
 - [pub.dev — mapbox_maps_flutter](https://pub.dev/packages/mapbox_maps_flutter)
-- [Example App](https://github.com/mapbox/mapbox-maps-flutter/tree/main/example)
+- [Example App](https://github.com/mapbox/mapbox-maps-flutter/tree/main/mapbox_maps_flutter/example)

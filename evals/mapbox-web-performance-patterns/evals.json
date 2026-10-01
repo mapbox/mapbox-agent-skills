@@ -21,8 +21,8 @@
       "expected_output": "Should recommend symbol layers (GeoJSON source + circle or symbol layer), NOT clustering. 75,000 points is within the symbol layer range (500–100,000 markers) and renders efficiently on the GPU without clustering. Clustering is only needed at 100,000+ markers. Should explain that HTML markers create 75,000 DOM elements (the actual problem) and that symbol layers render all points as a single WebGL draw call at 60 FPS. Clustering at this scale adds complexity without the performance benefit that symbol layers already provide.",
       "files": [],
       "expectations": [
-        "Recommends symbol layers (GeoJSON source + circle or symbol layer) as the primary fix",
-        "Correctly identifies that 75,000 points does NOT require clustering — clustering is for 100,000+ markers",
+        "Recommends moving off the Marker class to a GeoJSON source rendered by a circle or symbol layer — clustering is a property of that source, not an alternative to it",
+        "Identifies that 75,000 points is past the ~10,000 threshold where clustering is recommended, so clustering should be enabled on the GeoJSON source rather than dismissed as unnecessary",
         "Explains that the root cause is HTML markers creating 75,000 DOM elements",
         "Explains that symbol layers render on the GPU and handle this scale efficiently",
         "Shows or describes the GeoJSON source + addLayer pattern"

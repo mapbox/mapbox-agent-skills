@@ -102,8 +102,8 @@ Before jumping into code, ask these questions to understand requirements:
 **Implications:**
 
 - **Low volume** (< 10k) → Free tier sufficient, simple implementation
-- **Medium volume** (10k-100k) → Consider caching, optimize API calls
-- **High volume** (> 100k) → Implement debouncing, caching, batch operations, monitor costs
+- **Medium volume** (10k-100k) → Session tokens, debouncing, optimize API calls
+- **High volume** (> 100k) → Debouncing, session tokens, in-flight request deduplication, batch operations, monitor costs
 
 ## Product Selection Decision Tree
 
@@ -162,7 +162,7 @@ Load the relevant reference based on the user's platform and needs:
 
 - **Best Practices** → Load `references/best-practices.md`
   - When: Implementing search for the first time, or optimizing an existing implementation
-  - Covers: debouncing, session tokens, geographic filtering, error handling, accessibility, caching, token security
+  - Covers: debouncing, session tokens, geographic filtering, error handling, accessibility, reducing API calls, token security
 - **Common Pitfalls** → Load `references/pitfalls.md`
   - When: Debugging issues, reviewing code, or during code review
   - Covers: no debouncing, missing session tokens, no geo context, poor mobile UX, race conditions
@@ -202,7 +202,7 @@ Before launching, verify:
 
 **Performance:**
 
-- [ ] Caching implemented (if high volume)
+- [ ] Redundant requests eliminated (debounce, session tokens, in-flight deduplication)
 - [ ] Request timeout set
 - [ ] Minimal data fetched
 - [ ] Bundle size optimized

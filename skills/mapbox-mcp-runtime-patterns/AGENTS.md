@@ -288,26 +288,45 @@ Turf.js   Mapbox APIs
 
 ## Performance Optimization
 
-### Caching
+### Request Deduplication and Offline Memoization
+
+Storing or caching Mapbox API responses is restricted — check the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos) and [Product Terms](https://www.mapbox.com/legal/product-terms) for what your plan permits.
+The local tools are a different case: they compute on the client and return no Mapbox
+content, so memoizing them raises no licensing question. For API-backed tools,
+deduplicate calls that are already in flight and batch instead.
 
 ```typescript
-class CachedMCP {
-  private cache = new Map();
-  private offlineTools = ['distance_tool', 'point_in_polygon_tool'];
+class OptimizedMCP {
+  // Local tools only — verify against `tools/list` for your server version.
+  private localTools = ['distance_tool', 'points_within_polygon_tool', 'bearing_tool'];
+  private memoLimit = 500;
+  private memo = new Map();
+  private inFlight = new Map();
 
   async callTool(name: string, params: any) {
-    // Cache offline tools forever (deterministic)
-    const ttl = this.offlineTools.includes(name) ? Infinity : 3600000;
-
     const key = JSON.stringify({ name, params });
-    const cached = this.cache.get(key);
+    const isLocal = this.localTools.includes(name);
 
-    if (cached && Date.now() - cached.timestamp < ttl) {
-      return cached.result;
+    if (isLocal && this.memo.has(key)) {
+      return this.memo.get(key);
     }
 
-    const result = await this.mcp.callTool(name, params);
-    this.cache.set(key, { result, timestamp: Date.now() });
+    let pending = this.inFlight.get(key);
+
+    if (!pending) {
+      // Entry is dropped as soon as the call settles — no API result is retained.
+      pending = this.mcp.callTool(name, params).finally(() => this.inFlight.delete(key));
+      this.inFlight.set(key, pending);
+    }
+
+    const result = await pending;
+
+    if (isLocal) {
+      // Bounded, oldest-first — an unbounded memo leaks in a long-lived agent.
+      if (this.memo.size >= this.memoLimit) this.memo.delete(this.memo.keys().next().value);
+      this.memo.set(key, result);
+    }
+
     return result;
   }
 }

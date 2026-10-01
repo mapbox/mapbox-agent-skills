@@ -2,39 +2,82 @@
 
 ## Performance Optimization
 
-### Caching Strategy
+### Request Deduplication and Offline Memoization
+
+> **Terms of service:** Storing or caching Mapbox API responses is restricted — check the
+> [Mapbox Terms of Service](https://www.mapbox.com/legal/tos) and [Product Terms](https://www.mapbox.com/legal/product-terms) for what your plan
+> permits. That applies to the API-backed tools (`directions_tool`,
+> `search_and_geocode_tool`, `reverse_geocode_tool`, `category_search_tool`,
+> `isochrone_tool`, `matrix_tool`, `map_matching_tool`, `optimization_tool`,
+> `static_map_image_tool`). The local tools are a different case: they compute on the
+> client and return no Mapbox content, so memoizing them raises no licensing question.
+
+Memoize the offline tools, and for API-backed tools share a call that is already in
+flight rather than issuing a duplicate:
 
 ```typescript
-class CachedMapboxMCP {
-  private cache = new Map<string, { result: any; timestamp: number }>();
-  private cacheTTL = 3600000; // 1 hour
+class OptimizedMapboxMCP {
+  // Local tools compute on the client: deterministic, no Mapbox content returned.
+  // Check `tools/list` against your server version — this set has grown over time.
+  private static LOCAL_TOOLS = [
+    'area_tool',
+    'bbox_tool',
+    'bearing_tool',
+    'buffer_tool',
+    'centroid_tool',
+    'convex_tool',
+    'destination_tool',
+    'difference_tool',
+    'distance_tool',
+    'intersect_tool',
+    'length_tool',
+    'midpoint_tool',
+    'nearest_point_on_line_tool',
+    'nearest_point_tool',
+    'points_within_polygon_tool',
+    'simplify_tool',
+    'union_tool'
+  ];
+
+  private static MEMO_LIMIT = 500;
+
+  private memo = new Map<string, any>();
+  private inFlight = new Map<string, Promise<any>>();
 
   async callTool(name: string, params: any): Promise<any> {
-    // Cache offline tools indefinitely (deterministic)
-    const offlineTools = ['distance_tool', 'point_in_polygon_tool', 'bearing_tool'];
-    const ttl = offlineTools.includes(name) ? Infinity : this.cacheTTL;
+    const key = JSON.stringify({ name, params });
+    const isLocal = OptimizedMapboxMCP.LOCAL_TOOLS.includes(name);
 
-    // Check cache
-    const cacheKey = JSON.stringify({ name, params });
-    const cached = this.cache.get(cacheKey);
-
-    if (cached && Date.now() - cached.timestamp < ttl) {
-      return cached.result;
+    if (isLocal && this.memo.has(key)) {
+      return this.memo.get(key);
     }
 
-    // Call MCP
-    const result = await this.mcpServer.callTool(name, params);
+    let pending = this.inFlight.get(key);
 
-    // Store in cache
-    this.cache.set(cacheKey, {
-      result,
-      timestamp: Date.now()
-    });
+    if (!pending) {
+      // Entry is dropped as soon as the call settles — no API result is retained.
+      pending = this.mcpServer.callTool(name, params).finally(() => this.inFlight.delete(key));
+      this.inFlight.set(key, pending);
+    }
+
+    const result = await pending;
+
+    if (isLocal) {
+      // Bounded, oldest-first: an unbounded memo is a slow leak in a long-lived agent.
+      if (this.memo.size >= OptimizedMapboxMCP.MEMO_LIMIT) {
+        this.memo.delete(this.memo.keys().next().value);
+      }
+      this.memo.set(key, result);
+    }
 
     return result;
   }
 }
 ```
+
+To cut billable API calls, batch instead of caching: see
+[Batch Operations](#batch-operations), and prefer one `matrix_tool` call over repeated
+`directions_tool` calls.
 
 ### Batch Operations
 

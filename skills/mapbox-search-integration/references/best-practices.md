@@ -230,56 +230,45 @@ view.addGestureRecognizer(tapGesture)
 - Minimum: 44x44pt (iOS) / 48x48dp (Android)
 - Ensure adequate spacing between results
 
-## 9. Caching (For High-Volume Apps)
+## 9. Reducing API Calls (For High-Volume Apps)
 
-**Cache recent/popular searches:**
+> **Terms of service:** Temporary (default) geocoding results are documented as being for
+> use during the current user session only. To store coordinates across sessions, use
+> [permanent geocoding](https://docs.mapbox.com/help/dive-deeper/understand-temporary-vs-permanent-geocoding/) (`permanent=true`), which is priced
+> differently and grants storage rights. More broadly, storing or caching Mapbox API
+> responses is restricted — check the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos) and [Product Terms](https://www.mapbox.com/legal/product-terms)
+> for what your plan permits.
+
+At high volume, cut cost by issuing fewer requests — not by retaining responses.
+
+**Session tokens and debouncing do most of the work.** A correctly scoped session token
+(section 2) bills an autocomplete session once instead of per keystroke, and debouncing
+(section 1) stops each keystroke becoming a request at all.
+
+**Deduplicate in-flight requests** so concurrent callers share one network call:
 
 ```javascript
-class SearchCache {
-  constructor(maxSize = 50) {
-    this.cache = new Map();
-    this.maxSize = maxSize;
+const inFlight = new Map();
+
+function searchOnce(query, sessionToken) {
+  const key = `${sessionToken}:${query.toLowerCase()}`;
+
+  let pending = inFlight.get(key);
+
+  if (!pending) {
+    // Entry is dropped as soon as the request settles — no result is retained.
+    pending = performAPISearch(query, sessionToken).finally(() => inFlight.delete(key));
+    inFlight.set(key, pending);
   }
 
-  get(query) {
-    const key = query.toLowerCase();
-    return this.cache.get(key);
-  }
-
-  set(query, results) {
-    const key = query.toLowerCase();
-
-    // LRU eviction
-    if (this.cache.size >= this.maxSize) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
-    }
-
-    this.cache.set(key, {
-      results,
-      timestamp: Date.now()
-    });
-  }
-
-  isValid(entry, maxAgeMs = 5 * 60 * 1000) {
-    return entry && Date.now() - entry.timestamp < maxAgeMs;
-  }
-}
-
-// Usage
-const cache = new SearchCache();
-
-async function search(query) {
-  const cached = cache.get(query);
-  if (cache.isValid(cached)) {
-    return cached.results;
-  }
-
-  const results = await performAPISearch(query);
-  cache.set(query, results);
-  return results;
+  return pending;
 }
 ```
+
+**Hold results only as long as the interaction needs them.** Keeping the current result
+list in component state to render it, and discarding it when the session ends, is
+in-session use. Writing results to `localStorage`, IndexedDB, or a server-side database
+is storage, and needs permanent geocoding or a negotiated agreement.
 
 ## 10. Token Security
 

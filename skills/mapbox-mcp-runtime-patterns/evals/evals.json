@@ -52,6 +52,20 @@
         "category_search_tool proximity is a {longitude, latitude} object",
         "Routing profile includes 'mapbox/' prefix"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "I'm wrapping the Mapbox MCP server in a TypeScript agent. To cut costs I want to add a cache layer over callTool() with a 1-hour TTL for every tool. Is that a good idea?",
+      "expected_output": "Should reject a blanket TTL cache and distinguish the offline Turf.js tools from the Mapbox API-backed tools: only the offline tools may be memoized, because they compute locally and return no Mapbox content. Caching API-backed tool results is not permitted under Mapbox's standard self-serve terms. Should recommend in-flight request deduplication and batching (one matrix_tool call instead of repeated directions_tool calls) instead.",
+      "files": [],
+      "expectations": [
+        "Rejects a blanket TTL cache applied across all tools",
+        "Treats caching results from the API-backed tools (directions_tool, search_and_geocode_tool, isochrone_tool, matrix_tool, and similar) as a licensing question and points at the Mapbox terms, rather than endorsing a blanket TTL",
+        "Says the local tools (distance_tool, points_within_polygon_tool, bearing_tool, and similar) are safe to memoize because they compute on the client and return no Mapbox content",
+        "Recommends in-flight request deduplication for API-backed tools rather than retaining results",
+        "Recommends batching — one matrix_tool call instead of repeated directions_tool calls",
+        "Does NOT show a code sample that caches directions_tool or geocoding results with a TTL"
+      ]
     }
   ]
 }

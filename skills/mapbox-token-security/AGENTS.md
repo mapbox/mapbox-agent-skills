@@ -229,9 +229,11 @@ const token = import.meta.env.VITE_MAPBOX_TOKEN;
 
 **Best practices:**
 
-- Cache tiles in CDN
-- Implement client-side caching
+- Let the Maps SDKs and the browser use Mapbox's own CDN cache headers for tiles and styles
+- Debounce user-driven API calls, and use session tokens for search
+- Batch where an API supports it (Matrix instead of N Directions calls)
 - Monitor usage in dashboard
 - Set up usage alerts
 
-**If approaching limits:** Upgrade plan or optimize caching.
+**If approaching limits:** Upgrade plan, or reduce request volume. Note that storing or
+caching Mapbox API responses is restricted — see the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos) and [Product Terms](https://www.mapbox.com/legal/product-terms) before treating a cache as the fix.

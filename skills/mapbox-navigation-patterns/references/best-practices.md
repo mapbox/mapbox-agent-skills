@@ -2,29 +2,47 @@
 
 ## Best Practices
 
-### Route Caching
+### Reducing Directions API Calls
 
-Cache routes to reduce API calls and improve performance:
+> **Terms of service:** Storing or caching Mapbox API responses is restricted. Check the
+> [Mapbox Terms of Service](https://www.mapbox.com/legal/tos) and [Product Terms](https://www.mapbox.com/legal/product-terms) for what your
+> plan permits, and talk to Mapbox Sales if your use case needs storage rights. The
+> patterns below cut request volume by not asking for the same route twice, rather than
+> by retaining responses, so they stay clear of the question entirely.
+
+Deduplicate requests that are already in flight. Concurrent callers share one network
+call, and nothing is retained once it settles:
 
 ```javascript
-const routeCache = new Map();
+const inFlight = new Map();
 
-async function getCachedRoute(start, end) {
+function getRouteOnce(start, end) {
   const key = `${start.join(',')}-${end.join(',')}`;
 
-  if (routeCache.has(key)) {
-    const cached = routeCache.get(key);
-    // Check if cache is still fresh (e.g., 5 minutes)
-    if (Date.now() - cached.timestamp < 5 * 60 * 1000) {
-      return cached.route;
-    }
+  let pending = inFlight.get(key);
+
+  if (!pending) {
+    // The entry is dropped as soon as the request settles — no response is kept.
+    pending = getRoute(start, end).finally(() => inFlight.delete(key));
+    inFlight.set(key, pending);
   }
 
-  const route = await getRoute(start, end);
-  routeCache.set(key, { route, timestamp: Date.now() });
-  return route;
+  return pending;
 }
 ```
+
+Other ways to cut request volume without storing results:
+
+- **Debounce** while the user is still dragging a waypoint — see
+  [Performance Optimization](#performance-optimization).
+- **Request only what you render** — `overview=simplified` and `geometries=polyline6`
+  instead of full GeoJSON geometry.
+- **Use the Matrix API** for many-to-many travel times instead of N Directions calls.
+- **Keep the active route in memory for the current session** and re-render from it
+  instead of re-requesting on every UI change. Holding a response in memory to serve the
+  request it was made for, and discarding it when the session ends, is in-session use.
+  Writing it to disk, `localStorage`, or a database is storage — that is the line, and
+  storage is what the terms restrict.
 
 ### Error Handling
 

@@ -103,7 +103,7 @@ User says things like:
 - **[references/ios-navigation-specialized.md](references/ios-navigation-specialized.md)** - When: multi-stop, route line, camera, road cameras, route alerts, or `NavigationMapView` customization
 - **[references/android-navigation-sdk.md](references/android-navigation-sdk.md)** - Navigation SDK for Android: basic turn-by-turn navigation, custom navigation UI, route line rendering, maneuver arrows, navigation camera, voice guidance
 - **[references/android-performance-antipatterns.md](references/android-performance-antipatterns.md)** - Android Navigation SDK performance and correctness antipatterns: Native Route Object traversal costs, threading, memory/lifecycle leaks, route management correctness, frequent-callback rendering efficiency, and Coordination API lifecycle
-- **[references/best-practices.md](references/best-practices.md)** - Route caching, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)
+- **[references/best-practices.md](references/best-practices.md)** - Reducing redundant Directions requests, error handling, performance optimization, user experience, and common use cases (delivery routing, ride-sharing ETAs, walking/cycling directions)
 
 ## Related Skills
 

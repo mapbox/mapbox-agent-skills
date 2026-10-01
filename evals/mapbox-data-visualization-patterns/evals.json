@@ -23,6 +23,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I have datasets of varying sizes I need to visualize on Mapbox maps — some are small (500KB), some medium (5MB), and one is huge (50MB of GPS records). The 50MB one freezes when loaded as GeoJSON. What's the right approach for each size?",
       "expectations": [
         "50MB is well above the GeoJSON threshold — use vector tiles (MVT) instead",

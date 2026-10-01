@@ -29,6 +29,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "Give me a complete dark theme color palette for a Mapbox map with exact hex values for: background/land, water, parks/vegetation, roads, buildings, and text labels. This is for a professional nighttime navigation app.",
       "expected_output": "Should provide the skill's dark theme template values (or very close): background #1a1a1a, water dark blue (#0d47a1), parks dark green (#2e7d32), roads dark gray (#3a3a3a), buildings slightly lighter gray (#2d2d2d), text white (#ffffff). Should NOT give generic 'use a dark color' advice without specifics.",
       "files": [],

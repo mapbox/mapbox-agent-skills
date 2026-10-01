@@ -23,6 +23,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "My Mapbox map loads a GeoJSON source with all 1000 stores. When a user filters by category, I call `map.removeLayer('stores')`, `map.removeSource('stores')`, then `map.addSource()` and `map.addLayer()` with filtered data. It works but there's a visible flash when the layer disappears and reappears. Is there a better pattern?",
       "expectations": [
         "Recommends map.getSource('stores').setData(filteredGeoJSON) to update data in place — no layer removal, no flash",

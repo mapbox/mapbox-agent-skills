@@ -29,6 +29,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "Find me family-friendly Italian restaurants near 40.7128° N, 74.0060° W in New York City.",
       "expected_output": "Should call ground_location_tool with query 'Italian restaurant'. Should NOT claim to filter by 'family-friendly' as a data attribute — that isn't available. Should use rating and price level from the enriched POI results to inform a recommendation about which places seem suitable. Should be transparent that family-friendliness is inferred from available data, not a direct filter.",
       "files": [],
@@ -66,6 +67,7 @@
     },
     {
       "id": 6,
+      "split": "test",
       "prompt": "I'm building a feature that compares drive times from a user's location to three nearby store locations. I have coordinates for all four points. Should I call directions_tool three times, or is there a better approach with Mapbox MCP tools?",
       "expected_output": "Should recommend matrix_tool as the correct approach — one call returns all three drive times simultaneously. Should explain that calling directions_tool three times is inefficient and unnecessary. Should mention that matrix_tool accepts multiple sources and destinations and returns a full duration/distance matrix.",
       "files": [],

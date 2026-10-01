@@ -23,6 +23,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "Before shipping a new Mapbox style to production, what validation steps should I take using the MCP DevKit tools?",
       "expectations": [
         "Recommends validate_style_tool to check the style JSON is spec-compliant",

@@ -25,6 +25,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I have a `PointAnnotationManager` in my Flutter app and I want my annotations to be tappable. What's the current non-deprecated API?",
       "expectations": [
         "Use `manager.tapEvents(onTap: (annotation) { ... })` — returns a `Cancelable`",

@@ -23,6 +23,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I want to add a location-aware feature to my store locator: when the user clicks 'Find Stores Near Me', I want to (a) show their location on the map as a blue dot and (b) sort the sidebar listing by distance from their location. What APIs and approach should I use?",
       "expectations": [
         "Recommends adding mapboxgl.GeolocateControl to the map for the blue dot / on-map location indicator",

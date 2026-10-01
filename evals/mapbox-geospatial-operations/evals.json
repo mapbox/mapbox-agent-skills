@@ -28,6 +28,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "A user asks: 'How far is the Statue of Liberty from Times Square?' I'm building a chatbot — which Mapbox MCP tool should I use, and what should I clarify with the user?",
       "expected_output": "Should flag the ambiguity between straight-line distance (distance_tool) and driving/transit distance (directions_tool). Should recommend clarifying 'as the crow flies' vs actual road distance before choosing a tool.",
       "files": [],

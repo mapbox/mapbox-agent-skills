@@ -335,6 +335,44 @@ npm run eval:verbose   # Run with detailed output
 npm run eval:diff      # Show delta vs baseline
 ```
 
+Flags worth knowing:
+
+```bash
+node scripts/eval.js --surface=agents   # grade AGENTS.md instead of SKILL.md + references
+node scripts/eval.js --repeats=5        # run each eval 5x, report mean + 95% interval
+node scripts/eval.js --split=test       # run only the held-out evals
+```
+
+### Train and Test Splits
+
+Evals marked `"split": "test"` are held out; anything unmarked is train. Roughly 30% is
+held out, assigned deterministically as every third eval per skill, so each skill
+contributes to both sets and the assignment can be reviewed rather than trusted to a
+seed.
+
+The split exists for hillclimbing — iterating on a skill to raise its scores. Tune
+against train, and read test to find out whether the change generalized:
+
+```bash
+node scripts/eval.js --repeats=5 --update-baseline   # record where you are
+# ...edit the skill...
+node scripts/eval.js --repeats=5 --diff              # compare
+```
+
+The diff prints train and test movement separately and warns when train improves while
+test does not, which is the signature of a change fitted to the eval set rather than to
+the skill. Revert those.
+
+Two things to keep in mind when doing this:
+
+- **Use repeats before believing a delta.** Single runs vary — one eval here scored
+  15/15 and 11/15 on identical content. A change smaller than an eval's own spread
+  cannot be attributed to the change.
+- **Don't write new evals from model failures.** Picking cases because the current model
+  got them wrong fits the eval set to one model's blind spots. Hard cases should come
+  from somewhere real — a support escalation, a bug report, or a domain expert who
+  judged the case hard.
+
 The runner calls Claude twice per eval — once without the skill (baseline) and once with the
 `SKILL.md` injected as a system prompt — then grades each expectation using Claude as a judge.
 

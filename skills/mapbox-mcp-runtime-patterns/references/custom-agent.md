@@ -82,7 +82,7 @@ class CustomMapboxAgent {
     });
 
     // Check if home is within isochrone
-    const isInRange = await this.callTool('point_in_polygon_tool', {
+    const isInRange = await this.callTool('points_within_polygon_tool', {
       point: { longitude: homeLocation[0], latitude: homeLocation[1] },
       polygon: JSON.parse(isochrone).features[0].geometry
     });

@@ -12,7 +12,7 @@ Runtime server providing geospatial tools to AI agents via Model Context Protoco
 
 | Category              | Tools                                                                                                                                                                                            | Cost            |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
-| **Offline (Turf.js)** | `distance_tool`, `bearing_tool`, `midpoint_tool`, `point_in_polygon_tool`, `area_tool`, `buffer_tool`, `centroid_tool`, `bbox_tool`, `simplify_tool`                                             | Free, instant   |
+| **Offline (Turf.js)** | `distance_tool`, `bearing_tool`, `midpoint_tool`, `points_within_polygon_tool`, `area_tool`, `buffer_tool`, `centroid_tool`, `bbox_tool`, `simplify_tool`                                        | Free, instant   |
 | **Mapbox APIs**       | `directions_tool`, `search_and_geocode_tool`, `reverse_geocode_tool`, `category_search_tool`, `isochrone_tool`, `matrix_tool`, `static_map_image_tool`, `map_matching_tool`, `optimization_tool` | API costs apply |
 | **Utility**           | `version_tool`, `category_list_tool`                                                                                                                                                             | Free            |
 
@@ -29,12 +29,12 @@ All tools use `{longitude, latitude}` object format — **not** arrays.
 - `distance_tool` - `from`/`to` parameters
 - `bearing_tool` - `from`/`to` parameters
 - `midpoint_tool` - `from`/`to` parameters
-- `point_in_polygon_tool` - `point` parameter
+- `points_within_polygon_tool` - `point` parameter
 
 **Exception — GeoJSON geometry** (arrays only):
 
 - `buffer_tool` - `geometry` parameter uses `[longitude, latitude]` arrays (GeoJSON format)
-- `point_in_polygon_tool` - `polygon` rings use `[longitude, latitude]` arrays
+- `points_within_polygon_tool` - `polygon` rings use `[longitude, latitude]` arrays
 
 **Note:** All coordinates use `longitude` before `latitude` order.
 
@@ -67,21 +67,25 @@ export MAPBOX_ACCESS_TOKEN="your_token"
 
 ```python
 from pydantic_ai import Agent
-import subprocess
+# Correct import. `OpenAIModel` does not exist and raises ImportError at runtime.
+from pydantic_ai.models.openai import OpenAIChatModel
 
-# Start MCP server
-mcp = subprocess.Popen(['npx', '@mapbox/mcp-server'],
-                       env={'MAPBOX_ACCESS_TOKEN': token})
 
-agent = Agent(
-    model='gateway/openai:gpt-5.2',
-    tools=[
-        lambda from_loc, to_loc: call_mcp('directions_tool', {
-            'origin': from_loc,
-            'destination': to_loc
-        })
-    ]
-)
+async def get_directions(
+    origin: tuple[float, float], destination: tuple[float, float]
+):
+    # directions_tool takes `coordinates`: a list of {longitude, latitude}
+    # objects. It has no `origin`/`destination` parameters.
+    return await call_mcp('directions_tool', {
+        'coordinates': [
+            {'longitude': origin[0], 'latitude': origin[1]},
+            {'longitude': destination[0], 'latitude': destination[1]}
+        ],
+        'routing_profile': 'mapbox/driving-traffic'
+    })
+
+
+agent = Agent(model=OpenAIChatModel('gpt-4o'), tools=[get_directions])
 ```
 
 ### Mastra
@@ -108,16 +112,28 @@ const mastra = new Mastra({
 ### LangChain
 
 ```typescript
-import { DynamicTool } from '@langchain/core/tools';
+// Use DynamicStructuredTool with a Zod schema, not DynamicTool — a structured
+// schema is what keeps the LLM from passing malformed coordinates.
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
 
 const tools = [
-  new DynamicTool({
+  new DynamicStructuredTool({
     name: 'directions_tool',
-    description: 'Get driving directions',
-    func: async (input) => {
-      const { origin, destination } = JSON.parse(input);
-      return await callMCP('directions_tool', { origin, destination });
-    }
+    description: 'Get turn-by-turn driving directions with traffic-aware duration along roads.',
+    schema: z.object({
+      origin: z.tuple([z.number(), z.number()]).describe('[longitude, latitude]'),
+      destination: z.tuple([z.number(), z.number()]).describe('[longitude, latitude]')
+    }),
+    // directions_tool takes `coordinates`: {longitude, latitude} objects.
+    func: async ({ origin, destination }) =>
+      callMCP('directions_tool', {
+        coordinates: [
+          { longitude: origin[0], latitude: origin[1] },
+          { longitude: destination[0], latitude: destination[1] }
+        ],
+        routing_profile: 'mapbox/driving-traffic'
+      })
   })
 ];
 ```
@@ -163,12 +179,14 @@ class MapboxAgent {
 async findByCommute(home: Point, work: Point, maxMinutes: number) {
   // 1. Get reachable area from work
   const isochrone = await mcp.call('isochrone_tool', {
-    coordinates: work,
-    contours_minutes: [maxMinutes]
+    // `coordinates` is a single {longitude, latitude} object, not an array
+    coordinates: { longitude: work[0], latitude: work[1] },
+    contours_minutes: [maxMinutes],
+    profile: 'mapbox/driving'
   });
 
   // 2. Check if home is within range
-  const inRange = await mcp.call('point_in_polygon_tool', {
+  const inRange = await mcp.call('points_within_polygon_tool', {
     point: home,
     polygon: isochrone
   });
@@ -194,13 +212,13 @@ async findByCommute(home: Point, work: Point, maxMinutes: number) {
 async canDeliver(restaurant: Point, address: Point, maxTime: number) {
   // 1. Calculate delivery zone
   const zone = await mcp.call('isochrone_tool', {
-    coordinates: restaurant,
+    coordinates: { longitude: restaurant[0], latitude: restaurant[1] },
     contours_minutes: [maxTime],
     profile: 'mapbox/driving'
   });
 
   // 2. Check if address is in zone
-  const canDeliver = await mcp.call('point_in_polygon_tool', {
+  const canDeliver = await mcp.call('points_within_polygon_tool', {
     point: address,
     polygon: zone
   });
@@ -275,7 +293,7 @@ Turf.js   Mapbox APIs
 | Need                    | Use                                  | Reason                |
 | ----------------------- | ------------------------------------ | --------------------- |
 | Distance calculation    | distance_tool (offline)              | Free, instant         |
-| Point in polygon        | point_in_polygon_tool (offline)      | Free, instant         |
+| Point in polygon        | points_within_polygon_tool (offline) | Free, instant         |
 | Bounding box            | bbox_tool (offline)                  | Free, instant         |
 | Simplify geometry       | simplify_tool (offline)              | Free, instant         |
 | Directions with traffic | directions_tool (API)                | Real-time data        |
@@ -293,7 +311,7 @@ Turf.js   Mapbox APIs
 ```typescript
 class CachedMCP {
   private cache = new Map();
-  private offlineTools = ['distance_tool', 'point_in_polygon_tool'];
+  private offlineTools = ['distance_tool', 'points_within_polygon_tool'];
 
   async callTool(name: string, params: any) {
     // Cache offline tools forever (deterministic)
@@ -384,7 +402,7 @@ class MockMCP {
     const mocks = {
       distance_tool: () => '2.5',
       directions_tool: () => ({ duration: 1200, distance: 5000 }),
-      point_in_polygon_tool: () => true
+      points_within_polygon_tool: () => true
     };
     return mocks[name]?.();
   }
@@ -410,7 +428,7 @@ const agent = new MapboxAgent(new MockMCP());
 // Prefer offline tools (free)
 const freeOps = [
   'distance_tool',
-  'point_in_polygon_tool',
+  'points_within_polygon_tool',
   'bearing_tool',
   'area_tool',
   'centroid_tool',

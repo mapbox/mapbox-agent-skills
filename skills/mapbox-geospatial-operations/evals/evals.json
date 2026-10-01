@@ -4,11 +4,11 @@
     {
       "id": 1,
       "prompt": "We're an e-commerce company with a warehouse in Austin, TX (30.2672° N, 97.7431° W). We have a list of 500 customer addresses and we want to know which ones are within our 30-minute delivery zone. What's the most efficient approach using the Mapbox MCP tools?",
-      "expected_output": "Should recommend a two-step hybrid approach: (1) use isochrone_tool to create the 30-minute driving zone once, then (2) use point_in_polygon_tool to check each of the 500 addresses against that zone geometrically. Should NOT suggest calling directions_tool 500 times.",
+      "expected_output": "Should recommend a two-step hybrid approach: (1) use isochrone_tool to create the 30-minute driving zone once, then (2) use points_within_polygon_tool to check each of the 500 addresses against that zone geometrically. Should NOT suggest calling directions_tool 500 times.",
       "files": [],
       "expectations": [
         "Recommends isochrone_tool to generate the 30-minute travel-time zone",
-        "Recommends point_in_polygon_tool for checking addresses against the zone",
+        "Recommends points_within_polygon_tool for checking addresses against the zone",
         "Does NOT suggest calling directions_tool 500 times",
         "Explains why this hybrid approach is efficient (routing for zone creation, geometric for containment checks)"
       ]
@@ -41,11 +41,11 @@
     {
       "id": 4,
       "prompt": "I'm building a real-time fleet tracking app. Every 2 seconds I get a GPS coordinate for each of my 50 trucks and need to check if any of them have entered or left our restricted zones (stored as GeoJSON polygons). What's the right Mapbox MCP approach?",
-      "expected_output": "Should recommend point_in_polygon_tool for the containment checks. Ideally also addresses the architectural concern: at 50 trucks × 0.5Hz, calling MCP tools directly may hit overhead limits, so Turf.js in-process is the correct hot-path approach while MCP tools handle peripheral tasks (zone definition, rerouting). Should NOT suggest routing APIs for containment checks.",
+      "expected_output": "Should recommend points_within_polygon_tool for the containment checks. Ideally also addresses the architectural concern: at 50 trucks × 0.5Hz, calling MCP tools directly may hit overhead limits, so Turf.js in-process is the correct hot-path approach while MCP tools handle peripheral tasks (zone definition, rerouting). Should NOT suggest routing APIs for containment checks.",
       "files": [],
       "expectations": [
-        "Recommends point_in_polygon_tool (or equivalent Turf.js booleanPointInPolygon) for the containment checks",
-        "Explains that point_in_polygon_tool is an offline geometric tool with instant results",
+        "Recommends points_within_polygon_tool (or equivalent Turf.js booleanPointInPolygon) for the containment checks",
+        "Explains that points_within_polygon_tool is an offline geometric tool with instant results",
         "Addresses scale/architecture: at high call frequency, direct Turf.js use is preferable to MCP tool overhead",
         "Does NOT suggest using directions_tool or other routing APIs for geofencing"
       ]

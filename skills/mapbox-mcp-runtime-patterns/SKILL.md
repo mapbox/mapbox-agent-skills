@@ -89,7 +89,7 @@ Before integrating, understand the key distinctions between tools to help your L
 
 - No API calls, no token usage
 - Use whenever real-time data not needed
-- Examples: `distance_tool`, `point_in_polygon_tool`, `area_tool`
+- Examples: `distance_tool`, `points_within_polygon_tool`, `area_tool`
 
 **API tools** (requires token, counts against usage):
 

@@ -11,7 +11,7 @@ class CachedMapboxMCP {
 
   async callTool(name: string, params: any): Promise<any> {
     // Cache offline tools indefinitely (deterministic)
-    const offlineTools = ['distance_tool', 'point_in_polygon_tool', 'bearing_tool'];
+    const offlineTools = ['distance_tool', 'points_within_polygon_tool', 'bearing_tool'];
     const ttl = offlineTools.includes(name) ? Infinity : this.cacheTTL;
 
     // Check cache
@@ -175,7 +175,7 @@ TOOL SELECTION RULES:
 - Use category_search_tool for finding types of places ("coffee shops")
 - Use search_and_geocode_tool for specific addresses or named places ("123 Main St", "Starbucks downtown")
 - Use isochrone_tool for "what can I reach in X minutes" questions
-- Use offline tools (distance_tool, point_in_polygon_tool) when real-time data is not needed
+- Use offline tools (distance_tool, points_within_polygon_tool) when real-time data is not needed
 
 When in doubt, prefer:
 1. Offline tools over API calls (faster, free)
@@ -189,7 +189,7 @@ When in doubt, prefer:
 // Use offline tools when possible (faster, free)
 const localOps = {
   distance: 'distance_tool', // Turf.js
-  pointInPolygon: 'point_in_polygon_tool', // Turf.js
+  pointInPolygon: 'points_within_polygon_tool', // Turf.js
   bearing: 'bearing_tool', // Turf.js
   area: 'area_tool' // Turf.js
 };
@@ -313,7 +313,7 @@ class MockMapboxMCP {
         distance: 5000,
         geometry: {...}
       }),
-      point_in_polygon_tool: () => 'true'
+      points_within_polygon_tool: () => 'true'
     };
 
     return mocks[name]?.() || '{}';

@@ -19,7 +19,7 @@ async findPropertiesByCommute(
   // 2. Check each property
   const propertiesInRange = [];
   for (const property of properties) {
-    const inRange = await mcp.callTool('point_in_polygon_tool', {
+    const inRange = await mcp.callTool('points_within_polygon_tool', {
       point: { longitude: property.location[0], latitude: property.location[1] },
       polygon: reachableArea
     });
@@ -59,7 +59,7 @@ async canDeliver(
   });
 
   // 2. Check if address is in zone
-  const canDeliver = await mcp.callTool('point_in_polygon_tool', {
+  const canDeliver = await mcp.callTool('points_within_polygon_tool', {
     point: deliveryAddress,
     polygon: deliveryZone
   });

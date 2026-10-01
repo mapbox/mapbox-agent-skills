@@ -317,6 +317,66 @@ override fun onStop() {
 }
 ```
 
+### Custom UI: Route Line, Arrows, Voice, Road Objects
+
+These are distinct API/View pairs — the maneuver arrow is not part of the route line
+component, and neither is the voice guidance.
+
+```kotlin
+// Route line — MapboxRouteLineApi + MapboxRouteLineView.
+// Pass alternatives metadata alongside the routes, and release both on teardown:
+// neither stops work on its own when the screen goes away.
+private val routesObserver = RoutesObserver { result ->
+    val metadata = mapboxNavigation.getAlternativeMetadataFor(result.navigationRoutes)
+    routeLineApi.setNavigationRoutes(result.navigationRoutes, metadata) { value ->
+        routeLineView.renderRouteDrawData(mapView.mapboxMap.style!!, value)
+    }
+}
+
+override fun onDestroy() {
+    super.onDestroy()
+    routeLineApi.cancel()
+    routeLineView.cancel()
+}
+
+// Maneuver arrow — MapboxRouteArrowApi + MapboxRouteArrowView, a separate pair from
+// the route line. Recompute on every progress update; it is not a one-time draw.
+private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+    val arrow = routeArrowApi.addUpcomingManeuverArrow(routeProgress)
+    routeArrowView.renderManeuverUpdate(mapView.mapboxMap.style!!, arrow)
+}
+
+// Voice guidance — prefer the registered instance. It self-registers with the
+// MapboxNavigationApp lifecycle and handles prefetching and mute state for you.
+val audioGuidance = MapboxAudioGuidance.getRegisteredInstance()
+// MapboxAudioGuidance.create() is the correct call only when you want a standalone
+// instance whose lifecycle you manage yourself. Never use both: two independently
+// constructed instances each drive their own player and race to speak.
+
+// Road objects ahead — read the precomputed list rather than filtering
+// RouteLeg.incidents()/closures() yourself. RouteProgress.upcomingRoadObjects is
+// already filtered to what is ahead and ordered by distance, with distanceToStart
+// computed. NavigationRoute.upcomingRoadObjects is the unfiltered whole-route
+// equivalent, so re-filtering that one by position is the same antipattern.
+val ahead = routeProgress.upcomingRoadObjects
+```
+
+Register and unregister these observers in the `onAttached`/`onDetached` callbacks of the
+`onResumedObserver` passed to `requireMapboxNavigation`. An observer registered as an
+inline lambda with no stored reference can never be unregistered, which leaks the screen.
+
+`MapboxNavigation` is invalid after `onDestroy()`/`MapboxNavigationProvider.destroy()` —
+holding it in a singleton and touching it afterwards is a crash, not just a leak.
+
+### Reading Route Data Cheaply
+
+With `nativeRouteObject(true)`, every `legs()`, `steps()`, or `annotation()` access
+re-reads and re-converts data from native memory, and the result is not cached between
+calls. Read the precomputed `RouteProgress` fields instead of walking the route:
+`distanceRemaining`, `durationRemaining`, `fractionTraveled`, `upcomingRoadObjects`,
+`bannerInstructions`. This matters most inside `RouteProgressObserver`, which fires up to
+10 times per second on the main thread, where the work blocks frame rendering.
+
 ## Routing Profiles
 
 | Profile           | Use Case                           |

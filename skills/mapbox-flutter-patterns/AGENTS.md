@@ -10,8 +10,13 @@ dependencies:
   mapbox_maps_flutter: ^2.0.0
 ```
 
-- **iOS:** Runner target **Minimum Deployments → iOS = 14.0** (Podfile `platform :ios, '14.0'` if using Pods).
+- **iOS:** Runner target **Minimum Deployments → iOS = 14.0** (Podfile `platform :ios, '14.0'` if using Pods). This is
+  the single most common cause of iOS build failures — Flutter's default target is below Mapbox's minimum, which surfaces
+  as `platform is lower than deployment target`.
 - **Android:** `minSdk = 21` in `android/app/build.gradle(.kts)`.
+
+You do not need to choose between CocoaPods and Swift Package Manager: the plugin ships both, and Flutter picks
+whichever your app is configured for (new projects on Flutter 3.29+ default to SPM, older ones stay on CocoaPods).
 
 ## Access Token
 
@@ -55,12 +60,21 @@ await manager.createMulti([
   ),
 ]);
 
-// Current non-deprecated tap API
-manager.tapEvents(onTap: (annotation) {
+// Current non-deprecated tap API. Returns a Cancelable — store it and cancel in dispose,
+// or the listener outlives the widget.
+final Cancelable tapSubscription = manager.tapEvents(onTap: (annotation) {
   debugPrint('tapped ${annotation.id}');
 });
-// Also: longPressEvents, dragEvents
+
+@override
+void dispose() {
+  tapSubscription.cancel();
+  super.dispose();
+}
 ```
+
+The same `Cancelable`-returning pattern exists on every manager's `tapEvents`, `longPressEvents` and
+`dragEvents`, and across the other annotation types (`CircleAnnotationManager.tapEvents`, and so on).
 
 ## Load GeoJSON
 

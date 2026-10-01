@@ -4,6 +4,17 @@ Quick reference for integrating Mapbox GL JS with React, Vue, Svelte, Angular, a
 
 ## Critical Integration Rules
 
+### 0. Always Import the CSS
+
+```javascript
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css'; // required
+```
+
+The stylesheet carries the styles for map controls, popups and markers. Omit it and
+the map still renders, so nothing errors — it just looks broken. This applies to
+every framework below.
+
 ### 1. Map Lifecycle Management
 
 **Must properly initialize and cleanup in all frameworks:**

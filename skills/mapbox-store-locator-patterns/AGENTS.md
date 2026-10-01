@@ -145,6 +145,7 @@ function buildLocationList(stores) {
 
   stores.features.forEach((store) => {
     const listing = document.createElement('div');
+    listing.id = `listing-${store.properties.id}`;
     listing.className = 'listing';
     listing.innerHTML = `
       <a href="#" class="title">${store.properties.name}</a>
@@ -156,10 +157,23 @@ function buildLocationList(stores) {
       e.preventDefault();
       flyToStore(store);
       createPopup(store);
+      highlightListing(store.properties.id);
     });
 
     container.appendChild(listing);
   });
+}
+
+// MUST include scrollIntoView — without it, selecting a marker on the map
+// highlights a listing that may be off-screen in the sidebar.
+function highlightListing(id) {
+  const active = document.getElementsByClassName('active')[0];
+  if (active) active.classList.remove('active');
+
+  const listing = document.getElementById(`listing-${id}`);
+  listing.classList.add('active');
+  listing.focus();
+  listing.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function flyToStore(store) {

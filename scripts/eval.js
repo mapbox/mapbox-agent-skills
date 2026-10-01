@@ -33,6 +33,79 @@ const ALL_SURFACES = ['skill', 'agents'];
 // change from generation/judge jitter, so any score comparison that drives a
 // decision wants n > 1. Overridden by --repeats=N.
 const REPEATS = parseInt(process.env.EVAL_REPEATS || '1', 10);
+
+// MCP servers an eval set can opt into via "mcp_servers" in its evals.json.
+// Some skills — mapbox-location-grounding above all — are about composing live tool
+// calls, so grading them with no tools attached measures willingness to invent an
+// answer rather than skill at grounding one.
+const MCP_SERVERS = {
+  mapbox: {
+    type: 'url',
+    url: 'https://mcp.mapbox.com/mcp',
+    name: 'mapbox',
+    tokenEnv: 'MAPBOX_ACCESS_TOKEN'
+  }
+};
+const MCP_BETA = 'mcp-client-2025-04-04';
+
+/**
+ * Resolve an eval set's requested MCP server names into API-ready definitions.
+ * Throws when a token is missing rather than silently grading a tool-less run.
+ */
+function resolveMcpServers(names) {
+  if (!names?.length) return null;
+  return names.map((name) => {
+    const cfg = MCP_SERVERS[name];
+    if (!cfg) {
+      throw new Error(
+        `Unknown mcp_servers entry "${name}". Known: ${Object.keys(MCP_SERVERS).join(', ')}`
+      );
+    }
+    const token = process.env[cfg.tokenEnv];
+    if (!token) {
+      throw new Error(
+        `${cfg.tokenEnv} is not set, required by the "${name}" MCP server. ` +
+          `Set it, or the run grades a tool-less response against tool-use expectations.`
+      );
+    }
+    return {
+      type: cfg.type,
+      url: cfg.url,
+      name: cfg.name,
+      authorization_token: token
+    };
+  });
+}
+
+/**
+ * Flatten response content into a transcript the judge can score. Tool calls are
+ * rendered explicitly: MCP tool use happens server-side and often leaves no trace
+ * in the prose, so an expectation like "calls ground_location_tool" would be
+ * unscoreable from text alone.
+ */
+function renderBlocks(content) {
+  const parts = [];
+  for (const b of content) {
+    if (b.type === 'text' && b.text) {
+      parts.push(b.text);
+    } else if (b.type === 'mcp_tool_use' || b.type === 'tool_use') {
+      parts.push(`[tool call] ${b.name}(${JSON.stringify(b.input)})`);
+    } else if (b.type === 'mcp_tool_result' || b.type === 'tool_result') {
+      const inner = Array.isArray(b.content)
+        ? b.content
+            .map((c) => c.text || '')
+            .join(' ')
+            .trim()
+        : '';
+      const truncated =
+        inner.length > 1500 ? `${inner.slice(0, 1500)}… [truncated]` : inner;
+      parts.push(
+        `[tool result]${b.is_error ? ' ERROR' : ''} ${truncated || '(no text content)'}`
+      );
+    }
+  }
+  return parts.join('\n\n');
+}
 const SKILLS_DIR = 'skills';
 // Eval definitions live outside skills/ on purpose: anything under skills/ is shipped
 // to users by the plugin manifests, and that would hand an installed agent the answer
@@ -73,18 +146,20 @@ async function loadAgentsContent(skillPath) {
 /**
  * Run a single eval: send prompt with skill context, then judge the response
  */
-async function runEval(skillName, skillContent, evalItem, surface) {
+async function runEval(skillName, skillContent, evalItem, surface, mcpServers) {
   // Step 1: Generate response using skill as system prompt
-  const response = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: MAX_TOKENS,
-    system: `You are an expert AI assistant with the following skill knowledge:\n\n${skillContent}`,
-    messages: [{ role: 'user', content: evalItem.prompt }]
-  });
+  const response = await anthropic.messages.create(
+    {
+      model: MODEL,
+      max_tokens: MAX_TOKENS,
+      system: `You are an expert AI assistant with the following skill knowledge:\n\n${skillContent}`,
+      messages: [{ role: 'user', content: evalItem.prompt }],
+      ...(mcpServers ? { mcp_servers: mcpServers } : {})
+    },
+    mcpServers ? { headers: { 'anthropic-beta': MCP_BETA } } : undefined
+  );
 
-  const assistantResponse = response.content
-    .map((b) => b.text || '')
-    .join('\n');
+  const assistantResponse = renderBlocks(response.content);
 
   // A response that produced no text is an infrastructure failure, not a skill
   // failure. Extended thinking can consume the whole max_tokens budget, leaving
@@ -422,6 +497,16 @@ async function main() {
     }
 
     const evalsData = JSON.parse(await readFile(evalsFile, 'utf-8'));
+    let mcpServers;
+    try {
+      mcpServers = resolveMcpServers(evalsData.mcp_servers);
+    } catch (err) {
+      console.error(`✖  ${dir.name} — ${err.message}`);
+      process.exit(1);
+    }
+    if (mcpServers) {
+      console.log(`🔌 ${dir.name} — MCP: ${evalsData.mcp_servers.join(', ')}`);
+    }
     const content = {
       skill: await loadSkillContent(skillPath),
       agents: await loadAgentsContent(skillPath)
@@ -439,7 +524,8 @@ async function main() {
             skillContent: content[surface],
             evalItem,
             surface,
-            run
+            run,
+            mcpServers
           });
         }
       }
@@ -456,10 +542,17 @@ async function main() {
   let completed = 0;
 
   async function runTask(task) {
-    const { skillName, skillContent, evalItem, surface, run } = task;
+    const { skillName, skillContent, evalItem, surface, run, mcpServers } =
+      task;
     const runLabel = repeats > 1 ? ` run ${run}/${repeats}` : '';
     try {
-      const result = await runEval(skillName, skillContent, evalItem, surface);
+      const result = await runEval(
+        skillName,
+        skillContent,
+        evalItem,
+        surface,
+        mcpServers
+      );
       completed++;
       const pct = (result.score * 100).toFixed(0);
       const icon =

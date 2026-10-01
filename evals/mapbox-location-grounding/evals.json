@@ -1,5 +1,6 @@
 {
   "skill_name": "mapbox-location-grounding",
+  "mcp_servers": ["mapbox"],
   "evals": [
     {
       "id": 1,

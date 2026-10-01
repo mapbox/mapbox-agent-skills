@@ -27,6 +27,8 @@ dependencies {
 
 ### Access Token
 
+The string resource is the recommended approach — the SDK reads it automatically.
+
 ```xml
 <!-- app/res/values/mapbox_access_token.xml -->
 <?xml version="1.0" encoding="utf-8"?>
@@ -35,6 +37,18 @@ dependencies {
         tools:ignore="UnusedResources">YOUR_MAPBOX_ACCESS_TOKEN</string>
 </resources>
 ```
+
+To set it programmatically instead, import from `com.mapbox.common` — **not**
+`com.mapbox.maps` — and assign before any map component is created:
+
+```kotlin
+import com.mapbox.common.MapboxOptions
+
+MapboxOptions.accessToken = "pk.your_token"
+```
+
+Do NOT use manifest `<meta-data>` placeholders: the SDK does not read tokens from
+`${MAPBOX_ACCESS_TOKEN}` in AndroidManifest.xml.
 
 ## Jetpack Compose
 
@@ -79,18 +93,33 @@ MapboxMap(modifier = Modifier.fillMaxSize()) {
 
 ### Compose Annotations Pattern
 
+Declarative annotation components are supported — prefer them over `MapEffect` with
+an annotation manager when you are already in Compose.
+
 ```kotlin
-// ❌ Declarative annotation components are not supported
-// Use MapEffect with annotation managers instead (see above)
-MapboxMap(modifier = Modifier.fillMaxSize()) {
-    // This doesn't work:
-    PointAnnotation(
-        point = Point.fromLngLat(-122.4194, 37.7749)
-    ) {
-        iconImage = "custom-marker"
+import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
+import com.mapbox.maps.extension.compose.annotation.rememberIconImage
+
+@Composable
+fun MapWithMarkers() {
+    val markerIcon = rememberIconImage(R.drawable.ic_marker)
+
+    MapboxMap(modifier = Modifier.fillMaxSize()) {
+        PointAnnotation(point = Point.fromLngLat(-122.4194, 37.7749)) {
+            iconImage = markerIcon
+            // Tap handling goes here. The `onClick` parameter is deprecated.
+            interactionsState.onClicked { /* handle tap */ true }
+        }
     }
 }
 ```
+
+- `PointAnnotation` renders nothing without `iconImage` — always set it.
+- Use `rememberIconImage(R.drawable.ic_marker)` for drawable resources, not
+  `BitmapFactory`.
+- Use `interactionsState.onClicked { ... }` inside the init lambda for taps; the
+  `onClick` parameter is deprecated.
+- Annotation IDs are `Long`, not `String`.
 
 ## View System
 

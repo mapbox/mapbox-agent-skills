@@ -30,6 +30,17 @@
         "Notes Geocoding API is appropriate for batch geocoding, maintaining an existing integration, or permanent geocoding (not search)",
         "Notes SDKs (Search JS) are preferred over direct API calls for web integration"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "My store locator geocodes the same city names thousands of times a day. I want to save the geocoding results to my Postgres database and reuse them so I stop paying for repeat lookups. What's the right way to do this?",
+      "expectations": [
+        "States that temporary (default) geocoding results are for use during the current user session only and may not be stored",
+        "Identifies permanent geocoding (`permanent=true`) as the supported way to store coordinates in a database, and notes it is priced differently",
+        "Does NOT present an LRU or TTL cache of default geocoding results as the solution",
+        "Distinguishes in-session use (holding results in component state to render them) from storage (localStorage, IndexedDB, or a server-side database)",
+        "May mention session tokens and debouncing as ways to reduce request volume"
+      ]
     }
   ]
 }

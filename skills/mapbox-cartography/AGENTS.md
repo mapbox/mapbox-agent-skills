@@ -72,6 +72,30 @@ Quick reference for map design, color theory, visual hierarchy, and accessibilit
 - Areas: Inside polygon
 - Avoid label collisions (use `text-allow-overlap: false`)
 
+### 5. Layer Order
+
+Bottom to top. Anything the user generated sits on top of the basemap, and POI
+symbols sit below it — a route or marker the user is actively following must never
+be occluded by basemap POIs.
+
+1. Background (solid color or pattern)
+2. Landuse (parks, residential, commercial)
+3. Water bodies (oceans, lakes, rivers)
+4. Terrain/hillshade (if using elevation)
+5. Buildings (3D or 2D footprints)
+6. Roads (highways to local streets)
+7. Borders (country, state lines)
+8. Labels (place names, street names)
+9. POI symbols
+10. User-generated content (routes, markers) — topmost
+
+### 6. Feature Zoom Thresholds
+
+Mapbox's hosted Streets style shows most POIs around zoom 14. For custom styles,
+**start POIs at zoom 12** — neighborhood scale, where density is manageable and
+users are browsing. Zoom 14 is at the late end but acceptable; zoom 10 is
+metro-area scale and far too early, producing severe icon clutter.
+
 ## Color Best Practices
 
 ### Accessible Color Contrast

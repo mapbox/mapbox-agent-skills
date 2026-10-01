@@ -89,10 +89,20 @@ skills/your-skill-name/
 │   └── project-template.md
 ├── scripts/              # Optional: Executable code agents can run
 │   └── validate.sh
-├── evals/
-│   └── evals.json        # Required: Skill evaluation metrics (3-5 evals)
 └── AGENTS.md             # Optional: Condensed version for Cursor/Copilot
 ```
+
+Evals live outside the skill directory, in `evals/<skill-name>/evals.json`:
+
+```
+evals/
+└── mapbox-your-skill-name/
+    └── evals.json        # Required: 3-5 evals per skill
+```
+
+They are kept out of `skills/` deliberately. Both plugin manifests ship everything
+under `skills/`, so an `evals.json` there would hand every installed agent the
+expected answers for the suite that grades these skills.
 
 This is our convention for progressive skill disclosure — only `name` and `description` at startup, full SKILL.md on activation, and `references/`/`assets/`/`scripts/` on demand.
 
@@ -272,7 +282,8 @@ Evals measure how much a skill actually improves AI responses by comparing answe
 
 ### Eval File Structure
 
-Create `skills/your-skill-name/evals/evals.json`:
+Create `evals/your-skill-name/evals.json` (outside `skills/`, so the expectations are
+not shipped to users):
 
 ```json
 {

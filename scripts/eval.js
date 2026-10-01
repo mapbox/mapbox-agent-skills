@@ -21,7 +21,23 @@ const anthropic = new Anthropic();
 const MODEL = process.env.EVAL_MODEL || 'claude-sonnet-5';
 const JUDGE_MODEL = process.env.EVAL_JUDGE_MODEL || 'claude-sonnet-5';
 const CONCURRENCY = parseInt(process.env.EVAL_CONCURRENCY || '10', 10);
+// Must leave room for extended thinking on top of the answer itself; at 4096 a
+// thinking-heavy response can spend the entire budget before emitting any text.
+const MAX_TOKENS = parseInt(process.env.EVAL_MAX_TOKENS || '8192', 10);
+// Which content surface(s) to evaluate. 'skill' is SKILL.md + references/*.md;
+// 'agents' is the hand-maintained AGENTS.md copy, which ships to users as a drop-in
+// and can drift from it. Defaults to 'skill' so routine runs stay cheap and their
+// totals stay comparable; use --surface=agents or --surface=both to check the copy.
+const ALL_SURFACES = ['skill', 'agents'];
+// How many times to run each eval. A single sample cannot distinguish a real
+// change from generation/judge jitter, so any score comparison that drives a
+// decision wants n > 1. Overridden by --repeats=N.
+const REPEATS = parseInt(process.env.EVAL_REPEATS || '1', 10);
 const SKILLS_DIR = 'skills';
+// Eval definitions live outside skills/ on purpose: anything under skills/ is shipped
+// to users by the plugin manifests, and that would hand an installed agent the answer
+// key for the suite that grades it.
+const EVALS_DIR = 'evals';
 
 /**
  * Load a skill's full content: SKILL.md + all references/*.md
@@ -43,13 +59,25 @@ async function loadSkillContent(skillPath) {
 }
 
 /**
+ * Load a skill's AGENTS.md, the copy consumed by agents that read AGENTS.md
+ * instead of SKILL.md. It is maintained by hand rather than generated, so it can
+ * drift from SKILL.md + references — which is exactly what an eval should catch.
+ * Returns null for skills that have no AGENTS.md.
+ */
+async function loadAgentsContent(skillPath) {
+  const agentsMd = join(skillPath, 'AGENTS.md');
+  if (!existsSync(agentsMd)) return null;
+  return readFile(agentsMd, 'utf-8');
+}
+
+/**
  * Run a single eval: send prompt with skill context, then judge the response
  */
-async function runEval(skillName, skillContent, evalItem) {
+async function runEval(skillName, skillContent, evalItem, surface) {
   // Step 1: Generate response using skill as system prompt
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: MAX_TOKENS,
     system: `You are an expert AI assistant with the following skill knowledge:\n\n${skillContent}`,
     messages: [{ role: 'user', content: evalItem.prompt }]
   });
@@ -57,6 +85,17 @@ async function runEval(skillName, skillContent, evalItem) {
   const assistantResponse = response.content
     .map((b) => b.text || '')
     .join('\n');
+
+  // A response that produced no text is an infrastructure failure, not a skill
+  // failure. Extended thinking can consume the whole max_tokens budget, leaving
+  // zero text blocks; judging that as a legitimate 0 hides the real cause.
+  if (!assistantResponse.trim()) {
+    throw new Error(
+      `Empty response from ${MODEL} (stop_reason: ${response.stop_reason}, ` +
+        `output_tokens: ${response.usage?.output_tokens}). ` +
+        `Raise EVAL_MAX_TOKENS (currently ${MAX_TOKENS}) and re-run.`
+    );
+  }
 
   // Step 2: Judge the response against expectations
   const expectations = evalItem.expectations
@@ -139,6 +178,7 @@ Respond in this exact JSON format (no other text):
 
   return {
     skillName,
+    surface,
     evalId: evalItem.id,
     prompt: evalItem.prompt,
     totalScore,
@@ -148,6 +188,61 @@ Respond in this exact JSON format (no other text):
     expectationResults,
     modelResponse: assistantResponse
   };
+}
+
+/**
+ * Collapse repeated runs of one eval into a single result carrying the mean plus
+ * a spread. `totalScore`/`score` stay the mean so all existing aggregation and
+ * diffing keeps working; the per-run detail is retained for inspection.
+ */
+function aggregateRuns(allRunsForEval) {
+  // A failed request is missing data, not evidence about the skill. Averaging a zero
+  // into a repeat set would quietly drag the mean down and hide the cause.
+  const runs = allRunsForEval.filter((r) => !r.error);
+  const errored = allRunsForEval.filter((r) => r.error);
+
+  if (runs.length === 0) {
+    return { ...allRunsForEval[0], errorRuns: errored.length, repeats: 0 };
+  }
+
+  const base = runs[0];
+  if (runs.length === 1) {
+    return { ...base, repeats: 1, errorRuns: errored.length };
+  }
+
+  const scores = runs.map((r) => r.score);
+  const n = scores.length;
+  const mean = scores.reduce((a, b) => a + b, 0) / n;
+  const variance =
+    scores.reduce((acc, x) => acc + (x - mean) ** 2, 0) / (n - 1);
+  const stddev = Math.sqrt(variance);
+  // Normal-approximation 95% interval on the mean. Rough at small n, but enough
+  // to tell "this moved" from "this is noise".
+  const ci95 = 1.96 * (stddev / Math.sqrt(n));
+
+  // Report the detail of the run closest to the mean, so a drill-down is
+  // representative rather than a lucky or unlucky extreme.
+  const representative = runs.reduce((best, r) =>
+    Math.abs(r.score - mean) < Math.abs(best.score - mean) ? r : best
+  );
+
+  return {
+    ...representative,
+    totalScore: mean * base.maxScore,
+    score: mean,
+    repeats: n,
+    scoreMin: Math.min(...scores),
+    scoreMax: Math.max(...scores),
+    scoreStddev: stddev,
+    scoreCI95: ci95,
+    runScores: scores,
+    errorRuns: errored.length
+  };
+}
+
+/** Render a score that may be fractional once averaged across repeats. */
+function fmtScore(v) {
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 
 function scoreBar(ratio, width) {
@@ -186,14 +281,16 @@ async function findBaseline(diffArg) {
 }
 
 function buildDiffReport(baseline, current) {
-  // Build lookup: skill#id -> result
+  // Build lookup: skill#id@surface -> result. Results written before surfaces
+  // existed have no surface field and describe SKILL.md + references.
+  const keyOf = (r) => `${r.skillName}#${r.evalId}@${r.surface || 'skill'}`;
   const baseMap = new Map();
   for (const r of baseline.results) {
-    baseMap.set(`${r.skillName}#${r.evalId}`, r);
+    baseMap.set(keyOf(r), r);
   }
   const currMap = new Map();
   for (const r of current.results) {
-    currMap.set(`${r.skillName}#${r.evalId}`, r);
+    currMap.set(keyOf(r), r);
   }
 
   const allKeys = new Set([...baseMap.keys(), ...currMap.keys()]);
@@ -260,6 +357,25 @@ async function main() {
       : true
     : false;
   const updateBaseline = args.includes('--update-baseline');
+  const repeatsArg = args.find((a) => a.startsWith('--repeats'));
+  const repeats = repeatsArg?.includes('=')
+    ? parseInt(repeatsArg.split('=')[1], 10)
+    : REPEATS;
+  if (!Number.isInteger(repeats) || repeats < 1) {
+    console.error(`Invalid --repeats. Expected a positive integer.`);
+    process.exit(1);
+  }
+  const surfaceArg = args.find((a) => a.startsWith('--surface'));
+  const surfaceVal = surfaceArg?.includes('=')
+    ? surfaceArg.split('=')[1]
+    : 'skill';
+  if (!['skill', 'agents', 'both'].includes(surfaceVal)) {
+    console.error(
+      `Invalid --surface=${surfaceVal}. Expected skill, agents, or both.`
+    );
+    process.exit(1);
+  }
+  const surfaces = surfaceVal === 'both' ? ALL_SURFACES : [surfaceVal];
 
   const entries = await readdir(SKILLS_DIR, { withFileTypes: true });
   const skillDirs = entries
@@ -290,13 +406,15 @@ async function main() {
   console.log(`Eval model: ${MODEL}`);
   console.log(`Judge model: ${JUDGE_MODEL}`);
   console.log(`Concurrency: ${CONCURRENCY}`);
+  console.log(`Surfaces: ${surfaces.join(', ')}`);
+  console.log(`Repeats per eval: ${repeats}`);
   console.log(`Skills to evaluate: ${skillDirs.length}\n`);
 
   // Collect all eval tasks
   const tasks = [];
   for (const dir of skillDirs) {
     const skillPath = join(SKILLS_DIR, dir.name);
-    const evalsFile = join(skillPath, 'evals', 'evals.json');
+    const evalsFile = join(EVALS_DIR, dir.name, 'evals.json');
 
     if (!existsSync(evalsFile)) {
       console.log(`⏭  ${dir.name} — no evals.json, skipping`);
@@ -304,31 +422,50 @@ async function main() {
     }
 
     const evalsData = JSON.parse(await readFile(evalsFile, 'utf-8'));
-    const skillContent = await loadSkillContent(skillPath);
+    const content = {
+      skill: await loadSkillContent(skillPath),
+      agents: await loadAgentsContent(skillPath)
+    };
 
-    for (const evalItem of evalsData.evals) {
-      tasks.push({ skillName: dir.name, skillContent, evalItem });
+    for (const surface of surfaces) {
+      if (!content[surface]) {
+        console.log(`⏭  ${dir.name} — no AGENTS.md, skipping agents surface`);
+        continue;
+      }
+      for (const evalItem of evalsData.evals) {
+        for (let run = 1; run <= repeats; run++) {
+          tasks.push({
+            skillName: dir.name,
+            skillContent: content[surface],
+            evalItem,
+            surface,
+            run
+          });
+        }
+      }
     }
   }
 
   console.log(
-    `Total evals: ${tasks.length}, running with concurrency ${CONCURRENCY}...\n`
+    `Total runs: ${tasks.length}${repeats > 1 ? ` (${tasks.length / repeats} evals x ${repeats})` : ''}, ` +
+      `concurrency ${CONCURRENCY}...\n`
   );
 
   // Run with concurrency pool
-  const allResults = [];
+  const allRuns = [];
   let completed = 0;
 
   async function runTask(task) {
-    const { skillName, skillContent, evalItem } = task;
+    const { skillName, skillContent, evalItem, surface, run } = task;
+    const runLabel = repeats > 1 ? ` run ${run}/${repeats}` : '';
     try {
-      const result = await runEval(skillName, skillContent, evalItem);
+      const result = await runEval(skillName, skillContent, evalItem, surface);
       completed++;
       const pct = (result.score * 100).toFixed(0);
       const icon =
         result.score >= 0.9 ? '✅' : result.score >= 0.6 ? '⚠️' : '❌';
       console.log(
-        `[${completed}/${tasks.length}] ${icon} ${skillName} #${evalItem.id} — ${result.totalScore}/${result.maxScore} (${pct}%)`
+        `[${completed}/${tasks.length}] ${icon} ${skillName} #${evalItem.id} [${surface}]${runLabel} — ${result.totalScore}/${result.maxScore} (${pct}%)`
       );
       if (verbose) {
         for (const e of result.expectationResults) {
@@ -351,18 +488,16 @@ async function main() {
     } catch (err) {
       completed++;
       console.log(
-        `[${completed}/${tasks.length}] ❌ ${skillName} #${evalItem.id} — Error: ${err.message}`
+        `[${completed}/${tasks.length}] ❌ ${skillName} #${evalItem.id} [${surface}]${runLabel} — Error: ${err.message}`
       );
       return {
         skillName,
+        surface,
         evalId: evalItem.id,
         prompt: evalItem.prompt.slice(0, 80) + '...',
-        totalScore: 0,
-        maxScore: evalItem.expectations.length * 3,
-        score: 0,
+        error: err.message,
         summary: `Error: ${err.message}`,
-        expectationResults: [],
-        modelResponse: ''
+        expectationResults: []
       };
     }
   }
@@ -371,7 +506,7 @@ async function main() {
   const executing = new Set();
   for (const task of tasks) {
     const p = runTask(task).then((result) => {
-      allResults.push(result);
+      allRuns.push(result);
       executing.delete(p);
     });
     executing.add(p);
@@ -380,6 +515,17 @@ async function main() {
     }
   }
   await Promise.all(executing);
+
+  // Collapse repeats of the same eval into one result carrying mean + spread
+  const grouped = new Map();
+  for (const r of allRuns) {
+    const key = `${r.skillName}#${r.evalId}@${r.surface || 'skill'}`;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(r);
+  }
+  const aggregated = [...grouped.values()].map(aggregateRuns);
+  const allResults = aggregated.filter((r) => r.repeats > 0);
+  const failedEvals = aggregated.filter((r) => r.repeats === 0);
 
   console.log();
 
@@ -401,10 +547,32 @@ async function main() {
   console.log('═'.repeat(50));
   console.log('EVAL SUMMARY');
   console.log('═'.repeat(50));
-  console.log(`Evals run:        ${allResults.length}`);
+  console.log(`Evals scored:     ${allResults.length}`);
+  if (failedEvals.length > 0) {
+    console.log(
+      `Evals failed:     ${failedEvals.length} (excluded from all scores below)`
+    );
+  }
   console.log(
-    `Total score:      ${totalScore}/${maxScore} (${((totalScore / maxScore) * 100).toFixed(1)}%)`
+    maxScore > 0
+      ? `Total score:      ${fmtScore(totalScore)}/${maxScore} (${((totalScore / maxScore) * 100).toFixed(1)}%)`
+      : 'Total score:      n/a — no eval produced a usable response'
   );
+
+  // With repeats, put an interval on the suite mean so a run-to-run delta can be
+  // read as signal or noise instead of being taken at face value.
+  if (repeats > 1) {
+    const perEval = allResults.map((r) => r.score);
+    const n = perEval.length;
+    const mean = perEval.reduce((a, b) => a + b, 0) / n;
+    const sd = Math.sqrt(
+      perEval.reduce((acc, x) => acc + (x - mean) ** 2, 0) / Math.max(n - 1, 1)
+    );
+    const ci = 1.96 * (sd / Math.sqrt(n));
+    console.log(
+      `Suite mean:       ${(mean * 100).toFixed(1)}% ± ${(ci * 100).toFixed(1)} (95% CI, n=${repeats} per eval)`
+    );
+  }
   console.log(
     `Grade breakdown:  █ FULL=${gradeCount.FULL}  ▓ PARTIAL=${gradeCount.PARTIAL}  ░ MINIMAL=${gradeCount.MINIMAL}  · MISS=${gradeCount.MISS}`
   );
@@ -426,8 +594,79 @@ async function main() {
     const pct = ((data.totalScore / data.maxScore) * 100).toFixed(0);
     const bar = scoreBar(data.totalScore / data.maxScore, 20);
     console.log(
-      `  ${pct.padStart(3)}% ${bar} ${name} (${data.totalScore}/${data.maxScore})`
+      `  ${pct.padStart(3)}% ${bar} ${name} (${fmtScore(data.totalScore)}/${data.maxScore})`
     );
+  }
+
+  // Per-surface breakdown: does AGENTS.md hold up as well as SKILL.md?
+  const bySurface = {};
+  for (const r of allResults) {
+    const key = r.surface || 'skill';
+    if (!bySurface[key])
+      bySurface[key] = { totalScore: 0, maxScore: 0, count: 0 };
+    bySurface[key].totalScore += r.totalScore;
+    bySurface[key].maxScore += r.maxScore;
+    bySurface[key].count++;
+  }
+
+  if (Object.keys(bySurface).length > 1) {
+    console.log('\nPer-surface breakdown:');
+    for (const name of ALL_SURFACES) {
+      const data = bySurface[name];
+      if (!data) continue;
+      const label = name === 'skill' ? 'SKILL.md + refs' : 'AGENTS.md';
+      const pct = ((data.totalScore / data.maxScore) * 100).toFixed(0);
+      const bar = scoreBar(data.totalScore / data.maxScore, 20);
+      console.log(
+        `  ${pct.padStart(3)}% ${bar} ${label.padEnd(16)} (${fmtScore(data.totalScore)}/${data.maxScore}, ${data.count} evals)`
+      );
+    }
+  }
+
+  if (failedEvals.length > 0) {
+    console.log(`\n${'═'.repeat(50)}`);
+    console.log('ERRORS (not scored)');
+    console.log('═'.repeat(50));
+    for (const r of failedEvals) {
+      console.log(
+        `  ${r.skillName} #${r.evalId} [${r.surface || 'skill'}] — ${r.error}`
+      );
+    }
+    console.log(
+      '\nThese produced no usable response. Fix the cause and re-run; they are not\n' +
+        'counted as skill failures.'
+    );
+  }
+
+  // Unstable evals: a wide spread across identical runs means this eval cannot
+  // support a decision, whatever its mean happens to be.
+  if (repeats > 1) {
+    const unstable = allResults
+      .filter((r) => (r.scoreStddev || 0) > 0.05)
+      .sort((a, b) => b.scoreStddev - a.scoreStddev);
+
+    console.log(`\n${'═'.repeat(50)}`);
+    console.log('VARIANCE');
+    console.log('═'.repeat(50));
+
+    if (unstable.length === 0) {
+      console.log('All evals stable across repeats (stddev <= 0.05).');
+    } else {
+      console.log(
+        `${unstable.length} of ${allResults.length} evals vary across identical runs:\n`
+      );
+      for (const r of unstable) {
+        console.log(
+          `  ${r.skillName} #${r.evalId} [${r.surface || 'skill'}] — ` +
+            `mean ${(r.score * 100).toFixed(0)}% ± ${(r.scoreCI95 * 100).toFixed(0)}, ` +
+            `range ${(r.scoreMin * 100).toFixed(0)}–${(r.scoreMax * 100).toFixed(0)}% ` +
+            `(runs: ${r.runScores.map((x) => (x * 100).toFixed(0) + '%').join(', ')})`
+        );
+      }
+      console.log(
+        "\nA change smaller than an eval's range cannot be attributed to the change."
+      );
+    }
   }
 
   // Non-perfect expectations detail (sorted worst first)
@@ -443,7 +682,7 @@ async function main() {
       const weakExps = r.expectationResults.filter((e) => e.score < 3);
       const pct = (r.score * 100).toFixed(0);
       console.log(
-        `\n${r.score < 0.6 ? '❌' : '⚠️'}  ${r.skillName} #${r.evalId} (${pct}%)`
+        `\n${r.score < 0.6 ? '❌' : '⚠️'}  ${r.skillName} #${r.evalId} [${r.surface || 'skill'}] (${pct}%)`
       );
       console.log(`   ${r.summary}`);
       console.log(`   Prompt: ${r.prompt.slice(0, 120)}...`);
@@ -463,13 +702,22 @@ async function main() {
       timestamp: new Date().toISOString(),
       model: MODEL,
       judgeModel: JUDGE_MODEL,
+      repeats,
       totalEvals: allResults.length,
+      failedEvals: failedEvals.length,
       totalScore,
       maxScore,
       averageScore: avgScore,
       gradeDistribution: gradeCount
     },
     bySkill,
+    bySurface,
+    failures: failedEvals.map((r) => ({
+      skillName: r.skillName,
+      surface: r.surface || 'skill',
+      evalId: r.evalId,
+      error: r.error
+    })),
     results: allResults.sort((a, b) => a.score - b.score)
   };
 

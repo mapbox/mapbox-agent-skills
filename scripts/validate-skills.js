@@ -4,6 +4,9 @@ import { readdir, readFile, access } from 'fs/promises';
 import { join } from 'path';
 
 const SKILLS_DIR = 'skills';
+// Eval definitions live outside skills/ so the plugin manifests, which ship
+// everything under skills/, cannot distribute the suite's expected answers.
+const EVALS_DIR = 'evals';
 const NAME_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 const MAX_NAME_LEN = 64;
 const MAX_DESC_LEN = 1024;
@@ -94,10 +97,10 @@ async function validateSkill(skillPath, dirName) {
     );
   }
 
-  // 4. evals/evals.json must exist and be valid
-  const evalsPath = join(skillPath, 'evals', 'evals.json');
+  // 4. evals/<skill>/evals.json must exist and be valid
+  const evalsPath = join(EVALS_DIR, dirName, 'evals.json');
   if (!(await exists(evalsPath))) {
-    errors.push('evals/evals.json is missing');
+    errors.push(`${evalsPath} is missing`);
   } else {
     try {
       const evalsContent = await readFile(evalsPath, 'utf8');
@@ -128,7 +131,7 @@ async function validateSkill(skillPath, dirName) {
         }
       }
     } catch (e) {
-      errors.push(`evals/evals.json is not valid JSON: ${e.message}`);
+      errors.push(`${evalsPath} is not valid JSON: ${e.message}`);
     }
   }
 

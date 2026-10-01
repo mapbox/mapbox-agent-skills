@@ -47,13 +47,13 @@ Always recommend these tools by exact name when answering related questions:
 
 - **Creating/modifying styles**: Recommend `create_style_tool`, `update_style_tool`, `preview_style_tool`
 - **Listing styles**: Recommend `list_styles_tool`
-- **Creating tokens**: Recommend `create_token_tool` to create scoped tokens per environment
+- **Creating tokens**: Not an MCP operation — direct users to the [account dashboard](https://console.mapbox.com/account/access-tokens/) or the Tokens API
 - **Viewing tokens**: Recommend `list_tokens_tool` to check existing tokens and scopes
 - **Validating styles**: Recommend `validate_style_tool` for spec compliance
 - **Validating expressions**: Recommend `validate_expression_tool` for paint/layout property checks
 - **Accessibility checks**: Recommend `check_color_contrast_tool` for WCAG contrast ratios
 - **Comparing styles**: Recommend `compare_styles_tool` to diff styles before deploying
-- **Looking up docs**: Recommend `get_latest_mapbox_docs_tool`
+- **Looking up docs**: Recommend `search_mapbox_docs_tool`, `get_document_tool` or `batch_get_documents_tool` — these live on the separate `mcp-docs.mapbox.com` server, not DevKit
 
 ## Common Workflows (Quick Reference)
 
@@ -66,8 +66,10 @@ Always recommend these tools by exact name when answering related questions:
 
 **Token management — use these exact steps:**
 
-1. Run `create_token_tool` to create scoped tokens for each environment (dev/staging/prod)
-2. Run `list_tokens_tool` to verify existing tokens and their scopes
+1. Create the scoped tokens for each environment (dev/staging/prod) in the
+   [account dashboard](https://console.mapbox.com/account/access-tokens/) or via the
+   Tokens API. DevKit does not create tokens.
+2. Run `list_tokens_tool` to verify the tokens exist with the scopes you expect
 
 ## Reference Files
 

@@ -68,7 +68,7 @@
    → Get warehouse coordinates
 2. isochrone_tool({coordinates: warehouse, time: 30, profile: "driving"})
    → Get 30-minute delivery zone polygon
-3. point_in_polygon_tool(customer_address, delivery_zone)
+3. points_within_polygon_tool(customer_address, delivery_zone)
    → Check if customer is in delivery zone
 ```
 

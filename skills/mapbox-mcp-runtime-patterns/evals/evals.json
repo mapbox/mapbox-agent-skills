@@ -30,11 +30,11 @@
     },
     {
       "id": 3,
-      "prompt": "I'm building an AI agent with Mastra and want to check if a user's location (34.0522° N, 118.2437° W in Los Angeles) falls within a service polygon. Show me how to use point_in_polygon_tool with the Mapbox MCP server in Mastra.",
-      "expected_output": "Should show a Mastra agent that calls point_in_polygon_tool with the point as a {longitude, latitude} object. Should demonstrate MCP integration via Mastra's tool system.",
+      "prompt": "I'm building an AI agent with Mastra and want to check if a user's location (34.0522° N, 118.2437° W in Los Angeles) falls within a service polygon. Show me how to use points_within_polygon_tool with the Mapbox MCP server in Mastra.",
+      "expected_output": "Should show a Mastra agent that calls points_within_polygon_tool with the point as a {longitude, latitude} object. Should demonstrate MCP integration via Mastra's tool system.",
       "files": [],
       "expectations": [
-        "point_in_polygon_tool point parameter is a {longitude, latitude} object",
+        "points_within_polygon_tool point parameter is a {longitude, latitude} object",
         "Does NOT pass point as an array [longitude, latitude]",
         "Demonstrates Mastra agent setup with MCP tools",
         "Shows how to pass a polygon (GeoJSON format) to the tool"

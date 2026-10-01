@@ -57,15 +57,15 @@ The Mapbox MCP Server provides two categories of geospatial tools:
 | Query Type                   | Tool Choice                                           | Why                                                           |
 | ---------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
 | "Within X meters radius"     | `distance_tool` + filter                              | Simple geometric radius                                       |
-| "Within X minutes drive"     | `isochrone_tool` → `point_in_polygon_tool`            | Need routing for travel-time zone, then geometric containment |
-| "Inside this polygon"        | `point_in_polygon_tool`                               | Pure geometric containment test                               |
+| "Within X minutes drive"     | `isochrone_tool` → `points_within_polygon_tool`       | Need routing for travel-time zone, then geometric containment |
+| "Inside this polygon"        | `points_within_polygon_tool`                          | Pure geometric containment test                               |
 | "Reachable by car in 30 min" | `isochrone_tool`                                      | Requires routing + traffic                                    |
 | "Nearest to this point"      | `distance_tool` (geometric) or `matrix_tool` (routed) | Depends on definition of "nearest"                            |
 
 **Example: "Are these 200 addresses in our 30-minute delivery zone?"**
 
 1. Create zone → `isochrone_tool` (routing API - need travel time)
-2. Check addresses → `point_in_polygon_tool` (geometric - 200 instant checks)
+2. Check addresses → `points_within_polygon_tool` (geometric - 200 instant checks)
 
 **Key insight:** Routing for creating travel-time zones, geometric for containment checks
 
@@ -133,7 +133,7 @@ The Mapbox MCP Server provides two categories of geospatial tools:
 
 | Use Case                            | Approach             | Tool Choice                              |
 | ----------------------------------- | -------------------- | ---------------------------------------- |
-| Real-time geofencing (every second) | Geometric checks     | `point_in_polygon_tool` (instant)        |
+| Real-time geofencing (every second) | Geometric checks     | `points_within_polygon_tool` (instant)   |
 | Route planning (one-time)           | Full routing         | `directions_tool` or `optimization_tool` |
 | Periodic proximity checks           | Geometric distance   | `distance_tool`                          |
 | Live traffic routing                | Routing with traffic | `directions_tool` (driving-traffic)      |
@@ -177,7 +177,7 @@ Always mention `search_and_geocode_tool` as a useful companion for geocoding del
 **Optimal approach:**
 
 1. Create delivery zone → `isochrone_tool` (30-minute driving)
-2. Check each address → `point_in_polygon_tool` (200 geometric checks)
+2. Check each address → `points_within_polygon_tool` (200 geometric checks)
 
 **Why:** Routing for accurate travel-time zone, geometric for fast containment checks
 
@@ -233,7 +233,7 @@ directions_tool({
 // (Can't do this with routing APIs)
 
 // CORRECT: Pure geometric operation
-point_in_polygon_tool({ point: location, polygon: boundary });
+points_within_polygon_tool({ point: location, polygon: boundary });
 ```
 
 **Why wrong:** Routing APIs don't do geometric containment
@@ -286,7 +286,7 @@ Some problems benefit from using both geometric and routing tools:
 1. directions_tool → Get route geometry
 2. buffer_tool → Create corridor around route
 3. category_search_tool → Find POIs in corridor
-4. point_in_polygon_tool → Filter to those actually along route
+4. points_within_polygon_tool → Filter to those actually along route
 ```
 
 **Use case:** "Find gas stations along my route"
@@ -305,7 +305,7 @@ Some problems benefit from using both geometric and routing tools:
 
 ```
 1. isochrone_tool → Create travel-time zone (routing)
-2. point_in_polygon_tool → Check hundreds of addresses (geometric)
+2. points_within_polygon_tool → Check hundreds of addresses (geometric)
 ```
 
 **Use case:** "Which customers are in our delivery zone?"
@@ -325,7 +325,7 @@ When user asks a geospatial question:
 
 3. Is it a geometric/spatial operation?
    - Distance between points (straight-line) → distance_tool
-   - Point containment → point_in_polygon_tool
+   - Point containment → points_within_polygon_tool
    - Area calculation → area_tool
    - Buffer/zone → buffer_tool
    - Direction/bearing → bearing_tool
@@ -383,7 +383,7 @@ Understanding what users mean:
 - `distance_tool` - Straight-line distance between two points
 - `bearing_tool` - Compass direction from A to B
 - `midpoint_tool` - Midpoint between two points
-- `point_in_polygon_tool` - Is point inside polygon?
+- `points_within_polygon_tool` - Is point inside polygon?
 - `area_tool` - Calculate polygon area
 - `buffer_tool` - Create circular buffer/zone
 - `centroid_tool` - Geometric center of polygon

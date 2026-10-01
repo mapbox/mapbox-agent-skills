@@ -23,6 +23,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "After migrating from MapLibre to Mapbox GL JS, my geocoder plugin broke. I was using `@maplibre/maplibre-gl-geocoder`. What do I need to do?",
       "expectations": [
         "MapLibre plugins are NOT compatible with Mapbox GL JS — must use the Mapbox equivalent",

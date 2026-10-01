@@ -30,6 +30,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I'm building an AI agent with Mastra and want to check if a user's location (34.0522° N, 118.2437° W in Los Angeles) falls within a service polygon. Show me how to use point_in_polygon_tool with the Mapbox MCP server in Mastra.",
       "expected_output": "Should show a Mastra agent that calls point_in_polygon_tool with the point as a {longitude, latitude} object. Should demonstrate MCP integration via Mastra's tool system.",
       "files": [],

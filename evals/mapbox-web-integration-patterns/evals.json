@@ -29,6 +29,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I have a React component that takes a mapStyle prop so users can switch between map styles. The map works, but every time the style changes the map completely resets — the viewport jumps back to the default position, all markers disappear, and there's a visible flash. How should I fix this?\n\n```jsx\nimport { useRef, useEffect } from 'react';\nimport mapboxgl from 'mapbox-gl';\nimport 'mapbox-gl/dist/mapbox-gl.css';\n\nfunction MapView({ mapStyle }) {\n  const mapRef = useRef(null);\n  const containerRef = useRef(null);\n\n  useEffect(() => {\n    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;\n    mapRef.current = new mapboxgl.Map({\n      container: containerRef.current,\n      style: mapStyle,\n      center: [-122.4194, 37.7749],\n      zoom: 12\n    });\n    return () => mapRef.current.remove();\n  }, [mapStyle]);\n\n  return <div ref={containerRef} style={{ height: '100vh' }} />;\n}\n```",
       "expected_output": "Should explain that [mapStyle] in the useEffect dependency array causes the entire map to be destroyed and recreated from scratch on every style change — this explains the viewport reset, marker loss, and flash. The fix is the two-effect pattern: initialize the map once with an empty dependency array [], then add a separate useEffect with [mapStyle] that calls mapRef.current.setStyle(mapStyle) to update the style without destroying the map instance.",
       "files": [],

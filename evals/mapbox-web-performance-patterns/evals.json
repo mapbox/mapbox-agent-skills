@@ -30,6 +30,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I have a 15 MB GeoJSON file of US census tracts with demographic data that I want to display on a Mapbox map. Should I serve this as GeoJSON directly or convert it to vector tiles? What are the tradeoffs?",
       "expected_output": "Should identify that 15 MB is in the borderline range (5–20 MB) where vector tiles are recommended. GeoJSON at 15 MB will cause slow initial load and high memory usage, especially on mobile — the entire dataset is downloaded and parsed upfront. Vector tiles load only the visible viewport on demand, dramatically reducing initial payload. The recommendation should be to convert to vector tiles (e.g., via Mapbox Tiling Service or Tippecanoe), with the tradeoff that GeoJSON is simpler for frequently-changing data.",
       "files": [],

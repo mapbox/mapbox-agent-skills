@@ -26,6 +26,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I have a layer filter that should show only cities with a population over 1 million, but I'm getting runtime expression errors. My filter is: `['==', ['get', 'population'], 'large']`. The population field in my data is stored as a number. What's wrong and how do I prevent this kind of error in the future?",
       "expectations": [
         "Identifies the type mismatch: population is a number but the filter compares it to the string 'large'",

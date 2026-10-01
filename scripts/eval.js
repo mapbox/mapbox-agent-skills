@@ -38,6 +38,10 @@ const SKILLS_DIR = 'skills';
 // to users by the plugin manifests, and that would hand an installed agent the answer
 // key for the suite that grades it.
 const EVALS_DIR = 'evals';
+// Evals carry "split": "test" to be held out; anything unmarked is train. The point is
+// hillclimbing: if a change lifts train and leaves test flat, it fitted the eval set
+// rather than improving the skill, and should be reverted.
+const SPLITS = ['train', 'test'];
 
 /**
  * Load a skill's full content: SKILL.md + all references/*.md
@@ -365,6 +369,12 @@ async function main() {
     console.error(`Invalid --repeats. Expected a positive integer.`);
     process.exit(1);
   }
+  const splitArg = args.find((a) => a.startsWith('--split'));
+  const splitVal = splitArg?.includes('=') ? splitArg.split('=')[1] : 'all';
+  if (!['train', 'test', 'all'].includes(splitVal)) {
+    console.error(`Invalid --split=${splitVal}. Expected train, test, or all.`);
+    process.exit(1);
+  }
   const surfaceArg = args.find((a) => a.startsWith('--surface'));
   const surfaceVal = surfaceArg?.includes('=')
     ? surfaceArg.split('=')[1]
@@ -408,6 +418,7 @@ async function main() {
   console.log(`Concurrency: ${CONCURRENCY}`);
   console.log(`Surfaces: ${surfaces.join(', ')}`);
   console.log(`Repeats per eval: ${repeats}`);
+  console.log(`Split: ${splitVal}`);
   console.log(`Skills to evaluate: ${skillDirs.length}\n`);
 
   // Collect all eval tasks
@@ -433,12 +444,15 @@ async function main() {
         continue;
       }
       for (const evalItem of evalsData.evals) {
+        const split = evalItem.split === 'test' ? 'test' : 'train';
+        if (splitVal !== 'all' && split !== splitVal) continue;
         for (let run = 1; run <= repeats; run++) {
           tasks.push({
             skillName: dir.name,
             skillContent: content[surface],
             evalItem,
             surface,
+            split,
             run
           });
         }
@@ -456,10 +470,13 @@ async function main() {
   let completed = 0;
 
   async function runTask(task) {
-    const { skillName, skillContent, evalItem, surface, run } = task;
+    const { skillName, skillContent, evalItem, surface, split, run } = task;
     const runLabel = repeats > 1 ? ` run ${run}/${repeats}` : '';
     try {
-      const result = await runEval(skillName, skillContent, evalItem, surface);
+      const result = {
+        split,
+        ...(await runEval(skillName, skillContent, evalItem, surface))
+      };
       completed++;
       const pct = (result.score * 100).toFixed(0);
       const icon =
@@ -493,6 +510,7 @@ async function main() {
       return {
         skillName,
         surface,
+        split,
         evalId: evalItem.id,
         prompt: evalItem.prompt.slice(0, 80) + '...',
         error: err.message,
@@ -669,6 +687,30 @@ async function main() {
     }
   }
 
+  // Per-split breakdown. Train and test must be read separately: a change that only
+  // moves train is a change that fitted the eval set.
+  const bySplit = {};
+  for (const r of allResults) {
+    const key = r.split || 'train';
+    if (!bySplit[key]) bySplit[key] = { totalScore: 0, maxScore: 0, count: 0 };
+    bySplit[key].totalScore += r.totalScore;
+    bySplit[key].maxScore += r.maxScore;
+    bySplit[key].count++;
+  }
+
+  if (Object.keys(bySplit).length > 1) {
+    console.log('\nPer-split breakdown:');
+    for (const name of SPLITS) {
+      const data = bySplit[name];
+      if (!data) continue;
+      const pct = ((data.totalScore / data.maxScore) * 100).toFixed(0);
+      const bar = scoreBar(data.totalScore / data.maxScore, 20);
+      console.log(
+        `  ${pct.padStart(3)}% ${bar} ${name.padEnd(6)} (${fmtScore(data.totalScore)}/${data.maxScore}, ${data.count} evals)`
+      );
+    }
+  }
+
   // Non-perfect expectations detail (sorted worst first)
   const imperfect = allResults
     .filter((r) => r.score < 1)
@@ -712,6 +754,7 @@ async function main() {
     },
     bySkill,
     bySurface,
+    bySplit,
     failures: failedEvals.map((r) => ({
       skillName: r.skillName,
       surface: r.surface || 'skill',
@@ -758,6 +801,35 @@ async function main() {
       console.log(
         `Overall: ${basePct}% → ${currPct}% (${delta(overallDelta)} points)`
       );
+
+      // Train vs test movement — the signal that says whether a change generalised
+      const splitDeltas = {};
+      for (const name of SPLITS) {
+        const b = baseline.bySplit?.[name];
+        const c = bySplit[name];
+        if (!b || !c) continue;
+        splitDeltas[name] = {
+          before: (b.totalScore / b.maxScore) * 100,
+          after: (c.totalScore / c.maxScore) * 100
+        };
+      }
+
+      if (Object.keys(splitDeltas).length === 2) {
+        console.log('\nTrain vs test:');
+        for (const [name, d] of Object.entries(splitDeltas)) {
+          console.log(
+            `  ${name.padEnd(6)} ${d.before.toFixed(1)}% → ${d.after.toFixed(1)}% (${delta(+(d.after - d.before).toFixed(1))})`
+          );
+        }
+        const trainMoved = splitDeltas.train.after - splitDeltas.train.before;
+        const testMoved = splitDeltas.test.after - splitDeltas.test.before;
+        if (trainMoved > 1 && testMoved <= 0) {
+          console.log(
+            '\n⚠️  Train improved while test did not. That is the signature of a change\n' +
+              '    fitted to the eval set rather than to the skill — consider reverting.'
+          );
+        }
+      }
 
       // Per-skill diff
       const skillNames = new Set([

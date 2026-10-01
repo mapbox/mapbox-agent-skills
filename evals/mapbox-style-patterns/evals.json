@@ -28,6 +28,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I'm implementing a food delivery app and need the customer's delivery location to have a pulsing ring animation — like a sonar ping that expands outward and fades. How do I implement this with Mapbox GL JS using a circle layer (not an HTML marker)?",
       "expected_output": "Should describe the requestAnimationFrame + setPaintProperty pattern: create a second 'pulse' circle layer on the same source as the customer marker, then use a requestAnimationFrame loop that updates circle-radius (expanding from base radius to 2x) and circle-opacity (fading from ~0.3 to 0) on each frame using performance.now() to compute the animation phase. Should NOT suggest CSS animations (only work on HTML elements, not canvas layers), Mapbox Expressions (static, can't animate over time), or loading an animated GIF as a sprite.",
       "files": [],

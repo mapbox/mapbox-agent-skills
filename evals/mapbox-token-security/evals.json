@@ -29,6 +29,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I'm building a client-side web app that only needs to display a Mapbox map with custom styles and labels. What is the minimum set of scopes my public token needs? My team lead suggested also adding styles:write and tokens:write 'just in case'. Why is that wrong?",
       "expected_output": "Should recommend only the scopes needed for map display: styles:read, fonts:read, and styles:tiles. Should explain that styles:write and tokens:write are secret-token-only scopes that should never be on a client-side public token — they could allow an attacker to modify styles or create new tokens if the public token were stolen.",
       "files": [],

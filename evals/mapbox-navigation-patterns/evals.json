@@ -24,6 +24,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I'm planning a delivery route with 8 stops and want the API to figure out the most efficient order to visit them, starting from the warehouse. Which Mapbox API should I use and what parameters matter?",
       "expectations": [
         "Recommends the Optimization API (optimized-trips endpoint) rather than the plain Directions API",
@@ -53,6 +54,7 @@
     },
     {
       "id": 6,
+      "split": "test",
       "prompt": "I'm building an Android turn-by-turn navigation screen with MapboxNavigation and need to draw the route line on the map, including redrawing it correctly when the driver goes off route and a new route is calculated. What APIs should I use and how should I wire it up?",
       "expectations": [
         "Recommends `MapboxRouteLineApi` (computes draw data) plus `MapboxRouteLineView` (renders it to the style), not manually building or updating a GeoJSON line layer by hand",
@@ -82,6 +84,7 @@
     },
     {
       "id": 9,
+      "split": "test",
       "prompt": "I'm building a custom navigation UI on Android — my own map and overlays, not the SDK's drop-in screen. How do I draw the route line, and what happens if I don't respond to route changes correctly?",
       "expectations": [
         "Recommends instantiating `MapboxRouteLineApi` (computes what to draw) and `MapboxRouteLineView` (renders it to the style) explicitly, since the Android Navigation SDK has no drop-in screen that draws the route line for you",
@@ -112,6 +115,7 @@
     },
     {
       "id": 12,
+      "split": "test",
       "prompt": "I need voice guidance in my Android navigation app and I'm about to call `MapboxAudioGuidance.create()` directly in my Activity to get an instance. Is that the right approach?",
       "expectations": [
         "It is correct way, if you need instance which lifecycle you manage yourself",
@@ -141,6 +145,7 @@
     },
     {
       "id": 15,
+      "split": "test",
       "prompt": "My Android app stores the `MapboxNavigation` instance in a singleton object so any screen can access it without re-fetching it, and a couple of screens register observers on it directly as inline lambdas. Is this safe?",
       "expectations": [
         "Flags storing `MapboxNavigation` in a singleton, `Application`, static field, or `ViewModel` that survives Activity recreation as a leak risk — it must not outlive the navigation session",
@@ -172,6 +177,7 @@
     },
     {
       "id": 18,
+      "split": "test",
       "prompt": "I'm building a SwiftUI iOS navigation app and want a custom final waypoint image and custom waypoint styling. The Mapbox AdditionalExamples look UIKit-only — do I have to switch to UIKit?",
       "expectations": [
         "Says no — these are NavigationMapView APIs, so they are stack-independent even though AdditionalExamples hosts them in UIKit",

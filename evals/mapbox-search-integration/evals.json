@@ -23,6 +23,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "My app needs to geocode addresses — users type a US address and I get back coordinates. I'm looking at the Mapbox Geocoding API. Should I use that or the Search Box API?",
       "expectations": [
         "Recommends Search Box API as the default choice for interactive address search",

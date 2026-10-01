@@ -22,6 +22,7 @@
     },
     {
       "id": 3,
+      "split": "test",
       "prompt": "I have GPS coordinates (40.7484, -73.9857) from a user's device and need to show them a human-readable address. Which tool should I use and how?",
       "expectations": [
         "Recommends reverse_geocode_tool for converting coordinates to addresses",

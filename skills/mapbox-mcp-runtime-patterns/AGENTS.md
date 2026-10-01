@@ -10,11 +10,25 @@ Runtime server providing geospatial tools to AI agents via Model Context Protoco
 
 ## Tools Available
 
-| Category              | Tools                                                                                                                                                                                            | Cost            |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
-| **Offline (Turf.js)** | `distance_tool`, `bearing_tool`, `midpoint_tool`, `points_within_polygon_tool`, `area_tool`, `buffer_tool`, `centroid_tool`, `bbox_tool`, `simplify_tool`                                        | Free, instant   |
-| **Mapbox APIs**       | `directions_tool`, `search_and_geocode_tool`, `reverse_geocode_tool`, `category_search_tool`, `isochrone_tool`, `matrix_tool`, `static_map_image_tool`, `map_matching_tool`, `optimization_tool` | API costs apply |
-| **Utility**           | `version_tool`, `category_list_tool`                                                                                                                                                             | Free            |
+| Category            | Tools                                                                                                                                                                                                                                                                                                              | Cost            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
+| **Local (Turf.js)** | `area_tool`, `bbox_tool`, `bearing_tool`, `buffer_tool`, `centroid_tool`, `convex_tool`, `destination_tool`, `difference_tool`, `distance_tool`, `intersect_tool`, `length_tool`, `midpoint_tool`, `nearest_point_tool`, `nearest_point_on_line_tool`, `points_within_polygon_tool`, `simplify_tool`, `union_tool` | Free, instant   |
+| **Mapbox APIs**     | `directions_tool`, `search_and_geocode_tool`, `reverse_geocode_tool`, `category_search_tool`, `place_details_tool`, `ground_location_tool`, `isochrone_tool`, `matrix_tool`, `map_matching_tool`, `optimization_tool`, `render_map_tool`, `static_map_image_tool`                                                  | API costs apply |
+| **Utility**         | `resource_reader_tool`                                                                                                                                                                                                                                                                                             | Free            |
+
+Verify against `tools/list` for your server version — this set changes. Notes on the
+current one:
+
+- **`render_map_tool` is the preferred way to display a map.** It renders an interactive
+  GL JS map and consumes the `mapboxRender.ref` URI that other tools return in
+  `structuredContent`. `static_map_image_tool` is still the right call when you
+  specifically need a static PNG or JPEG.
+- **`category_list_tool` is deprecated** in favour of `resource_reader_tool` with the
+  `mapbox://categories` URI.
+- **`ground_location_tool`** answers "what is near here" in one call; do not pair it with
+  `reverse_geocode_tool` or a category search for the same question.
+- **`place_details_tool`** takes a `mapbox_id` from an earlier search to fetch photos,
+  hours, ratings and contact details.
 
 ## Coordinate Formats
 
@@ -290,19 +304,19 @@ Turf.js   Mapbox APIs
 
 ## Tool Selection Strategy
 
-| Need                    | Use                                  | Reason                |
-| ----------------------- | ------------------------------------ | --------------------- |
-| Distance calculation    | distance_tool (offline)              | Free, instant         |
-| Point in polygon        | points_within_polygon_tool (offline) | Free, instant         |
-| Bounding box            | bbox_tool (offline)                  | Free, instant         |
-| Simplify geometry       | simplify_tool (offline)              | Free, instant         |
-| Directions with traffic | directions_tool (API)                | Real-time data        |
-| Geocoding               | reverse_geocode_tool (API)           | Requires database     |
-| Isochrones              | isochrone_tool (API)                 | Complex calculation   |
-| Multi-stop optimization | optimization_tool (API)              | Complex calculation   |
-| GPS trace matching      | map_matching_tool (API)              | Requires routing data |
-| Bearing/midpoint        | bearing_tool/midpoint_tool (offline) | Free, instant         |
-| POI categories          | category_list_tool (utility)         | Metadata lookup       |
+| Need                    | Use                                          | Reason                |
+| ----------------------- | -------------------------------------------- | --------------------- |
+| Distance calculation    | distance_tool (offline)                      | Free, instant         |
+| Point in polygon        | points_within_polygon_tool (offline)         | Free, instant         |
+| Bounding box            | bbox_tool (offline)                          | Free, instant         |
+| Simplify geometry       | simplify_tool (offline)                      | Free, instant         |
+| Directions with traffic | directions_tool (API)                        | Real-time data        |
+| Geocoding               | reverse_geocode_tool (API)                   | Requires database     |
+| Isochrones              | isochrone_tool (API)                         | Complex calculation   |
+| Multi-stop optimization | optimization_tool (API)                      | Complex calculation   |
+| GPS trace matching      | map_matching_tool (API)                      | Requires routing data |
+| Bearing/midpoint        | bearing_tool/midpoint_tool (offline)         | Free, instant         |
+| POI categories          | resource_reader_tool (`mapbox://categories`) | Metadata lookup       |
 
 ## Performance Optimization
 
@@ -452,8 +466,8 @@ const apiOps = [
 
 // Utility tools
 const utilityOps = [
-  'version_tool', // Server version info
-  'category_list_tool' // Available POI categories
+  // category_list_tool is deprecated: read mapbox://categories instead
+  'resource_reader_tool' // MCP resources, e.g. mapbox://categories
 ];
 
 function chooseTool(operation: string, needsRealtime: boolean) {

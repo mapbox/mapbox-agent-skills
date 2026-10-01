@@ -124,10 +124,13 @@ Configure in Claude Desktop config:
 
 ### Token Management
 
-| Tool                  | Purpose               | Example Use                  |
-| --------------------- | --------------------- | ---------------------------- |
-| **create_token_tool** | Generate access token | "Create token for localhost" |
-| **list_tokens_tool**  | Show all tokens       | "List my tokens and scopes"  |
+| Tool                 | Purpose         | Example Use                 |
+| -------------------- | --------------- | --------------------------- |
+| **list_tokens_tool** | Show all tokens | "List my tokens and scopes" |
+
+Creating and rotating tokens is not an MCP operation — use the
+[Mapbox account dashboard](https://console.mapbox.com/account/access-tokens/) or the
+Tokens API. `list_tokens_tool` is for inspecting what already exists.
 
 ### Validation & Analysis
 
@@ -156,9 +159,14 @@ Configure in Claude Desktop config:
 
 ### Documentation
 
-| Tool                            | Purpose            | Example Use                       |
-| ------------------------------- | ------------------ | --------------------------------- |
-| **get_latest_mapbox_docs_tool** | Access Mapbox docs | "What are fill layer properties?" |
+Documentation lookup is a separate MCP server — `https://mcp-docs.mapbox.com/mcp`, not
+the DevKit endpoint:
+
+| Tool                         | Purpose                 | Example Use                       |
+| ---------------------------- | ----------------------- | --------------------------------- |
+| **search_mapbox_docs_tool**  | Search the docs         | "What are fill layer properties?" |
+| **get_document_tool**        | Fetch one doc page      | "Get the style-spec layers page"  |
+| **batch_get_documents_tool** | Fetch several doc pages | "Get these three API pages"       |
 
 ## Common Workflows
 

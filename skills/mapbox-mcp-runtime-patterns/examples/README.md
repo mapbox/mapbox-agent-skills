@@ -219,8 +219,8 @@ All examples connect to the hosted Mapbox MCP Server at `https://mcp.mapbox.com/
 
 **Utility Tools**:
 
-- `version_tool`: Get MCP server version
-- `category_list_tool`: List available POI categories
+- `resource_reader_tool`: Read an MCP resource by URI, e.g. `mapbox://categories` for the
+  POI category list (`category_list_tool` is deprecated in favour of this)
 
 ## Testing Examples
 

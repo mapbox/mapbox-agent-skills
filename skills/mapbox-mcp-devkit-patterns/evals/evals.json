@@ -15,7 +15,7 @@
       "id": 2,
       "prompt": "I'm working on a Mapbox style and I need to create separate tokens for development and production environments with different permission scopes. How can I do this with the MCP DevKit?",
       "expectations": [
-        "Recommends create_token_tool to create scoped tokens for each environment",
+        "Directs the user to create the tokens in the Mapbox account dashboard or Tokens API, since DevKit MCP has no token-creation tool",
         "Development token: broader scopes (styles:read, styles:write, fonts:read, etc.)",
         "Production token: minimal scopes — only what the app needs (typically styles:read, fonts:read, datasets:read)",
         "Recommends list_tokens_tool to view existing tokens and their scopes"

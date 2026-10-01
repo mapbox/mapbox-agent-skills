@@ -1,6 +1,6 @@
 # Web: Directions API Patterns
 
-Coordinates are always `longitude,latitude` order. Default to the `driving-traffic` profile — it factors in live traffic, congestion, and incidents. Use `driving` only when you need `arrive_by` (not supported by `driving-traffic`); both profiles support `depart_at`.
+Coordinates are always `longitude,latitude` order. Default to the `driving-traffic` profile — it factors in live traffic, congestion, and incidents. Keep `driving-traffic` for a future `depart_at` as well: it routes on historical travel data for the requested time and gently mixes in live traffic as `depart_at` approaches the present, so a future departure is not a reason to drop to `driving`. Both profiles accept `depart_at`. Switch to `driving` only when you need `arrive_by`, which `driving-traffic` does not support.
 
 ## Basic Route Display
 

@@ -6,7 +6,21 @@ Advanced location patterns beyond basic user location display (covered in SKILL.
 
 ## Camera Follow User Location
 
-To make the camera follow the user's location as they move:
+**SwiftUI — use `Viewport.followPuck`:**
+
+```swift
+struct TrackingView: View {
+    @State private var viewport: Viewport = .followPuck(zoom: 16, bearing: .heading, pitch: 45)
+
+    var body: some View {
+        Map(viewport: $viewport) {
+            Puck2D(bearing: .heading)
+        }
+    }
+}
+```
+
+**UIKit:**
 
 ```swift
 import Combine
@@ -15,25 +29,15 @@ class MapViewController: UIViewController {
     private var mapView: MapView!
     private var cancelables = Set<AnyCancellable>()
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupMap()
-        setupLocationTracking()
-    }
-
     func setupLocationTracking() {
-        // Request permissions
         let locationManager = CLLocationManager()
         locationManager.requestWhenInUseAuthorization()
 
-        // Show user location
         mapView.location.options.puckType = .puck2D()
         mapView.location.options.puckBearingEnabled = true
 
-        // Follow user location with camera
         mapView.location.onLocationChange.observe { [weak self] locations in
-            guard let self = self, let location = locations.last else { return }
-
+            guard let self, let location = locations.last else { return }
             self.mapView.camera.ease(to: CameraOptions(
                 center: location.coordinate,
                 zoom: 15,
@@ -45,17 +49,23 @@ class MapViewController: UIViewController {
 }
 ```
 
+---
+
 ## Get Current Location Once
 
 ```swift
+// UIKit
 if let location = mapView.location.latestLocation {
     let coordinate = location.coordinate
-    print("User at: \(coordinate.latitude), \(coordinate.longitude)")
+    mapView.camera.ease(to: CameraOptions(center: coordinate, zoom: 14), duration: 1.0)
+}
 
-    // Move camera to user location
-    mapView.camera.ease(to: CameraOptions(
-        center: coordinate,
-        zoom: 14
-    ), duration: 1.0)
+// SwiftUI — fly to user location on button tap
+Button("My Location") {
+    if let location = /* inject LocationManager */ {
+        withViewportAnimation(.fly) {
+            viewport = .camera(center: location.coordinate, zoom: 14)
+        }
+    }
 }
 ```

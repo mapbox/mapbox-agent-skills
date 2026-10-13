@@ -152,6 +152,8 @@
     "viewports",
     "webgl",
     "xcconfig",
+    "xcodeproj",
+    "xcodegen",
     "xcworkspace",
     "xhdpi",
     "xxhdpi",

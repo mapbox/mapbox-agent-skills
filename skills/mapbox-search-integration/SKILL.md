@@ -131,6 +131,15 @@ Based on discovery answers, recommend the right product:
 - **Search SDK for iOS** - Native iOS integration
 - **Search SDK for Android** - Native Android integration
 
+### Custom UI (any framework)
+
+When the user needs full control over the dropdown UI (custom styling, keyboard navigation, their own component library):
+
+- **Recommended:** Use **Search JS Core** (`@mapbox/search-js-core`) — it wraps the Search Box API and handles session tokens, debouncing, and response parsing automatically while letting you own the UI entirely.
+- **Direct API calls:** If the user insists on calling the Search Box API REST endpoints directly, **session tokens are required**. Generate one UUID per search session (a session starts on the first keystroke and ends on `retrieve`), pass it as `session_token` on every `suggest` and `retrieve` request. Without session tokens, each suggest keystroke is billed as a separate request instead of the cheaper session rate.
+
+---
+
 ### Geocoding API (SPECIALIZED)
 
 **Use ONLY when:**

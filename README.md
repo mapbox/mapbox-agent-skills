@@ -74,6 +74,14 @@ npx skills add mapbox/mapbox-agent-skills --list
 
 > **💡 Pro tip:** These skills work great on their own, but they're even more powerful when combined with the [Mapbox MCP DevKit Server](https://github.com/mapbox/mcp-devkit-server). Skills provide the expertise (performance patterns, design principles), while MCP tools provide the actions (create styles, generate previews). Together, they enable complete workflows from design to deployment.
 
+### Neotask
+
+Install the Mapbox skills listed on [Neotask Construct](https://construct.neotask.ai/u/mapbox) by name:
+
+```bash
+neotask construct install mapbox-web-performance-patterns
+```
+
 ## What are Agent Skills?
 
 Agent Skills are folders containing instructions and resources that AI assistants (like Claude Code, Cursor, GitHub Copilot) can discover and use to perform tasks more effectively. Unlike tools (which provide actions) or prompts (which provide workflows), skills provide **domain expertise** - the "know-how" that helps AI make informed decisions.

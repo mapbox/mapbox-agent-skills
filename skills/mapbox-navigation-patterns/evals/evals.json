@@ -179,6 +179,16 @@
         "Does not tell the user to abandon SwiftUI or rebuild the whole app in UIKit",
         "May contrast true NVC chrome (top/bottom bars, styled UI elements, embed NavigationViewController) as the things that are drop-in UIKit UI"
       ]
+    },
+    {
+      "id": 19,
+      "prompt": "My delivery app calls the Directions API for the same warehouse-to-customer routes over and over. Can I cache the Directions responses in Redis for an hour to cut my bill? I'm on a pay-as-you-go account.",
+      "expectations": [
+        "Treats caching Directions responses as a licensing question rather than endorsing it outright, and points the user at the Mapbox terms for what their plan permits",
+        "Does NOT provide a code sample that stores Directions responses with a TTL",
+        "Recommends reducing request volume instead: in-flight request deduplication, debouncing, and the Matrix API for many-to-many travel times",
+        "Points to the Mapbox Terms of Service or Product Terms, or suggests contacting Mapbox Sales about terms that permit storage"
+      ]
     }
   ]
 }

@@ -328,23 +328,27 @@ override fun onStop() {
 
 ## Best Practices
 
-### Route Caching
+### Reducing Directions API Calls
+
+Storing or caching Mapbox API responses is restricted — check the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos) and [Product Terms](https://www.mapbox.com/legal/product-terms) for what your plan
+permits. Reduce request volume without retaining responses: deduplicate in-flight
+requests, debounce input, use `overview=simplified`, and prefer the Matrix API for
+many-to-many travel times.
 
 ```javascript
-const cache = new Map();
+const inFlight = new Map();
 
-async function getCachedRoute(start, end) {
+function getRouteOnce(start, end) {
   const key = `${start}-${end}`;
-  const cached = cache.get(key);
+  let pending = inFlight.get(key);
 
-  if (cached && Date.now() - cached.time < 5 * 60 * 1000) {
-    return cached.route;
+  if (!pending) {
+    // Entry is dropped as soon as the request settles — no response is kept.
+    pending = getRoute(start, end).finally(() => inFlight.delete(key));
+    inFlight.set(key, pending);
   }
 
-  // Fetch new route
-  const route = await getRoute(start, end);
-  cache.set(key, { route, time: Date.now() });
-  return route;
+  return pending;
 }
 ```
 

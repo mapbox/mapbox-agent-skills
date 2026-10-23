@@ -11,13 +11,18 @@
 1. User enters "Seattle"
 2. Geocode "Seattle" → (lng, lat)
 3. Use those coordinates for multiple category searches
-4. Cache coordinates for session
+4. Reuse those coordinates for the rest of the session
 
 // BAD
 1. Geocode "Seattle" for coffee search
 2. Geocode "Seattle" again for restaurant search
 3. Geocode "Seattle" again for hotel search
 ```
+
+> Temporary (default) geocoding results are for use during the current user session
+> only — reuse them in memory while the session lasts, but don't persist them. Storing
+> coordinates across sessions requires [permanent geocoding](https://docs.mapbox.com/help/dive-deeper/understand-temporary-vs-permanent-geocoding/)
+> (`permanent=true`).
 
 ### Set Appropriate Limits
 

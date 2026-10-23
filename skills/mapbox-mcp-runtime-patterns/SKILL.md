@@ -173,7 +173,7 @@ Detailed integration patterns and production guidance are organized into referen
 - **Use Cases** -- Real Estate, Food Delivery, Travel Planning examples
   Load: `references/use-cases.md`
 
-- **Production Patterns** -- Caching, batch operations, tool descriptions, error handling, security, rate limiting, testing
+- **Production Patterns** -- Request deduplication, batch operations, tool descriptions, error handling, security, rate limiting, testing
   Load: `references/production.md`
 
 ## Resources

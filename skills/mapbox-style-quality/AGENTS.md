@@ -259,7 +259,7 @@ if (!map.getSource('source')) {
 - Simplify geometry
 - Use vector tiles
 - Optimize images
-- Cache data
+- Load your own GeoJSON once and share the source across layers
 
 ## Style Optimization Workflow
 

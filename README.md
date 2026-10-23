@@ -164,7 +164,7 @@ Guides AI assistants through the entire search integration process: asking disco
 - ✅ Error handling (all failure cases)
 - ✅ Mobile UX (touch targets, keyboards)
 - ✅ Accessibility (keyboard nav, ARIA)
-- ✅ Caching strategies (high-volume apps)
+- ✅ Reducing API calls (session tokens, debouncing, request deduplication)
 - ✅ Token security (proper scoping)
 
 [View skill →](./skills/mapbox-search-integration/SKILL.md)
@@ -581,7 +581,7 @@ Covers web routing, turn-by-turn navigation, multi-stop routes, optimization, tr
 - Navigation SDK for iOS (SwiftUI + wrapped NavigationViewController default; Core custom UI opt-in)
 - Navigation SDK for Android (NavigationView, custom UI, route progress)
 - Traffic-aware routing with congestion data
-- Route caching and performance optimization
+- Reducing redundant Directions requests and performance optimization
 - Error handling and best practices
 
 **Covers all platforms:**
@@ -714,7 +714,7 @@ Patterns for integrating the [Mapbox MCP Server](https://github.com/mapbox/mcp-s
 - Integrating geospatial capabilities into AI agents (Pydantic AI, CrewAI, Smolagents, LangChain, Mastra)
 - Building location-aware applications (real estate, food delivery, travel planning)
 - Choosing between offline Turf.js tools vs. Mapbox API tools
-- Optimizing geospatial operations (caching, batching, tool selection)
+- Optimizing geospatial operations (batching, offline tools, tool selection)
 - Building Zillow-style, DoorDash-style, or TripAdvisor-style AI features
 
 **Key topics:**

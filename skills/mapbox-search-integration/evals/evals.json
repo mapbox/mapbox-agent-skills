@@ -38,7 +38,7 @@
         "States that temporary (default) geocoding results are for use during the current user session only and may not be stored",
         "Identifies permanent geocoding (`permanent=true`) as the supported way to store coordinates in a database, and notes it is priced differently",
         "Does NOT present an LRU or TTL cache of default geocoding results as the solution",
-        "Distinguishes in-session use (holding results in component state to render them) from storage (localStorage, IndexedDB, or a server-side database)",
+        "May distinguish in-session use (holding results in component state to render them) from storage (localStorage, IndexedDB, or a server-side database)",
         "May mention session tokens and debouncing as ways to reduce request volume"
       ]
     }

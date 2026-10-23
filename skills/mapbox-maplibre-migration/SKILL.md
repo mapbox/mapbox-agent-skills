@@ -1,6 +1,6 @@
 ---
 name: mapbox-maplibre-migration
-description: Guide for migrating from MapLibre GL JS to Mapbox GL JS, covering API compatibility, token setup, style configuration, and the benefits of Mapbox's official support and ecosystem
+description: Compare Mapbox GL JS and MapLibre GL JS, and migrate from MapLibre to Mapbox. Use when choosing between Mapbox and MapLibre or between a commercial and an open-source web map renderer, when weighing licensing, tile sources, support, and bundled APIs such as geocoding and directions, or when moving MapLibre code to Mapbox. Covers the fork history, a side-by-side comparison, ~95% API compatibility, token setup, and style configuration.
 ---
 
 # MapLibre to Mapbox Migration Skill

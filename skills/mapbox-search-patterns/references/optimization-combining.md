@@ -68,21 +68,20 @@
    → Get warehouse coordinates
 2. isochrone_tool({coordinates: warehouse, time: 30, profile: "driving"})
    → Get 30-minute delivery zone polygon
-3. point_in_polygon_tool(customer_address, delivery_zone)
+3. points_within_polygon_tool(customer_coordinates, delivery_zone)
    → Check if customer is in delivery zone
 ```
 
-### Search → Static Map Visualization
+### Search → Map Visualization
 
 ```
 1. category_search_tool({category: "restaurant", limit: 10})
-   → Get restaurant coordinates
-2. static_map_image_tool({
-     markers: restaurant_coordinates,
-     auto_fit: true
-   })
-   → Create map image showing all restaurants
+   → Get restaurants, plus a mapboxRender.ref
+2. render_map_tool({payload_refs: [<that ref>]})
+   → Interactive map showing all restaurants
 ```
+
+Use `static_map_image_tool` instead only when the user explicitly asks for an image file.
 
 ## Handling No Results
 

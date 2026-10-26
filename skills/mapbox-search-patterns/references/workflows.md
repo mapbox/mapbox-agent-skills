@@ -88,7 +88,7 @@ Use reverse_geocode_tool:
 
 ```
 1. Get route geometry from directions_tool
-2. Create bbox around route (use bounding_box_tool)
+2. Create bbox around route (use bbox_tool on the route geometry)
 3. Use category_search_tool:
    - category: "gas_station"
    - bbox: route bounding box

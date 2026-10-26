@@ -108,10 +108,10 @@ Returns a polygon showing what's reachable within each time threshold.
 #### Step 5 — Visual grounding (optional)
 
 ```
-static_map_image_tool(longitude, latitude, zoom: 14)
+render_map_tool(payload_refs: [<mapboxRender.ref from each result above>])
 ```
 
-Returns a map image that can be included in the response for visual context.
+Shows the places, routes and areas you found on one interactive map. Pass each result's `mapboxRender.ref` unchanged. Use `static_map_image_tool` only when the user explicitly asks for an image file.
 
 ## Grounded Response Structure
 

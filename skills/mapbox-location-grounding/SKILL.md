@@ -27,7 +27,7 @@ Ground responses when the user asks about:
 
 ### Preferred: single tool call
 
-If `ground_location_tool` is available, use it — it handles reverse geocoding, POI search, place details enrichment, isochrone, and a static map image in one call:
+If `ground_location_tool` is available, use it — it handles reverse geocoding, POI search, place details enrichment and isochrone in one call:
 
 ```
 ground_location_tool(
@@ -43,7 +43,7 @@ Returns:
 - Neighborhood/place name from reverse geocoding
 - Nearby POIs with distances, ratings, price levels, and popularity (when available)
 - Travel-time reachability from isochrone
-- A static map image for visual context
+- A `mapboxRender.ref`: pass it to `render_map_tool` to show the results on a map
 - Citations for all data sources
 
 Do not call `reverse_geocode_tool`, `category_search_tool`, `place_details_tool`, or `isochrone_tool` separately — they are already composed inside this tool.

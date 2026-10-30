@@ -1,0 +1,42 @@
+{
+  "skill_name": "mapbox-reachability-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "What coffee shops are within a 10 minute walk of the Ferry Building in San Francisco?",
+      "expected_output": "Should run the isochrone, bbox, category search, point-in-polygon filter flow and show the area plus the kept places on one map.",
+      "files": [],
+      "expectations": [
+        "Calls isochrone_tool with profile mapbox/walking, contours_minutes [10] and polygons true",
+        "Calls bbox_tool on the isochrone polygon and passes that box to category_search_tool with category cafe",
+        "Calls points_within_polygon_tool to drop results outside the walk area",
+        "Calls render_map_tool with the isochrone ref and markers for only the kept places (not the search ref)",
+        "States how many places are within reach and names the mode and time"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Which hospitals can I reach within 20 minutes by car from 47.6062, -122.3321?",
+      "expected_output": "Should use a driving isochrone rather than a straight-line radius, then search and filter hospitals inside it.",
+      "files": [],
+      "expectations": [
+        "Calls isochrone_tool with a driving profile and contours_minutes [20]",
+        "Does not use a straight-line distance radius in place of the isochrone",
+        "Searches with category hospital inside the isochrone's bounding box",
+        "Filters the results with points_within_polygon_tool before answering"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Find pharmacies within a 5 minute walk of my hotel at 350 5th Ave, New York.",
+      "expected_output": "Should geocode the address first, then run the reachability flow. If no pharmacy is inside, should say so plainly and offer a longer time or another mode.",
+      "files": [],
+      "expectations": [
+        "Calls search_and_geocode_tool to get the hotel's coordinates first",
+        "Calls isochrone_tool with mapbox/walking and contours_minutes [5]",
+        "If nothing is inside the area, says so plainly and suggests a longer time or another mode",
+        "Does not list places from training data"
+      ]
+    }
+  ]
+}

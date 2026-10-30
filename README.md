@@ -746,12 +746,60 @@ Teaches AI assistants how to ground location-aware responses in live Mapbox data
 
 **Key topics:**
 
-- Preferring `ground_location_tool` for one-call grounding (reverse geocoding, POI search, place details, isochrone, static map)
+- Preferring `ground_location_tool` for one-call grounding (reverse geocoding, POI search, place details, isochrone)
 - Manual tool composition fallback when `ground_location_tool` isn't available
 - Category/subcategory query conventions vs. unsupported attribute preferences
 - Citing data sources in the final response
 
 [View skill →](./skills/mapbox-location-grounding/SKILL.md)
+
+---
+
+### 🗺️ mapbox-map-display
+
+**Show Mapbox MCP Server tool results on an interactive map with `render_map_tool`.**
+
+Teaches the model to hand tool results to the [Mapbox MCP Server](https://github.com/mapbox/mcp-server)'s `render_map_tool` by reference, so maps show the real data without copying coordinates into the conversation. Also served by the Mapbox MCP Server itself over the MCP Skills extension.
+
+**Use when:**
+
+- The user wants to see places, routes, drive-time areas or other tool results on a map
+- One question needs several results on one map (a route plus places along it)
+- Only some of a search's results should be shown
+
+**Not for:** building a web page or app. Write Mapbox GL JS code for that (see mapbox-web-integration-patterns).
+
+**Key topics:**
+
+- Passing `mapboxRender.ref` values unchanged in `payload_refs`
+- Combining several refs on one map, with a short summary
+- Hand-placed markers with `mapbox_id` for a filtered subset
+- Restyling the base map (night lighting, satellite)
+- When `static_map_image_tool` is right instead (only for an explicit image file)
+
+[View skill →](./skills/mapbox-map-display/SKILL.md)
+
+---
+
+### ⏱️ mapbox-reachability-analysis
+
+**Find places within a travel time or distance of a location and map them with the reachable area.**
+
+Answers "what's within a 10 minute walk?" with the area a person can actually reach, not a straight-line radius, using the [Mapbox MCP Server](https://github.com/mapbox/mcp-server)'s tools. Also served by the Mapbox MCP Server itself over the MCP Skills extension.
+
+**Use when:**
+
+- Finding places of a kind within a walk, drive or cycle of a location
+- Site selection and coverage questions (which stores are within 20 minutes of a warehouse)
+
+**Key topics:**
+
+- `isochrone_tool` → `bbox_tool` → `category_search_tool` → `points_within_polygon_tool` → `render_map_tool`
+- Dropping results that fall in the bounding box's corners
+- Answering with counts, mode and time, and what to do when the 25-result cap is hit
+- `matrix_tool` for exact travel times to each place
+
+[View skill →](./skills/mapbox-reachability-analysis/SKILL.md)
 
 ---
 

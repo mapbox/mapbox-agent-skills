@@ -1,0 +1,49 @@
+{
+  "skill_name": "mapbox-map-display",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Find coffee shops near Union Square in San Francisco and show them on a map.",
+      "expected_output": "Should search with category_search_tool or search_and_geocode_tool, then call render_map_tool with the search result's mapboxRender.ref in payload_refs, copied unchanged. Should not copy coordinates into markers or layers.",
+      "files": [],
+      "expectations": [
+        "Calls render_map_tool, not static_map_image_tool",
+        "Passes the search result's mapboxRender.ref in payload_refs exactly as returned",
+        "Does not rebuild the places as hand-written markers or layers when a ref exists",
+        "Does not set camera (the map fits the data itself)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Show me the driving route from Seattle to Portland and the gas stations along the way on one map.",
+      "expected_output": "Should get the route with directions_tool and the stations with category_search_tool, then make one render_map_tool call with both refs in payload_refs and a short summary.",
+      "files": [],
+      "expectations": [
+        "Calls render_map_tool once, with both the directions ref and the search ref in payload_refs",
+        "Does not make one map per result",
+        "Any summary is short (about 40 characters or less)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Make me a PNG map of downtown Chicago that I can paste into an email.",
+      "expected_output": "The user explicitly wants an image file, so static_map_image_tool is the right tool here, not render_map_tool.",
+      "files": [],
+      "expectations": [
+        "Calls static_map_image_tool",
+        "Does not call render_map_tool for this request"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Show the restaurants you found near the Ferry Building on a map, but only the three with outdoor seating.",
+      "expected_output": "Should show a filtered subset as hand-placed markers, each with id set to the place's mapbox_id and name set to its name, instead of passing the full search ref.",
+      "files": [],
+      "expectations": [
+        "Calls render_map_tool with markers for only the three chosen places",
+        "Sets each marker's id to the place's mapbox_id and name to its name",
+        "Does not pass the full search ref, which would show every result"
+      ]
+    }
+  ]
+}

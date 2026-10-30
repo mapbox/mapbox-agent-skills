@@ -767,6 +767,8 @@ Teaches the model to hand tool results to the [Mapbox MCP Server](https://github
 - One question needs several results on one map (a route plus places along it)
 - Only some of a search's results should be shown
 
+**Not for:** building a web page or app. Write Mapbox GL JS code for that (see mapbox-web-integration-patterns).
+
 **Key topics:**
 
 - Passing `mapboxRender.ref` values unchanged in `payload_refs`

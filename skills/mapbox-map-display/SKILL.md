@@ -1,12 +1,20 @@
 ---
 name: mapbox-map-display
-description: Use this skill when the user wants to see Mapbox MCP Server tool results on a map. Covers passing refs to render_map_tool, combining several results on one map, hand-placed markers, restyling the base map, and when a static image is the right call instead.
+description: Use this skill when the user wants to see Mapbox MCP Server tool results on a map in the conversation. Covers passing refs to render_map_tool, combining several results on one map, hand-placed markers, restyling the base map, and when a static image is the right call instead. Not for building a web page or app; write Mapbox GL JS code for that.
 ---
 
 # Showing results on a Mapbox map
 
 Use `render_map_tool` whenever the user wants to see something on a map. It
 renders a live, interactive Mapbox GL JS map inline in the conversation.
+
+## When not to use it
+
+`render_map_tool` shows a map in this conversation only. When the user is
+building a web page or app, write Mapbox GL JS code instead (see the
+mapbox-web-integration-patterns skill) and get a public token for it with
+`list_public_tokens_tool`. A preview with `render_map_tool` is fine for
+checking the data along the way, but it isn't the deliverable.
 
 ## Pass refs, not geometry
 

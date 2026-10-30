@@ -169,7 +169,7 @@ isochrone_tool(
 )
 ```
 
-Returns a polygon showing the area reachable within each time threshold. Combine with `category_search_tool` or `ground_location_tool` to answer "what restaurants are within a 10-minute walk?" — use the isochrone to define the boundary, then search within it.
+Returns a polygon showing the area reachable within each time threshold. To answer "what restaurants are within a 10-minute walk?", use the mapbox-reachability-analysis skill: it keeps only places inside that polygon.
 
 ### Multi-location travel time matrix
 
@@ -191,15 +191,9 @@ Returns a matrix of durations and distances between every source/destination pai
 
 ### Proximity search with routing context
 
-For "find [category] within X minutes of [location]":
+For "find [category] within X minutes of [location]", use the mapbox-reachability-analysis skill. `ground_location_tool` fetches nearby POIs and travel-time reachability side by side but doesn't filter one by the other: its POIs are the closest matches, not the ones inside the reachable area, so a place across a river or highway can show up as "within a 10-minute walk". The reachability skill keeps only places inside the isochrone polygon.
 
-1. Geocode the origin if needed: `search_and_geocode_tool(address)`
-2. Get the reachable area: `isochrone_tool(coordinates, profile, contours_minutes)`
-3. Search for POIs: `ground_location_tool(longitude, latitude, query: "category")` — the isochrone
-   contours tell the user what's within each time band
-
-Or more directly: `ground_location_tool` returns both nearby POIs and isochrone reachability in one
-call, which covers most proximity + routing use cases without additional composition.
+Use `ground_location_tool` for "what's near here?" and neighborhood context, where a straight-line nearby list is the right answer.
 
 ### Example routing response
 

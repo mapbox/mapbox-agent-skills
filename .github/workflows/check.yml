@@ -32,6 +32,12 @@ jobs:
       - name: Validate skills
         run: npm run validate:skills
 
+      - name: Check plugin manifests match plugin.config.json
+        run: npm run build:plugin -- --check
+
+      - name: Validate plugin packages
+        run: npm run validate:plugin
+
       - name: Check links
         uses: lycheeverse/lychee-action@v2
         with:

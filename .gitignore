@@ -19,3 +19,9 @@ evals/latest.json
 
 
 .env
+
+# Staging/local plugin test packages (npm run build:plugin -- --env staging|local)
+dist/
+
+# Non-public server URLs (staging) for plugin test builds
+plugin.config.local.json

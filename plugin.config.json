@@ -1,0 +1,91 @@
+{
+  "$comment": "Single source of truth for every Mapbox plugin package. Do not hand-edit the generated manifests (.claude-plugin/, .plugin/, .mcp.json, .agents/plugins/marketplace.json, plugins/mapbox/.codex-plugin/plugin.json); edit this file and run npm run build:plugin. Staging URLs are not committed: put them in the gitignored plugin.config.local.json. See docs/prerelease-qa.md.",
+  "name": "mapbox",
+  "version": "1.1.0",
+  "description": "Mapbox skills and MCP servers for building location-aware applications with AI. Includes geospatial tools, style management, search, routing, migration, and patterns for web, iOS, Android, Flutter, and AI agent frameworks.",
+  "author": {
+    "name": "Mapbox",
+    "email": "locationai@mapbox.com",
+    "url": "https://www.mapbox.com"
+  },
+  "homepage": "https://github.com/mapbox/mapbox-agent-skills",
+  "repository": "https://github.com/mapbox/mapbox-agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "mapbox",
+    "maps",
+    "geospatial",
+    "location",
+    "mcp",
+    "gis",
+    "search",
+    "routing"
+  ],
+  "servers": {
+    "mapbox-devkit": {
+      "production": "https://mcp-devkit.mapbox.com/mcp",
+      "local": null
+    },
+    "mapbox": {
+      "production": "https://mcp.mapbox.com/mcp",
+      "local": "http://localhost:3333/mcp"
+    },
+    "mapbox-docs": {
+      "production": "https://mcp-docs.mapbox.com/mcp",
+      "local": null
+    }
+  },
+  "targets": {
+    "openai": {
+      "$comment": "One listing for ChatGPT and Codex. OpenAI submission connects only one MCP server per plugin.",
+      "servers": ["mapbox"],
+      "skills": {
+        "excludeFiles": ["README.md"],
+        "excludeDirs": ["evals"]
+      },
+      "interface": {
+        "displayName": "Mapbox",
+        "shortDescription": "Mapbox skills and MCP servers for location-aware development.",
+        "longDescription": "Build, migrate, optimize, and review Mapbox applications with bundled skills for web, mobile, search, cartography, token security, MCP workflows, and geospatial operations.",
+        "developerName": "Mapbox",
+        "category": "Developer Tools",
+        "capabilities": ["Read", "Write", "Interactive"],
+        "websiteURL": "https://www.mapbox.com",
+        "privacyPolicyURL": "https://www.mapbox.com/legal/privacy",
+        "termsOfServiceURL": "https://www.mapbox.com/legal/tos",
+        "defaultPrompt": [
+          "Set up Mapbox in my React app.",
+          "Optimize this Mapbox map with many markers.",
+          "Use Mapbox tools to find places near me."
+        ],
+        "brandColor": "#4264FB"
+      },
+      "marketplace": {
+        "name": "mapbox-agent-skills",
+        "displayName": "Mapbox Agent Skills",
+        "policy": {
+          "installation": "AVAILABLE",
+          "authentication": "ON_USE"
+        },
+        "category": "Developer Tools"
+      }
+    },
+    "claude-code": {
+      "$comment": "Installed from the GitHub repo root, so production skills are every tracked file under skills/.",
+      "servers": ["mapbox-devkit", "mapbox", "mapbox-docs"],
+      "skills": {
+        "excludeFiles": [],
+        "excludeDirs": []
+      },
+      "marketplace": {
+        "name": "mapbox-agent-skills",
+        "owner": {
+          "name": "Mapbox Plugin Marketplace",
+          "email": "locationai@mapbox.com"
+        },
+        "description": "Official Mapbox plugin for Claude Code - skills and MCP servers for building location-aware applications with AI.",
+        "githubRepo": "mapbox/mapbox-agent-skills"
+      }
+    }
+  }
+}

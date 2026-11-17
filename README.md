@@ -674,6 +674,30 @@ Runs a five-step workflow: inventory every v10 symbol, plan the work by area wit
 
 ---
 
+### 🧭 mapbox-navigation-v2-to-v3-migration
+
+**Migrate an iOS or Android app from Mapbox Navigation SDK v2 to v3 with a coding agent.**
+
+Same five-step workflow as the Maps migration skill, which it uses for the map layer (Navigation v3 requires Maps v11). Focuses on what changes behavior: removed decision callbacks, the app's own telemetry hooks, and Drop-in UI.
+
+**Use when:**
+
+- Upgrading an app from Navigation SDK v2 to v3
+- Estimating how much work a v2 → v3 migration is
+- Fixing a build that broke after bumping to v3
+
+**Key topics:**
+
+- v2 → v3 mappings for iOS (`MapboxNavigationCore`, `MapboxNavigationUIKit`) and Android
+- Behavior changes as decisions: reroute veto, arrival and leg advancing, location discarding, custom routing
+- App telemetry hooks: every v2 callback mapped to its v3 source, with data that is lost called out
+- Drop-in UI → `MapboxNavigationUIKit` (iOS) or the UX Framework / the app's own UI (Android)
+- Staged rollout with v2 and v3 implementations behind one app interface
+
+[View skill →](./skills/mapbox-navigation-v2-to-v3-migration/SKILL.md)
+
+---
+
 ### 📊 mapbox-data-visualization-patterns
 
 **Patterns for visualizing data on Mapbox maps.**

@@ -108,26 +108,22 @@ dependencies {
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import com.mapbox.maps.extension.compose.*
-import com.mapbox.maps.Style
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.geojson.Point
 
 @Composable
 fun MapScreen() {
     MapboxMap(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Initialize camera via MapEffect (Style.STANDARD loads by default)
-        MapEffect(Unit) { mapView ->
-            // Set initial camera position
-            mapView.mapboxMap.setCamera(
-                CameraOptions.Builder()
-                    .center(Point.fromLngLat(-122.4194, 37.7749))
-                    .zoom(12.0)
-                    .build()
-            )
+        modifier = Modifier.fillMaxSize(),
+        // Initial camera. The viewport state survives configuration changes.
+        mapViewportState = rememberMapViewportState {
+            setCameraOptions {
+                center(Point.fromLngLat(-122.4194, 37.7749))
+                zoom(12.0)
+            }
         }
-    }
+    ) // Standard loads by default. Other styles: style = { MapStyle(style = Style.DARK) }
 }
 ```
 
@@ -137,17 +133,13 @@ fun MapScreen() {
 MapboxMap(
     modifier = Modifier.fillMaxSize(),
     scaleBar = {
-        ScaleBar(
-            enabled = true,
-            position = Alignment.BottomStart
-        )
+        ScaleBar(alignment = Alignment.BottomStart)
     },
     compass = {
-        Compass(enabled = true)
+        Compass(alignment = Alignment.TopEnd, contentPadding = PaddingValues(top = 80.dp))
     }
-) {
-    // Style.STANDARD loads by default
-}
+    // Pass an empty slot to hide an ornament, e.g. compass = {}
+)
 ```
 
 ### View System Pattern
@@ -223,22 +215,28 @@ Point annotations are the most common way to mark locations on the map.
 **Jetpack Compose:**
 
 ```kotlin
-MapboxMap(modifier = Modifier.fillMaxSize()) {
-    MapEffect(Unit) { mapView ->
-        // Load style first
-        mapView.mapboxMap.loadStyle(Style.STANDARD)
+import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
+import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotationGroup
+import com.mapbox.maps.extension.compose.annotation.rememberIconImage
 
-        // Create annotation manager and add markers
-        val annotationManager = mapView.annotations.createPointAnnotationManager()
-        val pointAnnotation = PointAnnotationOptions()
-            .withPoint(Point.fromLngLat(-122.4194, 37.7749))
-            .withIconImage("custom-marker")
-        annotationManager.create(pointAnnotation)
+MapboxMap(modifier = Modifier.fillMaxSize()) {
+    val marker = rememberIconImage(R.drawable.ic_marker)
+
+    // A few markers: one composable each
+    PointAnnotation(point = Point.fromLngLat(-122.4194, 37.7749)) {
+        iconImage = marker // required: without an icon nothing is drawn
+        interactionsState.onClicked { true }
+    }
+
+    // Many markers: one group (one layer). Each single PointAnnotation
+    // creates its own annotation manager and layer.
+    val options = remember(stores) {
+        stores.map { PointAnnotationOptions().withPoint(it.point).withIconImage(storeBitmap) }
+    }
+    PointAnnotationGroup(annotations = options) {
+        interactionsState.onClicked { annotation -> true }
     }
 }
-
-// Note: Compose doesn't have declarative PointAnnotation component
-// Markers must be added imperatively via MapEffect
 ```
 
 **View System:**

@@ -44,22 +44,21 @@ dependencies {
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import com.mapbox.maps.extension.compose.*
-import com.mapbox.maps.Style
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.geojson.Point
 
 @Composable
 fun MapScreen() {
-    MapboxMap(modifier = Modifier.fillMaxSize()) {
-        MapEffect(Unit) { mapView ->
-            mapView.mapboxMap.setCamera(
-                CameraOptions.Builder()
-                    .center(Point.fromLngLat(-122.4194, 37.7749))
-                    .zoom(12.0)
-                    .build()
-            )
+    MapboxMap(
+        modifier = Modifier.fillMaxSize(),
+        mapViewportState = rememberMapViewportState {
+            setCameraOptions {
+                center(Point.fromLngLat(-122.4194, 37.7749))
+                zoom(12.0)
+            }
         }
-    }
+    )
 }
 ```
 
@@ -67,12 +66,10 @@ fun MapScreen() {
 
 ```kotlin
 MapboxMap(modifier = Modifier.fillMaxSize()) {
-    MapEffect(Unit) { mapView ->
-        val annotationManager = mapView.annotations.createPointAnnotationManager()
-        val pointAnnotation = PointAnnotationOptions()
-            .withPoint(Point.fromLngLat(-122.4194, 37.7749))
-            .withIconImage("marker")
-        annotationManager.create(pointAnnotation)
+    val marker = rememberIconImage(R.drawable.ic_marker)
+    PointAnnotation(point = Point.fromLngLat(-122.4194, 37.7749)) {
+        iconImage = marker // required: without an icon nothing is drawn
+        interactionsState.onClicked { true }
     }
 }
 ```
@@ -80,16 +77,14 @@ MapboxMap(modifier = Modifier.fillMaxSize()) {
 ### Compose Annotations Pattern
 
 ```kotlin
-// ❌ Declarative annotation components are not supported
-// Use MapEffect with annotation managers instead (see above)
-MapboxMap(modifier = Modifier.fillMaxSize()) {
-    // This doesn't work:
-    PointAnnotation(
-        point = Point.fromLngLat(-122.4194, 37.7749)
-    ) {
-        iconImage = "custom-marker"
-    }
+// ✅ Many markers: one PointAnnotationGroup (one layer)
+PointAnnotationGroup(annotations = optionsList) {
+    interactionsState.onClicked { annotation -> true }
 }
+
+// ❌ Many markers as single composables: each PointAnnotation creates
+// its own annotation manager and layer
+stores.forEach { PointAnnotation(point = it.point) { iconImage = marker } }
 ```
 
 ## View System
@@ -276,9 +271,10 @@ mapView.gestures.addOnMapClickListener { point ->
 
 ```kotlin
 // Compose
-MapboxMap(style = Style.STANDARD)  // Recommended
-MapboxMap(style = Style.DARK)
-MapboxMap(style = Style.STANDARD_SATELLITE)
+MapboxMap(style = { MapboxStandardStyle() })  // Default, recommended
+MapboxMap(style = { MapStyle(style = Style.DARK) })
+MapboxMap(style = { MapboxStandardSatelliteStyle() })
+// `style` is a composable slot: MapboxMap(style = Style.DARK) doesn't compile
 
 // Views
 mapView.mapboxMap.loadStyle(Style.STANDARD)

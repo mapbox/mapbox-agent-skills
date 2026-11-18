@@ -69,6 +69,12 @@ For **New in v3 and on by default** rows, the default is to turn the feature off
 - **Highlight it to the developer explicitly as a change of the app's behavior**, not a routine migration step. List it under "Behavior removed" at the top of the summary.
 - You may **suggest** a workaround (for example reimplementing the feature in app code). **Implement it only after the developer explicitly approves that workaround.** "Closest to v2" never means writing a replacement on your own.
 
+**Migration or workaround?**
+
+- **Migration (no approval needed):** expressing the same app behavior through a public v3 API that the platform reference or the SDK documentation names as the replacement. Examples: a banner's delegate method moved to a `NavigationComponent` method, a fixed camera zoom through the documented camera options, the destination marker through the waypoint customization methods the SDK deprecation message points to.
+- **Workaround (needs approval):** rebuilding in app code a feature the SDK no longer provides, or substituting different behavior. Examples: drawing building highlights with your own layer, or requesting a fresh route because the app's own route can't be loaded.
+- **A decision callback used only as a trigger** (it always returns the permissive value, like `shouldRerouteFrom` returning `true`, and runs app logic) isn't a behavior change. Move the logic to the matching event publisher and record it in the decision log.
+
 ### 3. Keep the app's own telemetry working
 
 Apps often send analytics from Navigation SDK callbacks: reroute events, off-route, route progress, arrival, the raw directions response. In step 1, list **every** v2 hook the app reads data from, including data that only feeds logging. Map each to its v3 source using the **App telemetry hooks** table in the platform reference, and say per hook whether it is **same** (the v2 API still works), **changed** (new API or payload, same data) or **reduced / gone** (less data, or no v3 equivalent). Do this in step 2 for an effort estimate, and confirm it in step 3. When v3 has no equivalent, or reports less (for example no reroute reason, or no raw response object), say so in the telemetry map. Don't drop the log call silently, and don't invent fields.
@@ -83,7 +89,7 @@ Keep the app's map style, traffic data, and route request options exactly as the
 - **Android:** v2 Drop-in UI (`NavigationView`) has no in-place port. Present the choice as a decision: the v3 UX Framework (in beta at the time of writing, and Drop-in customizations don't carry over), or the app's own UI built on the v3 UI components. Inventory every Drop-in customization so it can be checked against the option chosen.
 - If the developer asks for their own UI instead, build it on the v3 core APIs and the route line and camera components, and list what the Drop-in UI did that the app now owns
 
-Customization hooks that v3 removed (custom layers for waypoints in some UI delegates, CarPlay layer customization on iOS) are behavior changes. Log them as decisions.
+Customization hooks that v3 removed (on iOS: CarPlay route and waypoint layer customization, route shape delegate methods; the waypoint layer methods on `NavigationViewControllerDelegate` and `NavigationMapViewDelegate` remain) are behavior changes. Log them as decisions.
 
 ### 6. Grounding
 

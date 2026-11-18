@@ -174,7 +174,8 @@
     "conformances",
     "pbxproj",
     "xcconfigs",
-    "xcodeproj"
+    "xcodeproj",
+    "worktrees"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

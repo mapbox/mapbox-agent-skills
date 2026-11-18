@@ -134,6 +134,7 @@ Write the migration summary from `references/migration-workflow.md`:
 - `[VERIFY WITH MAPBOX]` items
 - **Pre-existing issues outside the migration's scope.** Patterns that were already in the app and work in v11 but are known to be costly or fragile: style reloads to switch modes, whole-source rewrites to show a selection, camera moves on every location update, dropped observer tokens, map calls off the main thread, and similar. List them, don't fix them.
 - Recommended next step: an audit of the app's Maps SDK integration against v11 best practices. If an audit or best-practices skill is installed (for example `mapbox-ios-patterns` or `mapbox-android-patterns`), point the developer to it.
+- **Android apps on the View system:** recommend moving to Jetpack Compose as a separate follow-up, since Compose is the standard Android UI toolkit. The map moves to the `MapboxMap` composable from the Mapbox Compose extension (`com.mapbox.extension:maps-compose`), and Google's [migrate XML views to Jetpack Compose](https://developer.android.com/agents/skills/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/skill) skill covers the rest of the screen. Don't do it as part of this migration.
 
 The summary should be short enough for a PM to read: areas, effort spent, blockers, decisions.
 

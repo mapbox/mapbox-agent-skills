@@ -112,6 +112,7 @@ Keep it to one screen. A PM should be able to read it without opening the code.
 
 - Run a Maps SDK v11 best-practices audit on the migrated app
 - <optional, opt-in> Evaluate Mapbox Standard as a separate project
+- <Android, View-based maps> Move to Jetpack Compose as a separate project: `MapboxMap` composable for the map, Google's XML-to-Compose skill for the rest of the screen
 ```
 
 ## Pre-existing issues to look for during the migration

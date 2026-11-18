@@ -170,7 +170,13 @@ Do this as area 1, before touching code. No skill tool edits `project.pbxproj` f
 v3 allows only **one live `MapboxNavigationProvider`** at a time: creating a second while the first is alive hits `preconditionFailure("MapboxNavigationProvider was instantiated twice.")`. v2 apps often created a `MapboxNavigationService` per screen.
 
 - `NavigationOptions()` (the no-argument initializer) builds **its own** `MapboxNavigationProvider`. If the app already has one alive, that hits the precondition. Always build `NavigationOptions(mapboxNavigation:voiceController:eventsManager:…)` from the app's provider, including for storyboard-created view controllers (`prepareViewLoading(navigationRoutes:navigationOptions:)`).
-- **One provider per screen** works if the previous screen's provider is released first (Mapbox's own v3 examples own the provider in each view controller). Make sure nothing else retains it.
+- **One provider per screen** works only if the previous screen's provider is **deallocated** before the next one is created (Mapbox's own v3 examples own the provider in each view controller). The build can't check this; the crash happens at runtime when the screen opens a second time. Before choosing it, find what owns each screen and confirm it is released:
+  - child view controllers added with `addChild` but never removed with `removeFromParent()` (a container that only removes the child's view keeps the child and its provider alive)
+  - view controllers cached in properties, arrays or a coordinator, or kept by a navigation stack the user returns to
+  - strong `self` captures in Combine sinks, `Task`s, timers and SDK closures (`multilegAdvancing`, speech synthesizers)
+
+  If any of these keep a screen alive and fixing them isn't in scope, use one app-wide provider. Check: open the same screen twice in a row, then two different navigation screens one after another.
+
 - **One app-wide provider** works for apps with many navigation screens. Then note which `CoreConfig` fields can change at runtime: `provider.apply(coreConfig:)` re-applies only the location source, TTS config, locale, log level, credentials token and copilot. Other fields (`multilegAdvancing`, `routingConfig` including reroute and faster-route config, `historyRecordingConfig`, `electronicHorizonConfig`, `predictiveCacheConfig`) only take effect when the navigator is created. Per-screen differences in those need a decision.
 - `CoreConfig ==` and `TTSConfig ==` compare closures and custom synthesizers by presence, not identity. Don't rely on equality to detect a changed closure.
 
@@ -218,27 +224,31 @@ Columns: **v2** is what you find. **v3 target** is what the code becomes.
 
 ### 1. Dependencies, setup and configuration
 
-| v2                                                                                                | v3 target                                                                                                                           | Notes                                                                                                                                       |
-| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MapboxCoreNavigation` / `MapboxNavigation` 2.x                                                   | `MapboxNavigationCore` / `MapboxNavigationUIKit` latest 3.x                                                                         | Pulls in Maps v11                                                                                                                           |
-| `import MapboxCoreNavigation`, `import MapboxNavigation`                                          | `import MapboxNavigationCore`, `import MapboxNavigationUIKit`                                                                       | Also `import UIKit`, `import CoreLocation` and `import MapboxDirections` explicitly where used (no re-exports). Drop `import MapboxSpeech`. |
-| CocoaPods / Carthage dependency                                                                   | Swift Package Manager                                                                                                               | See Project setup                                                                                                                           |
-| `NavigationSettings.shared.initialize(directions:tileStoreConfiguration:routingProviderSource:…)` | `CoreConfig(...)` passed to `MapboxNavigationProvider(coreConfig:)`                                                                 | Required at creation. Changing it at runtime isn't recommended: parts apply asynchronously.                                                 |
-| `NavigationSettings.shared.distanceUnit` and similar                                              | `CoreConfig.unitOfMeasurement`, `.locale`                                                                                           |                                                                                                                                             |
-| Access token via `Directions(credentials:)` or plist                                              | `MBXAccessToken` in `Info.plist`, or `CoreConfig(credentials:)`                                                                     | Keep the token where it is if it's already in the plist                                                                                     |
-| Route refresh, alternatives and faster-route settings on the router                               | `CoreConfig.routingConfig`: `routeRefreshPeriod`, `alternativeRoutesDetectionConfig`, `fasterRouteDetectionConfig`, `rerouteConfig` | Set them to the v2 values the app used                                                                                                      |
+| v2                                                                                                | v3 target                                                                                                                             | Notes                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MapboxCoreNavigation` / `MapboxNavigation` 2.x                                                   | `MapboxNavigationCore` / `MapboxNavigationUIKit` latest 3.x                                                                           | Pulls in Maps v11                                                                                                                           |
+| `import MapboxCoreNavigation`, `import MapboxNavigation`                                          | `import MapboxNavigationCore`, `import MapboxNavigationUIKit`                                                                         | Also `import UIKit`, `import CoreLocation` and `import MapboxDirections` explicitly where used (no re-exports). Drop `import MapboxSpeech`. |
+| CocoaPods / Carthage dependency                                                                   | Swift Package Manager                                                                                                                 | See Project setup                                                                                                                           |
+| `NavigationSettings.shared.initialize(directions:tileStoreConfiguration:routingProviderSource:…)` | `CoreConfig(...)` passed to `MapboxNavigationProvider(coreConfig:)`                                                                   | Required at creation. Changing it at runtime isn't recommended: parts apply asynchronously.                                                 |
+| `NavigationSettings.shared.distanceUnit`                                                          | Per request: `NavigationRouteOptions(waypoints:profileIdentifier:queryItems:locale:distanceUnit:)` or `options.unitMeasurementSystem` | `CoreConfig.unitOfMeasurement` is **deprecated** (requests from `RoutingProvider` ignore it). v3 defaults the unit from `Locale.current`.   |
+| `NavigationSettings.shared` locale                                                                | `CoreConfig.locale` (guidance), `options.locale` (route request)                                                                      | `CoreConfig.routeRequestConfig` is deprecated for the same reason                                                                           |
+| Access token via `Directions(credentials:)` or plist                                              | `MBXAccessToken` in `Info.plist`, or `CoreConfig(credentials:)`                                                                       | Keep the token where it is if it's already in the plist                                                                                     |
+| Route refresh, alternatives and faster-route settings on the router                               | `CoreConfig.routingConfig`: `routeRefreshPeriod`, `alternativeRoutesDetectionConfig`, `fasterRouteDetectionConfig`, `rerouteConfig`   | Set them to the v2 values the app used                                                                                                      |
 
 ### 2. Navigation instance and lifecycle
 
-| v2                                                                                                     | v3 target                                                                                       | Notes                                                                                                   |
-| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `MapboxNavigationService(indexedRouteResponse:customRoutingProvider:credentials:simulating:)` per trip | One `MapboxNavigationProvider(coreConfig:)` for the app's lifetime; `provider.mapboxNavigation` | Keep the provider for as long as navigation is needed. Only one `MapboxNavigation` may exist at a time. |
-| `RouteController`, `Router`                                                                            | `mapboxNavigation.navigation()` (`NavigationController`)                                        |                                                                                                         |
-| `PassiveLocationManager` (free drive)                                                                  | `mapboxNavigation.tripSession().startFreeDrive()` + `navigation().locationMatching`             |                                                                                                         |
-| `navigationService.start()` / `.stop()`                                                                | `tripSession().startActiveGuidance(with:startLegIndex:)`, `.startFreeDrive()`, `.setToIdle()`   |                                                                                                         |
-| `navigationService.router.advanceLegIndex()`                                                           | `navigation().switchLeg(newLegIndex:)`                                                          |                                                                                                         |
-| Delegate assignment (`navigationService.delegate = self`)                                              | Combine subscriptions on `navigation()` and `tripSession()` publishers                          | Store every `AnyCancellable`, use `[weak self]`                                                         |
-| `NotificationCenter` observers                                                                         | The matching publisher (see App telemetry hooks)                                                | Remove the observers                                                                                    |
+| v2                                                                                                     | v3 target                                                                                                                                      | Notes                                                                                                    |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `MapboxNavigationService(indexedRouteResponse:customRoutingProvider:credentials:simulating:)` per trip | One `MapboxNavigationProvider(coreConfig:)` for the app's lifetime; `provider.mapboxNavigation`                                                | Keep the provider for as long as navigation is needed. Only one `MapboxNavigation` may exist at a time.  |
+| `RouteController`, `Router`                                                                            | `mapboxNavigation.navigation()` (`NavigationController`)                                                                                       |                                                                                                          |
+| `PassiveLocationManager` (free drive)                                                                  | `mapboxNavigation.tripSession().startFreeDrive()` + `navigation().locationMatching`                                                            | `passiveLocationManager.location` → `navigation().currentLocationMatching?.enhancedLocation`             |
+| `PassiveLocationProvider` + `navigationMapView.mapView.location.overrideLocationProvider(with:)`       | Nothing: a v3 `NavigationMapView` already shows the map-matched location from its `location:` publisher                                        | Delete both lines; keep `startFreeDrive()`                                                               |
+| `PassiveLocationProvider` on a plain Maps `MapView`                                                    | `mapView.location.override(locationProvider: navigation.locationMatching.map { [Location(clLocation: $0.enhancedLocation)] }.eraseToSignal())` | Maps v11 `override(locationProvider:headingProvider:)`; `overrideLocationProvider(with:)` is unavailable |
+| `PassiveLocationManager.startRecordingHistory()` / `stopRecordingHistory(writingFileWith:)` (static)   | `mapboxNavigation.historyRecorder()?.startRecordingHistory()` / `stopRecordingHistory(writingFileWith:)`                                       | Directory: `CoreConfig.historyRecordingConfig` instead of `PassiveLocationManager.historyDirectoryURL`   |
+| `navigationService.start()` / `.stop()`                                                                | `tripSession().startActiveGuidance(with:startLegIndex:)`, `.startFreeDrive()`, `.setToIdle()`                                                  |                                                                                                          |
+| `navigationService.router.advanceLegIndex()`                                                           | `navigation().switchLeg(newLegIndex:)`                                                                                                         |                                                                                                          |
+| Delegate assignment (`navigationService.delegate = self`)                                              | Combine subscriptions on `navigation()` and `tripSession()` publishers                                                                         | Store every `AnyCancellable`, use `[weak self]`                                                          |
+| `NotificationCenter` observers                                                                         | The matching publisher (see App telemetry hooks)                                                                                               | Remove the observers                                                                                     |
 
 ### 3. Route requests and route objects
 
@@ -255,15 +265,24 @@ Columns: **v2** is what you find. **v3 target** is what the code becomes.
 
 ### 4. Trip session and location
 
-| v2                                          | v3 target                                                                                                                                        | Notes                                             |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| `simulating: .always` / `SimulationMode`    | `CoreConfig(locationSource: .simulation(initialLocation:))`                                                                                      | Speed multiplier not available                    |
-| `simulating: .onPoorGPS`                    | No equivalent; `.live` is closest for real use                                                                                                   | Behavior change                                   |
-| Switching simulation at runtime             | `provider.apply(coreConfig:)` with a new `locationSource`                                                                                        | Set it before creating `NavigationViewController` |
-| Custom `NavigationLocationManager` subclass | `CoreConfig.locationSource` with the app's own location stream `[VERIFY WITH MAPBOX]`                                                            |                                                   |
-| `ReplayLocationManager(history:)`           | Location source from history `[VERIFY WITH MAPBOX]`                                                                                              |                                                   |
-| `router.location`, `rawLocation`            | `navigation().currentLocationMatching`, `locationMatching` publisher                                                                             |                                                   |
-| Background location handling by hand        | `tripSession().disableTrackingBackgroundLocationIfNeeded()`, `restoreTrackingLocationIfNeeded()`; `CoreConfig.disableBackgroundTrackingLocation` |                                                   |
+| v2                                          | v3 target                                                                                                                                        | Notes                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| `simulating: .always` / `SimulationMode`    | `CoreConfig(locationSource: .simulation(initialLocation:))`                                                                                      | Speed multiplier not available. Start point: see below |
+| `simulating: .onPoorGPS`                    | No equivalent; `.live` is closest for real use                                                                                                   | Behavior change                                        |
+| Switching simulation at runtime             | `provider.apply(coreConfig:)` with a new `locationSource`                                                                                        | Set it before creating `NavigationViewController`      |
+| Custom `NavigationLocationManager` subclass | `CoreConfig.locationSource` with the app's own location stream `[VERIFY WITH MAPBOX]`                                                            |                                                        |
+| `ReplayLocationManager(history:)`           | Location source from history `[VERIFY WITH MAPBOX]`                                                                                              |                                                        |
+| `router.location`, `rawLocation`            | `navigation().currentLocationMatching`, `locationMatching` publisher                                                                             |                                                        |
+| Background location handling by hand        | `tripSession().disableTrackingBackgroundLocationIfNeeded()`, `restoreTrackingLocationIfNeeded()`; `CoreConfig.disableBackgroundTrackingLocation` |                                                        |
+
+Simulation start point: v2's simulated location manager started at the beginning of the route. In v3, `.simulation(initialLocation: nil)` places the simulated user at the route point **closest to the last known device location**. When the route doesn't start where the device is (demo routes, routes picked on a map), guidance can start mid-route or report arrival immediately. Observed at runtime with 3.35 `[VERIFY WITH MAPBOX]`. To keep the v2 behavior, apply the route's origin as the initial location before creating `NavigationViewController`:
+
+```swift
+var config = provider.coreConfig
+let origin = navigationRoutes.mainRoute.route.shape?.coordinates.first
+config.locationSource = .simulation(initialLocation: origin.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) })
+provider.apply(coreConfig: config)
+```
 
 ### 5. Route progress, instructions and other observers
 
@@ -280,6 +299,20 @@ See App telemetry hooks for the full table. `RouteProgress`, `RouteLegProgress` 
 | `shouldProactivelyRerouteFrom`                               | `FasterRouteDetectionConfig(fasterRouteApproval: .manually { … })`        | Also `proactiveReroutingInterval`, `minimumRouteDurationRemaining` |
 | Continuous alternatives settings                             | `AlternativeRoutesDetectionConfig`                                        |                                                                    |
 | Refresh interval                                             | `RoutingConfig.routeRefreshPeriod`                                        |                                                                    |
+
+Routing defaults, v2 2.x vs v3 (checked against v2 2.23 and v3 3.35 source). If the app never changed these, **don't** set them during migration and don't report them as behavior changes. A route that looks different after migration comes from the Directions API, not from a changed client default.
+
+| Setting                                                                                          | v2 default                                                  | v3 default                                                                    |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `NavigationRouteOptions` profile, alternatives, attributes, steps, voice and banner instructions | `.automobileAvoidingTraffic`, alternatives on, same options | Same                                                                          |
+| Distance units in the request                                                                    | `NavigationSettings.shared.distanceUnit`                    | `Locale.current` per options object (`distanceUnit`)                          |
+| Route refresh                                                                                    | On for traffic profile, every 120 s                         | `routeRefreshPeriod` 120 s                                                    |
+| Faster-route detection                                                                           | On, every 120 s, only with more than 600 s remaining        | `FasterRouteDetectionConfig()`: 120 s, 600 s, `.automatically`                |
+| Reroute detection                                                                                | On                                                          | `RerouteConfig(detectsReroute: true)`                                         |
+| Continuous alternatives                                                                          | On (`AlternativeRouteDetectionStrategy()`)                  | On (`AlternativeRoutesDetectionConfig()`)                                     |
+| Initial maneuver avoidance radius                                                                | 8 s                                                         | 8 s                                                                           |
+| Online or offline routing                                                                        | `.hybrid`                                                   | `.hybrid`                                                                     |
+| Non-car profile tiles                                                                            | `datasetProfileIdentifier` on `PassiveLocationManager`      | `RoutingConfig.datasetProfileIdentifier`: set it to match the request profile |
 
 ### 7. Arrival and multi-leg routes
 
@@ -309,13 +342,13 @@ The `.manually` closure is `async` and `@Sendable`. Check that the app's confirm
 
 ### 8. Voice guidance
 
-| v2                                                                 | v3 target                                                                                                    | Notes                                                                                                                                                                 |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RouteVoiceController(navigationService:)`                         | `mapboxNavigationProvider.routeVoiceController`                                                              |                                                                                                                                                                       |
-| Custom `SpeechSynthesizing` / `MultiplexedSpeechSynthesizer` chain | `CoreConfig(ttsConfig: .custom(speechSynthesizer: MultiplexedSpeechSynthesizer(speechSynthesizers: [...])))` | `MapboxSpeechSynthesizer` is `final`; `SystemSpeechSynthesizer` is SPI. See Behavior changes.                                                                         |
-| Custom chain that includes the Mapbox voice                        | `MultiplexedSpeechSynthesizer(mapboxSpeechApiConfiguration:skuTokenProvider:customSpeechSynthesizers:)`      | Needs `provider.skuTokenProvider`, which exists only after the provider is created: create the provider, then `provider.apply(coreConfig:)` with the new `ttsConfig`. |
-| `SpeechOptions`, `SpeechError` from `MapboxSpeech`                 | Same names in `MapboxNavigationCore`                                                                         |                                                                                                                                                                       |
-| App TTS driven by `didPassSpokenInstructionPoint`                  | `navigation().voiceInstructions`                                                                             |                                                                                                                                                                       |
+| v2                                                                 | v3 target                                                                                                    | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RouteVoiceController(navigationService:)`                         | `mapboxNavigationProvider.routeVoiceController`                                                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Custom `SpeechSynthesizing` / `MultiplexedSpeechSynthesizer` chain | `CoreConfig(ttsConfig: .custom(speechSynthesizer: MultiplexedSpeechSynthesizer(speechSynthesizers: [...])))` | `MapboxSpeechSynthesizer` is `final`; `SystemSpeechSynthesizer` is SPI. See Behavior changes.                                                                                                                                                                                                                                                                                                                                                    |
+| Custom chain that includes the Mapbox voice                        | `MultiplexedSpeechSynthesizer(mapboxSpeechApiConfiguration:skuTokenProvider:customSpeechSynthesizers:)`      | Needs `provider.skuTokenProvider`, which exists only after the provider is created: create the provider, then `let sku = provider.skuTokenProvider` (a `Sendable` struct), pass `skuTokenProvider: sku.skuToken`, and `provider.apply(coreConfig:)` with the new `ttsConfig`. The closure runs **off the main actor**: don't capture the provider or `self` and wrap it in `MainActor.assumeIsolated` (crashes at the first spoken instruction). |
+| `SpeechOptions`, `SpeechError` from `MapboxSpeech`                 | Same names in `MapboxNavigationCore`                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| App TTS driven by `didPassSpokenInstructionPoint`                  | `navigation().voiceInstructions`                                                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ### 9. Route line and navigation camera
 
@@ -355,7 +388,96 @@ let navigationMapView = NavigationMapView(
 provider.mapboxNavigation.tripSession().startFreeDrive()
 ```
 
-Taps and long presses on a `NavigationMapView`: the SDK already installs its gesture handling and reports `navigationMapView(_:userDidTap:)`, `navigationMapView(_:userDidLongTap:)` and `navigationMapView(_:didSelect alternativeRoute:)` on `NavigationMapViewDelegate`. Use those instead of the Maps skill's `TapInteraction` / `LongPressInteraction` on `navigationMapView.mapView`, which would add a second, competing recognizer.
+Taps and long presses on a `NavigationMapView`: the SDK already installs its gesture handling and reports to `NavigationMapViewDelegate`. Use it instead of the Maps skill's `TapInteraction` / `LongPressInteraction`, or a v2-style `UILongPressGestureRecognizer`, which add a second recognizer on top of the SDK's.
+
+- `navigationMapView(_:userDidLongTap: MapPoint)`: any long press. Fires when the press **begins** (v2 examples usually acted on `.ended`).
+- `navigationMapView(_:didSelect alternativeRoute:)`: a tap near an alternative route line.
+- `navigationMapView(_:didSelect waypoint:)`: a tap near an intermediate waypoint.
+- `navigationMapView(_:userDidTap: MapPoint)`: only a tap on a **named map feature** (`mapPoint.name != nil`), after the checks above. It is not a "tap anywhere" callback. For taps on empty map, keep a Maps v11 `TapInteraction` and accept that it also fires for route taps.
+
+#### Preview map screen
+
+The most common v2 screen: a map that shows the user, long-press to request a route, tap to pick an alternative, a button that starts `NavigationViewController` with the same map view, and a return to preview when it is dismissed.
+
+```swift
+final class PreviewViewController: UIViewController, NavigationMapViewDelegate, NavigationViewControllerDelegate {
+    let provider: MapboxNavigationProvider   // the app's provider (see Provider lifecycle)
+    var navigationMapView: NavigationMapView!
+    var navigationRoutes: NavigationRoutes? {
+        didSet {
+            guard let navigationRoutes else { return navigationMapView.removeRoutes() }
+            // v2 showcase(_:) + showRouteDurations(along:)
+            navigationMapView.showcase(navigationRoutes, routeAnnotationKinds: [.routeDurations])
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationMapView = /* standalone NavigationMapView recipe above */
+        navigationMapView.delegate = self
+        view.insertSubview(navigationMapView, at: 0)   // + constraints
+        provider.mapboxNavigation.tripSession().startFreeDrive()   // no puck without it
+    }
+
+    // v2: own UILongPressGestureRecognizer + mapboxMap.coordinate(for:). Remove the recognizer.
+    func navigationMapView(_ navigationMapView: NavigationMapView, userDidLongTap mapPoint: MapPoint) {
+        requestRoute(to: mapPoint.coordinate)
+    }
+
+    // v2: didSelect route: Route
+    func navigationMapView(_ navigationMapView: NavigationMapView, didSelect alternativeRoute: AlternativeRoute) {
+        Task {
+            guard let selected = await navigationRoutes?.selecting(alternativeRoute: alternativeRoute) else { return }
+            navigationRoutes = selected
+        }
+    }
+
+    func requestRoute(to destination: CLLocationCoordinate2D) {
+        // v2: navigationMapView.mapView.location.latestLocation or passiveLocationManager.location
+        guard let origin = provider.mapboxNavigation.navigation().currentLocationMatching?.enhancedLocation else { return }
+        var userWaypoint = Waypoint(location: origin, name: "user")
+        // On iOS v3 Waypoint(location:heading:name:) takes a CLHeading; set the course on the property instead.
+        if origin.course >= 0 { userWaypoint.heading = origin.course }
+        let options = NavigationRouteOptions(waypoints: [userWaypoint, Waypoint(coordinate: destination)])
+        Task {
+            do {
+                navigationRoutes = try await provider.mapboxNavigation.routingProvider().calculateRoutes(options: options).value
+            } catch { /* keep the app's v2 error handling */ }
+        }
+    }
+
+    func startNavigation() {
+        guard let navigationRoutes else { return }
+        // Simulation: provider.apply(coreConfig:) with the location source BEFORE creating the controller.
+        let navigationOptions = NavigationOptions(
+            mapboxNavigation: provider.mapboxNavigation,
+            voiceController: provider.routeVoiceController,
+            eventsManager: provider.eventsManager(),
+            navigationMapView: navigationMapView   // reuse the preview map; it moves into the controller's view
+        )
+        let navigationViewController = NavigationViewController(navigationRoutes: navigationRoutes,
+                                                                navigationOptions: navigationOptions)
+        navigationViewController.delegate = self
+        navigationViewController.modalPresentationStyle = .fullScreen
+        present(navigationViewController, animated: true)
+    }
+
+    func navigationViewControllerDidDismiss(_ navigationViewController: NavigationViewController, byCanceling canceled: Bool) {
+        navigationViewController.dismiss(animated: true) { [self] in
+            // The controller took the map view, its delegate and its puck, and set the session to idle.
+            if let navigationMapView = navigationViewController.navigationMapView { self.navigationMapView = navigationMapView }
+            view.insertSubview(navigationMapView, at: 0)   // + constraints
+            navigationMapView.delegate = self
+            navigationMapView.puckType = .puck2D()
+            // If simulation was on for guidance, apply the live location source again here.
+            provider.mapboxNavigation.tripSession().startFreeDrive()
+            if let navigationRoutes { navigationMapView.showcase(navigationRoutes, routesPresentationStyle: .all(shouldFit: true), animated: true) }
+        }
+    }
+}
+```
+
+Differences to tell the developer about, if the v2 screen relied on them: the long press fires on begin, not end; `RoutesPresentationStyle.all` no longer takes `cameraOptions` (bearing and pitch aren't reset); `moveUserLocation(to:)` is gone (the puck follows the trip session); `routeLineTracksTraversal` defaults to `true` on both the map view and the controller.
 
 Custom camera code: `ViewportState.routeProgress` is deprecated and **always returns `nil`** in v3. Read `navigationProgress` instead.
 

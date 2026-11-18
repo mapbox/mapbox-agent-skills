@@ -58,7 +58,7 @@ Navigation v3 removed or changed several callbacks that let the app **decide** s
 Android has its own list. v3 also turns on some features v2 didn't have or had off, such as predictive caching and the vanishing route line on iOS, and automatic alternatives switching on Android. Each platform reference has a **Behavior changes** table and a **New in v3 and on by default** table. For every row that applies to the app:
 
 1. Present it as a decision. Say what v2 did, what v3 does, and the options, including "no equivalent". Collect all applicable rows into one decision list at the end of step 2 rather than stopping once per row.
-2. Default to the option **closest to v2 behavior** if the developer doesn't answer, and say so.
+2. Default to the option **closest to v2 behavior** if the developer doesn't answer, and say so. Exception: if the developer chose "show the v3 way" for a sample or demo app (step 1, **Migration goal**), default to the v3 behavior instead and still list the change.
 3. Record the decision in the decision log.
 
 For **New in v3 and on by default** rows, the default is to turn the feature off, so the migrated app behaves like v2. List each one in the report as available to turn on later. When the developer reports one of these after migrating ("the route line looks different"), go through the **whole** table, including the defaults QA can't see, such as predictive caching.
@@ -120,6 +120,7 @@ Run two inventories:
 
 Output the inventory and the **telemetry hook list** (templates in `references/migration-workflow.md`). Flag:
 
+- **Migration goal**: if the project is a sample, demo, tutorial or SDK example app (many independent screens, each showing one SDK feature, often with docs links), ask once, up front, as the first decision: **keep v2 behavior** (the default for production apps) or **show the v3 way** (use v3 defaults such as the vanishing route line, Standard-based navigation styles and the default puck, and drop v2-only workarounds). Record the answer; it sets the default for every behavior-change decision.
 - **Packaging**: how the SDK is linked today versus how v3 ships. On iOS, v3 ships **only through Swift Package Manager**. A CocoaPods or Carthage project must switch, and that is a work item with its own effort estimate.
 - **Areas with no direct mapping**: Drop-in UI customization, custom route handling (custom routing provider, custom reroute logic, reroute vetoes), location discarding, simulation speed control, custom speech synthesizers. The platform reference has the full list.
 - **Callbacks that return a decision** (`Bool` or modified options). These are almost always behavior changes.
@@ -178,10 +179,13 @@ If you can run the app with route simulation, check:
 - a route is requested and drawn;
 - guidance starts and instructions are spoken and shown;
 - a forced off-route triggers a reroute;
-- arrival is reported;
-- the app's telemetry events fire.
+- arrival is reported, including an intermediate waypoint on a multi-leg route;
+- the app's telemetry events fire;
+- each navigation screen opens **twice in a row**, and two different navigation screens open one after another, without a crash (iOS: one live `MapboxNavigationProvider`);
+- simulation starts at the route's origin, not partway along the route or at the destination;
+- the first spoken instruction plays when a custom voice is configured (its callbacks run off the main thread).
 
-If you can't run the app, say so in the report. Don't claim it was checked.
+A successful build doesn't cover these: in this skill's own evaluation, both migrations built cleanly and still crashed or misbehaved on these checks. If you can't run the app, say so in the report, list these checks as not done, and don't claim they were checked.
 
 ### Step 5: Report
 

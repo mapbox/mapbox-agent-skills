@@ -34,16 +34,6 @@
       ]
     },
     {
-      "id": 4,
-      "prompt": "Review our Android search screen. We use Search SDK 2.30 with SearchEngine. The EditText's text watcher calls searchEngine.search(text, SearchOptions(), callback) on every change, and when the user taps a suggestion we read suggestion.coordinate and drop a marker there.",
-      "expectations": [
-        "Flags searching on every keystroke without a debounce (SEARCH-B-REQUEST-1) and recommends SearchOptions.requestDebounce or a UI-layer debounce, but not both",
-        "Flags using the suggestion's coordinate without select as SEARCH-B-FLOW-1: the field is restricted and usually null, and the resolved result comes from select",
-        "Recommends calling searchEngine.select(suggestion, ...) and using the SearchResult coordinate",
-        "Uses IDs that exist in the Search reference, such as SEARCH-B-FLOW-1 and SEARCH-B-REQUEST-1 for findings and SEARCH-P3 / SEARCH-P4 for the checks, rather than invented ones"
-      ]
-    },
-    {
       "id": 5,
       "prompt": "Please do a full audit of our Android delivery app's Mapbox setup. It uses Navigation SDK 3.25 and Maps SDK 11.25. Don't change any code yet.",
       "expectations": [
@@ -61,6 +51,14 @@
         "Concludes this is the recommended integration (MAPS-B-HYGIENE-1 case D), a pass, not a bug",
         "Warns against inferring the plugin is missing from the absence of a mapView.lifecycle call site",
         "Mentions what would still be a finding, such as a MapView held in a ViewModel, singleton or DI singleton, or teardown in onDestroyView that calls into the map"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Can you also audit our Android app's Mapbox Search SDK usage while you're at it?",
+      "expectations": [
+        "Says this skill has no Search SDK reference yet, rather than improvising Search checks or inventing Search finding IDs",
+        "Offers what it can do instead, such as auditing the Maps or Navigation integration, or pointing to the mapbox-search-integration skill for Search best practices"
       ]
     }
   ]

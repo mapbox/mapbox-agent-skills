@@ -57,11 +57,17 @@ Navigation v3 removed or changed several callbacks that let the app **decide** s
 
 Android has its own list. v3 also turns on some features v2 didn't have or had off, such as predictive caching and the vanishing route line on iOS, and automatic alternatives switching on Android. Each platform reference has a **Behavior changes** table and a **New in v3 and on by default** table. For every row that applies to the app:
 
-1. Stop and present it as a decision. Say what v2 did, what v3 does, and the options, including "no equivalent".
-2. Default to the option **closest to v2 behavior** if the developer doesn't answer, and say so. If there is no way to keep v2 behavior, say that plainly. Don't write a workaround the developer didn't ask for.
+1. Present it as a decision. Say what v2 did, what v3 does, and the options, including "no equivalent". Collect all applicable rows into one decision list at the end of step 2 rather than stopping once per row.
+2. Default to the option **closest to v2 behavior** if the developer doesn't answer, and say so.
 3. Record the decision in the decision log.
 
 For **New in v3 and on by default** rows, the default is to turn the feature off, so the migrated app behaves like v2. List each one in the report as available to turn on later. When the developer reports one of these after migrating ("the route line looks different"), go through the **whole** table, including the defaults QA can't see, such as predictive caching.
+
+**When v3 has no equivalent** (the feature can't be kept with public v3 API):
+
+- Drop the feature and document it. Keep the code compiling with the nearest public API, or remove the feature's code path. Leave a short comment at the call site.
+- **Highlight it to the developer explicitly as a change of the app's behavior**, not a routine migration step. List it under "Behavior removed" at the top of the summary.
+- You may **suggest** a workaround (for example reimplementing the feature in app code). **Implement it only after the developer explicitly approves that workaround.** "Closest to v2" never means writing a replacement on your own.
 
 ### 3. Keep the app's own telemetry working
 
@@ -83,13 +89,21 @@ Customization hooks that v3 removed (custom layers for waypoints in some UI dele
 
 Only use v3 symbols that appear in the platform reference, the official migration guide, or the SDK source and docs for the version you're targeting. If you're unsure whether a symbol exists or has the stated signature, don't invent one. Write the closest match, add a `// [VERIFY WITH MAPBOX]` comment, and list it in the report. The build is the final check.
 
+**SPI symbols are not public API.** A symbol in the SDK source marked `@_spi(...)` (for example `@_spi(MapboxInternal)`, `@_spi(ExperimentalMapboxAPI)`) doesn't count as available. Never add an `@_spi import`. If the only v3 way to do something is SPI, treat it as **no public equivalent**: log a blocker decision (rule 2), and list it in the report as an item to raise with Mapbox.
+
 ### 7. Target the latest v3 release
 
 Use the latest stable 3.x unless the developer pins a version. The v3 API changed during the 3.x line. Check each Target entry's minimum version when the developer pins an older 3.x.
 
+To find it, don't sort release tags as strings: the tag format changed during 3.x (iOS: `v3.27.3`, then `3.28.0`). Strip a leading `v`, drop pre-releases (`-rc`, `-beta`), and compare as versions. Simpler on iOS: add the package with "up to next major" from `3.0.0` and read the resolved version from `Package.resolved`.
+
+### 8. Running without the developer
+
+If the developer asks you to proceed without stopping, or can't answer: write the plan and decision log as usual, take the rule-2 defaults, and continue. Don't implement any workaround that needs approval (rule 2). Start the summary with a **Needs developer review** list: every decision taken by default, every behavior removed, every workaround suggested but not implemented.
+
 ## Workflow
 
-Run the five steps in order. Don't edit code before step 2 is done and shown to the developer.
+Run the five steps in order. Don't edit code before step 2 is done and shown to the developer (or, per rule 8, written to the plan file when the developer asked you not to stop).
 
 ### Step 1: Inventory
 
@@ -100,6 +114,7 @@ Run two inventories:
 
 Output the inventory and the **telemetry hook list** (templates in `references/migration-workflow.md`). Flag:
 
+- **Packaging**: how the SDK is linked today versus how v3 ships. On iOS, v3 ships **only through Swift Package Manager**. A CocoaPods or Carthage project must switch, and that is a work item with its own effort estimate.
 - **Areas with no direct mapping**: Drop-in UI customization, custom route handling (custom routing provider, custom reroute logic, reroute vetoes), location discarding, simulation speed control, custom speech synthesizers. The platform reference has the full list.
 - **Callbacks that return a decision** (`Bool` or modified options). These are almost always behavior changes.
 - **Observers used for the app's own telemetry**
@@ -132,7 +147,7 @@ The plan on its own answers "how much work is this?". If that was the question, 
 Bump Navigation v3 and Maps v11 together, since Navigation v3 pulls in Maps v11. The whole app stops compiling, and it won't compile again until **every** area, including the map layer, is migrated. Fixing one area doesn't make the build green, so don't wait for a passing build between areas. Instead:
 
 1. Bump the dependencies. Build once (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant) and save the full error list as the baseline.
-2. For each area in plan order, apply the mappings from the platform reference using the **Target** column. For the map layer, apply the Maps skill's mappings. The area is done when none of the remaining errors are in its files or symbols. Rebuild to refresh the list. New errors can appear as earlier ones clear.
+2. For each area in plan order, apply the mappings from the platform reference using the **Target** column. For the map layer, apply the Maps skill's mappings. The area is done when none of the remaining errors are in its files or symbols. Rebuild to refresh the list. New errors can appear as earlier ones clear. In a single-module app the compiler often stops at the first batch of failing files, so the baseline isn't the total: read each file in the area and migrate it, and use the build to confirm.
 3. Update the telemetry map as you migrate each hook
 4. Show the developer the diff summary for the area
 5. After the last area, build until the app compiles, then run the checks in step 4
@@ -145,6 +160,8 @@ If the app already has navigation behind its own interface (see Staged rollout),
 - [ ] The map renders with the **same style** as before
 - [ ] If before screenshots were taken in step 1, take after screenshots of the same screens on the same simulated route and compare them. They won't match pixel for pixel. Look for unintended changes (route line, maneuver banner, puck, camera, map style) and list each one, with the decision it comes from or as a regression
 - [ ] No v2-only symbols remain. Re-run both inventories.
+- [ ] No `@_spi` imports of Mapbox modules in the app
+- [ ] No leftover references to the old packaging (iOS: `Pods` build phases and xcconfigs, `*.framework` links, storyboard references with `org.cocoapods.*` bundle IDs; README and CI scripts)
 - [ ] Every behavior change has a recorded decision and the matching code
 - [ ] Every telemetry hook in the list is mapped, or marked "no v3 equivalent" with a decision
 - [ ] Every `[VERIFY WITH MAPBOX]` tag is listed in the report
@@ -183,6 +200,7 @@ If the developer needs v2 and v3 side by side (A/B test, fast rollback), don't t
 | Area           | iOS v2 → v3                                                                                                        | Android v2 → v3                                                                                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | Maps SDK       | v10 → v11 (separate migration)                                                                                     | v10 → v11 (separate migration)                                                                           |
+| Distribution   | **SPM only** (no CocoaPods, no Carthage); iOS 14+, Xcode 16+                                                       | Maven, as in v2                                                                                          |
 | Configuration  | `NavigationSettings` → `CoreConfig`, required at creation                                                          | `NavigationOptions` stays; token and location engine move out                                            |
 | Entry point    | `NavigationService` / `Router` / `PassiveLocationManager` → one `MapboxNavigation` from `MapboxNavigationProvider` | `MapboxNavigationApp` / `MapboxNavigationProvider` stay                                                  |
 | Events         | Delegates and `NotificationCenter` → Combine publishers on `navigation()` and `tripSession()`                      | Observers mostly stay; some alternatives observers removed                                               |

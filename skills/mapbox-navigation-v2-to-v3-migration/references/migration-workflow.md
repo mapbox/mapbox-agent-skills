@@ -87,7 +87,7 @@ Effort scale: **S** under 1 hour, **M** half a day, **L** 1-2 days, **XL** more 
 | D2  | Hold the next leg until confirmation                    | default (no answer, v2 behavior kept) | `CoreConfig(multilegAdvancing: .manually { … })` |
 ```
 
-When the developer doesn't answer, write "default (no answer, v2 behavior kept)". When v2 behavior can't be kept, write "no v3 equivalent" and list it under Blockers in the summary.
+When the developer doesn't answer, write "default (no answer, v2 behavior kept)". When v2 behavior can't be kept, write "no v3 equivalent: behavior removed", list it under **Behavior removed** in the summary, and put any workaround in the "Suggested workaround" column. Write "developer approved" in **Decided by** before implementing a workaround.
 
 ## Step 5: Migration summary
 
@@ -96,6 +96,18 @@ When the developer doesn't answer, write "default (no answer, v2 behavior kept)"
 
 **Result:** Builds on <targets>. Guidance runs in simulation: route drawn, instructions spoken, reroute and arrival observed. <N> files changed.
 **SDKs:** Navigation 2.x.y → 3.x.y, Maps 10.x.y → 11.x.y
+**Packaging:** <e.g. CocoaPods → Swift Package Manager>
+
+### Behavior removed (needs your attention)
+
+Features the app had in v2 that v3 can't provide with public API. The code now compiles without them.
+
+| ID  | Feature | Where | What the user will notice | Suggested workaround (not implemented) |
+| --- | ------- | ----- | ------------------------- | -------------------------------------- |
+
+### Needs developer review
+
+Only when the migration ran without the developer (SKILL.md rule 8): each decision taken by default, with its ID.
 
 ### Areas
 

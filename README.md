@@ -417,6 +417,30 @@ Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling,
 
 ---
 
+### 🩺 mapbox-mobile-sdk-audit
+
+**Audit an iOS or Android app's Mapbox SDK integration with a coding agent.**
+
+Uses catalogs and checks prepared by Mapbox engineers for Maps SDK v11 (iOS and Android), Navigation SDK v3 (Android) and Search SDK (Android). Finds outdated or deprecated API usage, functionality the app rebuilt that the SDK already provides, and known performance and correctness antipatterns. Reports each finding with a stable ID, confidence and false-positive risk. Read-only unless you ask for fixes.
+
+**Use when:**
+
+- Reviewing or health-checking a Mapbox mobile integration
+- Following up a Maps v10 → v11 or Navigation v2 → v3 migration
+- Chasing slow, leaky or battery-hungry map screens
+
+**Key topics:**
+
+- Featureset Interactions, Feature State, partial GeoJSON updates, view annotations, viewport
+- Runtime styling, annotation and camera antipatterns
+- Lifecycle, threading and memory hygiene
+- Navigation route traversal, observers and Coordination API lifecycle
+- Search suggest/select flow, request hygiene and offline search
+
+[View skill →](./skills/mapbox-mobile-sdk-audit/SKILL.md)
+
+---
+
 ### 📱 mapbox-flutter-patterns
 
 **Official integration patterns for the Mapbox Maps SDK for Flutter (mapbox_maps_flutter) on iOS and Android with Dart.**

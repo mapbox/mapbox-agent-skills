@@ -135,4 +135,5 @@ When the developer doesn't answer, write "default (no answer, v2 behavior kept)"
 ### Next steps
 
 - Audit the migrated app's Navigation and Maps integration against v3 and v11 best practices
+- <Android, View-based UI> Move to Jetpack Compose as a separate project
 ```

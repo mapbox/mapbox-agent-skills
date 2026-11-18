@@ -170,6 +170,7 @@ Write the migration summary from `references/migration-workflow.md`:
 - `[VERIFY WITH MAPBOX]` items
 - Pre-existing issues outside the migration's scope (patterns that work in v3 but are known to be costly or fragile). List them, don't fix them.
 - Recommended next step: audit the app's Navigation and Maps SDK integration against v3 and v11 best practices
+- **Android apps on the View system:** recommend moving to Jetpack Compose as a separate follow-up, since Compose is the standard Android UI toolkit. The map moves to the `MapboxMap` composable from the Mapbox Compose extension, and Google's [migrate XML views to Jetpack Compose](https://developer.android.com/agents/skills/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/skill) skill covers the rest of the screen. Which v3 navigation UI components have Compose versions, and which stay as Views hosted in `AndroidView`, is `[VERIFY WITH MAPBOX]`. Don't do it as part of this migration. If the developer chose the app's own UI over Drop-in UI (rule 5), building that UI in Compose is a reasonable choice.
 
 The summary should be short enough for a PM to read: areas, effort, blockers, decisions, telemetry gaps.
 

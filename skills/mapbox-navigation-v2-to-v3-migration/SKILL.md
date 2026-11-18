@@ -61,11 +61,11 @@ Android has its own list. v3 also turns on some features v2 didn't have or had o
 2. Default to the option **closest to v2 behavior** if the developer doesn't answer, and say so. If there is no way to keep v2 behavior, say that plainly. Don't write a workaround the developer didn't ask for.
 3. Record the decision in the decision log.
 
-For **New in v3 and on by default** rows, the default is to turn the feature off, so the migrated app behaves like v2. List each one in the report as available to turn on later.
+For **New in v3 and on by default** rows, the default is to turn the feature off, so the migrated app behaves like v2. List each one in the report as available to turn on later. When the developer reports one of these after migrating ("the route line looks different"), go through the **whole** table, including the defaults QA can't see, such as predictive caching.
 
 ### 3. Keep the app's own telemetry working
 
-Apps often send analytics from Navigation SDK callbacks: reroute events, off-route, route progress, arrival, the raw directions response. In step 1, list **every** v2 hook the app reads data from, including data that only feeds logging. In step 3, map each to its v3 source using the **App telemetry hooks** table in the platform reference. When v3 has no equivalent, or reports less (for example no reroute reason, or no raw response object), say so in the telemetry map. Don't drop the log call silently, and don't invent fields.
+Apps often send analytics from Navigation SDK callbacks: reroute events, off-route, route progress, arrival, the raw directions response. In step 1, list **every** v2 hook the app reads data from, including data that only feeds logging. Map each to its v3 source using the **App telemetry hooks** table in the platform reference, and say per hook whether it is **same** (the v2 API still works), **changed** (new API or payload, same data) or **reduced / gone** (less data, or no v3 equivalent). Do this in step 2 for an effort estimate, and confirm it in step 3. When v3 has no equivalent, or reports less (for example no reroute reason, or no raw response object), say so in the telemetry map. Don't drop the log call silently, and don't invent fields.
 
 ### 4. Keep the style, data products and route requests
 

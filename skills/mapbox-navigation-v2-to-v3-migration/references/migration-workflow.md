@@ -39,11 +39,11 @@ Every place the app reads data from the Navigation SDK and sends it to its own a
 ```markdown
 ## App telemetry hooks
 
-| #   | v2 hook                              | Data the app logs                    | Event name in the app | v3 source (step 3)                          | Data lost                      |
-| --- | ------------------------------------ | ------------------------------------ | --------------------- | ------------------------------------------- | ------------------------------ |
-| 1   | `didRerouteAlong(_:at:proactive:)`   | new route distance, `proactive` flag | `nav_reroute`         | `rerouting` `.Fetched` + `navigationRoutes` | <fill in, e.g. reroute reason> |
-| 2   | `IndexedRouteResponse.routeResponse` | response identifier, route count     | `route_received`      |                                             |                                |
-| 3   | off-route observer                   | timestamp, location                  | `nav_off_route`       |                                             |                                |
+| #   | v2 hook                              | Data the app logs                    | Event name in the app | Mapping (same / changed / reduced / gone) | v3 source (step 3)                          | Data lost                      |
+| --- | ------------------------------------ | ------------------------------------ | --------------------- | ----------------------------------------- | ------------------------------------------- | ------------------------------ |
+| 1   | `didRerouteAlong(_:at:proactive:)`   | new route distance, `proactive` flag | `nav_reroute`         | reduced                                   | `rerouting` `.Fetched` + `navigationRoutes` | <fill in, e.g. reroute reason> |
+| 2   | `IndexedRouteResponse.routeResponse` | response identifier, route count     | `route_received`      | gone                                      |                                             |                                |
+| 3   | off-route observer                   | timestamp, location                  | `nav_off_route`       | same                                      |                                             |                                |
 ```
 
 Fill the last two columns in step 3. Every row ends with a v3 source or "no v3 equivalent". Never leave a row blank, and never drop the app's log call without a decision.

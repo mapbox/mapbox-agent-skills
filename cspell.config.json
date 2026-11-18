@@ -186,7 +186,8 @@
     "multiprocess",
     "roadname",
     "scalebar",
-    "voicefeedback"
+    "voicefeedback",
+    "drawables"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

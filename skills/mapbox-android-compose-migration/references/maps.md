@@ -1,0 +1,204 @@
+# Maps SDK v11: View system → Compose
+
+Mappings from View-system map code to the Mapbox Maps Compose extension (`com.mapbox.extension:maps-compose`). All packages below are under `com.mapbox.maps.extension.compose` unless the row says otherwise. "Since" is the Maps SDK version. **Experimental** entries need `@OptIn(MapboxExperimental::class)`.
+
+## Inventory search list
+
+Search the screen's Kotlin, Java and layout files for:
+
+| Area                | Search for                                                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Map view            | `com.mapbox.maps.MapView` in layouts, `MapView(`, `MapInitOptions(`, `AndroidView` wrapping a `MapView`, `mapbox_` XML attributes                                 |
+| Lifecycle           | `mapView.onStart`, `onStop`, `onDestroy`, `onLowMemory`, `LifecycleOwner` forwarding                                                                              |
+| Style               | `loadStyle(`, `mapbox_styleUri`, `style {`, `addLayer`, `addSource`, `geoJsonSource(`, `setStyleImportConfigProperty`                                             |
+| Camera and viewport | `setCamera(`, `flyTo(`, `easeTo(`, `cameraForCoordinates`, `viewport.transitionTo`, `makeFollowPuckViewportState`, `makeOverviewViewportState`                    |
+| Events              | `subscribeCameraChanged`, `subscribeMapIdle`, `subscribeStyleLoaded`, `subscribeMapLoaded`, `addOnCameraChangeListener`                                           |
+| Gestures            | `addOnMapClickListener`, `addOnMapLongClickListener`, `gestures.updateSettings`, `mapbox_gestures` attributes                                                     |
+| Interactions        | `addInteraction(`, `ClickInteraction`, `LongClickInteraction`, `setFeatureState`, `queryRenderedFeatures`                                                         |
+| Annotations         | `createPointAnnotationManager`, `createCircleAnnotationManager`, `createPolylineAnnotationManager`, `createPolygonAnnotationManager`, `viewAnnotationManager`     |
+| Location            | `mapView.location`, `setLocationProvider`, `locationPuck`, `addOnIndicatorPositionChangedListener`                                                                |
+| Ornaments           | `mapView.compass`, `mapView.scalebar`, `mapView.logo`, `mapView.attribution`, `mapbox_compass`, `mapbox_scaleBar`, `mapbox_logo`, `mapbox_attribution` attributes |
+| Other               | `Snapshotter`, `OfflineManager`, `TileStore`, `CustomLayerHost`, debug options                                                                                    |
+
+## Setup
+
+```kotlin
+dependencies {
+    implementation("com.mapbox.maps:android:11.35.0")
+    implementation("com.mapbox.extension:maps-compose:11.35.0") // same version as the SDK
+}
+```
+
+Keep the app's current Maps version (see SKILL.md Rule 1). The token setup doesn't change.
+
+## Map view
+
+```kotlin
+@Composable
+fun StoreMapScreen() {
+    val mapViewportState = rememberMapViewportState {
+        setCameraOptions {
+            center(Point.fromLngLat(-122.42, 37.77))
+            zoom(12.0)
+        }
+    }
+    MapboxMap(
+        modifier = Modifier.fillMaxSize(),
+        mapViewportState = mapViewportState,
+        style = { MapStyle(style = "mapbox://styles/acme/store-style") }, // the screen's existing style
+        onMapClickListener = { point -> /* ... */ false },
+    ) {
+        // annotations, MapEffect, ViewAnnotation, layers
+    }
+}
+```
+
+| View system                                                                            | Compose target                                                                                                                                                             | Notes                                                                                                                                   |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `<com.mapbox.maps.MapView>` / `MapView(context)`                                       | `MapboxMap(modifier, composeMapInitOptions, compass, scaleBar, logo, attribution, mapViewportState, mapState, onMapClickListener, onMapLongClickListener, style, content)` | `MapboxMap` wraps a `MapView` in an `AndroidView`. Don't also wrap one yourself.                                                        |
+| `AndroidView { MapView(it) }` in an existing composable                                | `MapboxMap(...)`                                                                                                                                                           | Remove the manual wrapper and its lifecycle forwarding                                                                                  |
+| `MapInitOptions(context, mapOptions, textureView = true, antialiasingSampleCount = 4)` | `ComposeMapInitOptions(mapOptions, textureView = true, antialiasingSampleCount = 4)` (since 11.3, stable with the extension)                                               | Wrap in `remember { }`. **Changing it recreates the map.** Camera and style don't go here: use `MapViewportState` and the `style` slot. |
+| `mapbox_mapSurface="texture_view"` XML attribute                                       | `ComposeMapInitOptions(..., textureView = true)`                                                                                                                           |                                                                                                                                         |
+| `mapbox_pixelRatio`, other `MapOptions` attributes                                     | `ComposeMapInitOptions(MapOptions.Builder().applyDefaultParams(context).pixelRatio(...).build())`                                                                          | Or the `ComposeMapInitOptions(pixelRatio, ...)` constructor                                                                             |
+
+## Lifecycle
+
+The composable forwards `ON_START`, `ON_STOP` and `ON_RESUME` from the `LocalLifecycleOwner`, forwards low-memory callbacks, and calls `onStop()` and `onDestroy()` when it leaves composition.
+
+| View system                                                     | Compose target                                                                                                      |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `mapView.onStart()`, `onStop()`, `onDestroy()`, `onLowMemory()` | **Delete.** Don't call them from `MapEffect` either.                                                                |
+| Lifecycle plugin (`mapView.lifecycle`)                          | Disabled in Compose maps. Accessing it throws `PluginDisabledException` from 11.35 (`NullPointerException` before). |
+
+## Style
+
+| View system                                                                     | Compose target                                                                                                                                                             | Notes                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `loadStyle("mapbox://styles/...")`, `mapbox_styleUri`                           | `style = { MapStyle(style = "mapbox://styles/...") }` (`style.MapStyle`, since 11.3)                                                                                       | `style` is a composable slot. `style = Style.STANDARD` doesn't compile; use `{ MapStyle(Style.STANDARD) }` or `{ MapboxStandardStyle() }`.                                                            |
+| No style set (v11 loads Standard)                                               | Leave the default `style = { MapboxStandardStyle() }`                                                                                                                      |                                                                                                                                                                                                       |
+| Standard config (`setStyleImportConfigProperty("basemap", "lightPreset", ...)`) | `MapboxStandardStyle(standardStyleState = rememberStandardStyleState { configurationsState.lightPreset = LightPresetValue.NIGHT })`                                        | Standard config through the state; current form since 11.13. On older 11.x, use `MapEffect` with the View API.                                                                                        |
+| Switching styles at runtime (`loadStyle` on a theme change)                     | Change the string passed to `MapStyle(...)` from state                                                                                                                     | Still a full style reload, same cost as before. Layers added in `MapEffect` are lost and must be re-added (see Behavior changes).                                                                     |
+| `geoJsonSource("id") { data(...) }` + `style.addSource`                         | `val source = remember { GeoJsonSourceState() }; source.data = GeoJSONData(features)`                                                                                      | Avoid `rememberGeoJsonSourceState` for large data: it's `@MapboxDelicateApi` (11.12) because saving large GeoJSON in saved state is costly.                                                           |
+| `lineLayer("id", "source") { ... }` + `style.addLayer`                          | `LineLayer(sourceState = source, layerId = "id") { lineColor = ColorValue(Color.Red); lineWidth = DoubleValue(4.0) }`                                                      | Same for `FillLayer`, `SymbolLayer`, `CircleLayer`, `FillExtrusionLayer`, `HeatmapLayer`, `RasterLayer` (stable since 11.6). Keep the **same layer IDs** if other code or interactions refer to them. |
+| `addLayerAbove` / `addLayerBelow` / `addLayerAt`, slots                         | `MapStyle`/`GenericStyle` `layerPositionedContent { aboveLayer("id") { ... } }`, `slotsContent { slot("middle") { ... } }`, or `MapboxStandardStyle(middleSlot = { ... })` | Since 11.4                                                                                                                                                                                            |
+| `style.addImage("id", bitmap)`                                                  | `rememberStyleImage(...)` (since 11.6)                                                                                                                                     |                                                                                                                                                                                                       |
+| Custom layers (`CustomLayerHost`), style changes with no composable             | `MapEffect(Unit) { mapView -> mapView.mapboxMap.getStyle { style -> ... } }`                                                                                               | Re-run after style reloads (subscribe to `mapState.styleLoadedEvents`)                                                                                                                                |
+
+Mixing styles: declare a layer either in Compose or in `MapEffect`, not both. A layer the composition doesn't know about can be removed by a style reload without the composition noticing.
+
+## Camera and viewport
+
+`rememberMapViewportState(key, init)` is saveable: the camera survives configuration changes and process death. Every camera call goes through the viewport, so any of them (including `setCameraOptions`) cancels follow-puck.
+
+| View system                                                            | Compose target                                                                 | Notes                                                                      |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| XML camera attributes, `MapInitOptions(cameraOptions = ...)`           | `rememberMapViewportState { setCameraOptions { center(...); zoom(...) } }`     |                                                                            |
+| `mapboxMap.setCamera(options)`                                         | `mapViewportState.setCameraOptions(options)`                                   | Calls made before the map attaches are queued (since 11.4)                 |
+| `mapView.camera.flyTo(options, animationOptions)` / `easeTo`           | `mapViewportState.flyTo(options, animationOptions)` / `easeTo(...)`            | Call from a click handler or `LaunchedEffect`, not directly in composition |
+| `viewport.transitionTo(viewport.makeFollowPuckViewportState(options))` | `mapViewportState.transitionToFollowPuckState(followPuckViewportStateOptions)` | The puck still needs enabling (see Location)                               |
+| `viewport.transitionTo(makeOverviewViewportState(options))`            | `mapViewportState.transitionToOverviewState(overviewViewportStateOptions)`     |                                                                            |
+| `viewport.idle()`                                                      | `mapViewportState.idle()`                                                      |                                                                            |
+| `mapboxMap.cameraForCoordinates(...)`                                  | `mapViewportState.cameraForCoordinates(...)` (suspend, since 11.9)             | On older 11.x, use `MapEffect` with the View API                           |
+| Reading `mapboxMap.cameraState`                                        | `mapViewportState.cameraState` (Compose state, null until attached)            |                                                                            |
+| `viewport.addStatusObserver`                                           | `mapViewportState.mapViewportStatus`, `mapViewportStatusChangedReason`         |                                                                            |
+
+One `MapViewportState` serves one `MapboxMap`. Hoist it to the screen's state holder if other UI drives the camera.
+
+## Events and gestures
+
+`rememberMapState()` (since 11.5) exposes map events as flows and queries as suspend functions. Collect flows in a `LaunchedEffect`.
+
+| View system                                                                                   | Compose target                                                                                                                                                                                                              | Notes                                                  |
+| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `subscribeCameraChanged { }`                                                                  | `mapState.cameraChangedEvents.collect { }`, or read `mapViewportState.cameraState`                                                                                                                                          | `cameraChangedCoalescedEvents` is experimental (11.13) |
+| `subscribeMapIdle`, `subscribeStyleLoaded`, `subscribeMapLoaded`, `subscribeSourceDataLoaded` | `mapState.mapIdleEvents`, `styleLoadedEvents`, `mapLoadedEvents`, `sourceDataLoadedEvents`                                                                                                                                  |                                                        |
+| `gestures.addOnMapClickListener` / `addOnMapLongClickListener`                                | `MapboxMap(onMapClickListener = { point -> ... }, onMapLongClickListener = ...)`                                                                                                                                            | Return `true` to consume, as before                    |
+| `mapboxMap.queryRenderedFeatures(...)` for a non-tap query                                    | `mapState.queryRenderedFeatures(RenderedQueryGeometry, RenderedQueryOptions)` (suspend)                                                                                                                                     |                                                        |
+| `pixelForCoordinate`, `coordinateForPixel`                                                    | `mapState.pixelForCoordinate`, `mapState.coordinateForPixel` (suspend)                                                                                                                                                      |                                                        |
+| `gestures.updateSettings { rotateEnabled = false }`, `mapbox_gestures*` attributes            | Before 11.29: `rememberMapState { gesturesSettings = GesturesSettings { rotateEnabled = false } }`. From 11.29: `mapState.gesturesState.gesturesSettings` (experimental); `gesturesSettings` still works but is deprecated. | Record which one you used in the decision log          |
+
+## Interactions and feature state
+
+| View system                                                    | Compose target                                                                                                                                                         | Notes                                                                                  |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `addInteraction(ClickInteraction.standardPoi { poi, ctx -> })` | `MapboxStandardStyle(standardStyleState = rememberStandardStyleState { interactionsState.onPoiClicked { poi, ctx -> true } })`                                         | Also `onBuildingsClicked`, `onPlaceLabelsClicked`, and others                          |
+| `addInteraction(ClickInteraction.featureset("id", importId))`  | `rememberStyleState { styleInteractionsState.onFeaturesetClicked(id = "id", importId = ...) { feature, ctx -> true } }`, passed to `MapStyle(style, styleState = ...)` | `StyleInteractionsState` since 11.7                                                    |
+| `addInteraction(ClickInteraction.layer("stores"))`             | `styleInteractionsState.onLayerClicked(id = "stores") { feature, ctx -> true }`                                                                                        | `LayerInteractionsState` on a layer composable's state is experimental                 |
+| `setFeatureState(feature, state)` inside the handler           | `setFeatureState(...)` / `setStandardPoiState(...)` in the callback's `FeaturesetFeatureScope`                                                                         | Outside callbacks: `mapState.setFeatureState(...)` (experimental)                      |
+| Any of the above on a version without the Compose API          | `MapEffect(Unit) { mapView -> mapView.mapboxMap.addInteraction(...) }`                                                                                                 | Store the returned `Cancelable` and cancel it from `DisposableMapEffect`'s `onDispose` |
+
+## Annotations
+
+**Each single-annotation composable (`PointAnnotation`, `CircleAnnotation`, `PolylineAnnotation`, `PolygonAnnotation`) creates its own annotation manager, which means its own source and layer.** A `forEach` over a list of `PointAnnotation`s creates one layer per marker. Use the group composables for lists.
+
+| View system                                                            | Compose target                                                                                                                      | Notes                                                                                                                    |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| One manager holding many annotations (`manager.create(listOfOptions)`) | `PointAnnotationGroup(annotations = listOfOptions) { interactionsState.onClicked { annotation -> true } }` (`annotation.generated`) | One layer, like the View manager. Same for `CircleAnnotationGroup`, `PolylineAnnotationGroup`, `PolygonAnnotationGroup`. |
+| Manager with clustering (`AnnotationConfig(clusterOptions = ...)`)     | `PointAnnotationGroup(annotations, annotationConfig = AnnotationConfig(clusterOptions = ClusterOptions(...)))`                      | Point and circle groups only. `onClusterClicked` on the group's interactions state.                                      |
+| A few individual annotations                                           | `PointAnnotation(point) { iconImage = icon; interactionsState.onClicked { true } }`                                                 | Fine for a handful                                                                                                       |
+| `withIconImage(bitmap)` / drawable                                     | `val icon = rememberIconImage(R.drawable.marker)`, then `iconImage = icon` (since 11.6)                                             | A `PointAnnotation` without `iconImage` draws nothing                                                                    |
+| `manager.addClickListener { }`                                         | `interactionsState.onClicked { }` (since 11.8)                                                                                      | The `onClick` parameter overloads are deprecated                                                                         |
+| Draggable annotations (`isDraggable`, `addDragListener`)               | `isDraggable = true` plus `interactionsState.onDragged { }`                                                                         |                                                                                                                          |
+| `viewAnnotationManager.addViewAnnotation(view, options)`               | `ViewAnnotation(options = viewAnnotationOptions { geometry(point) }) { /* Compose content */ }`                                     | Content is Compose. Rebuild the View's layout as a composable, or host it in `AndroidView` inside `ViewAnnotation`.      |
+| Updating annotations by mutating the manager                           | Change the list or state that feeds the composable                                                                                  | Keep stable inputs. Rebuilding the options list on every recomposition updates the whole layer each time.                |
+
+`Marker` (since 11.14) is experimental. Don't replace existing annotations with it during a migration.
+
+## Location and puck
+
+There's no declarative puck. Keep the View-system calls inside `MapEffect`.
+
+```kotlin
+MapboxMap(mapViewportState = mapViewportState) {
+    MapEffect(Unit) { mapView ->
+        mapView.location.updateSettings {
+            locationPuck = createDefault2DPuck(withBearing = true)
+            puckBearingEnabled = true
+            enabled = true
+        }
+        mapViewportState.transitionToFollowPuckState()
+    }
+}
+```
+
+| View system                                       | Compose target                                                                                                         |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `mapView.location.updateSettings { ... }`         | Same, inside `MapEffect(Unit)`                                                                                         |
+| `mapView.location.setLocationProvider(provider)`  | Same, inside `MapEffect(Unit)`. Hold the provider outside composition (Activity, ViewModel or `remember`).             |
+| `addOnIndicatorPositionChangedListener(listener)` | `DisposableMapEffect(Unit) { mapView -> mapView.location.addOn...(l); onDispose { mapView.location.removeOn...(l) } }` |
+| Location permission request                       | Unchanged. Request it before enabling the puck, using the app's Compose permission handling.                           |
+
+## Ornaments
+
+Compass, scale bar, logo and attribution are Compose slots on `MapboxMap` (since 11.3). Their View plugins are disabled in Compose maps: `mapView.compass`, `mapView.scalebar`, `mapView.logo` and `mapView.attribution` throw `PluginDisabledException` from 11.35.
+
+| View system                                                                                        | Compose target                                                                             |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `mapView.compass.updateSettings { position = ...; marginTop = ... }`, `mapbox_compass*` attributes | `compass = { Compass(alignment = Alignment.TopEnd, contentPadding = PaddingValues(...)) }` |
+| `mapView.compass.enabled = false`                                                                  | `compass = {}`                                                                             |
+| `mapView.scalebar.enabled = false`                                                                 | `scaleBar = {}`                                                                            |
+| Scale bar position and margins                                                                     | `scaleBar = { ScaleBar(alignment = ..., contentPadding = ...) }`                           |
+| Logo and attribution position                                                                      | `logo = { Logo(alignment = ...) }`, `attribution = { Attribution(alignment = ...) }`       |
+
+Keep the logo and attribution visible. Hiding them has terms-of-service implications; leave that decision to the developer.
+
+## No Compose API: keep the View API
+
+| Feature                                                  | What to do                                                                                                                                          |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OfflineManager`, `TileStore`                            | They don't need the map. Hold them in a ViewModel or `remember`; no change.                                                                         |
+| `Snapshotter`                                            | No Compose wrapper. Keep it outside the composable, or in `DisposableMapEffect`.                                                                    |
+| Custom layers, debug options                             | `MapEffect(Unit)`                                                                                                                                   |
+| Annotation manager features the composables don't expose | `MapEffect(Unit)` with a manager created once and removed in `DisposableMapEffect`'s `onDispose` `[VERIFY WITH MAPBOX]` for the feature in question |
+
+## Behavior changes
+
+| Change                                | View screen                                                                         | Compose default                                                                                                                                                              | Preserve the View behavior                                                                                                                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Style loaded from code after creation | `loadStyle(...)` in `onCreate`/`onViewCreated`                                      | The `style` slot defaults to Standard. Calling `loadStyle` from `MapEffect` loads Standard first, then the app's style.                                                      | Pass the app's style in the `style` slot. Remove the `loadStyle` call.                                                                                          |
+| Ornaments                             | Positions and margins from XML attributes or `updateSettings`                       | Compose ornaments with their own default alignment and padding                                                                                                               | Set `alignment` and `contentPadding` on each slot to match. Compare in the after screenshot.                                                                    |
+| Camera on rotation                    | Usually reset to the XML or `MapInitOptions` camera when the Activity was recreated | Restored, because `rememberMapViewportState` is saveable                                                                                                                     | Usually keep the new behavior and record it. If the screen must reset, key the state (`rememberMapViewportState(key = ...)`) or reset it in a `LaunchedEffect`. |
+| Map recreated                         | Lived as long as the Activity or the Fragment's view                                | Destroyed when the composable leaves composition (navigating away, a conditional branch, a lazy list scrolling it off). Also recreated when `composeMapInitOptions` changes. | Keep `MapboxMap` out of conditionals that toggle often. `remember` the init options. Hoist viewport state so the camera returns with the screen.                |
+| Layers added imperatively             | Added once in the `loadStyle` callback                                              | A `style` slot change reloads the style and drops layers added in `MapEffect`                                                                                                | Declare the layers as composables, or re-add them on `mapState.styleLoadedEvents`                                                                               |
+| Many single-annotation composables    | One manager, one layer: icons collide and sort within that layer                    | One layer per composable: draw order follows composition order, and collision between markers changes                                                                        | Use the group composable with the same options list                                                                                                             |
+| Gesture settings                      | XML `mapbox_gestures*` attributes                                                   | Defaults (all gestures on)                                                                                                                                                   | Carry each attribute over to the gesture settings (see Events and gestures)                                                                                     |

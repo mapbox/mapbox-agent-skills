@@ -70,6 +70,37 @@
         "Mentions other v3 defaults the migration should have turned off the same way, such as predictive caching (CoreConfig(predictiveCacheConfig: nil)) or route line occlusion",
         "Recommends recording these as decisions and listing the features as available to turn on later, rather than silently keeping the new defaults"
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "How much work is it to move our iOS app to Navigation SDK v3? We install MapboxNavigation 2.x with CocoaPods, have a custom top banner (a ContainerViewController subclass that implements navigationService(_:didUpdate:with:rawLocation:)), and a custom NavigationViewportDataSource subclass for the camera. Don't change code.",
+      "expectations": [
+        "States that Navigation SDK v3 for iOS ships only through Swift Package Manager, so the CocoaPods setup must be replaced, and counts that as a work item",
+        "Flags that the banner's v2 NavigationServiceDelegate method would still compile but never be called in v3, and maps it to NavigationComponent.onRouteProgressUpdated(_:)",
+        "Says NavigationViewportDataSource no longer exists (MobileViewportDataSource) and that a custom ViewportDataSource must be rewritten against the publisher-based protocol",
+        "Mentions the iOS 14 / Xcode 16 requirements",
+        "Runs only inventory and plan and doesn't change code"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Our iOS app builds NavigationRoutes from route JSON our backend sends (we decode a RouteResponse and used IndexedRouteResponse in v2). The compiler says NavigationRoutes(routeResponse:routeIndex:responseOrigin:) is inaccessible due to '@_spi'. Can we just add @_spi(MapboxInternal) import MapboxNavigationCore?",
+      "expectations": [
+        "Says not to import SPI: it is not public API and can change or disappear in any release",
+        "Treats building NavigationRoutes from an app-provided RouteResponse as having no public v3 equivalent and records it as a blocker decision",
+        "Offers options: request the route through routingProvider() (or map matching), or raise the use case with Mapbox",
+        "Highlights the change to the app's behavior instead of silently implementing a workaround"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Our iOS v2 app uses a custom speech synthesizer: a class conforming to SpeechSynthesizing, chained with the system synthesizer through MultiplexedSpeechSynthesizer. How do we keep it in Navigation SDK v3?",
+      "expectations": [
+        "Says custom synthesizers are supported in v3 through CoreConfig ttsConfig .custom(speechSynthesizer:) and the public SpeechSynthesizing protocol",
+        "Shows MultiplexedSpeechSynthesizer(speechSynthesizers:) or the convenience initializer with customSpeechSynthesizers",
+        "Notes SystemSpeechSynthesizer is not public (SPI) and MapboxSpeechSynthesizer is final, so a chain without the Mapbox voice can't be rebuilt exactly, and presents that as a decision",
+        "Does not claim custom speech synthesis is unavailable in v3"
+      ]
     }
   ]
 }

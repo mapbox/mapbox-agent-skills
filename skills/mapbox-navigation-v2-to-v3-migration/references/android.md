@@ -2,7 +2,7 @@
 
 Mappings from Navigation SDK for Android v2 to the current v3 APIs.
 
-**Requirements for v3:** Kotlin only (compiled with Kotlin 1.7.20, binary compatible with Kotlin compiler 1.6+). NDK 23 instead of NDK 21. Other NDK major versions aren't guaranteed to work. The v3 API surface still changes between minor releases, so target the latest stable 3.x and check its changelog.
+**Requirements for v3:** Kotlin 1.7.0+ (Java apps can call the public APIs), Android SDK 21+, Java 8 source and target compatibility. NDK 23 (default artifacts) or NDK 27, instead of NDK 21. NDK 27 artifacts (since 3.11.0) add the `-ndk27` suffix to the artifact ID, for example `com.mapbox.navigationcore:android-ndk27`, and support 16 KB page sizes. Keep the app's NDK choice: if the v2 app already used the v2 `-ndk27` artifacts, use the v3 `-ndk27` ones. Other NDK major versions aren't guaranteed to work. See the [requirements](https://docs.mapbox.com/android/navigation/guides/#requirements) for the targeted release. The v3 API surface still changes between minor releases, so target the latest stable 3.x and check its changelog.
 
 **Maps SDK v11 is required.** Navigation SDK v3 depends on Maps SDK v11. Run `mapbox-maps-v10-to-v11-migration` for the map layer (map view, style, annotations, Maps camera, gestures, puck setup) before or alongside this migration. This file covers only the map pieces Navigation owns: route line, route arrow, navigation camera and the location provider Navigation feeds to the puck.
 
@@ -101,6 +101,7 @@ Drop-in UI (`com.mapbox.navigation:ui-dropin`, `NavigationView`) **isn't availab
 
 Notes for the decision:
 
+- **Building the app's own UI in Compose.** Navigation SDK v3 has no Compose UI components: all `ui-components` views are Android Views, hosted in `AndroidView` from Compose. The v2 Drop-in UI sources are open source in the [v2 repository](https://github.com/mapbox/mapbox-navigation-android), so its XML layouts can be the starting point for the app's own screens, converted with Google's [migrate XML views to Jetpack Compose](https://developer.android.com/agents/skills/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/skill) skill. Present this as an option, not a default, and keep it separate from the SDK migration.
 - The UX Framework is a different product with its own configuration and customization APIs. It isn't a renamed `NavigationView`. Drop-in `ViewBinder` and style customizations don't carry over. Inventory every customization the app made so the developer can check each one against the target.
 - The UX Framework docs describe it as beta, with snapshot dependencies and evaluation terms. Flag that to the developer. Don't decide for them.
 - Mapbox support can help with Drop-in replacement. Say so in the report.

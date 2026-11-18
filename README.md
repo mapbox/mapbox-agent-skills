@@ -363,6 +363,29 @@ Covers Swift/SwiftUI integration, lifecycle management, token handling, offline 
 
 ---
 
+### 🔄 mapbox-ios-swiftui-migration
+
+**Move iOS Mapbox map and navigation screens from UIKit to SwiftUI.**
+
+Covers the Mapbox parts of the screen (the SwiftUI `Map` view, `Viewport`, map content for styles and annotations, event modifiers, `MapReader`, and hosting Navigation SDK v3 views) and marks which SwiftUI APIs are stable and which are experimental. Keeps the map looking and behaving the same, one screen at a time.
+
+**Use when:**
+
+- Migrating a UIKit `MapView`, storyboard scene or `UIViewRepresentable` wrapper to the SwiftUI `Map`
+- Estimating how much work it is to move map screens to SwiftUI
+- Fixing a map that broke after moving to SwiftUI
+
+**Key topics:**
+
+- UIKit → SwiftUI mappings for Maps SDK v11
+- Behavior changes surfaced as decisions (map recreation, one layer per annotation, draggable annotations, safe-area padding)
+- Navigation SDK v3 screens with `NavigationMapView` hosted in SwiftUI
+- Common SwiftUI mistakes (map in a toggling branch, camera events in `@State`, layers lost on style reload)
+
+[View skill →](./skills/mapbox-ios-swiftui-migration/SKILL.md)
+
+---
+
 ### 📱 mapbox-android-patterns
 
 **Integration patterns for Mapbox Maps SDK on Android with Kotlin, Jetpack Compose, and mobile optimization.**

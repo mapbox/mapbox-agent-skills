@@ -27,6 +27,7 @@ This repo contains specialized Agent Skills for Mapbox development. Skills provi
 ### Mobile Development
 
 - **mapbox-ios-patterns**: iOS integration with Swift, SwiftUI, UIKit (Maps SDK for iOS). Covers initialization, markers, annotations, camera control, platform-specific patterns.
+- **mapbox-ios-swiftui-migration**: Move iOS map and navigation screens from UIKit to SwiftUI (Maps SDK v11, Navigation SDK v3). Covers the SwiftUI Map view, Viewport, map content for styles and annotations, MapReader, and hosting NavigationMapView, one screen at a time, without changing what the map looks like. Marks stable vs experimental APIs.
 - **mapbox-android-patterns**: Android integration with Kotlin, Jetpack Compose, View system (Maps SDK for Android). Covers setup, markers, styling, camera animations, platform patterns.
 
 ## How to Use Skills
@@ -46,6 +47,7 @@ Common workflows that combine multiple skills:
 - **Migrating from Google Maps**: google-maps-migration + web-integration-patterns + token-security
 - **Custom styled map**: cartography + style-patterns + style-quality
 - **Cross-platform app**: ios-patterns + android-patterns + token-security
+- **Moving iOS map screens to SwiftUI**: ios-swiftui-migration + ios-patterns
 - **Open-source project**: maplibre-migration + web-performance-patterns
 
 ## Quick Decision Guide

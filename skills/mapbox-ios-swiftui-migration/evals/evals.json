@@ -1,0 +1,73 @@
+{
+  "skill_name": "mapbox-ios-swiftui-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Move this view controller to SwiftUI. We're on Maps SDK 11.35.0.\n\nfinal class StoreMapViewController: UIViewController {\n    private var mapView: MapView!\n    private var cancelables = Set<AnyCancelable>()\n\n    override func viewDidLoad() {\n        super.viewDidLoad()\n        let options = MapInitOptions(\n            cameraOptions: CameraOptions(center: CLLocationCoordinate2D(latitude: 37.77, longitude: -122.42), zoom: 12),\n            styleURI: StyleURI(rawValue: \"mapbox://styles/acme/store-style\")\n        )\n        mapView = MapView(frame: view.bounds, mapInitOptions: options)\n        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]\n        mapView.ornaments.options.compass.margins = CGPoint(x: 8, y: 80)\n        mapView.gestures.options.rotateEnabled = false\n        view.addSubview(mapView)\n\n        mapView.mapboxMap.onMapLoaded.observeNext { [weak self] _ in\n            self?.analytics.track(\"map_loaded\")\n        }.store(in: &cancelables)\n    }\n}",
+      "expectations": [
+        "Uses the SwiftUI Map view from MapboxMaps (no UIViewRepresentable wrapper around MapView)",
+        "Moves the camera to Map(initialViewport: .camera(center: ..., zoom: 12)) (or a bound Viewport)",
+        "Keeps the same style with .mapStyle(MapStyle(uri: StyleURI(rawValue: \"mapbox://styles/acme/store-style\")!)), not Standard",
+        "Carries the compass margins over with .ornamentOptions(OrnamentOptions(compass: CompassViewOptions(margins: CGPoint(x: 8, y: 80))))",
+        "Carries rotateEnabled = false over with .gestureOptions(GestureOptions(rotateEnabled: false))",
+        "Replaces the onMapLoaded subscription and the stored cancelables with the .onMapLoaded { } modifier"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're moving our store map to SwiftUI. The UIKit version creates one PointAnnotationManager and sets manager.annotations to about 300 store markers, each with a tapHandler. In SwiftUI I was going to write ForEvery(stores) { store in PointAnnotation(coordinate: store.coordinate).image(named: \"pin\") }. Good plan?",
+      "expectations": [
+        "Says no: a PointAnnotation placed directly in Map content is wrapped in its own annotation group (its own manager and layer), so 300 markers would mean 300 layers",
+        "Recommends PointAnnotationGroup(stores) { store in PointAnnotation(...) } (or with id: \\.id) to keep a single layer like the UIKit manager",
+        "Moves the tapHandler to .onTapGesture on each PointAnnotation inside the group",
+        "Notes that the data needs stable, unique IDs (Identifiable or an id key path)",
+        "Mentions clusterOptions on the group only if the UIKit manager clustered, or doesn't add clustering unasked"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "After moving our map screen to SwiftUI, three problems: the map reloads every time the user toggles the filter sheet, the app uses a lot of CPU while panning, and our 'stores' heatmap layer disappears when we switch to the dark style. Code:\n\nstruct StoreMap: View {\n    @State var showFilters = false\n    @State var camera: CameraState?\n    @State var dark = false\n    var body: some View {\n        MapReader { proxy in\n            if showFilters {\n                VStack { FilterBar(); Map().mapStyle(dark ? .dark : .light).onCameraChanged { camera = $0.cameraState } }\n            } else {\n                Map().mapStyle(dark ? .dark : .light).onCameraChanged { camera = $0.cameraState }\n            }\n        }\n        .onAppear { try? proxy.map?.addLayer(HeatmapLayer(id: \"stores\", source: \"stores\")) }\n    }\n}",
+      "expectations": [
+        "Explains that the if/else creates two different Map views, so toggling showFilters destroys and recreates the map (and reloads the style); keep a single Map outside the branch",
+        "Explains that writing every onCameraChanged event to @State re-runs body at frame rate; recommends keeping it in a model, throttling, or not storing it",
+        "Explains that the layer added through proxy.map is not part of the map content, so a style reload drops it",
+        "Recommends declaring the source and heatmap layer as map content inside Map { } (GeoJSONSource / HeatmapLayer with the same IDs) so they're re-added after style reloads",
+        "Notes that proxy is used outside the MapReader closure (or that proxy.map is optional/nil before the map exists), so the onAppear code is wrong as written"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our turn-by-turn screen (Navigation SDK 3.20, Maps 11.20) is a UIViewController whose view is a NavigationMapView. It creates MapboxNavigationProvider in viewDidLoad, subscribes to routeProgress and bannerInstructions with .sink to update two UILabels, and has a recenter UIButton that calls navigationMapView.update(navigationCameraState: .following). The rest of the app is moving to SwiftUI. How do we move this screen?",
+      "expectations": [
+        "Says Navigation SDK v3 has no SwiftUI views and the SwiftUI Map has no public route line or navigation camera, so keep NavigationMapView and host it in a UIViewControllerRepresentable (or UIViewRepresentable)",
+        "Moves the MapboxNavigationProvider and publishers into an ObservableObject (or @Observable) view model that republishes routeProgress and bannerInstructions as published properties",
+        "Warns that MapboxNavigationProvider must be created once (owned by the App or @StateObject), never in body or more than once",
+        "Creates NavigationMapView once in makeUIViewController/makeUIView, not in update",
+        "Replaces the labels and recenter button with SwiftUI views reading the view model (or hosts the UIKit views), with the recenter button setting a camera state the hosted controller applies via update(navigationCameraState:)",
+        "Advises against rebuilding the screen on the SwiftUI Map (own route layer, Viewport.followPuck) as part of the migration"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Rough estimate: how much work to move our five Mapbox map screens from UIKit to SwiftUI? We're on Maps SDK 11.4. One screen lets the driver drag a drop-off pin (PointAnnotation with isDraggable). One is a Navigation SDK v3 turn-by-turn screen. I don't have the code handy.",
+      "expectations": [
+        "Flags that Maps 11.4 is below 11.6.0, where the SwiftUI API became stable, and proposes the Maps upgrade as a separate change before the migration",
+        "Gives a provisional per-screen estimate (e.g. S/M for plain screens, L for navigation) with stated assumptions",
+        "Flags that draggable layer annotations (isDraggable) aren't supported in SwiftUI and presents options (keep that screen on UIKit, MapReader with a UIKit manager, or an experimental draggable MapViewAnnotation) as a decision",
+        "Says the navigation screen keeps NavigationMapView hosted in a representable",
+        "Says migrating one screen at a time is the approach and that a mixed UIKit/SwiftUI app is a valid end state; asks which screens to move",
+        "Asks for the code to firm up the estimate"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We're still on Maps SDK for iOS v10.18. Since we have to touch everything anyway, can you upgrade us to v11 and move the map screens to SwiftUI in the same pass?",
+      "expectations": [
+        "Says no to combining them: do the v10 to v11 migration first as its own change (with the v10 to v11 migration skill if available), then the SwiftUI migration",
+        "Explains why: two large changes at once make regressions hard to attribute, and behavior differences from each need separate decisions",
+        "Notes the SwiftUI migration needs Maps 11.6.0 or later",
+        "Suggests migrating SwiftUI screens one at a time after the upgrade"
+      ]
+    }
+  ]
+}

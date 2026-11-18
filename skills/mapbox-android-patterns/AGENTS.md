@@ -27,6 +27,8 @@ dependencies {
 
 ### Access Token
 
+The string resource is the recommended approach. The SDK reads it automatically.
+
 ```xml
 <!-- app/res/values/mapbox_access_token.xml -->
 <?xml version="1.0" encoding="utf-8"?>
@@ -35,6 +37,16 @@ dependencies {
         tools:ignore="UnusedResources">YOUR_MAPBOX_ACCESS_TOKEN</string>
 </resources>
 ```
+
+To set it programmatically instead, import from `com.mapbox.common` (**not** `com.mapbox.maps`) and assign it before any map component is created:
+
+```kotlin
+import com.mapbox.common.MapboxOptions
+
+MapboxOptions.accessToken = "pk.your_token"
+```
+
+Don't use manifest `<meta-data>` placeholders: the SDK doesn't read tokens from `${MAPBOX_ACCESS_TOKEN}` in AndroidManifest.xml.
 
 ## Jetpack Compose
 
@@ -86,6 +98,11 @@ PointAnnotationGroup(annotations = optionsList) {
 // its own annotation manager and layer
 stores.forEach { PointAnnotation(point = it.point) { iconImage = marker } }
 ```
+
+- `PointAnnotation` renders nothing without `iconImage`. Always set it.
+- Use `rememberIconImage(R.drawable.ic_marker)` for drawable resources, not `BitmapFactory`.
+- Use `interactionsState.onClicked { ... }` for taps. The `onClick` parameter is deprecated.
+- Annotation IDs are `Long`, not `String`.
 
 ## View System
 

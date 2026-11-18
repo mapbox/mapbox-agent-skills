@@ -38,7 +38,12 @@ These rules apply to every step.
 
 ### 1. Migrate to the current recommended API, not a literal port
 
-The official v3 migration guides describe the new structure. On iOS, delegates and `NotificationCenter` notifications become Combine publishers on `MapboxNavigation`. On Android, `MapboxNavigation` is owned by `MapboxNavigationApp`. The guides don't cover every callback. Use the platform reference's mapping tables, which cover the callbacks apps actually use. When the guide and the reference disagree, the reference wins.
+Read the official v3 migration guide for the platform first. It describes the new structure:
+
+- iOS: [Migrate core](https://docs.mapbox.com/ios/navigation/guides/migration/migrate-core/) and [Migrate UI](https://docs.mapbox.com/ios/navigation/guides/migration/migrate-ui/). Delegates and `NotificationCenter` notifications become Combine publishers on `MapboxNavigation`.
+- Android: [Migrate to Navigation SDK v3](https://docs.mapbox.com/android/navigation/guides/migration-from-v2/). `MapboxNavigation` is owned by `MapboxNavigationApp`.
+
+The platform reference doesn't copy the guides. It adds what they leave out: callbacks apps actually use that the guides don't map, behavior changes, telemetry, and mappings where the guide is out of date. When the guide and the reference disagree, the reference wins. If you can't fetch the guide, work from the reference alone and say so in the report.
 
 The map layer follows the Maps skill's rule: move tap handling to Featureset Interactions and selection highlighting to Feature State, not a literal port.
 
@@ -50,11 +55,13 @@ Navigation v3 removed or changed several callbacks that let the app **decide** s
 - `willArriveAt(_:after:distance:)` is removed
 - `didArriveAt` returned `Bool` to control advancing to the next leg. It now returns nothing. Leg advancing is set once in `CoreConfig.multilegAdvancing`.
 
-Android has its own list. Each platform reference has a **Behavior changes** table. For every row that applies to the app:
+Android has its own list. v3 also turns on some features v2 didn't have or had off, such as predictive caching and the vanishing route line on iOS, and automatic alternatives switching on Android. Each platform reference has a **Behavior changes** table and a **New in v3 and on by default** table. For every row that applies to the app:
 
 1. Stop and present it as a decision. Say what v2 did, what v3 does, and the options, including "no equivalent".
 2. Default to the option **closest to v2 behavior** if the developer doesn't answer, and say so. If there is no way to keep v2 behavior, say that plainly. Don't write a workaround the developer didn't ask for.
 3. Record the decision in the decision log.
+
+For **New in v3 and on by default** rows, the default is to turn the feature off, so the migrated app behaves like v2. List each one in the report as available to turn on later.
 
 ### 3. Keep the app's own telemetry working
 
@@ -98,6 +105,8 @@ Output the inventory and the **telemetry hook list** (templates in `references/m
 - **Observers used for the app's own telemetry**
 - v2 code that already uses APIs deprecated in v2. These were removed in v3.
 
+If the app can run on a simulator or emulator, offer to take **before screenshots** on v2 of the main navigation screens: route preview, active guidance with a maneuver banner, and arrival. Use route simulation so the after screenshots in step 4 can repeat the same route and position.
+
 ### Step 2: Plan
 
 Group the work by area, in this order:
@@ -120,18 +129,21 @@ The plan on its own answers "how much work is this?". If that was the question, 
 
 ### Step 3: Migrate one area at a time
 
-Bump Navigation v3 and Maps v11 together, since Navigation v3 pulls in Maps v11. Expect errors everywhere after the bump. Work through them area by area in plan order:
+Bump Navigation v3 and Maps v11 together, since Navigation v3 pulls in Maps v11. The whole app stops compiling, and it won't compile again until **every** area, including the map layer, is migrated. Fixing one area doesn't make the build green, so don't wait for a passing build between areas. Instead:
 
-1. Apply the mappings from the platform reference, using the **Target** column
-2. For the map layer, apply the Maps skill's mappings
-3. Build after each area (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant). Fix errors in the current area before moving on.
-4. Update the telemetry map as you migrate each hook
-5. Show the developer the diff summary for the area
+1. Bump the dependencies. Build once (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant) and save the full error list as the baseline.
+2. For each area in plan order, apply the mappings from the platform reference using the **Target** column. For the map layer, apply the Maps skill's mappings. The area is done when none of the remaining errors are in its files or symbols. Rebuild to refresh the list. New errors can appear as earlier ones clear.
+3. Update the telemetry map as you migrate each hook
+4. Show the developer the diff summary for the area
+5. After the last area, build until the app compiles, then run the checks in step 4
+
+If the app already has navigation behind its own interface (see Staged rollout), migrating and building one module at a time is possible. Say so in the plan.
 
 ### Step 4: Verify
 
 - [ ] The app builds for every target and variant that uses navigation
 - [ ] The map renders with the **same style** as before
+- [ ] If before screenshots were taken in step 1, take after screenshots of the same screens on the same simulated route and compare them. They won't match pixel for pixel. Look for unintended changes (route line, maneuver banner, puck, camera, map style) and list each one, with the decision it comes from or as a regression
 - [ ] No v2-only symbols remain. Re-run both inventories.
 - [ ] Every behavior change has a recorded decision and the matching code
 - [ ] Every telemetry hook in the list is mapped, or marked "no v3 equivalent" with a decision

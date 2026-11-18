@@ -60,6 +60,16 @@
         "Recommends isolating navigation and map code behind one app-level interface with v2 and v3 implementations selected per build flavor or target",
         "Recommends keeping the app's telemetry events identical across both implementations so the A/B test compares the SDKs"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "We finished migrating our iOS app's NavigationViewController screen to Navigation SDK v3 and it compiles. QA says the route line now disappears behind the car as it drives, there are new markings on the route, and the puck looks different. We never changed any of those settings. What happened, and how do we get the v2 look back?",
+      "expectations": [
+        "Explains these are v3 defaults that differ from v2, not bugs: the vanishing route line (routeLineTracksTraversal now true), restricted areas on the route (showsRestrictedAreasOnRoute now true), and the 3D puck (puckType .puck3D)",
+        "Gives the settings to restore v2 behavior: routeLineTracksTraversal = false, showsRestrictedAreasOnRoute = false, puckType = .puck2D()",
+        "Mentions other v3 defaults the migration should have turned off the same way, such as predictive caching (CoreConfig(predictiveCacheConfig: nil)) or route line occlusion",
+        "Recommends recording these as decisions and listing the features as available to turn on later, rather than silently keeping the new defaults"
+      ]
     }
   ]
 }

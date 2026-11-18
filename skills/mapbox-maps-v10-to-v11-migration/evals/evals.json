@@ -48,7 +48,7 @@
       "id": 5,
       "prompt": "We're moving our iOS navigation-style app to Maps SDK v11. In v10 we set mapView.location.options.distanceFilter = 50 and the puck rotated with the device heading. After the upgrade the puck no longer rotates and the distanceFilter line doesn't compile. Fix it without changing what users see.",
       "expectations": [
-        "Explains LocationManager options now only control the puck; provider settings like distanceFilter move to an AppleLocationProvider installed with mapView.location.override(provider:)",
+        "Explains LocationManager options now only control the puck; provider settings like distanceFilter move to AppleLocationProvider.Options passed to LocationDataModel.createDefault and assigned to mapView.location.dataModel (not the deprecated location.override)",
         "Explains puckBearingEnabled now defaults to false in v11 and sets mapView.location.options.puckBearingEnabled = true to keep v10 behavior",
         "Records or presents the bearing change as a behavior decision rather than silently changing it",
         "Mentions that heading now comes from a separate HeadingProvider if the app uses a custom location provider"

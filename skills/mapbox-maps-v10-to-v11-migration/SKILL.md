@@ -65,7 +65,7 @@ Only use v11 symbols that appear in the platform reference, the official migrati
 
 ### 5. Target the latest v11 release
 
-Use the latest stable 11.x unless the developer pins a version. Several target APIs need a minimum v11 minor version (for example, Featureset Interactions are stable from 11.13 on iOS; on Android they need 11.13 or later and `addInteraction` is still marked `@MapboxExperimental`). If the developer pins an older 11.x, check each Target entry's minimum version and fall back to the entry's "older 11.x" alternative.
+Use the latest stable 11.x unless the developer pins a version. Several target APIs need a minimum v11 minor version (for example, Featureset Interactions are stable from 11.13 on both platforms, and iOS `LocationManager.dataModel` needs 11.17). If the developer pins an older 11.x, check each Target entry's minimum version and fall back to the entry's "older 11.x" alternative.
 
 ## Workflow
 
@@ -80,6 +80,8 @@ Output the inventory table from `references/migration-workflow.md`. Also flag:
 - Areas with **no direct mapping** (each platform reference lists them, for example a custom HTTP stack on iOS)
 - Places that rely on a **v10 default** that changes in v11 (default style, puck bearing)
 - v10 code that already uses **deprecated v10 APIs**. These were removed in v11 and need more than a rename.
+
+If the app can run on a simulator or emulator, offer to take **before screenshots** of the main map screens now, on v10, for comparison in step 4. Note the device, camera position and app state for each, so the after screenshot can repeat it.
 
 ### Step 2: Plan
 
@@ -102,19 +104,20 @@ The plan on its own answers "how much work is this?". If that was the question, 
 
 ### Step 3: Migrate one area at a time
 
-For each area in plan order:
+Bumping the dependency breaks the whole build at once, and the app won't compile again until **every** area is migrated. Don't expect a green build after each area. Instead:
 
-1. Apply the mappings from the platform reference, using the **Target** column
-2. Build (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant)
-3. Fix compile errors in that area before moving on. If the build fails in an area you haven't touched yet, note it and continue with the current area.
-4. Show the developer the diff summary for the area
+1. Bump the dependency (area 1). Build once and save the full error list. This is the baseline.
+2. For each area in plan order, apply the mappings from the platform reference, using the **Target** column. Use the error list as the to-do list for that area: the area is done when none of the remaining errors are in its files or symbols. Rebuild to refresh the list (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant). Expect new errors to appear as earlier ones clear, since the compiler stops at some errors.
+3. Show the developer the diff summary for the area
+4. After the last area, build until the app compiles. Fix what's left by area, not in the order the compiler reports it.
 
-Step 1 (dependencies) breaks the whole build at once. After bumping the dependency, expect errors everywhere. Work through them area by area in plan order instead of fixing them in the order the compiler reports them.
+If the app already isolates map code behind its own interface (see Staged rollout), migrating and building one module at a time is possible. Say so in the plan.
 
 ### Step 4: Verify
 
 - [ ] The app builds for every target and variant that used the map
 - [ ] The map renders with the **same style** as before (compare the style URL or JSON in code against v10)
+- [ ] If before screenshots were taken in step 1, take after screenshots of the same screens and compare them. They won't match pixel for pixel. Look for unintended changes (style, puck, labels, annotations, layout) and list each one, with the decision it comes from or as a regression
 - [ ] No v10-only symbols remain. Re-run the inventory search: removed symbols, plus anything the reference marks as deprecated in v11.
 - [ ] Every behavior change in the decision log has a recorded decision and the matching code
 - [ ] Every `[VERIFY WITH MAPBOX]` tag is listed in the report

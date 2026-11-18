@@ -2,9 +2,9 @@
 
 Mappings from Maps SDK for iOS v10 to the current v11 APIs, for UIKit (`MapView`) and SwiftUI (`Map`).
 
-**Requirements for v11:** Xcode 14.1+, Swift 5.7.1+, iOS 12+ (check the target release's notes, since later 11.x releases raise these). SwiftUI `Map` needs iOS 13+.
+**Requirements for current v11:** Xcode 26.2+, iOS 14+. The minimum iOS version is expected to move to iOS 15, so check the target release's notes. 11.0 itself needed only Xcode 14.1 and iOS 12; if the developer pins an older 11.x, use that release's requirements.
 
-**Minimum versions for target APIs:** Featureset Interactions (`TapInteraction`, `LongPressInteraction`) and the deprecation of the old gesture callbacks: **11.13**. `setFeatureStateExpression`: 11.17 (experimental). `LocationManager.dataModel`: 11.17. If the app pins an older 11.x, use the "older 11.x" alternative given in the Notes column.
+**Minimum versions for target APIs:** Featureset Interactions (`TapInteraction`, `LongPressInteraction`) and the deprecation of the old gesture callbacks: **11.13**. `setFeatureStateExpression`: 11.17 (experimental). `LocationManager.dataModel` (replaces the deprecated `override(...)`): 11.17. If the app pins an older 11.x, use the "older 11.x" alternative given in the Notes column.
 
 **UIKit or SwiftUI:** v11 adds SwiftUI support. Don't move a UIKit screen to SwiftUI as part of the migration. Migrate each map with the surface it already uses.
 
@@ -39,7 +39,7 @@ Each row compiles in v11 but behaves differently. Present every row that applies
 | Heading source             | Heading came with `Location` from the location provider                                                                        | Heading comes from a separate `HeadingProvider`                                                 | With `puckBearing = .heading` and a custom provider, also supply a `HeadingProvider`                                                                                     | The app uses a custom `LocationProvider` and heading-based bearing                        |
 | 3D puck scale              | `Puck3DConfiguration.modelScale` used a zoom-based `model-scale` expression                                                    | `modelScaleMode = .viewport` keeps the size constant; the same `modelScale` renders differently | Re-tune `modelScale`. Mapbox measured about 100× the v10 value, but it varies. Check on device.                                                                          | The app uses `Puck3D`                                                                     |
 | Overview padding           | `OverviewViewportStateOptions.padding` padded the geometry                                                                     | `padding` is camera padding; geometry padding is `geometryPadding`                              | Rename `padding:` to `geometryPadding:`                                                                                                                                  | The app uses `makeOverviewViewportState`                                                  |
-| Location provider settings | `mapView.location.options` set `distanceFilter`, `desiredAccuracy`, `activityType`                                             | `LocationManager.options` controls only the puck                                                | Set them on an `AppleLocationProvider` and install it (see Location)                                                                                                     | The app sets any of these on `location.options`                                           |
+| Location provider settings | `mapView.location.options` set `distanceFilter`, `desiredAccuracy`, `activityType`                                             | `LocationManager.options` controls only the puck                                                | Pass them in `AppleLocationProvider.Options` to `LocationDataModel.createDefault(_:)` and assign `mapView.location.dataModel` (see Location)                             | The app sets any of these on `location.options`                                           |
 | Terrain layer order        | `MapOptions.optimizeForTerrain` (default on) reordered layers                                                                  | Option removed; layers are reordered automatically when terrain is present                      | Nothing to set. Check the rendering if the app had turned the option off                                                                                                 | The app uses terrain                                                                      |
 | Layer visibility           | `visibility` accepted an expression                                                                                            | Constant only                                                                                   | Replace with `setLayerProperty(for:property:"visibility", value:)` driven by app state, or a filter or opacity expression                                                | The app set `visibility` to an expression                                                 |
 | Gestures during animation  | Camera animations stopped while a gesture was in progress                                                                      | Animations allowed during gestures; zoom allowed during drag                                    | No switch. Mention it if the app coordinates gestures and animations by hand                                                                                             | The app relies on gestures cancelling animations                                          |
@@ -240,30 +240,40 @@ Use `[weak self]` in every interaction and tap handler. The SDK keeps the closur
 
 ### 8. Location and puck
 
-| v10                                                                                         | v11 target                                                                                                                   | Notes                                                                                   |
-| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `mapView.location.options.distanceFilter`, `.desiredAccuracy`, `.activityType`              | `let provider = AppleLocationProvider(); provider.options.distanceFilter = …; mapView.location.override(provider: provider)` | Behavior change if not moved. 11.17+: `mapView.location.dataModel` replaces `override`. |
-| `LocationOptions(…puckBearingSource:…)`, `PuckBearingSource`                                | `LocationOptions(puckType:puckBearing:puckBearingEnabled:)`, `PuckBearing`                                                   | Removed in v11                                                                          |
-| `puckBearingEnabled` left at default                                                        | Set `puckBearingEnabled = true` if the puck rotated in v10                                                                   | Behavior change                                                                         |
-| Custom `LocationProvider` that also handled permissions, accuracy authorization and heading | `LocationProvider` (class-only) that only reports `Location` via `LocationObserver`; heading in a separate `HeadingProvider` | Permission prompts move to the app (`CLLocationManager`)                                |
-| `Location.heading`                                                                          | `Heading` from `HeadingProvider` / `location.onHeadingChange`                                                                |                                                                                         |
-| `mapView.location.addPuckLocationConsumer(self)`                                            | `mapView.location.onPuckRender.observe { data in … }.store(in: &cancelables)`                                                | Also `onLocationChange`, `onHeadingChange`                                              |
-| `LocationManager.locationProvider` used to read the current location                        | `mapView.location.latestLocation`, or observe `onLocationChange`                                                             | [VERIFY WITH MAPBOX] for `latestLocation` on the target version                         |
-| `Puck3DConfiguration(model:modelScale:)`                                                    | Same, with `modelScaleMode` (default `.viewport`)                                                                            | Behavior change: re-tune `modelScale`                                                   |
-| Camera moved in a location observer to follow the user                                      | Unchanged in the migration. `viewport.makeFollowPuckViewportState` is the better pattern.                                    | Pre-existing issue: report, don't rewrite                                               |
+| v10                                                                                         | v11 target                                                                                                              | Notes                                                                                                |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `mapView.location.options.distanceFilter`, `.desiredAccuracy`, `.activityType`              | `mapView.location.dataModel = .createDefault(options)` with an `AppleLocationProvider.Options`                          | Behavior change if not moved. Older 11.x (before 11.17): `location.override(provider:)`              |
+| `LocationOptions(…puckBearingSource:…)`, `PuckBearingSource`                                | `LocationOptions(puckType:puckBearing:puckBearingEnabled:)`, `PuckBearing`                                              | Removed in v11                                                                                       |
+| `puckBearingEnabled` left at default                                                        | Set `puckBearingEnabled = true` if the puck rotated in v10                                                              | Behavior change                                                                                      |
+| Custom `LocationProvider` that also handled permissions, accuracy authorization and heading | `mapView.location.dataModel = LocationDataModel(location: <publisher of [Location]>, heading: <publisher of Heading>?)` | Permission prompts move to the app (`CLLocationManager`). Publishers must deliver on the main thread |
+| `Location.heading`                                                                          | `Heading` from `HeadingProvider` / `location.onHeadingChange`                                                           |                                                                                                      |
+| `mapView.location.addPuckLocationConsumer(self)`                                            | `mapView.location.onPuckRender.observe { data in … }.store(in: &cancelables)`                                           | Also `onLocationChange`, `onHeadingChange`                                                           |
+| `LocationManager.locationProvider` used to read the current location                        | `mapView.location.latestLocation`, or observe `onLocationChange`                                                        |                                                                                                      |
+| `Puck3DConfiguration(model:modelScale:)`                                                    | Same, with `modelScaleMode` (default `.viewport`)                                                                       | Behavior change: re-tune `modelScale`                                                                |
+| Camera moved in a location observer to follow the user                                      | Unchanged in the migration. `viewport.makeFollowPuckViewportState` is the better pattern.                               | Pre-existing issue: report, don't rewrite                                                            |
 
 ```swift
 // v10
 mapView.location.options.distanceFilter = 100
 mapView.location.options.puckType = .puck2D()
 
-// v11
-let provider = AppleLocationProvider()
-provider.options.distanceFilter = 100
-mapView.location.override(provider: provider)
+// v11 (11.17+)
+mapView.location.dataModel = .createDefault(AppleLocationProvider.Options(distanceFilter: 100))
 mapView.location.options.puckType = .puck2D()
 mapView.location.options.puckBearingEnabled = true // only if v10 showed bearing
 ```
+
+A custom location source becomes a `LocationDataModel` built from publishers. Both publishers must deliver on the main thread:
+
+```swift
+// v11 (11.17+): custom location source, for example locations replayed from the app's own feed
+let locations = PassthroughSubject<[Location], Never>()
+mapView.location.dataModel = LocationDataModel(location: locations.eraseToAnyPublisher())
+// later, on the main thread, convert the app's own updates to [Location] and send them
+locations.send(latestLocations)
+```
+
+Don't write `location.override(...)` on 11.17 or later: all three overloads are deprecated in favor of `dataModel`. On an older pinned 11.x, `override(provider:)` / `override(locationProvider:headingProvider:)` is the API, and it isn't deprecated there.
 
 ### 9. Offline
 

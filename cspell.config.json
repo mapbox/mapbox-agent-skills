@@ -177,7 +177,16 @@
     "xcodeproj",
     "worktrees",
     "nonisolated",
-    "Tuist"
+    "Tuist",
+    "asynclayoutinflater",
+    "dontwarn",
+    "Kmph",
+    "ktlint",
+    "libnavui",
+    "multiprocess",
+    "roadname",
+    "scalebar",
+    "voicefeedback"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

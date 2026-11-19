@@ -691,7 +691,7 @@ Same five-step workflow as the Maps migration skill, which it uses for the map l
 - v2 → v3 mappings for iOS (`MapboxNavigationCore`, `MapboxNavigationUIKit`) and Android
 - Behavior changes as decisions: reroute veto, arrival and leg advancing, location discarding, custom routing
 - App telemetry hooks: every v2 callback mapped to its v3 source, with data that is lost called out
-- Drop-in UI → `MapboxNavigationUIKit` (iOS) or the UX Framework / the app's own UI (Android)
+- Drop-in UI → `MapboxNavigationUIKit` (iOS); on Android, a copy of the public v2 Drop-in sources adapted to v3 (recommended, on approval), the UX Framework, or the app's own UI
 - Staged rollout with v2 and v3 implementations behind one app interface
 
 [View skill →](./skills/mapbox-navigation-v2-to-v3-migration/SKILL.md)

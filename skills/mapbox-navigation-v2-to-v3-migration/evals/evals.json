@@ -38,7 +38,7 @@
       "expectations": [
         "Runs only the inventory and plan steps and doesn't change code",
         "Includes the Maps SDK v10 to v11 migration as part of the plan (Navigation v3 requires Maps v11)",
-        "Flags Drop-in UI as having no in-place port and presents the UX Framework vs the app's own UI as a decision",
+        "Flags that Drop-in UI isn't shipped in v3 and presents a decision between copying the public v2 Drop-in sources into the app (recommended, copied only after the developer's explicit yes to the license terms), the UX Framework and the app's own UI, noting that the copy depends on v3 internal APIs",
         "Flags building NavigationRoute from backend JSON as a blocker or major change, since v3 routes come from requestRoutes / requestMapMatching",
         "Lists the analytics observers and says whether they map directly in v3, with per-area effort estimates"
       ]

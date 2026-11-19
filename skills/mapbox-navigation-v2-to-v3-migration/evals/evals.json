@@ -101,6 +101,26 @@
         "Notes SystemSpeechSynthesizer is not public (SPI) and MapboxSpeechSynthesizer is final, so a chain without the Mapbox voice can't be rebuilt exactly, and presents that as a decision",
         "Does not claim custom speech synthesis is unavailable in v3"
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "We're migrating our iOS app to Navigation SDK v3. It also uses Mapbox Search SDK 1.4 and CarPlay with a CarPlayManagerDelegate. After bumping navigation, SPM won't resolve, and once it does, AppDelegate says it doesn't conform to CarPlayManagerDelegate. What do we do?",
+      "expectations": [
+        "Explains that Navigation v3 pins MapboxCommon 24.x and Search 1.x requires Common below 24, so Search must move to the matching 2.x release as part of the migration, logged as a decision",
+        "Mentions that Search 2.x has its own API changes to handle",
+        "Explains the two @_spi(MapboxCarPlayInternal) requirements of CarPlayManagerDelegate and fixes the conformance by implementing them as ordinary methods without importing SPI",
+        "Does not recommend dropping CarPlay or adding an @_spi import"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Our v2 iOS app builds its navigation services in a background Task at startup, uses a NavigationLocationManager subclass for its own location logic, and replays routes from saved navigation history files. Plan the v3 migration for these parts.",
+      "expectations": [
+        "Warns that v3 navigation types such as NavigationLocationManager.init, navigation() and tripSession() are @MainActor, and moves the startup code to the main actor instead of using MainActor.assumeIsolated from a background task",
+        "Bridges the location manager subclass through CoreConfig locationSource .custom(LocationClient(...))",
+        "Uses HistoryReader (initialRoute or RouteAssignmentHistoryEvent.navigationRoutes) for routes from history files and does not call it a blocker",
+        "Includes a runtime check that the app launches, since isolation violations compile but crash"
+      ]
     }
   ]
 }

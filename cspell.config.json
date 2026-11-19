@@ -175,7 +175,9 @@
     "pbxproj",
     "xcconfigs",
     "xcodeproj",
-    "worktrees"
+    "worktrees",
+    "nonisolated",
+    "Tuist"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

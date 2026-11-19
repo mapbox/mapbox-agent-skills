@@ -95,7 +95,13 @@ Customization hooks that v3 removed (on iOS: CarPlay route and waypoint layer cu
 
 Only use v3 symbols that appear in the platform reference, the official migration guide, or the SDK source and docs for the version you're targeting. If you're unsure whether a symbol exists or has the stated signature, don't invent one. Write the closest match, add a `// [VERIFY WITH MAPBOX]` comment, and list it in the report. The build is the final check.
 
-**SPI symbols are not public API.** A symbol in the SDK source marked `@_spi(...)` (for example `@_spi(MapboxInternal)`, `@_spi(ExperimentalMapboxAPI)`) doesn't count as available. Never add an `@_spi import`. If the only v3 way to do something is SPI, treat it as **no public equivalent**: log a blocker decision (rule 2), and list it in the report as an item to raise with Mapbox.
+**SPI symbols are not public API.** A symbol in the SDK source marked `@_spi(...)` (for example `@_spi(MapboxInternal)`, `@_spi(ExperimentalMapboxAPI)`) doesn't count as available. Never add an `@_spi import`. If the only v3 way to do something is SPI, treat it as **no public equivalent**: log a blocker decision (rule 2), and list it in the report as an item to raise with Mapbox. The platform reference lists known SPI-only capabilities: check the app against it in step 1.
+
+The same rule covers **private modules** (`MapboxCommon_Private`, `MapboxNavigationNative_Private`, any `*_Private` or `@_implementationOnly` import of a Mapbox module) and SPI in **every** Mapbox SDK the app uses, Maps included:
+
+- **Never add** a new SPI import or a new private-module import, not even where the app already uses that module elsewhere.
+- **Implementing** an SPI protocol requirement in the app, as an ordinary method with no SPI import, isn't importing SPI. If an SDK protocol can't be conformed to otherwise, do that and note it as an SDK issue. Don't drop the feature.
+- **Private API the app already used in v2** is a decision for the developer, not something to drop or keep silently. The default (no answer, or rule 8) is closest to v2: keep it if it still exists and compiles against the new versions, and list it under "Needs developer review" as private-API risk. If it no longer exists, it's a behavior removed.
 
 ### 7. Target the latest v3 release
 
@@ -121,6 +127,9 @@ Run two inventories:
 Output the inventory and the **telemetry hook list** (templates in `references/migration-workflow.md`). Flag:
 
 - **Migration goal**: if the project is a sample, demo, tutorial or SDK example app (many independent screens, each showing one SDK feature, often with docs links), ask once, up front, as the first decision: **keep v2 behavior** (the default for production apps) or **show the v3 way** (use v3 defaults such as the vanishing route line, Standard-based navigation styles and the default puck, and drop v2-only workarounds). Record the answer; it sets the default for every behavior-change decision.
+- **Other Mapbox SDKs** in the same package graph (Search, direct MapboxCommon pins, private Mapbox packages): navigation v3 pins MapboxCommon, so they may be forced to a new major in the same change. Each is a work item and a decision.
+- **SPI and private-module use**, existing and needed: list the app's current `@_spi` and `*_Private` imports, and check the app's features against the platform reference's SPI-only list.
+- **Swift concurrency exposure**: where the app creates or calls navigation objects off the main thread (startup tasks, background services, callbacks, tests). v3 is mostly `@MainActor`.
 - **Packaging**: how the SDK is linked today versus how v3 ships. On iOS, v3 ships **only through Swift Package Manager**. A CocoaPods or Carthage project must switch, and that is a work item with its own effort estimate.
 - **Areas with no direct mapping**: Drop-in UI customization, custom route handling (custom routing provider, custom reroute logic, reroute vetoes), location discarding, simulation speed control, custom speech synthesizers. The platform reference has the full list.
 - **Callbacks that return a decision** (`Bool` or modified options). These are almost always behavior changes.
@@ -167,7 +176,8 @@ If the app already has navigation behind its own interface (see Staged rollout),
 - [ ] The map renders with the **same style** as before
 - [ ] If before screenshots were taken in step 1, take after screenshots of the same screens on the same simulated route and compare them. They won't match pixel for pixel. Look for unintended changes (route line, maneuver banner, puck, camera, map style) and list each one, with the decision it comes from or as a regression
 - [ ] No v2-only symbols remain. Re-run both inventories.
-- [ ] No `@_spi` imports of Mapbox modules in the app
+- [ ] No new `@_spi` or `*_Private` imports of Mapbox modules in the app; every pre-existing one has a decision (rule 6)
+- [ ] Every other Mapbox SDK in the package graph resolves against the navigation release's MapboxCommon, and its own API changes are done
 - [ ] No leftover references to the old packaging (iOS: `Pods` build phases and xcconfigs, `*.framework` links, storyboard references with `org.cocoapods.*` bundle IDs; README and CI scripts)
 - [ ] Every behavior change has a recorded decision and the matching code
 - [ ] Every telemetry hook in the list is mapped, or marked "no v3 equivalent" with a decision
@@ -183,7 +193,8 @@ If you can run the app with route simulation, check:
 - the app's telemetry events fire;
 - each navigation screen opens **twice in a row**, and two different navigation screens open one after another, without a crash (iOS: one live `MapboxNavigationProvider`);
 - simulation starts at the route's origin, not partway along the route or at the destination;
-- the first spoken instruction plays when a custom voice is configured (its callbacks run off the main thread).
+- the first spoken instruction plays when a custom voice is configured (its callbacks run off the main thread);
+- the app **launches**: on iOS, `MainActor.assumeIsolated` reached from a startup task, or a `@MainActor` initializer called from a background queue, compiles but traps at launch.
 
 A successful build doesn't cover these: in this skill's own evaluation, both migrations built cleanly and still crashed or misbehaved on these checks. If you can't run the app, say so in the report, list these checks as not done, and don't claim they were checked.
 

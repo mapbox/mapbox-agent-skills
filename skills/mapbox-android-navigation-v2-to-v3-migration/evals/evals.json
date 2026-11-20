@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-android-navigation-v2-to-v3-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "How much work would it be to move our Android app from Navigation SDK v2 to v3? Don't change any code. We use the Drop-in UI NavigationView with a few customizations, OffRouteObserver and RouteProgressObserver for our own analytics, and we build NavigationRoute objects from route JSON our backend returns.",
+      "expectations": [
+        "Runs only the inventory and plan steps and doesn't change code",
+        "Includes the Maps SDK v10 to v11 migration as part of the plan (Navigation v3 requires Maps v11)",
+        "Flags that Drop-in UI isn't shipped in v3 and presents a decision between copying the public v2 Drop-in sources into the app (recommended, copied only after the developer's explicit yes to the license terms), the UX Framework and the app's own UI, noting that the copy depends on v3 internal APIs",
+        "Flags building NavigationRoute from backend JSON as a blocker or major change, since v3 routes come from requestRoutes / requestMapMatching",
+        "Lists the analytics observers and says whether they map directly in v3, with per-area effort estimates"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our Android app uses the Navigation SDK v2 Drop-in NavigationView. Migrate it to v3. We haven't said anything about licensing or how to handle the Drop-in UI.",
+      "expectations": [
+        "Presents the Drop-in replacement as a decision, with copying the v2 Drop-in sources as one option, and does not copy any v2 source files before the developer answers",
+        "Links the v2 LICENSE.md and states its terms before asking: active Mapbox account, use and modification only with Mapbox products, no unrestricted redistribution or sublicensing, and no modifications that interfere with billing, accounting or data collection code",
+        "If there is no answer, migrates the rest of the app and reports Drop-in as an open decision"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "After moving our Android app to Navigation SDK v3, two things broke. Our demo mode creates a MapboxReplayer, pushes the route's location events, then calls startReplayTripSession(), and now no location ever shows on the map. And our speed limit sign shows wrong values in the US: we read the posted limit and convert km/h to mph ourselves. How do we fix both?",
+      "expectations": [
+        "Explains that in v3 the replay provider connects to mapboxNavigation.mapboxReplayer in startReplayTripSession(), so events pushed earlier (or to a separate replayer) are lost",
+        "Calls startReplayTripSession() first, then pushEvents / playFirstLocation on mapboxNavigation.mapboxReplayer, then play()",
+        "Explains speedLimitInfo.speed is already in speedLimitInfo.unit (km/h or mph), so the app's own conversion now converts twice, and removes it",
+        "Handles speedLimitInfo.speed being null when the limit is unknown"
+      ]
+    }
+  ]
+}

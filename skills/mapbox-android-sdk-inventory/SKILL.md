@@ -23,7 +23,7 @@ Read it before step 1.
 
 - iOS, Flutter, React Native and web apps
 - Judging usage (deprecated or inefficient APIs, antipatterns). If an audit skill is installed (`mapbox-android-maps-audit`, and `mapbox-android-navigation-audit` for Navigation), use it for an app already on Maps v11 / Navigation v3.
-- Planning or doing a migration. Use `mapbox-maps-v10-to-v11-migration` or `mapbox-navigation-v2-to-v3-migration`, and give them this inventory.
+- Planning or doing a migration. Use `mapbox-android-maps-v10-to-v11-migration` or `mapbox-android-navigation-v2-to-v3-migration`, and give them this inventory.
 - Token security review (use `mapbox-token-security`), billing or pricing analysis
 
 ## Rules

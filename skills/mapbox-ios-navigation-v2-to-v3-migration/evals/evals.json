@@ -1,5 +1,5 @@
 {
-  "skill_name": "mapbox-navigation-v2-to-v3-migration",
+  "skill_name": "mapbox-ios-navigation-v2-to-v3-migration",
   "evals": [
     {
       "id": 1,
@@ -34,17 +34,6 @@
     },
     {
       "id": 4,
-      "prompt": "How much work would it be to move our Android app from Navigation SDK v2 to v3? Don't change any code. We use the Drop-in UI NavigationView with a few customizations, OffRouteObserver and RouteProgressObserver for our own analytics, and we build NavigationRoute objects from route JSON our backend returns.",
-      "expectations": [
-        "Runs only the inventory and plan steps and doesn't change code",
-        "Includes the Maps SDK v10 to v11 migration as part of the plan (Navigation v3 requires Maps v11)",
-        "Flags that Drop-in UI isn't shipped in v3 and presents a decision between copying the public v2 Drop-in sources into the app (recommended, copied only after the developer's explicit yes to the license terms), the UX Framework and the app's own UI, noting that the copy depends on v3 internal APIs",
-        "Flags building NavigationRoute from backend JSON as a blocker or major change, since v3 routes come from requestRoutes / requestMapMatching",
-        "Lists the analytics observers and says whether they map directly in v3, with per-area effort estimates"
-      ]
-    },
-    {
-      "id": 5,
       "prompt": "While we migrate our iOS app to Navigation SDK v3, can you also turn on the newer traffic data and switch the map to Mapbox Standard? Might as well do it all at once.",
       "expectations": [
         "Keeps style and data product changes out of the migration and explains they are separate opt-in changes",
@@ -53,7 +42,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 5,
       "prompt": "We need v2 and v3 of the Navigation SDK side by side in production so we can A/B test and roll back fast. Can we ship both in the same iOS app binary?",
       "expectations": [
         "Does not claim both SDK generations can be linked into one binary; marks it unconfirmed / [VERIFY WITH MAPBOX]",
@@ -62,7 +51,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 6,
       "prompt": "We finished migrating our iOS app's NavigationViewController screen to Navigation SDK v3 and it compiles. QA says the route line now disappears behind the car as it drives, there are new markings on the route, and the puck looks different. We never changed any of those settings. What happened, and how do we get the v2 look back?",
       "expectations": [
         "Explains these are v3 defaults that differ from v2, not bugs: the vanishing route line (routeLineTracksTraversal now true), restricted areas on the route (showsRestrictedAreasOnRoute now true), and the 3D puck (puckType .puck3D)",
@@ -72,7 +61,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 7,
       "prompt": "How much work is it to move our iOS app to Navigation SDK v3? We install MapboxNavigation 2.x with CocoaPods, have a custom top banner (a ContainerViewController subclass that implements navigationService(_:didUpdate:with:rawLocation:)), and a custom NavigationViewportDataSource subclass for the camera. Don't change code.",
       "expectations": [
         "States that Navigation SDK v3 for iOS ships only through Swift Package Manager, so the CocoaPods setup must be replaced, and counts that as a work item",
@@ -83,7 +72,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 8,
       "prompt": "Our iOS app builds NavigationRoutes from route JSON our backend sends (we decode a RouteResponse and used IndexedRouteResponse in v2). The compiler says NavigationRoutes(routeResponse:routeIndex:responseOrigin:) is inaccessible due to '@_spi'. Can we just add @_spi(MapboxInternal) import MapboxNavigationCore?",
       "expectations": [
         "Says not to import SPI: it is not public API and can change or disappear in any release",
@@ -93,7 +82,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 9,
       "prompt": "Our iOS v2 app uses a custom speech synthesizer: a class conforming to SpeechSynthesizing, chained with the system synthesizer through MultiplexedSpeechSynthesizer. How do we keep it in Navigation SDK v3?",
       "expectations": [
         "Says custom synthesizers are supported in v3 through CoreConfig ttsConfig .custom(speechSynthesizer:) and the public SpeechSynthesizing protocol",
@@ -103,7 +92,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 10,
       "prompt": "We're migrating our iOS app to Navigation SDK v3. It also uses Mapbox Search SDK 1.4 and CarPlay with a CarPlayManagerDelegate. After bumping navigation, SPM won't resolve, and once it does, AppDelegate says it doesn't conform to CarPlayManagerDelegate. What do we do?",
       "expectations": [
         "Explains that Navigation v3 pins MapboxCommon 24.x and Search 1.x requires Common below 24, so Search must move to the matching 2.x release as part of the migration, logged as a decision",
@@ -113,22 +102,13 @@
       ]
     },
     {
-      "id": 12,
+      "id": 11,
       "prompt": "Our v2 iOS app builds its navigation services in a background Task at startup, uses a NavigationLocationManager subclass for its own location logic, and replays routes from saved navigation history files. Plan the v3 migration for these parts.",
       "expectations": [
         "Warns that v3 navigation types such as NavigationLocationManager.init, navigation() and tripSession() are @MainActor, and moves the startup code to the main actor instead of using MainActor.assumeIsolated from a background task",
         "Bridges the location manager subclass through CoreConfig locationSource .custom(LocationClient(...))",
         "Uses HistoryReader (initialRoute or RouteAssignmentHistoryEvent.navigationRoutes) for routes from history files and does not call it a blocker",
         "Includes a runtime check that the app launches, since isolation violations compile but crash"
-      ]
-    },
-    {
-      "id": 13,
-      "prompt": "Our Android app uses the Navigation SDK v2 Drop-in NavigationView. Migrate it to v3. We haven't said anything about licensing or how to handle the Drop-in UI.",
-      "expectations": [
-        "Presents the Drop-in replacement as a decision, with copying the v2 Drop-in sources as one option, and does not copy any v2 source files before the developer answers",
-        "Links the v2 LICENSE.md and states its terms before asking: active Mapbox account, use and modification only with Mapbox products, no unrestricted redistribution or sublicensing, and no modifications that interfere with billing, accounting or data collection code",
-        "If there is no answer, migrates the rest of the app and reports Drop-in as an open decision"
       ]
     }
   ]

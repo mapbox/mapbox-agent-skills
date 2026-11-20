@@ -1,5 +1,5 @@
 {
-  "skill_name": "mapbox-maps-v10-to-v11-migration",
+  "skill_name": "mapbox-ios-maps-v10-to-v11-migration",
   "evals": [
     {
       "id": 1,
@@ -25,17 +25,6 @@
     },
     {
       "id": 3,
-      "prompt": "How much work would it be to move our Android app from Mapbox Maps SDK v10 to v11? I don't want any code changed yet, just an estimate. The app uses a MapView in XML layouts, point annotations, a click listener that queries rendered features, a GeoJSON source we rebuild when the user selects a store, and the location component.",
-      "expectations": [
-        "Follows the inventory and plan steps only and explicitly doesn't change code",
-        "Groups the work by area (setup and token, map view and style, annotations, style and sources, gestures and interactions, location) with an effort estimate per area",
-        "Identifies the click listener plus queryRenderedFeatures tap handling as moving to Featureset Interactions (ClickInteraction), not a literal port",
-        "Identifies the selection-by-rebuilding-the-source pattern and recommends feature state (and/or partial GeoJSON updates) as the v11 target",
-        "Lists behavior changes as decisions, including the default style becoming Standard, and states blockers or that there are none"
-      ]
-    },
-    {
-      "id": 4,
       "prompt": "Migrating iOS Maps SDK v10 to v11. I replaced `mapView.mapboxMap.onNext(event: .styleLoaded) { _ in self.addLayers() }` with `_ = mapView.mapboxMap.onStyleLoaded.observeNext { _ in self.addLayers() }` and now my layers never show up. No errors. What's wrong?",
       "expectations": [
         "Explains that observe/observeNext return an AnyCancelable that cancels the subscription when it is released, so discarding it with `_ =` cancels the observer at once",
@@ -45,22 +34,13 @@
       ]
     },
     {
-      "id": 5,
+      "id": 4,
       "prompt": "We're moving our iOS navigation-style app to Maps SDK v11. In v10 we set mapView.location.options.distanceFilter = 50 and the puck rotated with the device heading. After the upgrade the puck no longer rotates and the distanceFilter line doesn't compile. Fix it without changing what users see.",
       "expectations": [
         "Explains LocationManager options now only control the puck; provider settings like distanceFilter move to AppleLocationProvider.Options passed to LocationDataModel.createDefault and assigned to mapView.location.dataModel (not the deprecated location.override)",
         "Explains puckBearingEnabled now defaults to false in v11 and sets mapView.location.options.puckBearingEnabled = true to keep v10 behavior",
         "Records or presents the bearing change as a behavior decision rather than silently changing it",
         "Mentions that heading now comes from a separate HeadingProvider if the app uses a custom location provider"
-      ]
-    },
-    {
-      "id": 6,
-      "prompt": "While migrating our Android app to Maps SDK v11 can you also switch us to Mapbox Standard and turn on 3D buildings? It seems like the right time.",
-      "expectations": [
-        "Keeps the style change out of the SDK migration and explains why (separate, opt-in change; may change look and data products)",
-        "Offers to do the Standard move as a separate step or project after the migration is verified",
-        "Still pins the app's current style explicitly during the migration because v11 defaults to Standard"
       ]
     }
   ]

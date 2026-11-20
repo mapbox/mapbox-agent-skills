@@ -1,0 +1,75 @@
+{
+  "skill_name": "mapbox-navigation-v2-to-v3-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're moving our iOS delivery app from Mapbox Navigation SDK v2 to v3. In v2 we implement `navigationService(_:shouldRerouteFrom:)` and return false while the driver is parked at a restaurant, so the SDK doesn't reroute them. What's the v3 equivalent?",
+      "expectations": [
+        "States plainly that v3 has no per-reroute veto: shouldRerouteFrom is removed and willRerouteFrom / the rerouting publisher only report a reroute",
+        "Presents this as a behavior decision for the developer rather than silently picking a workaround",
+        "Gives the options: accept SDK reroutes, or turn off reroute detection entirely with RerouteConfig(detectsReroute: false) and handle off-route in the app",
+        "Does not invent a v3 API that vetoes individual reroutes"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In our iOS Navigation SDK v2 app, `navigationService(_:didArriveAt:)` returns false at pickup stops so the next leg doesn't start until the courier taps 'Picked up'. After moving to v3, didArriveAt doesn't return anything. How do we keep that behavior?",
+      "expectations": [
+        "Explains didArriveAt no longer returns Bool in v3 and leg advancing is configured with CoreConfig.multilegAdvancing (default .automatically)",
+        "Shows CoreConfig(multilegAdvancing: .manually { context in ... }) with async approval logic using the arrived leg index, or calling navigation().switchLeg(newLegIndex:) manually",
+        "Notes the manual closure is async/Sendable or otherwise points out the confirmation flow has to be awaitable",
+        "Records it as a behavior decision and keeps the v2 behavior as the default"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our analytics team logs a `nav_reroute` event from `navigationService(_:didRerouteAlong:at:proactive:)` in Navigation SDK v2 for iOS, including the reroute location and whether it was proactive. Where does that data come from in v3?",
+      "expectations": [
+        "Maps the event to the v3 rerouting publisher on mapboxNavigation.navigation() (ReroutingStatus .Fetched) plus the new routes from tripSession().navigationRoutes",
+        "Explains the location isn't in the event and can be read from currentLocationMatching / locationMatching at that time",
+        "Maps proactive (faster route) reroutes to the fasterRoutes publisher (Detected / Applied)",
+        "Is explicit about data that is lost or reduced (for example the reroute reason is not public) instead of inventing fields",
+        "Recommends keeping the app's event name and recording the change in a telemetry map"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "How much work would it be to move our Android app from Navigation SDK v2 to v3? Don't change any code. We use the Drop-in UI NavigationView with a few customizations, OffRouteObserver and RouteProgressObserver for our own analytics, and we build NavigationRoute objects from route JSON our backend returns.",
+      "expectations": [
+        "Runs only the inventory and plan steps and doesn't change code",
+        "Includes the Maps SDK v10 to v11 migration as part of the plan (Navigation v3 requires Maps v11)",
+        "Flags Drop-in UI as having no in-place port and presents the UX Framework vs the app's own UI as a decision",
+        "Flags building NavigationRoute from backend JSON as a blocker or major change, since v3 routes come from requestRoutes / requestMapMatching",
+        "Lists the analytics observers and says whether they map directly in v3, with per-area effort estimates"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "While we migrate our iOS app to Navigation SDK v3, can you also turn on the newer traffic data and switch the map to Mapbox Standard? Might as well do it all at once.",
+      "expectations": [
+        "Keeps style and data product changes out of the migration and explains they are separate opt-in changes",
+        "Keeps the app's current map style and traffic setup explicit during the migration",
+        "Offers to evaluate those changes as a follow-up after the migration is verified"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We need v2 and v3 of the Navigation SDK side by side in production so we can A/B test and roll back fast. Can we ship both in the same iOS app binary?",
+      "expectations": [
+        "Does not claim both SDK generations can be linked into one binary; marks it unconfirmed / [VERIFY WITH MAPBOX]",
+        "Recommends isolating navigation and map code behind one app-level interface with v2 and v3 implementations selected per build flavor or target",
+        "Recommends keeping the app's telemetry events identical across both implementations so the A/B test compares the SDKs"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "We finished migrating our iOS app's NavigationViewController screen to Navigation SDK v3 and it compiles. QA says the route line now disappears behind the car as it drives, there are new markings on the route, and the puck looks different. We never changed any of those settings. What happened, and how do we get the v2 look back?",
+      "expectations": [
+        "Explains these are v3 defaults that differ from v2, not bugs: the vanishing route line (routeLineTracksTraversal now true), restricted areas on the route (showsRestrictedAreasOnRoute now true), and the 3D puck (puckType .puck3D)",
+        "Gives the settings to restore v2 behavior: routeLineTracksTraversal = false, showsRestrictedAreasOnRoute = false, puckType = .puck2D()",
+        "Mentions other v3 defaults the migration should have turned off the same way, such as predictive caching (CoreConfig(predictiveCacheConfig: nil)) or route line occlusion",
+        "Recommends recording these as decisions and listing the features as available to turn on later, rather than silently keeping the new defaults"
+      ]
+    }
+  ]
+}

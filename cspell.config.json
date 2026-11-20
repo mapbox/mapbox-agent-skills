@@ -161,7 +161,14 @@
     "zoomend",
     "Cartfile",
     "gradlew",
-    "Subclassing"
+    "Subclassing",
+    "navigationcore",
+    "navigationux",
+    "tripdata",
+    "tripprogress",
+    "speedlimit",
+    "androidauto",
+    "multileg"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

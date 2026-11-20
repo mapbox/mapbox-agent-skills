@@ -8,6 +8,7 @@ This repo contains specialized Agent Skills for Mapbox development. Skills provi
 
 - **mapbox-google-maps-migration**: Migrate from Google Maps Platform to Mapbox GL JS. Covers API equivalents (coordinate order, markers, popups, geocoding), performance advantages (WebGL vs DOM), and migration patterns. Use when transitioning existing Google Maps apps or comparing platforms.
 - **mapbox-maps-v10-to-v11-migration**: Migrate iOS and Android apps from Maps SDK v10 to v11. Five-step workflow (inventory, plan, migrate per area, verify, report). Targets current v11 APIs (Featureset Interactions, Feature State, typed events) rather than a literal port, surfaces behavior changes (default style, puck bearing) as decisions, and keeps the app's style. Use for v10 → v11 upgrades or effort estimates.
+- **mapbox-navigation-v2-to-v3-migration**: Migrate iOS and Android apps from Navigation SDK v2 to v3 (includes the Maps v10 → v11 migration via mapbox-maps-v10-to-v11-migration). Surfaces removed decision callbacks (reroute veto, arrival and leg advancing) as developer decisions, maps every v2 hook the app logs to its v3 source, and maps Drop-in UI to the v3 UI components. Use for v2 → v3 upgrades or effort estimates.
 - **mapbox-maplibre-migration**: Migrate between Mapbox GL JS ↔ MapLibre GL JS. ~95% API compatible. Covers package/import changes, token handling, style URLs (mapbox:// vs custom), license differences. Use for open-source migrations or understanding compatibility.
 
 ### Performance & Optimization
@@ -46,6 +47,7 @@ Common workflows that combine multiple skills:
 - **Building production web app**: web-integration-patterns + web-performance-patterns + token-security
 - **Migrating from Google Maps**: google-maps-migration + web-integration-patterns + token-security
 - **Upgrading a mobile app to Maps SDK v11**: maps-v10-to-v11-migration + ios-patterns or android-patterns
+- **Upgrading a navigation app to Navigation SDK v3**: navigation-v2-to-v3-migration + maps-v10-to-v11-migration + navigation-patterns
 - **Custom styled map**: cartography + style-patterns + style-quality
 - **Cross-platform app**: ios-patterns + android-patterns + token-security
 - **Open-source project**: maplibre-migration + web-performance-patterns

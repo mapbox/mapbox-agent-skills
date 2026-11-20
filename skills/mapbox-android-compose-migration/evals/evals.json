@@ -63,7 +63,7 @@
       "id": 6,
       "prompt": "Our Android app still uses Mapbox Maps SDK 10.16 with XML MapViews. Can we move the maps to Jetpack Compose and upgrade to v11 in the same PR to save time?",
       "expectations": [
-        "Recommends not combining them: migrate to Maps v11 first (mapbox-maps-v10-to-v11-migration), then move to Compose as a separate change",
+        "Recommends not combining them: migrate to Maps v11 first (mapbox-android-maps-v10-to-v11-migration), then move to Compose as a separate change",
         "Explains the Compose extension needs Maps v11 (stable from 11.6.0)",
         "Explains that keeping the changes separate makes behavior changes and regressions traceable to one cause"
       ]

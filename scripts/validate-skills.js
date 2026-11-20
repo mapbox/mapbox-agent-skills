@@ -9,6 +9,19 @@ const MAX_NAME_LEN = 64;
 const MAX_DESC_LEN = 1024;
 const MAX_SKILL_LINES = 500;
 
+// Files that platform-split skills share. Each skill installs on its own, so
+// every copy lives in its own skill; this keeps the copies identical.
+const SHARED_FILES = [
+  [
+    'mapbox-ios-maps-v10-to-v11-migration/references/migration-workflow.md',
+    'mapbox-android-maps-v10-to-v11-migration/references/migration-workflow.md'
+  ],
+  [
+    'mapbox-ios-navigation-v2-to-v3-migration/references/migration-workflow.md',
+    'mapbox-android-navigation-v2-to-v3-migration/references/migration-workflow.md'
+  ]
+];
+
 /**
  * Parse YAML frontmatter from markdown content.
  * Returns null if no frontmatter block is found.
@@ -194,6 +207,17 @@ async function main() {
       console.log(`  ✅ Valid`);
     }
     console.log();
+  }
+
+  for (const [first, ...copies] of SHARED_FILES) {
+    const expected = await readFile(join(SKILLS_DIR, first), 'utf-8');
+    for (const copy of copies) {
+      const actual = await readFile(join(SKILLS_DIR, copy), 'utf-8');
+      if (actual !== expected) {
+        hasErrors = true;
+        console.error(`❌ ${copy} differs from ${first}; keep them identical`);
+      }
+    }
   }
 
   if (hasErrors) {

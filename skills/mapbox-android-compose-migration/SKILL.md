@@ -127,7 +127,7 @@ The plan on its own answers "how much work is this?". If that was the question, 
 - [ ] The map uses the **same style** as before
 - [ ] If before screenshots exist, take after screenshots on the same device and state. List every visible difference (style, ornament positions, puck, annotations, route line, camera framing) with the decision it comes from, or as a regression
 - [ ] No manual `mapView.onStart/onStop/onDestroy/onLowMemory` calls remain for this screen
-- [ ] No `mapView.compass`, `mapView.logo`, `mapView.attribution`, `mapView.scalebar` or lifecycle-plugin calls in `MapEffect` (they throw `PluginDisabledException` from 11.35)
+- [ ] No `mapView.compass`, `mapView.logo`, `mapView.attribution`, `mapView.scalebar`, `mapView.indoorSelector` or lifecycle-plugin calls in `MapEffect` (they throw `PluginDisabledException` from 11.35)
 - [ ] Rotate the device, background and foreground the app, and navigate away and back. The map shouldn't reload its style on recomposition, and listeners shouldn't fire twice
 - [ ] Taps on annotations and interactive features still work, and the location puck shows
 - [ ] Navigation screens: route line, maneuver banner, trip progress, camera following and overview, and rerouting all work. Observers are unregistered when the screen leaves

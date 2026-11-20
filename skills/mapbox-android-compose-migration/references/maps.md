@@ -170,15 +170,16 @@ MapboxMap(mapViewportState = mapViewportState) {
 
 ## Ornaments
 
-Compass, scale bar, logo and attribution are Compose slots on `MapboxMap` (since 11.3). Their View plugins are disabled in Compose maps: `mapView.compass`, `mapView.scalebar`, `mapView.logo` and `mapView.attribution` throw `PluginDisabledException` from 11.35.
+Compass, scale bar, logo and attribution are Compose slots on `MapboxMap` (since 11.3). Their View plugins are disabled in Compose maps: `mapView.compass`, `mapView.scalebar`, `mapView.logo`, `mapView.attribution` and `mapView.indoorSelector` throw `PluginDisabledException` from 11.35.
 
-| View system                                                                                        | Compose target                                                                             |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `mapView.compass.updateSettings { position = ...; marginTop = ... }`, `mapbox_compass*` attributes | `compass = { Compass(alignment = Alignment.TopEnd, contentPadding = PaddingValues(...)) }` |
-| `mapView.compass.enabled = false`                                                                  | `compass = {}`                                                                             |
-| `mapView.scalebar.enabled = false`                                                                 | `scaleBar = {}`                                                                            |
-| Scale bar position and margins                                                                     | `scaleBar = { ScaleBar(alignment = ..., contentPadding = ...) }`                           |
-| Logo and attribution position                                                                      | `logo = { Logo(alignment = ...) }`, `attribution = { Attribution(alignment = ...) }`       |
+| View system                                                                                                    | Compose target                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mapView.compass.updateSettings { position = ...; marginTop = ... }`, `mapbox_compass*` attributes             | `compass = { Compass(alignment = Alignment.TopEnd, contentPadding = PaddingValues(...)) }`                                                                                                                             |
+| `mapView.compass.enabled = false`                                                                              | `compass = {}`                                                                                                                                                                                                         |
+| `mapView.scalebar.enabled = false`                                                                             | `scaleBar = {}`                                                                                                                                                                                                        |
+| Scale bar position and margins                                                                                 | `scaleBar = { ScaleBar(alignment = ..., contentPadding = ...) }`                                                                                                                                                       |
+| Logo and attribution position                                                                                  | `logo = { Logo(alignment = ...) }`, `attribution = { Attribution(alignment = ...) }`                                                                                                                                   |
+| Indoor selector (`Plugin.MAPBOX_INDOOR_SELECTOR_PLUGIN_ID` added to the plugin list, `mapView.indoorSelector`) | `indoorSelector = { IndoorSelector() }` with `IndoorSelectorState` (since 11.26). It's `@MapboxExperimental`: present it as a decision, since the slot is empty by default and the screen otherwise loses the selector |
 
 Keep the logo and attribution visible. Hiding them has terms-of-service implications; leave that decision to the developer.
 

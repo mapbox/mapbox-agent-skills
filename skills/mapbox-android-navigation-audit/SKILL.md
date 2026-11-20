@@ -26,7 +26,8 @@ A navigation app also has a map. Run `mapbox-android-maps-audit` (ID prefix `MAP
 **Not covered:**
 
 - Apps below Navigation SDK 3.18.0. A Navigation v2 app needs a migration first: use `mapbox-android-navigation-v2-to-v3-migration`.
-- Navigation SDK for iOS and the Search SDK. There is no reference for them yet. Say so instead of improvising checks.
+- iOS apps: use `mapbox-ios-navigation-audit`
+- The Search SDK. There is no reference for it yet. Say so instead of improvising checks.
 - Flutter, React Native and web apps
 - Choosing a map style or moving to Mapbox Standard. That is a design decision, not a finding.
 - Pricing, licensing and account questions

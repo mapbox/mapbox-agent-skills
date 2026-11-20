@@ -34,6 +34,7 @@ This repo contains specialized Agent Skills for Mapbox development. Skills provi
 - **mapbox-ios-maps-audit**: Audit an iOS app's Mapbox Maps SDK v11 integration (UIKit, SwiftUI). Finds outdated APIs, reimplemented SDK functionality, and performance and correctness antipatterns, with stable finding IDs. Read-only by default. Use for integration reviews or after a migration.
 - **mapbox-android-maps-audit**: The same for an Android app's Maps SDK v11 integration (Views, Jetpack Compose).
 - **mapbox-android-navigation-audit**: Audit an Android app's Navigation SDK v3 integration, alongside mapbox-android-maps-audit for the map layer.
+- **mapbox-ios-navigation-audit**: Audit an iOS app's Navigation SDK v3 integration (provider and session lifecycle, Combine, Swift concurrency, SPI use), alongside mapbox-ios-maps-audit for the map layer.
 
 ## How to Use Skills
 
@@ -55,7 +56,7 @@ Common workflows that combine multiple skills:
 - **Custom styled map**: cartography + style-patterns + style-quality
 - **Cross-platform app**: ios-patterns + android-patterns + token-security
 - **Moving iOS map screens to SwiftUI**: ios-swiftui-migration + ios-patterns
-- **Reviewing a mobile integration**: ios-maps-audit + ios-patterns, or android-maps-audit (+ android-navigation-audit) + android-patterns
+- **Reviewing a mobile integration**: ios-maps-audit (+ ios-navigation-audit) + ios-patterns, or android-maps-audit (+ android-navigation-audit) + android-patterns
 - **Open-source project**: maplibre-migration + web-performance-patterns
 
 ## Quick Decision Guide

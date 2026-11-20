@@ -424,6 +424,8 @@ SwiftUI: `Viewport.followPuck(zoom:bearing:pitch:)` through `Map(viewport:)` (MA
 
 Flag `setCamera`, `ease`, or `fly` called from `onLocationChange`, a `CLLocationManagerDelegate` callback, or a puck-related publisher. Also flag an "is following" `Bool` with `cancelAnimations()` calls around it — that is `viewport.status` / `viewport.idle()` written by hand (MAPSIOS-A10.3).
 
+On a Navigation SDK `NavigationMapView`, `NavigationCamera` owns the camera, not `mapView.viewport`. Use NAVIOS-B-MAP-2 from `mapbox-ios-navigation-audit` there instead of this entry and MAPSIOS-B-CAMERA-4.
+
 FP risk: following a target that is **not** the puck (a vehicle from the app's own data) is not covered by `FollowPuckViewportState`. Do not put it in the findings table. Mention it in one line under "Checked, not flagged", and suggest a custom `ViewportState`.
 
 #### MAPSIOS-B-CAMERA-2. Camera animation written by hand with a timer
@@ -528,6 +530,8 @@ Do **not** apply this to the plain `Cancelable` returned by `queryRenderedFeatur
 `MapboxMap`, style APIs, annotation managers, the gesture manager, and the viewport must be used on the main thread. Some methods are `@MainActor`. Using them from a background thread is unsafe.
 
 Flag map calls from: a `DispatchQueue.global()` or custom queue, `Task.detached`, a `Task` not on the main actor, an `OperationQueue` operation, a `URLSession` completion handler with no switch back to the main queue, and a Combine pipeline with no `.receive(on: DispatchQueue.main)` before the map call.
+
+Navigation SDK publishers (`navigation()`, `tripSession()`) already emit on the main actor. A pipeline on one of them doesn't need `.receive(on: DispatchQueue.main)` (NAVIOS-B-THREAD in `mapbox-ios-navigation-audit`).
 
 A common case: data decoded off the main thread (correct), then applied to a source or annotation manager in the same closure (wrong).
 

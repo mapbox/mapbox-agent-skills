@@ -1,0 +1,54 @@
+{
+  "skill_name": "mapbox-android-sdk-inventory",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Which Mapbox SDK versions and modules does our Android app use? Here is the app/build.gradle.kts: dependencies { implementation(libs.mapbox.maps); implementation(\"com.mapbox.navigationcore:ui-components:3.18.0\") } and our libs.versions.toml has mapbox-maps = \"11.13.1\". We also have an old :legacy module that only uses com.mapbox.navigation:ui-dropin:2.20.0.",
+      "expectations": [
+        "Separates declared from resolved versions, and says the resolved versions must come from Gradle (the dependencies output for a named configuration), not from the build file alone",
+        "Lists each artifact with the Gradle module that declares it, including the :legacy module on Navigation 2.x",
+        "Doesn't recommend upgrading or migrating and doesn't call anything outdated; at most names a migration or audit skill as an optional next step",
+        "Says it will check which declared artifacts have no import in code and which are only transitive"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We want to know exactly what we send in Directions requests from our Android Navigation SDK app. The code is `RouteOptions.builder().applyDefaultNavigationOptions().coordinatesList(coords).alternatives(true).exclude(excludeList).build()` and excludeList comes from a RemoteConfig value. List what the inventory would record.",
+      "expectations": [
+        "Records alternatives as true with kind literal, and each option as its own entry tied to the call site",
+        "Marks coordinatesList and exclude as dynamic and names where exclude comes from (RemoteConfig), instead of inventing values",
+        "Says applyDefaultNavigationOptions() sets values the app code doesn't show, and that they are listed only from the SDK sources of the resolved version (marked sdk-default) or reported as unresolved, not filled in from memory",
+        "Says the inventory also records how the request result is used and any interceptor"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Run the Mapbox usage inventory on our Android app. Our access token is in res/values/mapbox.xml as pk.EXAMPLE_PUBLIC_TOKEN_VALUE and we also have sk.EXAMPLE_SECRET_TOKEN_VALUE in gradle.properties for downloads.",
+      "expectations": [
+        "Says tokens are recorded by location (file and key) and type (pk. or sk.) only, and doesn't repeat either token value",
+        "Treats the work as read-only: nothing in the project is edited, built or committed, and the report files are the only files written",
+        "Says the full report goes to files (a readable report and a JSON file) with only a summary in chat",
+        "Says the report will state what was searched and what was skipped (generated code, build/, tests)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our Android app is still on Maps SDK 10.16 and Navigation 2.19. Can you tell me which of our Mapbox calls are deprecated and what to replace them with, and then fix them?",
+      "expectations": [
+        "Explains the inventory skill only reports what is used and does not judge, recommend or change code",
+        "Offers to produce the inventory of v10 / v2 usage and names the migration skills (maps v10 to v11, navigation v2 to v3) as the next step for replacements",
+        "Does not edit code and does not start the migration without being asked"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Inventory the Mapbox parameters in this Android code: `MapboxOptions.accessToken = \"pk.EXAMPLE_PUBLIC_TOKEN_VALUE\"`, and an OkHttp call to `https://api.mapbox.com/geocoding/v5/mapbox.places/$query.json?access_token=sk.EXAMPLE_SECRET_TOKEN_VALUE` with the header `X-Partner-Key: 9f8e7d6c5b4a39281706f5e4d3c2b1a0`. The query string is built in `PricingEngine.computeSurge()`, which also applies our discount rules. Show the parameters table rows.",
+      "expectations": [
+        "Writes the access token value as redacted (for example <redacted: Mapbox public token>) and does not repeat pk.EXAMPLE_PUBLIC_TOKEN_VALUE",
+        "Redacts the sk. token in the URL and the X-Partner-Key header value, and repeats neither value",
+        "Still records the facts: that a token is set on MapboxOptions.accessToken, the Geocoding endpoint path, the token type (pk. / sk.) and that a custom header is sent",
+        "Names PricingEngine.computeSurge() as the source of the query but does not describe the surge or discount logic, and marks the query as dynamic"
+      ]
+    }
+  ]
+}

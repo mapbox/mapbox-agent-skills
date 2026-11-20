@@ -99,10 +99,10 @@ PointAnnotationGroup(annotations = optionsList) {
 stores.forEach { PointAnnotation(point = it.point) { iconImage = marker } }
 ```
 
-- `PointAnnotation` renders nothing without `iconImage`. Always set it.
+- `PointAnnotation` renders nothing without `iconImage` or `textField`. Set at least one.
 - Use `rememberIconImage(R.drawable.ic_marker)` for drawable resources, not `BitmapFactory`.
 - Use `interactionsState.onClicked { ... }` for taps. The `onClick` parameter is deprecated.
-- Annotation IDs are `Long`, not `String`.
+- Annotation IDs are `String` (UUID), not `Long`.
 
 ## View System
 

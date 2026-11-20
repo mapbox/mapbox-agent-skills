@@ -81,10 +81,10 @@ fun MapWithMarkers() {
 }
 ```
 
-- `PointAnnotation` renders nothing without `iconImage` — always set it
+- `PointAnnotation` renders nothing without `iconImage` or `textField` — set at least one
 - Use `rememberIconImage(R.drawable.ic_marker)` for drawable resources
 - Use `interactionsState.onClicked { ... }` for tap handling (the `onClick` parameter is deprecated)
-- Annotation IDs are `Long`, not `String`
+- Annotation IDs are `String` (UUID), not `Long`
 
 ## Loading GeoJSON from Assets
 

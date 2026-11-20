@@ -58,7 +58,7 @@
         "Uses PointAnnotation composable from com.mapbox.maps.extension.compose.annotation.generated",
         "Uses interactionsState.onClicked { ... } inside the init lambda for tap handling, NOT the deprecated onClick parameter",
         "Uses rememberIconImage(R.drawable.ic_marker) for the marker icon, not BitmapFactory",
-        "PointAnnotation renders nothing without iconImage — must always set it"
+        "Sets iconImage (or textField) on the PointAnnotation, since it renders nothing without one of them"
       ]
     }
   ]

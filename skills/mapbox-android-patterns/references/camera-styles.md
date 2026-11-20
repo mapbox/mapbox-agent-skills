@@ -68,18 +68,14 @@ mapView.camera.easeTo(camera)
 ### Built-in Styles
 
 ```kotlin
-// Compose - load style via MapEffect
-MapboxMap(modifier = Modifier.fillMaxSize()) {
-    MapEffect(Unit) { mapView ->
-        // Style.STANDARD loads by default, explicit loading only needed for other styles
-        // mapView.mapboxMap.loadStyle(Style.STREETS)       // Mapbox Streets
-        // mapView.mapboxMap.loadStyle(Style.OUTDOORS)      // Mapbox Outdoors
-        // mapView.mapboxMap.loadStyle(Style.LIGHT)         // Mapbox Light
-        // mapView.mapboxMap.loadStyle(Style.DARK)          // Mapbox Dark
-        // mapView.mapboxMap.loadStyle(Style.STANDARD_SATELLITE)     // Satellite imagery
-        // mapView.mapboxMap.loadStyle(Style.SATELLITE_STREETS) // Satellite + streets
-    }
-}
+// Compose - pass the style through the `style` slot, not MapEffect
+MapboxMap(modifier = Modifier.fillMaxSize(), style = { MapboxStandardStyle() }) // Default, recommended
+MapboxMap(style = { MapboxStandardSatelliteStyle() })    // Satellite imagery
+MapboxMap(style = { MapStyle(style = Style.STREETS) })   // Mapbox Streets
+MapboxMap(style = { MapStyle(style = Style.OUTDOORS) })  // Mapbox Outdoors
+MapboxMap(style = { MapStyle(style = Style.LIGHT) })     // Mapbox Light
+MapboxMap(style = { MapStyle(style = Style.DARK) })      // Mapbox Dark
+MapboxMap(style = { MapStyle(style = Style.SATELLITE_STREETS) }) // Satellite + streets
 
 // Views
 mapView.mapboxMap.loadStyle(Style.STANDARD)
@@ -92,11 +88,10 @@ mapView.mapboxMap.loadStyle(Style.DARK)
 val customStyleUrl = "mapbox://styles/username/style-id"
 
 // Compose
-MapboxMap(modifier = Modifier.fillMaxSize()) {
-    MapEffect(Unit) { mapView ->
-        mapView.mapboxMap.loadStyle(customStyleUrl)
-    }
-}
+MapboxMap(
+    modifier = Modifier.fillMaxSize(),
+    style = { MapStyle(style = customStyleUrl) }
+)
 
 // Views
 mapView.mapboxMap.loadStyle(customStyleUrl)

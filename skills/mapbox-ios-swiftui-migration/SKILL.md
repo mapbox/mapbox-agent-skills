@@ -26,7 +26,7 @@ Load `maps.md` for every migration. Also load `navigation.md` when the screen us
 
 **Not covered:**
 
-- Apps on Maps SDK v10 or Navigation SDK v2. Migrate first with `mapbox-maps-v10-to-v11-migration` or `mapbox-navigation-v2-to-v3-migration`. Never combine an SDK version migration and a SwiftUI migration in one change.
+- Apps on Maps SDK v10 or Navigation SDK v2. Migrate first with `mapbox-ios-maps-v10-to-v11-migration` or `mapbox-ios-navigation-v2-to-v3-migration`. Never combine an SDK version migration and a SwiftUI migration in one change.
 - The non-map parts of the screen
 - Changing the map style, moving to Mapbox Standard, or turning on other data products
 - Flutter and React Native
@@ -170,4 +170,4 @@ Write the summary from `references/migration-workflow.md`: screens migrated and 
 
 - `mapbox-ios-patterns`: building Maps features on iOS, in SwiftUI and UIKit
 - `mapbox-navigation-patterns`: building navigation features
-- `mapbox-maps-v10-to-v11-migration`, `mapbox-navigation-v2-to-v3-migration`: run these first on older SDKs
+- `mapbox-ios-maps-v10-to-v11-migration`, `mapbox-ios-navigation-v2-to-v3-migration`: run these first on older SDKs

@@ -1,0 +1,35 @@
+{
+  "skill_name": "mapbox-android-maps-v10-to-v11-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "How much work would it be to move our Android app from Mapbox Maps SDK v10 to v11? I don't want any code changed yet, just an estimate. The app uses a MapView in XML layouts, point annotations, a click listener that queries rendered features, a GeoJSON source we rebuild when the user selects a store, and the location component.",
+      "expectations": [
+        "Follows the inventory and plan steps only and explicitly doesn't change code",
+        "Groups the work by area (setup and token, map view and style, annotations, style and sources, gestures and interactions, location) with an effort estimate per area",
+        "Identifies the click listener plus queryRenderedFeatures tap handling as moving to Featureset Interactions (ClickInteraction), not a literal port",
+        "Identifies the selection-by-rebuilding-the-source pattern and recommends feature state (and/or partial GeoJSON updates) as the v11 target",
+        "Lists behavior changes as decisions, including the default style becoming Standard, and states blockers or that there are none"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "While migrating our Android app to Maps SDK v11 can you also switch us to Mapbox Standard and turn on 3D buildings? It seems like the right time.",
+      "expectations": [
+        "Keeps the style change out of the SDK migration and explains why (separate, opt-in change; may change look and data products)",
+        "Offers to do the Standard move as a separate step or project after the migration is verified",
+        "Still pins the app's current style explicitly during the migration because v11 defaults to Standard"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We bumped our Android app to Maps SDK v11. It compiles, but QA says the map looks a bit different: we use Style.MAPBOX_STREETS and Style.DARK. Also, the error toast we showed when a style failed to load (we pass an onMapLoadErrorListener to loadStyleUri) never appears anymore. What happened and what should we change?",
+      "expectations": [
+        "Explains that v11 points Style.MAPBOX_STREETS and Style.DARK at newer style versions (streets-v12, dark-v11) than v10 did (streets-v11, dark-v10)",
+        "Presents keeping the v10 look as a decision, with the option of pinning the literal v10 style URIs, and doesn't switch the app to Mapbox Standard",
+        "Explains the deprecated loadStyle overloads with onMapLoadErrorListener still compile but the listener is never called in v11",
+        "Moves the error handling to mapboxMap.subscribeMapLoadingError, registered before the style loads"
+      ]
+    }
+  ]
+}

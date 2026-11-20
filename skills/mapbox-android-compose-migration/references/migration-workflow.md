@@ -113,7 +113,7 @@ When the developer doesn't answer, write "default (no answer, View behavior kept
 ## Compose mistakes to catch during review
 
 - `MapboxMap` inside an `if` or a `LazyColumn` item that toggles, so the map is destroyed and recreated
-- `ComposeMapInitOptions(...)` built inline without `remember`, so the map recreates on recomposition
+- `ComposeMapInitOptions(...)` whose values change across recompositions, so the map recreates. It's a data class and `MapboxMap` keys on it, so an inline instance with the same values is fine
 - `MapEffect(someState)` keyed on fast-changing state, so setup reruns
 - `MapEffect` registering listeners without `DisposableMapEffect` and `onDispose`
 - A `forEach` of `PointAnnotation` over a large list instead of `PointAnnotationGroup`

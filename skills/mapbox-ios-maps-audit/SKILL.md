@@ -1,11 +1,11 @@
 ---
-name: mapbox-mobile-sdk-audit
-description: Audit an iOS or Android app's Mapbox SDK integration with a coding agent. Finds outdated or deprecated API usage, functionality the app rebuilt that the SDK already provides, and known performance and correctness antipatterns, using catalogs and checks prepared by Mapbox engineers for Maps SDK v11 (iOS and Android) and Navigation SDK v3 (Android). Produces a findings table with stable IDs, confidence and false-positive risk. Read-only by default. Use when reviewing a Mapbox mobile integration, after a migration to Maps v11 or Navigation v3, or when chasing performance, memory or rendering problems in map screens.
+name: mapbox-ios-maps-audit
+description: Audit an iOS app's Mapbox Maps SDK v11 integration with a coding agent. Finds outdated or deprecated API usage, functionality the app rebuilt that the SDK already provides, and known performance and correctness antipatterns, using a catalog and checks prepared by Mapbox engineers. Covers UIKit and SwiftUI. Produces a findings table with stable IDs, confidence and false-positive risk. Read-only by default. Use when reviewing a Mapbox Maps integration on iOS, after a migration to Maps v11, or when chasing performance, memory or rendering problems in map screens.
 ---
 
-# Mapbox Mobile SDK Integration Audit
+# Mapbox Maps SDK Integration Audit (iOS)
 
-Reviews how an app uses the Mapbox mobile SDKs and reports what to change. The agent searches the app's code for the patterns described in the platform references. It doesn't need the SDK source.
+Reviews how an iOS app uses the Mapbox Maps SDK and reports what to change. The agent searches the app's code for the patterns described in the reference. It doesn't need the SDK source.
 
 The audit finds three kinds of issues:
 
@@ -13,26 +13,20 @@ The audit finds three kinds of issues:
 2. **Reimplemented functionality:** the app built something the SDK already provides
 3. **Performance and correctness antipatterns:** known-costly or known-unsafe usage
 
-**Reference files.** Load only the ones for SDKs the app uses:
+**Reference file:** `references/maps-ios.md`, ID prefix `MAPSIOS`, minimum version Maps SDK 11.13.0. It has a **Part A** catalog (current APIs, or what the SDK provides), a **Part B** list of antipatterns, and **Part C** checks (prompts) that drive the audit, plus a priority order for the report.
 
-| SDK                           | Reference                          | ID prefix | Minimum version |
-| ----------------------------- | ---------------------------------- | --------- | --------------- |
-| Maps SDK for iOS (v11)        | `references/maps-ios.md`           | `MAPSIOS` | 11.13.0         |
-| Maps SDK for Android (v11)    | `references/maps-android.md`       | `MAPS`    | 11.13.0         |
-| Navigation SDK for Android v3 | `references/navigation-android.md` | `NAV`     | 3.18.0          |
-
-Each reference has a **Part A** catalog (current APIs, or what the SDK provides), a **Part B** list of antipatterns, and **Part C** checks (prompts) that drive the audit, plus a priority order for the report.
+For Android, use `mapbox-android-maps-audit` (and `mapbox-android-navigation-audit` for Navigation SDK v3).
 
 ## When to use
 
-- The developer asks for a review, audit or health check of their Mapbox integration on iOS or Android
-- After a Maps v10 → v11 or Navigation v2 → v3 migration (the migration skills recommend this as the next step)
-- Map screens are slow, leak memory, drain battery, or behave inconsistently, and the app uses one of the SDKs above
+- The developer asks for a review, audit or health check of their Mapbox Maps integration on iOS
+- After a Maps v10 → v11 migration (the migration skill recommends this as the next step)
+- Map screens are slow, leak memory, drain battery, or behave inconsistently
 
 **Not covered:**
 
-- Apps below the minimum version in the table. A Maps v10 or Navigation v2 app needs a migration first: use `mapbox-maps-v10-to-v11-migration` or `mapbox-navigation-v2-to-v3-migration`.
-- Navigation SDK for iOS and the Search SDK (iOS and Android). There is no reference for them yet. Say so instead of improvising checks.
+- Apps below Maps SDK 11.13.0. A Maps v10 app needs a migration first: use `mapbox-ios-maps-v10-to-v11-migration`.
+- Navigation SDK for iOS and the Search SDK. There is no reference for them yet. Say so instead of improvising checks.
 - Flutter, React Native and web apps
 - Choosing a map style or moving to Mapbox Standard. That is a design decision, not a finding.
 - Pricing, licensing and account questions
@@ -45,7 +39,7 @@ Only report a finding when it matches a catalog entry (Part A) or an antipattern
 
 ### 2. Check the version first
 
-Read the SDK versions from the app's dependency files before running any check (iOS: `Package.resolved`, `Podfile.lock`; Android: Gradle files or version catalogs). Every finding must be valid for that version:
+Read the SDK version from the app's dependency files (`Package.resolved`, `Podfile.lock`) before running any check. Every finding must be valid for that version:
 
 - Skip entries that need a newer version than the app uses. Rows say "since `11.17.0`" or similar.
 - Entries marked ★ are experimental. Confirm they exist in the app's version before recommending them.
@@ -53,7 +47,7 @@ Read the SDK versions from the app's dependency files before running any check (
 ### 3. Respect the app's design choices
 
 - **Style.** Many apps use a custom style. Skip entries tagged **[Standard-style-only]** when the app doesn't use Mapbox Standard. Never report "not using Standard" as a finding, and never recommend switching to Standard as the fix for something else.
-- **UI framework.** UIKit, SwiftUI, Android Views and Jetpack Compose are all supported. Don't report the choice of UI framework as a finding. Audit each map against the surface it actually uses.
+- **UI framework.** UIKit and SwiftUI are both supported. Don't report the choice of UI framework as a finding. Audit each map against the surface it actually uses.
 - Where the reference says something is "not a finding" or "a pass", don't report it, even if it looks like the antipattern at first glance.
 
 ### 4. Read-only by default
@@ -62,7 +56,7 @@ The audit reports. It doesn't change code. Fix findings only when the developer 
 
 ### 5. Every finding carries its evidence
 
-Cite `File:line`, the observed pattern and the matching ID. State the confidence and the false-positive risk (for example "intentional: the app follows a vehicle from its own data, not the puck"). The references list common false positives per check. Read them before reporting.
+Cite `File:line`, the observed pattern and the matching ID. State the confidence and the false-positive risk (for example "intentional: the app follows a vehicle from its own data, not the puck"). The reference lists common false positives per check. Read them before reporting.
 
 ## Scoped questions vs a full audit
 
@@ -79,18 +73,17 @@ Run the full workflow below when the developer asks for an audit, review or heal
 
 ### Step 1: Scope
 
-1. Find which Mapbox SDKs the app depends on, and their versions
-2. Pick the references to load. A navigation app on Android uses both `navigation-android.md` and `maps-android.md`. The ID prefixes keep the findings apart in one report.
-3. Note each map's UI surface (UIKit `MapView`, SwiftUI `Map`, Android `MapView`, Compose `MapboxMap`) and whether the app uses Mapbox Standard
-4. Tell the developer which references and checks apply, which checks you'll skip and why, and what the report will contain (the outline in step 5)
+1. Find the Maps SDK version, and any other Mapbox SDKs the app depends on
+2. Note each map's UI surface (UIKit `MapView`, SwiftUI `Map`) and whether the app uses Mapbox Standard
+3. Tell the developer which checks apply, which checks you'll skip and why, and what the report will contain (the outline in step 5)
 
 ### Step 2: Inventory
 
-Run the first check of each reference (`MAPSIOS-P1`, `MAPS-P1`, `NAV-P1`). It lists the SDK symbols the app uses, its dependencies and its main map features. Later checks rely on it. Inventory output uses the columns its check gives, not the findings schema.
+Run `MAPSIOS-P1`. It lists the SDK symbols the app uses, its dependencies and its main map features. Later checks rely on it. Inventory output uses the columns its check gives, not the findings schema.
 
 ### Step 3: Run the checks
 
-Run the remaining Part C checks of each reference **one at a time, in order**:
+Run the remaining Part C checks **one at a time, in order**:
 
 - Skip checks that don't apply (for example the view-annotation check when the app has no view annotations, offline checks when offline isn't used) and say why
 - Each check names the catalog entries and antipatterns it covers. Load those sections of the reference for the check.
@@ -105,11 +98,11 @@ Run the reference's open-ended and summary checks last. They ask for things that
 
 Write the report in this order:
 
-1. **Summary:** SDKs and versions, map screens, the top 3 issues by impact, and what was skipped
-2. **Findings**, grouped by check, in the reference's priority order (each reference ends with a **Reporting** section that gives it). Use the output schema below.
+1. **Summary:** SDK version, map screens, the top 3 issues by impact, and what was skipped
+2. **Findings**, grouped by check, in the reference's priority order (the **Reporting** section at the end of the reference gives it). Use the output schema below.
 3. **Checked, not flagged:** patterns that looked like a finding but aren't, with one line on why. This saves the developer re-checking them.
 4. **`[VERIFY WITH MAPBOX]` items**
-5. **Optional style artifacts:** the Maps references list items a person can collect (style JSON, a log of runtime style changes) to judge what the style itself costs. Mention them. Don't collect them yourself unless asked.
+5. **Optional style artifacts:** the reference lists items a person can collect (style JSON, a log of runtime style changes) to judge what the style itself costs. Mention them. Don't collect them yourself unless asked.
 
 The findings belong to the developer. If they want help from Mapbox, they can share the findings table and IDs. They don't need to share source code.
 
@@ -128,7 +121,7 @@ One row per finding:
 - **Confidence:** High, Medium or Low
 - **FP risk:** why this might be intentional or a false positive
 
-Where a reference asks for one table instead of one row per call site (for example the deprecated-API sweep `MAPSIOS-B-HYGIENE-6`), follow the reference.
+Where the reference asks for one table instead of one row per call site (for example the deprecated-API sweep `MAPSIOS-B-HYGIENE-6`), follow the reference.
 
 ## Fixing findings
 
@@ -136,11 +129,11 @@ When the developer asks to fix findings:
 
 1. Go in the report's priority order, or the order the developer picks
 2. One finding at a time. Apply the fix from the reference's "Prefer" example, adapted to the app's code.
-3. Build after each fix (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant), and run the existing tests
+3. Build after each fix (`xcodebuild` for the app scheme), and run the existing tests
 4. Re-run the check that produced the finding to confirm it's gone and that nothing new appeared
 5. Don't change the style, the UI framework or behavior the app relies on as a side effect of a fix. If a fix changes what the user sees, say so before applying it.
 
 ## Related skills
 
-- `mapbox-maps-v10-to-v11-migration` and `mapbox-navigation-v2-to-v3-migration`: run these first on apps below the minimum versions
-- `mapbox-ios-patterns`, `mapbox-android-patterns`, `mapbox-navigation-patterns`, `mapbox-search-integration`: how to build features correctly in the first place
+- `mapbox-ios-maps-v10-to-v11-migration`: run this first on apps below Maps v11
+- `mapbox-ios-patterns`: how to build features correctly in the first place

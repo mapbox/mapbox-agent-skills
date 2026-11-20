@@ -141,7 +141,7 @@ If you can't run the app, say so in the report. Don't claim it was checked.
 
 ### Step 5: Report
 
-Write the summary from `references/migration-workflow.md`: screens migrated and remaining, decisions taken, `[VERIFY WITH MAPBOX]` items, experimental APIs introduced, and pre-existing issues seen but not fixed (for example a style reload to switch themes, or a camera move on every location update). If an audit skill is installed (for example `mapbox-mobile-sdk-audit`), recommend running it on the migrated screens.
+Write the summary from `references/migration-workflow.md`: screens migrated and remaining, decisions taken, `[VERIFY WITH MAPBOX]` items, experimental APIs introduced, and pre-existing issues seen but not fixed (for example a style reload to switch themes, or a camera move on every location update). If an audit skill is installed (for example `mapbox-ios-maps-audit`), recommend running it on the migrated screens.
 
 ## Quick reference
 

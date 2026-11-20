@@ -417,26 +417,69 @@ Covers Kotlin/Jetpack Compose integration, lifecycle management, token handling,
 
 ---
 
-### 🩺 mapbox-mobile-sdk-audit
+### 🩺 mapbox-ios-maps-audit
 
-**Audit an iOS or Android app's Mapbox SDK integration with a coding agent.**
+**Audit an iOS app's Mapbox Maps SDK v11 integration with a coding agent.**
 
-Uses catalogs and checks prepared by Mapbox engineers for Maps SDK v11 (iOS and Android) and Navigation SDK v3 (Android). Finds outdated or deprecated API usage, functionality the app rebuilt that the SDK already provides, and known performance and correctness antipatterns. Reports each finding with a stable ID, confidence and false-positive risk. Read-only unless you ask for fixes.
+Uses a catalog and checks prepared by Mapbox engineers. Finds outdated or deprecated API usage, functionality the app rebuilt that the SDK already provides, and known performance and correctness antipatterns. Reports each finding with a stable ID, confidence and false-positive risk. Read-only unless you ask for fixes.
 
 **Use when:**
 
-- Reviewing or health-checking a Mapbox mobile integration
-- Following up a Maps v10 → v11 or Navigation v2 → v3 migration
+- Reviewing or health-checking a Mapbox Maps integration on iOS (UIKit or SwiftUI)
+- Following up a Maps v10 → v11 migration
 - Chasing slow, leaky or battery-hungry map screens
 
 **Key topics:**
 
 - Featureset Interactions, Feature State, partial GeoJSON updates, view annotations, viewport
 - Runtime styling, annotation and camera antipatterns
-- Lifecycle, threading and memory hygiene
-- Navigation route traversal, observers and Coordination API lifecycle
+- Observer tokens, threading, retain cycles and the deprecated-API sweep
 
-[View skill →](./skills/mapbox-mobile-sdk-audit/SKILL.md)
+[View skill →](./skills/mapbox-ios-maps-audit/SKILL.md)
+
+---
+
+### 🩺 mapbox-android-maps-audit
+
+**Audit an Android app's Mapbox Maps SDK v11 integration with a coding agent.**
+
+The same audit for Android, with its own catalog and checks for Views and Jetpack Compose.
+
+**Use when:**
+
+- Reviewing or health-checking a Mapbox Maps integration on Android
+- Following up a Maps v10 → v11 migration
+- Chasing slow, leaky or battery-hungry map screens
+
+**Key topics:**
+
+- Featureset Interactions, Feature State, style imports and slots, view annotations
+- Runtime styling, annotation and camera antipatterns
+- MapView lifecycle wiring, threading and memory hygiene
+
+[View skill →](./skills/mapbox-android-maps-audit/SKILL.md)
+
+---
+
+### 🩺 mapbox-android-navigation-audit
+
+**Audit an Android app's Mapbox Navigation SDK v3 integration with a coding agent.**
+
+Runs alongside `mapbox-android-maps-audit`, which covers the map layer. Finds route progress math the SDK already provides, observer and lifecycle leaks, and Coordination API misuse.
+
+**Use when:**
+
+- Reviewing or health-checking a Navigation SDK v3 integration on Android
+- Following up a Navigation v2 → v3 migration
+- Chasing memory or lifecycle problems in navigation screens
+
+**Key topics:**
+
+- Route traversal and progress fields, rerouting and alternatives
+- Observer registration and teardown, `MapboxNavigationObserver`
+- Coordination API lifecycle and context
+
+[View skill →](./skills/mapbox-android-navigation-audit/SKILL.md)
 
 ---
 

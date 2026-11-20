@@ -1,0 +1,34 @@
+{
+  "skill_name": "mapbox-android-maps-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit this Android tap handler in our Maps SDK 11.22 app (custom style, View system): `mapView.gestures.addOnMapClickListener { point -> mapboxMap.queryRenderedFeatures(RenderedQueryGeometry(mapboxMap.pixelForCoordinate(point)), RenderedQueryOptions(listOf(\"stores\"), null)) { r -> val f = r.value?.firstOrNull(); if (f != null) select(f) else clearSelection() }; true }`. select() rewrites the stores GeoJsonSource with a selected=true property.",
+      "expectations": [
+        "Recommends Featureset Interactions: ClickInteraction.layer(\"stores\") registered with mapboxMap.addInteraction (MAPS-A1.5)",
+        "Points out the empty-map branch (clearSelection) needs its own ClickInteraction { ctx -> } (MAPS-A1.6), or it is lost in the migration",
+        "Flags the source rewrite for selection as MAPS-B-STYLE-3 and recommends setFeatureState with a featureState expression (MAPS-A2.1/A2.2)",
+        "Mentions the feature-state preconditions: stable feature ids (promoteId or generateId) and paint properties only",
+        "Does not recommend Standard-only interactions or switching to Standard"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our Android Maps SDK 11.20 app has no mapView.onStart()/onStop()/onDestroy() calls anywhere and no mapView.lifecycle reference. We create MapView with the default MapInitOptions. Is our MapView lifecycle broken?",
+      "expectations": [
+        "Explains the lifecycle plugin is in MapInitOptions.defaultPluginList and is installed by default, so no manual calls are needed",
+        "Concludes this is the recommended integration (MAPS-B-HYGIENE-1 case D), a pass, not a bug",
+        "Warns against inferring the plugin is missing from the absence of a mapView.lifecycle call site",
+        "Mentions what would still be a finding, such as a MapView held in a ViewModel, singleton or DI singleton, or teardown in onDestroyView that calls into the map"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Can you also audit our Android app's Mapbox Search SDK usage while you're at it?",
+      "expectations": [
+        "Says this skill has no Search SDK reference yet, rather than improvising Search checks or inventing Search finding IDs",
+        "Offers what it can do instead, such as auditing the Maps SDK integration, or pointing to the mapbox-search-integration skill for Search best practices"
+      ]
+    }
+  ]
+}

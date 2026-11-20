@@ -68,38 +68,35 @@ class MapActivity : AppCompatActivity() {
 **Jetpack Compose Pattern:**
 
 ```kotlin
+import com.mapbox.maps.extension.compose.style.standard.MapboxStandardStyle
+import com.mapbox.maps.extension.compose.style.standard.rememberStandardStyleState
+
 @Composable
 fun MapScreen() {
-    MapboxMap(modifier = Modifier.fillMaxSize()) {
-        MapEffect(Unit) { mapView ->
-            // Load Standard style
-            mapView.mapboxMap.loadStyle(Style.STANDARD)
-
-            // Add featureset interactions using View system API
-            mapView.mapboxMap.addInteraction(
-                ClickInteraction.standardPoi { poi, context ->
-                    Log.d("MapTap", "Tapped POI: ${poi.name}")
-                    true
-                }
-            )
-
-            mapView.mapboxMap.addInteraction(
-                ClickInteraction.standardBuildings { building, context ->
-                    Log.d("MapTap", "Tapped building")
-                    mapView.mapboxMap.setFeatureState(
-                        building,
-                        state = mapOf("select" to true)
-                    )
-                    true
+    MapboxMap(
+        modifier = Modifier.fillMaxSize(),
+        style = {
+            MapboxStandardStyle(
+                standardStyleState = rememberStandardStyleState {
+                    interactionsState
+                        .onPoiClicked { poi, context ->
+                            Log.d("MapTap", "Tapped POI: ${poi.name}")
+                            true // Stop propagation
+                        }
+                        .onBuildingsClicked { building, context ->
+                            Log.d("MapTap", "Tapped building")
+                            // Highlight the building
+                            building.setStandardBuildingsState { highlight(true) }
+                            true
+                        }
                 }
             )
         }
-    }
+    )
 }
-
-// Note: Featureset interactions in Compose use MapEffect to access
-// the underlying MapView and use the View system interaction API
 ```
+
+Compose interactions go through the style's `interactionsState`, not `MapEffect`. `MapboxStandardStyle`'s `interactionsState` covers the Standard featuresets (`onPoiClicked`, `onBuildingsClicked`, `onPlaceLabelsClicked`, `onLandmarkIconsClicked`, plus `onFeaturesetClicked` and `onLayerClicked`). For featuresets in an imported style, use `rememberStyleImportState { interactionsState.onFeaturesetClicked(id = ...) { ... } }` on a `StyleImport`. See the [Compose interactions example](https://github.com/mapbox/mapbox-maps-android/blob/main/compose/compose-app/src/main/java/com/mapbox/maps/compose/testapp/examples/style/InteractionsActivity.kt).
 
 ## Tap on Custom Layers
 

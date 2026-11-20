@@ -27,6 +27,8 @@ dependencies {
 
 ### Access Token
 
+The string resource is the recommended approach. The SDK reads it automatically.
+
 ```xml
 <!-- app/res/values/mapbox_access_token.xml -->
 <?xml version="1.0" encoding="utf-8"?>
@@ -36,6 +38,16 @@ dependencies {
 </resources>
 ```
 
+To set it programmatically instead, import from `com.mapbox.common` (**not** `com.mapbox.maps`) and assign it before any map component is created:
+
+```kotlin
+import com.mapbox.common.MapboxOptions
+
+MapboxOptions.accessToken = "pk.your_token"
+```
+
+Don't use manifest `<meta-data>` placeholders: the SDK doesn't read tokens from `${MAPBOX_ACCESS_TOKEN}` in AndroidManifest.xml.
+
 ## Jetpack Compose
 
 ### Basic Map
@@ -44,22 +56,21 @@ dependencies {
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import com.mapbox.maps.extension.compose.*
-import com.mapbox.maps.Style
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.geojson.Point
 
 @Composable
 fun MapScreen() {
-    MapboxMap(modifier = Modifier.fillMaxSize()) {
-        MapEffect(Unit) { mapView ->
-            mapView.mapboxMap.setCamera(
-                CameraOptions.Builder()
-                    .center(Point.fromLngLat(-122.4194, 37.7749))
-                    .zoom(12.0)
-                    .build()
-            )
+    MapboxMap(
+        modifier = Modifier.fillMaxSize(),
+        mapViewportState = rememberMapViewportState {
+            setCameraOptions {
+                center(Point.fromLngLat(-122.4194, 37.7749))
+                zoom(12.0)
+            }
         }
-    }
+    )
 }
 ```
 
@@ -67,12 +78,10 @@ fun MapScreen() {
 
 ```kotlin
 MapboxMap(modifier = Modifier.fillMaxSize()) {
-    MapEffect(Unit) { mapView ->
-        val annotationManager = mapView.annotations.createPointAnnotationManager()
-        val pointAnnotation = PointAnnotationOptions()
-            .withPoint(Point.fromLngLat(-122.4194, 37.7749))
-            .withIconImage("marker")
-        annotationManager.create(pointAnnotation)
+    val marker = rememberIconImage(R.drawable.ic_marker)
+    PointAnnotation(point = Point.fromLngLat(-122.4194, 37.7749)) {
+        iconImage = marker // required: without an icon nothing is drawn
+        interactionsState.onClicked { true }
     }
 }
 ```
@@ -80,17 +89,20 @@ MapboxMap(modifier = Modifier.fillMaxSize()) {
 ### Compose Annotations Pattern
 
 ```kotlin
-// ❌ Declarative annotation components are not supported
-// Use MapEffect with annotation managers instead (see above)
-MapboxMap(modifier = Modifier.fillMaxSize()) {
-    // This doesn't work:
-    PointAnnotation(
-        point = Point.fromLngLat(-122.4194, 37.7749)
-    ) {
-        iconImage = "custom-marker"
-    }
+// ✅ Many markers: one PointAnnotationGroup (one layer)
+PointAnnotationGroup(annotations = optionsList) {
+    interactionsState.onClicked { annotation -> true }
 }
+
+// ❌ Many markers as single composables: each PointAnnotation creates
+// its own annotation manager and layer
+stores.forEach { PointAnnotation(point = it.point) { iconImage = marker } }
 ```
+
+- `PointAnnotation` renders nothing without `iconImage` or `textField`. Set at least one.
+- Use `rememberIconImage(R.drawable.ic_marker)` for drawable resources, not `BitmapFactory`.
+- Use `interactionsState.onClicked { ... }` for taps. The `onClick` parameter is deprecated.
+- Annotation IDs are `String` (UUID), not `Long`.
 
 ## View System
 
@@ -276,9 +288,10 @@ mapView.gestures.addOnMapClickListener { point ->
 
 ```kotlin
 // Compose
-MapboxMap(style = Style.STANDARD)  // Recommended
-MapboxMap(style = Style.DARK)
-MapboxMap(style = Style.STANDARD_SATELLITE)
+MapboxMap(style = { MapboxStandardStyle() })  // Default, recommended
+MapboxMap(style = { MapStyle(style = Style.DARK) })
+MapboxMap(style = { MapboxStandardSatelliteStyle() })
+// `style` is a composable slot: MapboxMap(style = Style.DARK) doesn't compile
 
 // Views
 mapView.mapboxMap.loadStyle(Style.STANDARD)

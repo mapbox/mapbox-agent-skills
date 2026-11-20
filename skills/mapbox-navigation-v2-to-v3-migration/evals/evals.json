@@ -121,6 +121,15 @@
         "Uses HistoryReader (initialRoute or RouteAssignmentHistoryEvent.navigationRoutes) for routes from history files and does not call it a blocker",
         "Includes a runtime check that the app launches, since isolation violations compile but crash"
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "Our Android app uses the Navigation SDK v2 Drop-in NavigationView. Migrate it to v3. We haven't said anything about licensing or how to handle the Drop-in UI.",
+      "expectations": [
+        "Presents the Drop-in replacement as a decision, with copying the v2 Drop-in sources as one option, and does not copy any v2 source files before the developer answers",
+        "Links the v2 LICENSE.md and states its terms before asking: active Mapbox account, use and modification only with Mapbox products, no unrestricted redistribution or sublicensing, and no modifications that interfere with billing, accounting or data collection code",
+        "If there is no answer, migrates the rest of the app and reports Drop-in as an open decision"
+      ]
     }
   ]
 }

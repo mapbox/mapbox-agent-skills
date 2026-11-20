@@ -35,6 +35,7 @@ This repo contains specialized Agent Skills for Mapbox development. Skills provi
 - **mapbox-android-maps-audit**: The same for an Android app's Maps SDK v11 integration (Views, Jetpack Compose).
 - **mapbox-android-navigation-audit**: Audit an Android app's Navigation SDK v3 integration, alongside mapbox-android-maps-audit for the map layer.
 - **mapbox-ios-navigation-audit**: Audit an iOS app's Navigation SDK v3 integration (provider and session lifecycle, Combine, Swift concurrency, SPI use), alongside mapbox-ios-maps-audit for the map layer.
+- **mapbox-android-sdk-inventory**: Read-only inventory of what an Android app uses from the Mapbox SDKs. Reports resolved versions, modules, every class, function, overload and constant called with file and line, the parameters passed (such as route request options) and non-code configuration. No recommendations. Use before a migration or for sizing and support questions.
 
 ## How to Use Skills
 

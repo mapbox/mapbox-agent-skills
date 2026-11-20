@@ -483,6 +483,29 @@ Runs alongside `mapbox-android-maps-audit`, which covers the map layer. Finds ro
 
 ---
 
+### 📋 mapbox-android-sdk-inventory
+
+**Read-only inventory of what an Android app uses from the Mapbox SDKs today.**
+
+Reports the declared and resolved version of every Mapbox dependency, the modules used, every Mapbox class, function, overload and constant the code calls with file and line, the parameters passed, and the non-code configuration. It describes and doesn't recommend. The full report goes to files, with a JSON record so two runs can be compared.
+
+**Use when:**
+
+- Answering "what do we use from Mapbox?"
+- Sizing a version upgrade or migration before starting it
+- Checking exactly which options the app passes, such as route request parameters
+
+**Key topics:**
+
+- Declared and resolved dependency versions, per module and variant
+- Call sites by API area, with lifecycle context
+- Parameter values marked literal, constant, dynamic or SDK default
+- Style, manifest, XML, offline and token locations (never token values)
+
+[View skill →](./skills/mapbox-android-sdk-inventory/SKILL.md)
+
+---
+
 ### 📱 mapbox-flutter-patterns
 
 **Official integration patterns for the Mapbox Maps SDK for Flutter (mapbox_maps_flutter) on iOS and Android with Dart.**

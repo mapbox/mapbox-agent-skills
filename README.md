@@ -440,6 +440,29 @@ Reports the declared and resolved version of every Mapbox dependency, the module
 
 ---
 
+### 🔄 mapbox-android-compose-migration
+
+**Move Android Mapbox map and navigation screens from the View system to Jetpack Compose.**
+
+Covers the Mapbox parts of the screen (the `MapboxMap` composable, viewport state, style and annotation composables, `MapEffect`, lifecycle, and Navigation SDK v3 wiring) and works alongside Google's XML-to-Compose skill for the rest of the screen. Keeps the map looking and behaving the same, one screen at a time.
+
+**Use when:**
+
+- Migrating an XML or `AndroidView`-wrapped `MapView` to Compose
+- Estimating how much work it is to move map screens to Compose
+- Fixing a map that broke after moving to Compose
+
+**Key topics:**
+
+- View → Compose mappings for Maps SDK v11
+- Behavior changes surfaced as decisions (style slot, ornaments, camera on rotation)
+- Navigation SDK v3 on a `MapboxMap` composable, with View-based UI components in `AndroidView`
+- Common Compose mistakes (rerunning `MapEffect`, one layer per annotation, map recreation)
+
+[View skill →](./skills/mapbox-android-compose-migration/SKILL.md)
+
+---
+
 ### 📱 mapbox-flutter-patterns
 
 **Official integration patterns for the Mapbox Maps SDK for Flutter (mapbox_maps_flutter) on iOS and Android with Dart.**

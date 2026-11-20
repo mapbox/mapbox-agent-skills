@@ -2,7 +2,7 @@
 
 Mappings from Navigation SDK for iOS v2 (`MapboxCoreNavigation`, `MapboxNavigation`) to v3 (`MapboxNavigationCore`, `MapboxNavigationUIKit`).
 
-**Requirements for v3:** Swift 5.9+, **Xcode 16+**, iOS 14+. Navigation v3 depends on Maps SDK v11. Migrate the map layer with `mapbox-maps-v10-to-v11-migration`.
+**Requirements for v3:** Swift 5.9+, **Xcode 16+**, iOS 14+. Navigation v3 depends on Maps SDK v11. Migrate the map layer with `mapbox-ios-maps-v10-to-v11-migration`.
 
 **Distribution: Swift Package Manager only.** v3 has no podspec and no Carthage build. Package URL `https://github.com/mapbox/mapbox-navigation-ios.git`; products `MapboxNavigationCore` and `MapboxNavigationUIKit` (Maps v11 comes in as a dependency). A CocoaPods or Carthage app must move the navigation and map dependencies to SPM. See [Project setup](#project-setup-cocoapods-or-carthage-to-spm). This also applies to Maps v11 in that app, even though Maps v11 itself still ships a podspec: both SDK generations come through the same package graph.
 
@@ -552,7 +552,7 @@ Load the app's map style explicitly on `navigationMapView.mapView`. Without it a
 
 ### 10. Map layer
 
-Use `mapbox-maps-v10-to-v11-migration`. Navigation-specific notes:
+Use `mapbox-ios-maps-v10-to-v11-migration`. Navigation-specific notes:
 
 - `NavigationMapView.mapView` is a Maps v11 `MapView`. All map APIs on it follow the Maps skill.
 - The Maps skill's "pin the v10 default style" check covers `MapView(frame:)`. Apply it to every `NavigationMapView` too: the app gets the same silent change to Standard.

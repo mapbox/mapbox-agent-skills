@@ -1,0 +1,34 @@
+{
+  "skill_name": "mapbox-ios-maps-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you audit our iOS app's Mapbox integration? We're on MapboxMaps 11.20 with UIKit and a custom style. In MapScreenViewController.viewDidLoad we have `_ = mapView.mapboxMap.onStyleLoaded.observe { [weak self] _ in self?.addStoreLayers() }`, and the store layers sometimes don't show up. We also call `_ = mapView.camera.ease(to: camera, duration: 0.5)` in a few places.",
+      "expectations": [
+        "Identifies the dropped AnyCancelable from onStyleLoaded.observe as the cause: the token cancels the subscription when released, so the observer never fires (MAPSIOS-B-HYGIENE-1)",
+        "Recommends storing the token (for example in a Set<AnyCancelable> with .store(in:)) for as long as the observer should live",
+        "Does not flag the discarded Cancelable from camera.ease, since that plain Cancelable doesn't cancel when released",
+        "Reports findings in the output schema with File:line, the matching ID, confidence and false-positive risk",
+        "Does not recommend switching to Mapbox Standard, since the app uses a custom style"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this from our iOS app (MapboxMaps 11.22, UIKit, custom style). Every time the store list refreshes we call `func show(_ stores: [Store]) { let manager = mapView.annotations.makePointAnnotationManager(); for s in stores { var a = PointAnnotation(coordinate: s.coordinate); a.image = .init(image: pinImage, name: \"pin-\\(s.id)\"); manager.annotations.append(a) } }`. Memory keeps growing while users browse.",
+      "expectations": [
+        "Flags creating a new point annotation manager on every refresh as MAPSIOS-B-ANNOT-1: the default id is random, so each call adds a new source and layer that stay until removeAnnotationManager(withId:); create the manager once and keep it in a property",
+        "Flags appending to manager.annotations one item at a time as MAPSIOS-B-ANNOT-2 and recommends building the array and assigning it once",
+        "Flags the per-store image name (\"pin-\\(s.id)\") for a shared icon as MAPSIOS-B-ANNOT-3: one style image per annotation; use one shared name",
+        "Reports each finding in the output schema with the MAPSIOS ID, confidence and false-positive risk, and doesn't change code"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Can you also audit our iOS app's Mapbox Search SDK usage while you're at it?",
+      "expectations": [
+        "Says this skill has no Search SDK reference yet, rather than improvising Search checks or inventing Search finding IDs",
+        "Offers what it can do instead, such as auditing the Maps SDK integration, or pointing to the mapbox-search-integration skill for Search best practices"
+      ]
+    }
+  ]
+}

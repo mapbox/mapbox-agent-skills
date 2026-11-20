@@ -94,7 +94,8 @@ Respond in this exact JSON format (no other text):
 
   const judgeResponse = await anthropic.messages.create({
     model: JUDGE_MODEL,
-    max_tokens: 2048,
+    // Same as the response call: leave room for thinking, or the JSON verdict can be cut off
+    max_tokens: 8000,
     messages: [{ role: 'user', content: judgePrompt }]
   });
 

@@ -1,0 +1,33 @@
+{
+  "skill_name": "mapbox-android-navigation-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We use Mapbox Navigation SDK 3.24 on Android. Our RouteProgressObserver computes remaining distance by summing leg annotation distances from the current index on every update, and our TripFragment calls mapboxNavigation.registerRouteProgressObserver { progress -> updateEta(progress) } in onViewCreated. Is there anything wrong here?",
+      "expectations": [
+        "Flags the manual remaining-distance computation as NAV-NRO-1 and recommends routeProgress.distanceRemaining (or the leg and step progress fields)",
+        "Flags the inline-lambda observer as NAV-MEMORY-3: it can't be unregistered, and registering in onViewCreated accumulates observers across view recreation",
+        "Recommends keeping a reference to the observer and unregistering it in the matching teardown",
+        "Cites the NAV IDs and gives confidence and false-positive risk for each finding"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Please do a full audit of our Android delivery app's Mapbox setup. It uses Navigation SDK 3.25 and Maps SDK 11.25. Don't change any code yet.",
+      "expectations": [
+        "Plans to confirm the SDK versions from the Gradle files (or version catalog) and uses the navigation-android reference with mapbox-android-maps-audit for the map layer",
+        "Lays out the inventory checks (NAV-P1, MAPS-P1) first, then the remaining checks one at a time, skipping ones that don't apply with a reason",
+        "Doesn't change code, since the audit is read-only and the developer asked for no changes",
+        "Describes a report with a summary, findings grouped by check in priority order using the output schema, a checked-not-flagged section and [VERIFY WITH MAPBOX] items"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Can you also audit our Android app's Mapbox Search SDK usage while you're at it?",
+      "expectations": [
+        "Says this skill has no Search SDK reference yet, rather than improvising Search checks or inventing Search finding IDs",
+        "Offers what it can do instead, such as auditing the Navigation SDK and Maps SDK integration, or pointing to the mapbox-search-integration skill for Search best practices"
+      ]
+    }
+  ]
+}

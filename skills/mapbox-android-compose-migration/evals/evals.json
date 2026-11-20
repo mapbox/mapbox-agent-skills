@@ -1,0 +1,72 @@
+{
+  "skill_name": "mapbox-android-compose-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Move this Activity to Jetpack Compose. We're on Maps SDK 11.35.0.\n\nactivity_store_map.xml:\n<com.mapbox.maps.MapView\n    android:id=\"@+id/mapView\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    app:mapbox_styleUri=\"mapbox://styles/acme/store-style\"\n    app:mapbox_cameraTargetLat=\"37.77\"\n    app:mapbox_cameraTargetLng=\"-122.42\"\n    app:mapbox_cameraZoom=\"12\"\n    app:mapbox_compassMarginTop=\"80dp\" />\n\nStoreMapActivity.kt:\noverride fun onStart() { super.onStart(); binding.mapView.onStart() }\noverride fun onStop() { super.onStop(); binding.mapView.onStop() }\noverride fun onDestroy() { super.onDestroy(); binding.mapView.onDestroy() }",
+      "expectations": [
+        "Adds com.mapbox.extension:maps-compose at the same version as the Maps SDK (11.35.0)",
+        "Uses the MapboxMap composable and passes the same style URI through the style slot, e.g. style = { MapStyle(style = \"mapbox://styles/acme/store-style\") }, not style = \"...\" as a string and not Standard",
+        "Moves the XML camera attributes to rememberMapViewportState { setCameraOptions { center(...); zoom(12.0) } }",
+        "Deletes the manual mapView.onStart/onStop/onDestroy calls because the MapboxMap composable handles lifecycle",
+        "Keeps the compass 80dp from the top via the compass slot, e.g. compass = { Compass(contentPadding = PaddingValues(start = 4.dp, top = 80.dp, end = 4.dp, bottom = 4.dp)) }, keeping the 4dp View default on the other sides, or flags the ornament position as a behavior change to decide",
+        "Mentions that the camera now survives rotation (rememberMapViewportState is saveable) as a behavior change"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're moving our store map to Compose. The View version creates one PointAnnotationManager and adds about 300 store markers with manager.create(optionsList), plus a click listener on the manager. In Compose I was going to do stores.forEach { PointAnnotation(point = it.point) { ... } }. Good plan?",
+      "expectations": [
+        "Says no: each PointAnnotation composable creates its own annotation manager (its own source and layer), so 300 markers would mean 300 layers",
+        "Recommends PointAnnotationGroup(annotations = optionsList) to keep a single layer like the View manager",
+        "Handles taps with interactionsState.onClicked { annotation -> ... } rather than the deprecated onClick parameter",
+        "Uses rememberIconImage (or IconImage) for the icon and notes that a point annotation needs iconImage or textField to draw anything",
+        "Advises remembering the options list (e.g. remember(stores)) so it isn't rebuilt on every recomposition"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "After moving our map screen to Compose, the location indicator listener fires twice and sometimes the map setup runs again when the user selects a store. Code:\n\nMapboxMap(mapViewportState = viewport) {\n    MapEffect(selectedStoreId) { mapView ->\n        mapView.location.updateSettings { enabled = true; puckBearingEnabled = true }\n        mapView.location.addOnIndicatorPositionChangedListener { point -> lastPoint = point }\n        mapView.compass.updateSettings { marginTop = 80f }\n    }\n}",
+      "expectations": [
+        "Explains that MapEffect reruns whenever its key changes, so keying on selectedStoreId reruns the setup on every selection",
+        "Recommends keying the effect on Unit (or stable inputs only)",
+        "Recommends DisposableMapEffect for the indicator listener, removing it in onDispose, so listeners don't accumulate",
+        "Says mapView.compass is disabled in Compose maps (PluginDisabledException from 11.35, NPE before) and moves the margin to the compass slot: Compass(contentPadding = ...)",
+        "Keeps location.updateSettings in an effect, since the Compose extension has no declarative puck"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our turn-by-turn screen (Navigation SDK 3.20, Maps 11.20) is an Activity with an XML layout: a MapView, MapboxManeuverView at the top, MapboxTripProgressView at the bottom, and a MapboxRecenterButton. In onCreate we set up NavigationLocationProvider, MapboxNavigationViewportDataSource, NavigationCamera, MapboxRouteLineApi/View and a RouteProgressObserver. How do we move it to Compose?",
+      "expectations": [
+        "Says published Navigation SDK v3 artifacts have no Compose UI components, so the SDK views are hosted in AndroidView (factory creates the view, update renders from state) or rebuilt in Compose as a separate decision",
+        "Moves the puck, NavigationCamera and route line setup into a DisposableMapEffect(Unit) inside MapboxMap, using mapView.mapboxMap and mapView.camera, clearing references in onDispose",
+        "Keeps NavigationCamera as the camera owner and doesn't drive the navigation camera from MapViewportState on the same screen",
+        "Keeps MapboxRouteLineApi/View, MapboxManeuverApi and similar outside composition (Activity fields or a ViewModel) and keeps the cancel()/shutdown() calls in onDestroy",
+        "Keeps MapboxNavigation attached via requireMapboxNavigation/MapboxNavigationApp, registers observers in MapboxNavigationObserver.onAttached, and has observers write to Compose state instead of calling view methods",
+        "Does not recommend unpublished or internal Compose navigation libraries or internal Flow helpers"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We have five map screens on Android, all XML MapViews, on Maps SDK 11.4.0. The rest of the app is mostly Compose already. How much work is it to move the map screens to Compose? Don't change any code yet.",
+      "expectations": [
+        "Runs only the inventory and plan steps and doesn't change code",
+        "Points out that the Compose extension became stable in 11.6.0, so 11.4.0 needs a Maps bump first, proposed as a separate change rather than done silently",
+        "Recommends migrating one screen at a time, starting with the simplest to set the pattern",
+        "Says leaving some screens on Views (a mixed app) is a valid end state",
+        "Gives effort per screen or area and lists behavior changes as decisions (style slot, ornaments, camera on rotation)",
+        "Points to Google's XML-to-Compose skill for the non-map parts of each screen"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Our Android app still uses Mapbox Maps SDK 10.16 with XML MapViews. Can we move the maps to Jetpack Compose and upgrade to v11 in the same PR to save time?",
+      "expectations": [
+        "Recommends not combining them: migrate to Maps v11 first (mapbox-android-maps-v10-to-v11-migration), then move to Compose as a separate change",
+        "Explains the Compose extension needs Maps v11 (stable from 11.6.0)",
+        "Explains that keeping the changes separate makes behavior changes and regressions traceable to one cause"
+      ]
+    }
+  ]
+}

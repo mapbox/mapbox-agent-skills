@@ -36,7 +36,8 @@ This repo contains specialized Agent Skills for Mapbox development. Skills provi
 - **mapbox-ios-maps-audit**: Audit an iOS app's Mapbox Maps SDK v11 integration (UIKit, SwiftUI). Finds outdated APIs, reimplemented SDK functionality, and performance and correctness antipatterns, with stable finding IDs. Read-only by default. Use for integration reviews or after a migration.
 - **mapbox-android-maps-audit**: The same for an Android app's Maps SDK v11 integration (Views, Jetpack Compose).
 - **mapbox-android-navigation-audit**: Audit an Android app's Navigation SDK v3 integration, alongside mapbox-android-maps-audit for the map layer.
-- **mapbox-android-sdk-inventory**: Read-only inventory of what an Android app uses from the Mapbox SDKs. Reports resolved versions, modules, every class, function, overload and constant called with file and line, the parameters passed (such as route request options) and non-code configuration. No recommendations. Use before a migration or for sizing and support questions.
+- **mapbox-android-sdk-inventory**: Read-only inventory of what an Android app uses from the Mapbox SDKs. Reports resolved versions, modules, every class, function, overload and constant called with file and line, the parameters passed (such as route request options) and non-code configuration. No recommendations. Use to answer what an app uses and with which values, for support questions, or to compare two runs. Migration effort estimates come from the migration skills.
+- **mapbox-android-compose-migration**: Move Android map and navigation screens from the View system to Jetpack Compose (Maps SDK v11, Navigation SDK v3). Covers the MapboxMap composable, viewport and style state, annotation composables, MapEffect, lifecycle and Navigation wiring, one screen at a time, without changing what the map looks like. Use alongside Google's XML-to-Compose skill.
 
 ## How to Use Skills
 
@@ -59,6 +60,7 @@ Common workflows that combine multiple skills:
 - **Cross-platform app**: ios-patterns + android-patterns + token-security
 - **Moving iOS map screens to SwiftUI**: ios-swiftui-migration + ios-patterns
 - **Reviewing a mobile integration**: ios-maps-audit + ios-patterns, or android-maps-audit (+ android-navigation-audit) + android-patterns
+- **Moving Android map screens to Compose**: android-compose-migration + android-patterns
 - **Open-source project**: maplibre-migration + web-performance-patterns
 
 ## Quick Decision Guide

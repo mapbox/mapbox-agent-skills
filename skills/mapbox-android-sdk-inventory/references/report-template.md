@@ -32,14 +32,14 @@ Toolchain: AGP x, Gradle x, Kotlin x, JDK x, compileSdk x, minSdk x
 One row per symbol and overload. Count call sites. `Call-site types` is what the app code passes. `SDK signature` comes from the SDK sources, or is `unresolved`.
 
 ```markdown
-| Area    | Class                  | Member         | Call-site types / constant             | SDK signature                   | Call sites | Where (file:line)                                         | Context     | Flags |
-| ------- | ---------------------- | -------------- | -------------------------------------- | ------------------------------- | ---------- | --------------------------------------------------------- | ----------- | ----- |
-| Camera  | `MapboxMap`            | `flyTo`        | `(CameraOptions, MapAnimationOptions)` | `unresolved`                    | 3          | `app/src/main/java/com/acme/MapFragment.kt:88`, `...:140` | user action |       |
-| Routing | `RouteOptions.Builder` | `alternatives` | `(Boolean)`                            | `sdk`: `alternatives(Boolean?)` | 1          | `app/src/main/java/com/acme/RouteRequester.kt:42`         | per request |       |
-| Setup   | `MapboxNavigationApp`  | `setup`        | `(NavigationOptions)`                  | `unresolved`                    | 1          | `app/src/main/java/com/acme/App.kt:31`                    | startup     |       |
+| Area    | Class                  | Member         | Call-site types / constant | SDK signature                   | Call sites | Where (file:line)                                         | Context     | Flags |
+| ------- | ---------------------- | -------------- | -------------------------- | ------------------------------- | ---------- | --------------------------------------------------------- | ----------- | ----- |
+| Camera  | `MapboxMap`            | `setCamera`    | `(CameraOptions)`          | `unresolved`                    | 3          | `app/src/main/java/com/acme/MapFragment.kt:88`, `...:140` | user action |       |
+| Routing | `RouteOptions.Builder` | `alternatives` | `(Boolean)`                | `sdk`: `alternatives(Boolean?)` | 1          | `app/src/main/java/com/acme/RouteRequester.kt:42`         | per request |       |
+| Setup   | `MapboxNavigationApp`  | `setup`        | `(NavigationOptions)`      | `unresolved`                    | 1          | `app/src/main/java/com/acme/App.kt:31`                    | startup     |       |
 ```
 
-`Flags`: `experimental`, `deprecated`, `internal`, `wrapped` (called through an app wrapper). Leave empty when none.
+`Flags`: `experimental` (give the annotation, for example `@MapboxExperimental`, `@ExperimentalMapboxNavigationAPI` or `@ExperimentalPreviewMapboxNavigationAPI`), `delicate` (`@MapboxDelicateApi`), `deprecated`, `internal` (an `internal` package or `@RestrictTo`), `wrapped` (called through an app wrapper). Leave empty when none.
 
 ## Parameters table
 
@@ -58,7 +58,7 @@ A secret literal has the value `<redacted: kind>`. `Kind`: `literal`, `constant`
 
 ## What to capture per area
 
-- **Route request:** every option set on `RouteOptions` or the request builder, including the values set by SDK helper calls such as `applyDefaultNavigationOptions()` (profile, coordinates and waypoint indices, alternatives, steps, annotations, exclusions, language, voice and banner instructions, overview, continue straight, refresh, departure or arrival time, any option not on this list), the interceptor if any, and the request callback and how its result is used
+- **Route request:** every option set on `RouteOptions` or the request builder, including the values set by SDK helper calls such as `applyDefaultNavigationOptions()` (profile, coordinates and waypoint indices, alternatives, steps, annotations, exclusions, language, voice and banner instructions, overview, continue straight, refresh, departure or arrival time, any option not on this list), the interceptor if any, and the callback class or function that receives the result (SKILL.md rule 8)
 - **Navigation setup:** `NavigationOptions` fields, location provider and engine, replay, telemetry and event settings, notification and foreground service options
 - **Trip session and observers:** each observer registered (progress, routes, location matcher, off-route, arrival, rerouting, alternatives, voice, banner), and where it is unregistered
 - **Map:** `MapInitOptions` fields, style URI or JSON, map options (`MapOptions`, constrain mode, glyph rasterization), gesture settings, ornaments, debug options

@@ -49,7 +49,8 @@ async function runEval(skillName, skillContent, evalItem) {
   // Step 1: Generate response using skill as system prompt
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    // Room for thinking plus the answer: with a large skill, 4096 can all go to thinking and leave no text
+    max_tokens: 16000,
     system: `You are an expert AI assistant with the following skill knowledge:\n\n${skillContent}`,
     messages: [{ role: 'user', content: evalItem.prompt }]
   });

@@ -120,11 +120,11 @@ All three CUD operations on annotation managers have list-overload variants. Usi
 
 ### MAPS-A7. Lifecycle Plugin
 
-The lifecycle plugin wires `MapView` to a `LifecycleOwner`, removing the need for manual `onStart` / `onStop` / `onDestroy` calls in each Activity or Fragment. Manual calls are still valid for specific corner cases, but are not recommended — incorrect or incomplete forwarding is a common source of memory leaks.
+The lifecycle plugin wires `MapView` to a `LifecycleOwner`, removing the need for manual `onStart` / `onResume` / `onStop` / `onDestroy` / `onLowMemory` calls in each Activity or Fragment. Manual calls are still valid for specific corner cases, but are not recommended — incorrect or incomplete forwarding is a common source of memory leaks.
 
-| ID        | Functionality                  | Key API symbols                                                                                                                                                                   | "Not yet using it" looks like                                                                                                                                                                                                    |
-| --------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MAPS-A7.1 | Automatic lifecycle forwarding | `mapView.lifecycle` (extension property from `plugin-lifecycle`, returns `MapboxLifecyclePlugin`) — no manual calls needed when `MapView` is hosted in a `LifecycleOwner` context | Manual `mapView.onStart()` / `mapView.onStop()` / `mapView.onDestroy()` / `mapView.onLowMemory()` in Activity or Fragment — valid for corner cases but surface to Mapbox: incorrect or incomplete forwarding causes memory leaks |
+| ID        | Functionality                  | Key API symbols                                                                                                                                                                   | "Not yet using it" looks like                                                                                                                                                                                                                           |
+| --------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MAPS-A7.1 | Automatic lifecycle forwarding | `mapView.lifecycle` (extension property from `plugin-lifecycle`, returns `MapboxLifecyclePlugin`) — no manual calls needed when `MapView` is hosted in a `LifecycleOwner` context | Manual `mapView.onStart()` / `mapView.onResume()` / `mapView.onStop()` / `mapView.onDestroy()` / `mapView.onLowMemory()` in Activity or Fragment — valid for corner cases but surface to Mapbox: incorrect or incomplete forwarding causes memory leaks |
 
 ### MAPS-A8. Compose Extension
 
@@ -405,7 +405,9 @@ A count under the threshold is a pass only if the count is **bounded in client c
 
 #### MAPS-B-HYGIENE-1. MapView lifecycle wiring
 
-The lifecycle plugin (catalog MAPS-A7) is the recommended approach. It retrieves the lifecycle from the `MapView`'s view tree and auto-wires all calls when `MapView` is properly hosted in an Activity or Fragment. If the plugin is not used, manual forwarding of all four calls is required regardless of context.
+The lifecycle plugin (catalog MAPS-A7) is the recommended approach. It retrieves the lifecycle from the `MapView`'s view tree and auto-wires all calls when `MapView` is properly hosted in an Activity or Fragment. If the plugin is not used, manual forwarding of all five calls (`onStart`, `onResume`, `onStop`, `onDestroy`, `onLowMemory`) is required regardless of context. The `MapView` KDoc says each one must be called from the matching Activity or Fragment callback.
+
+**Skip this check for Compose `MapboxMap { }`.** The Compose extension disables the lifecycle plugin and forwards the lifecycle itself, so a Compose map has neither the plugin nor manual calls and would wrongly match case A. Since 11.35, reading `mapView.lifecycle` inside `MapEffect` throws `PluginDisabledException`, so don't recommend it there either. Apply this check only to a `MapView` the app creates itself, including one wrapped in `AndroidView`.
 
 **Detect the plugin correctly before reporting anything here.** The plugin is installed by default — it is part of `MapInitOptions.defaultPluginList`, so a correct integration references it nowhere in app code. Test for `MAPBOX_LIFECYCLE_PLUGIN_ID` being present in the plugin list actually passed to `MapInitOptions` (present unless the app subtracted it), **not** for a `mapView.lifecycle` call site. Grepping for the call site and finding nothing is the common way to produce a false critical finding here.
 
@@ -417,13 +419,13 @@ The lifecycle plugin works by resolving a `LifecycleOwner` from the `MapView`'s 
 
 Four cases to report. D is listed first because it must be ruled out before A — the two look identical to a search for manual calls:
 
-**D. Plugin present and no manual calls (pass — report as correct, not as a finding).** The plugin is in the plugin list and app code makes no manual `onStart` / `onStop` / `onDestroy` / `onLowMemory` calls. This is the recommended integration (MAPS-A7), and it covers `onLowMemory` too — the plugin forwards memory-pressure callbacks as well as lifecycle events. Do not read the absence of manual calls as case A.
+**D. Plugin present and no manual calls (pass — report as correct, not as a finding).** The plugin is in the plugin list and app code makes no manual `onStart` / `onResume` / `onStop` / `onDestroy` / `onLowMemory` calls. This is the recommended integration (MAPS-A7), and it covers `onLowMemory` too — the plugin forwards memory-pressure callbacks as well as lifecycle events. Do not read the absence of manual calls as case A.
 
-**A. No lifecycle plugin and no manual calls (bug).** `MapView` has no lifecycle forwarding at all. Flag and explain consequences: `onStop()` never called → GL context runs in background, drains battery; `onDestroy()` never called → GL resources, tile cache, and observers are never released → memory leak on every screen exit; `onStart()` never called → map appears frozen after returning to foreground; `onLowMemory()` never called → map cannot shed tile cache under memory pressure → OOM risk.
+**A. No lifecycle plugin and no manual calls (bug).** `MapView` has no lifecycle forwarding at all. Flag and explain consequences: `onStop()` never called → GL context runs in background, drains battery; `onDestroy()` never called → GL resources, tile cache, and observers are never released → memory leak on every screen exit; `onStart()` never called → map appears frozen after returning to foreground; `onLowMemory()` never called → map cannot shed tile cache under memory pressure → OOM risk; `onResume()` never called → a call the `MapView` KDoc requires is skipped.
 
-**B. Manual calls present but incomplete (bug).** Manual forwarding is used but not all four calls are present — flag the missing ones. Any missing call causes the corresponding consequence above.
+**B. Manual calls present but incomplete (bug).** Manual forwarding is used but not all five calls are present — flag the missing ones. Any missing call causes the corresponding consequence above.
 
-**C. Manual calls present and complete (surface to Mapbox).** All four calls are forwarded manually. Do not flag as a bug. Report to Mapbox as noteworthy: manual lifecycle wiring is fragile (easy to miss a call in future refactors, order-dependent, does not auto-adapt to lifecycle changes). Recommend migrating to the lifecycle plugin (MAPS-A7).
+**C. Manual calls present and complete (surface to Mapbox).** All five calls are forwarded manually. Do not flag as a bug. Report to Mapbox as noteworthy: manual lifecycle wiring is fragile (easy to miss a call in future refactors, order-dependent, does not auto-adapt to lifecycle changes). Recommend migrating to the lifecycle plugin (MAPS-A7).
 
 Also flag in all cases: `MapView` stored in a `ViewModel`, `Application`, a static field, **or any process-scoped DI binding** (Dagger/Hilt `@Singleton`, Koin `single`, a manually held app-scoped object) — same process lifetime, same consequence as a static field, and far more common in modern Android. Retaining a `MapView` past `onDestroy` also retains an invalid `MapboxMap`, which the SDK documents as a native-memory leak; it will not show up in a Java-heap leak trace.
 
@@ -684,6 +686,8 @@ Report: file:line | antipattern ID | current pattern | recommended fix.
 Grounding: antipatterns MAPS-B-HYGIENE-1, MAPS-B-HYGIENE-2, MAPS-B-HYGIENE-3.
 
 1. MAPS-B-HYGIENE-1: find every Activity, Fragment, or custom View holding a MapView field.
+   Skip Compose MapboxMap { }: the extension disables the lifecycle plugin and forwards the
+   lifecycle itself (mapView.lifecycle in MapEffect throws PluginDisabledException since 11.35).
    First determine plugin presence the right way: is MAPBOX_LIFECYCLE_PLUGIN_ID in the plugin
    list passed to MapInitOptions (it is in defaultPluginList unless the app subtracted it)?
    Do not infer absence from a missing mapView.lifecycle call site.
@@ -693,9 +697,9 @@ Grounding: antipatterns MAPS-B-HYGIENE-1, MAPS-B-HYGIENE-2, MAPS-B-HYGIENE-3.
    (a) Bug — no lifecycle plugin and no manual calls: flag; explain GL leak, battery drain, frozen
        map, OOM risk. Escalate if MapView is in ViewModel / Application / static field / a
        process-scoped DI binding (@Singleton, Koin single).
-   (b) Bug — manual calls present but incomplete: flag which of onStart/onStop/onDestroy/onLowMemory
-       is missing.
-   (c) Surface to Mapbox — all four manual calls present: report as fragile pattern; recommend
+   (b) Bug — manual calls present but incomplete: flag which of onStart/onResume/onStop/onDestroy/
+       onLowMemory is missing.
+   (c) Surface to Mapbox — all five manual calls present: report as fragile pattern; recommend
        lifecycle plugin (MAPS-A7).
    When the plugin is in use, also flag app-side teardown in onDestroyView that calls back into
    the map (removing listeners, setting a location provider, cancelling animators): the view

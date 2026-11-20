@@ -18,7 +18,13 @@ codex plugin marketplace list
 
 Then restart Codex and install the `mapbox` plugin from the `Mapbox Agent Skills` marketplace.
 
-The generated `plugins/mapbox/skills/` and `plugins/mapbox/.mcp.json` files are ignored by git.
+The generated `plugins/mapbox/skills/` and `plugins/mapbox/.mcp.json` files are ignored by git. The Codex/ChatGPT package ships only the `mapbox` MCP server, because OpenAI connects one MCP server per submitted plugin.
+
+### Plugin manifests and pre-release testing
+
+Every plugin manifest (`.claude-plugin/`, `.plugin/`, `.mcp.json`, `.agents/plugins/marketplace.json`, `plugins/mapbox/.codex-plugin/plugin.json`) is generated from `plugin.config.json`. Edit that file, then run `npm run build:plugin`; `npm run check` fails if a generated file was edited by hand.
+
+To test an unreleased MCP server build as a plugin, build a staging or local package with `npm run build:plugin -- --env staging` and follow [docs/prerelease-qa.md](docs/prerelease-qa.md).
 
 ### Open Plugins (Cursor, Codex, GitHub Copilot, Claude Code)
 

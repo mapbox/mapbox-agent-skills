@@ -426,7 +426,7 @@ Reports the declared and resolved version of every Mapbox dependency, the module
 **Use when:**
 
 - Answering "what do we use from Mapbox?"
-- Sizing a version upgrade or migration before starting it
+- Comparing two runs, for example before and after a migration
 - Checking exactly which options the app passes, such as route request parameters
 
 **Key topics:**

@@ -168,7 +168,16 @@
     "tripprogress",
     "speedlimit",
     "androidauto",
-    "multileg"
+    "multileg",
+    "IPHONEOS",
+    "cocoapods",
+    "conformances",
+    "pbxproj",
+    "xcconfigs",
+    "xcodeproj",
+    "worktrees",
+    "nonisolated",
+    "Tuist"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

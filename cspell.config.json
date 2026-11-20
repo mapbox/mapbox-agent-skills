@@ -158,7 +158,10 @@
     "xxxhdpi",
     "yourapp",
     "yourusername",
-    "zoomend"
+    "zoomend",
+    "Cartfile",
+    "gradlew",
+    "Subclassing"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

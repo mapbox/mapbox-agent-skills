@@ -648,6 +648,32 @@ Covers API equivalents, coordinate order gotchas, pattern translations, and step
 
 ---
 
+### 🔄 mapbox-maps-v10-to-v11-migration
+
+**Migrate an iOS or Android app from Mapbox Maps SDK v10 to v11 with a coding agent.**
+
+Runs a five-step workflow: inventory every v10 symbol, plan the work by area with effort and blockers, migrate one area at a time with a build after each, verify, and report. Migrates to the current recommended v11 APIs instead of porting line by line, and never changes the app's style.
+
+**Use when:**
+
+- Upgrading an app from Maps SDK v10 to v11
+- Estimating how much work a v10 → v11 migration is
+- Fixing a build that broke after bumping to v11
+
+**Key topics:**
+
+- v10 → v11 mappings for iOS (UIKit, SwiftUI) and Android (Views, Jetpack Compose)
+- Tap handling → Featureset Interactions; selection by source rewrite → Feature State
+- Typed events and subscription tokens
+- Behavior changes surfaced as decisions (default style now Standard, puck bearing, 3D puck scale)
+- Access token and resource options changes
+- Offline, location provider and HTTP interceptor changes
+- Inventory, plan, decision log and migration summary templates
+
+[View skill →](./skills/mapbox-maps-v10-to-v11-migration/SKILL.md)
+
+---
+
 ### 📊 mapbox-data-visualization-patterns
 
 **Patterns for visualizing data on Mapbox maps.**

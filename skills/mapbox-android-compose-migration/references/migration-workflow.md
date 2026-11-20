@@ -65,10 +65,10 @@ Effort scale: **S** under 1 hour, **M** half a day, **L** 1-2 days, **XL** more 
 ## Decision log
 
 ```markdown
-| ID  | Decision                         | Decided by                              | Code change                                            |
-| --- | -------------------------------- | --------------------------------------- | ------------------------------------------------------ |
-| D1  | Custom style in the `style` slot | developer                               | `MapStyle(style = STORE_STYLE)` in StoreMapScreen.kt   |
-| D2  | Compass position kept            | default (no answer, View behavior kept) | `Compass(contentPadding = PaddingValues(top = 80.dp))` |
+| ID  | Decision                         | Decided by                              | Code change                                                                                     |
+| --- | -------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| D1  | Custom style in the `style` slot | developer                               | `MapStyle(style = STORE_STYLE)` in StoreMapScreen.kt                                            |
+| D2  | Compass position kept            | default (no answer, View behavior kept) | `Compass(contentPadding = PaddingValues(start = 4.dp, top = 80.dp, end = 4.dp, bottom = 4.dp))` |
 ```
 
 When the developer doesn't answer, write "default (no answer, View behavior kept)" and match the View screen.

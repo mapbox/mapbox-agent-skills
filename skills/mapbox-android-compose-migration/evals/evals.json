@@ -9,7 +9,7 @@
         "Uses the MapboxMap composable and passes the same style URI through the style slot, e.g. style = { MapStyle(style = \"mapbox://styles/acme/store-style\") }, not style = \"...\" as a string and not Standard",
         "Moves the XML camera attributes to rememberMapViewportState { setCameraOptions { center(...); zoom(12.0) } }",
         "Deletes the manual mapView.onStart/onStop/onDestroy calls because the MapboxMap composable handles lifecycle",
-        "Keeps the compass 80dp from the top via the compass slot, e.g. compass = { Compass(contentPadding = PaddingValues(top = 80.dp)) }, or flags the ornament position as a behavior change to decide",
+        "Keeps the compass 80dp from the top via the compass slot, e.g. compass = { Compass(contentPadding = PaddingValues(start = 4.dp, top = 80.dp, end = 4.dp, bottom = 4.dp)) }, keeping the 4dp View default on the other sides, or flags the ornament position as a behavior change to decide",
         "Mentions that the camera now survives rotation (rememberMapViewportState is saveable) as a behavior change"
       ]
     },

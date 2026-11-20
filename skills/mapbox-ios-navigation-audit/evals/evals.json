@@ -1,0 +1,37 @@
+{
+  "skill_name": "mapbox-ios-navigation-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're on Mapbox Navigation SDK 3.30 for iOS. On our preview screen we add a UILongPressGestureRecognizer to navigationMapView to request a route, and since the v3 upgrade long press does nothing. In the guidance screen we show the ETA with `_ = provider.mapboxNavigation.navigation().routeProgress.sink { state in self.label.text = self.remainingDistance(from: state) }`, where remainingDistance sums the remaining step distances. What's wrong here?",
+      "expectations": [
+        "Flags the app's gesture recognizer as NAVIOS-B-MAP-1: NavigationMapView installs its own handling, so the app's recognizer competes with it, and recommends NavigationMapViewDelegate navigationMapView(_:userDidLongTap:) instead",
+        "Flags the dropped AnyCancellable as NAVIOS-B-COMBINE-1: the subscription is cancelled at once, so the label never updates",
+        "Flags the hand-computed remaining distance as NAVIOS-B-PROGRESS-1 and recommends routeProgress.distanceRemaining (or the leg or step progress fields)",
+        "Does not recommend adding .receive(on: DispatchQueue.main): navigation publishers already emit on the main actor",
+        "Cites NAVIOS IDs and gives confidence and false-positive risk for each finding"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Please audit our iOS app's Mapbox integration. We use Navigation SDK 3.35 with Maps SDK 11.35: a custom preview screen built on NavigationMapView, NavigationViewController for guidance, and CarPlay. Don't change any code yet.",
+      "expectations": [
+        "Uses references/navigation-ios.md together with mapbox-ios-maps-audit (maps-ios.md) for the map layer, and states which checks apply and which are skipped",
+        "Runs the inventories first (NAVIOS-P1 and MAPSIOS-P1), including where MapboxNavigationProvider is created and owned, and every @_spi or _Private import",
+        "Checks the provider and session lifecycle (NAVIOS-B-PROVIDER-1, NAVIOS-B-PROVIDER-2), including Free Drive being restarted after NavigationViewController is dismissed",
+        "Applies the NavigationMapView exceptions to the Maps checks: doesn't recommend makeFollowPuckViewportState or mapView.viewport on a NavigationMapView, and uses NAVIOS-B-MAP-2 for camera conflicts",
+        "Reports in the output schema with NAVIOS and MAPSIOS IDs kept apart, ordered by the references' priority, and doesn't edit code"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our iOS navigation app (Navigation SDK 3.28) crashes with 'MapboxNavigationProvider was instantiated twice' when the user opens the navigation screen a second time. Each NavigationScreenViewController creates its own MapboxNavigationProvider in viewDidLoad and subscribes with `navigation.routeProgress.sink { self.render($0) }.store(in: &cancellables)`.",
+      "expectations": [
+        "Identifies NAVIOS-B-PROVIDER-1: only one provider may be alive, and the first screen's provider is still alive when the second screen creates its own",
+        "Identifies the strong self in the stored sink (NAVIOS-B-COMBINE-2) as a reason the first screen and its provider are never deallocated, and recommends [weak self]",
+        "Recommends one app-wide provider owner, or making sure each screen is released before the next is created, and building NavigationOptions(mapboxNavigation:voiceController:eventsManager:) from that provider rather than NavigationOptions()",
+        "Answers the scoped question directly instead of running the full audit workflow, and offers a full audit as a follow-up"
+      ]
+    }
+  ]
+}

@@ -15,7 +15,7 @@ The audit finds three kinds of issues:
 
 **Reference file:** `references/maps-ios.md`, ID prefix `MAPSIOS`, minimum version Maps SDK 11.13.0. It has a **Part A** catalog (current APIs, or what the SDK provides), a **Part B** list of antipatterns, and **Part C** checks (prompts) that drive the audit, plus a priority order for the report.
 
-For Android, use `mapbox-android-maps-audit` (and `mapbox-android-navigation-audit` for Navigation SDK v3).
+For a navigation app, also run `mapbox-ios-navigation-audit` (ID prefix `NAVIOS`). The prefixes keep the findings apart in one report. For Android, use `mapbox-android-maps-audit`.
 
 ## When to use
 
@@ -26,7 +26,7 @@ For Android, use `mapbox-android-maps-audit` (and `mapbox-android-navigation-aud
 **Not covered:**
 
 - Apps below Maps SDK 11.13.0. A Maps v10 app needs a migration first: use `mapbox-ios-maps-v10-to-v11-migration`.
-- Navigation SDK for iOS and the Search SDK. There is no reference for them yet. Say so instead of improvising checks.
+- The Search SDK. There is no reference for it yet. Say so instead of improvising checks.
 - Flutter, React Native and web apps
 - Choosing a map style or moving to Mapbox Standard. That is a design decision, not a finding.
 - Pricing, licensing and account questions
@@ -73,7 +73,7 @@ Run the full workflow below when the developer asks for an audit, review or heal
 
 ### Step 1: Scope
 
-1. Find the Maps SDK version, and any other Mapbox SDKs the app depends on
+1. Find the Maps SDK version, and any other Mapbox SDKs the app depends on. If the app uses Navigation SDK v3, plan to run `mapbox-ios-navigation-audit` alongside this audit, and read its list of Maps checks that work differently on a `NavigationMapView`.
 2. Note each map's UI surface (UIKit `MapView`, SwiftUI `Map`) and whether the app uses Mapbox Standard
 3. Tell the developer which checks apply, which checks you'll skip and why, and what the report will contain (the outline in step 5)
 
@@ -136,4 +136,5 @@ When the developer asks to fix findings:
 ## Related skills
 
 - `mapbox-ios-maps-v10-to-v11-migration`: run this first on apps below Maps v11
+- `mapbox-ios-navigation-audit`: the Navigation SDK v3 audit, run alongside this one for navigation apps
 - `mapbox-ios-patterns`: how to build features correctly in the first place

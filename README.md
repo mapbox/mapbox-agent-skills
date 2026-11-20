@@ -483,6 +483,28 @@ Runs alongside `mapbox-android-maps-audit`, which covers the map layer. Finds ro
 
 ---
 
+### 🩺 mapbox-ios-navigation-audit
+
+**Audit an iOS app's Mapbox Navigation SDK v3 integration with a coding agent.**
+
+Runs alongside `mapbox-ios-maps-audit`, which covers the map layer. Finds features the app rebuilt that the SDK provides, provider and session lifecycle problems, dropped Combine subscriptions and Swift concurrency mistakes.
+
+**Use when:**
+
+- Reviewing or health-checking a Navigation SDK v3 integration on iOS
+- Following up a Navigation v2 → v3 migration
+- Chasing crashes, leaks or lifecycle problems in navigation screens
+
+**Key topics:**
+
+- Provider and session lifecycle, Combine subscriptions, Swift concurrency
+- Route progress hot path and route management
+- Map gestures and camera on `NavigationMapView`, voice guidance and SPI use
+
+[View skill →](./skills/mapbox-ios-navigation-audit/SKILL.md)
+
+---
+
 ### 📋 mapbox-android-sdk-inventory
 
 **Read-only inventory of what an Android app uses from the Mapbox SDKs today.**

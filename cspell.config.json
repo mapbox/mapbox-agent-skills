@@ -208,7 +208,9 @@
     "subviews",
     "teardowns",
     "VANN",
-    "versionless"
+    "versionless",
+    "NAVIOS",
+    "acception"
   ],
   "ignorePaths": ["node_modules", "package-lock.json", ".git"]
 }

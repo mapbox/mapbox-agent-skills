@@ -20,7 +20,7 @@
         "Says no: each PointAnnotation composable creates its own annotation manager (its own source and layer), so 300 markers would mean 300 layers",
         "Recommends PointAnnotationGroup(annotations = optionsList) to keep a single layer like the View manager",
         "Handles taps with interactionsState.onClicked { annotation -> ... } rather than the deprecated onClick parameter",
-        "Uses rememberIconImage (or IconImage) for the icon and warns that a point annotation without iconImage draws nothing",
+        "Uses rememberIconImage (or IconImage) for the icon and notes that a point annotation needs iconImage or textField to draw anything",
         "Advises remembering the options list (e.g. remember(stores)) so it isn't rebuilt on every recomposition"
       ]
     },

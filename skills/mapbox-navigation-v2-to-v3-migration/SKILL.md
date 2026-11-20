@@ -1,6 +1,6 @@
 ---
 name: mapbox-navigation-v2-to-v3-migration
-description: Migrate an iOS or Android app from Mapbox Navigation SDK v2 to v3 with a coding agent. Inventories v2 usage, plans the work by area with effort and blockers, migrates one area at a time, and surfaces every behavior change (reroute veto, arrival callbacks, leg advancing) as a developer decision. Maps each v2 hook the app uses for its own telemetry to its v3 source or says it is gone, and maps Drop-in UI to the v3 UI components. Hands map-layer changes to mapbox-maps-v10-to-v11-migration. Use when upgrading Navigation SDK v2, estimating a v2 to v3 migration, or fixing a build after bumping to v3.
+description: Migrate an iOS or Android app from Mapbox Navigation SDK v2 to v3 with a coding agent. Inventories v2 usage, plans the work by area with effort and blockers, migrates one area at a time, and surfaces every behavior change (reroute veto, arrival callbacks, leg advancing) as a developer decision. Maps each v2 hook the app uses for its own telemetry to its v3 source or says it is gone. On Android, replaces the removed Drop-in UI by copying the public v2 Drop-in sources into the app, or with the UX Framework or the v3 UI components. Hands map-layer changes to mapbox-maps-v10-to-v11-migration. Use when upgrading Navigation SDK v2, estimating a v2 to v3 migration, or fixing a build after bumping to v3.
 ---
 
 # Mapbox Navigation SDK v2 → v3 Migration
@@ -14,6 +14,7 @@ Navigation SDK v3 requires Maps SDK v11. Every app on Navigation v2 is also on M
 - `references/migration-workflow.md`: templates for the inventory, plan, decision log, telemetry map and migration summary
 - `references/ios.md`: v2 → v3 mappings for iOS (`MapboxCoreNavigation` → `MapboxNavigationCore`, `MapboxNavigation` → `MapboxNavigationUIKit`)
 - `references/android.md`: v2 → v3 mappings for Android (Kotlin, Java)
+- `references/android-drop-in-port.md`: how to copy the public v2 Drop-in UI sources into the app and adapt it to v3 (Android)
 
 Load the reference for the platform you are migrating. A project with both platforms gets two separate migrations, one per platform.
 
@@ -86,7 +87,11 @@ Keep the app's map style, traffic data, and route request options exactly as the
 ### 5. Drop-in UI
 
 - **iOS:** v2 `NavigationViewController` and `NavigationView` (library `MapboxNavigation`) move to the same components in `MapboxNavigationUIKit` v3
-- **Android:** v2 Drop-in UI (`NavigationView`) has no in-place port. Present the choice as a decision: the v3 UX Framework (in beta at the time of writing, and Drop-in customizations don't carry over), or the app's own UI built on the v3 UI components. Inventory every Drop-in customization so it can be checked against the option chosen.
+- **Android:** v2 Drop-in UI (`NavigationView`) isn't shipped in v3. Present the choice as a decision, with these options:
+  1. **Copy the v2 Drop-in UI sources into the app and adapt them to v3** (recommended). The sources are public in the v2 repository, under the Mapbox Terms of Service (not an open source license). The app keeps its screens, layouts and Drop-in customizations with few code changes, and can move to Compose later as a separate project. Follow `references/android-drop-in-port.md`.
+  2. **The v3 UX Framework.** A different product, in beta at the time of writing. Drop-in customizations don't carry over.
+  3. **The app's own UI** built on the v3 UI components (`ui-components`, `ui-maps`), in Views or Compose
+- Inventory every Drop-in customization so it can be checked against the option chosen. Option 1 needs the developer's explicit yes. In the question, link the v2 [`LICENSE.md`](https://github.com/mapbox/mapbox-navigation-android/blob/lts/v2/LICENSE.md) and state its terms: it requires an active Mapbox account, allows use and modification only with Mapbox products, and doesn't grant unrestricted rights to redistribute or sublicense the code, and modifications that change or interfere with marked portions related to billing, accounting or data collection are not authorized. If the developer doesn't answer, don't copy: migrate everything else and report Drop-in as an open decision.
 - If the developer asks for their own UI instead, build it on the v3 core APIs and the route line and camera components, and list what the Drop-in UI did that the app now owns
 
 Customization hooks that v3 removed (on iOS: CarPlay route and waypoint layer customization, route shape delegate methods; the waypoint layer methods on `NavigationViewControllerDelegate` and `NavigationMapViewDelegate` remain) are behavior changes. Log them as decisions.
@@ -105,7 +110,7 @@ The same rule covers **private modules** (`MapboxCommon_Private`, `MapboxNavigat
 
 ### 7. Target the latest v3 release
 
-Use the latest stable 3.x unless the developer pins a version. The v3 API changed during the 3.x line. Check each Target entry's minimum version when the developer pins an older 3.x.
+Use the latest stable 3.x unless the developer pins a version. The v3 API changed during the 3.x line. Check each Target entry's minimum version when the developer pins an older 3.x. Pair it with the Maps SDK v11 version from the release notes.
 
 To find it, don't sort release tags as strings: the tag format changed during 3.x (iOS: `v3.27.3`, then `3.28.0`). Strip a leading `v`, drop pre-releases (`-rc`, `-beta`), and compare as versions. Simpler on iOS: add the package with "up to next major" from `3.0.0` and read the resolved version from `Package.resolved`.
 
@@ -135,6 +140,8 @@ Output the inventory and the **telemetry hook list** (templates in `references/m
 - **Callbacks that return a decision** (`Bool` or modified options). These are almost always behavior changes.
 - **Observers used for the app's own telemetry**
 - v2 code that already uses APIs deprecated in v2. These were removed in v3.
+- App code that imports SDK `internal` packages (Android `…internal…`, for example `flowLocationMatcherResult` or `ifNonNull`). They often still exist in v3 but can change in any release. Report them as pre-existing risks; replace them only where the v3 build breaks.
+- The build toolchain (Android: Android Gradle Plugin, Gradle, Kotlin, JDK, compile SDK). v3 can force an upgrade, which is part of area 1.
 
 If the app can run on a simulator or emulator, offer to take **before screenshots** on v2 of the main navigation screens: route preview, active guidance with a maneuver banner, and arrival. Use route simulation so the after screenshots in step 4 can repeat the same route and position.
 
@@ -142,7 +149,7 @@ If the app can run on a simulator or emulator, offer to take **before screenshot
 
 Group the work by area, in this order:
 
-1. Dependencies, setup, access token and SDK configuration
+1. Dependencies, build toolchain, setup, access token and SDK configuration
 2. Navigation instance and lifecycle
 3. Route requests and route objects
 4. Trip session (free drive, active guidance) and location
@@ -162,7 +169,7 @@ The plan on its own answers "how much work is this?". If that was the question, 
 
 Bump Navigation v3 and Maps v11 together, since Navigation v3 pulls in Maps v11. The whole app stops compiling, and it won't compile again until **every** area, including the map layer, is migrated. Fixing one area doesn't make the build green, so don't wait for a passing build between areas. Instead:
 
-1. Bump the dependencies. Build once (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant) and save the full error list as the baseline.
+1. Bump the dependencies, and the build toolchain if v3 requires it (Android: see Build toolchain in the platform reference). Build once (iOS: `xcodebuild` for the app scheme; Android: `./gradlew assembleDebug` or the app's variant) and save the full error list as the baseline. Toolchain errors come first; fix them before counting SDK errors.
 2. For each area in plan order, apply the mappings from the platform reference using the **Target** column. For the map layer, apply the Maps skill's mappings. The area is done when none of the remaining errors are in its files or symbols. Rebuild to refresh the list. New errors can appear as earlier ones clear. In a single-module app the compiler often stops at the first batch of failing files, so the baseline isn't the total: read each file in the area and migrate it, and use the build to confirm.
 3. Update the telemetry map as you migrate each hook
 4. Show the developer the diff summary for the area
@@ -172,7 +179,7 @@ If the app already has navigation behind its own interface (see Staged rollout),
 
 ### Step 4: Verify
 
-- [ ] The app builds for every target and variant that uses navigation
+- [ ] The app builds for every target and variant that uses navigation, **including release builds**. Android: code shrinking (R8) can fail only there.
 - [ ] The map renders with the **same style** as before
 - [ ] If before screenshots were taken in step 1, take after screenshots of the same screens on the same simulated route and compare them. They won't match pixel for pixel. Look for unintended changes (route line, maneuver banner, puck, camera, map style) and list each one, with the decision it comes from or as a regression
 - [ ] No v2-only symbols remain. Re-run both inventories.
@@ -186,6 +193,7 @@ If the app already has navigation behind its own interface (see Staged rollout),
 
 If you can run the app with route simulation, check:
 
+- the simulated location shows on the map, and moves along the route once guidance starts. A location that never appears, or a puck that stays at the origin, compiles fine but is a simulation setup bug (Android: see Trip session and location);
 - a route is requested and drawn;
 - guidance starts and instructions are spoken and shown;
 - a forced off-route triggers a reroute;
@@ -208,7 +216,7 @@ Write the migration summary from `references/migration-workflow.md`:
 - `[VERIFY WITH MAPBOX]` items
 - Pre-existing issues outside the migration's scope (patterns that work in v3 but are known to be costly or fragile). List them, don't fix them.
 - Recommended next step: audit the app's Navigation and Maps SDK integration against v3 and v11 best practices
-- **Android apps on the View system:** recommend moving to Jetpack Compose as a separate follow-up, since Compose is the standard Android UI toolkit. The map moves to the `MapboxMap` composable from the Mapbox Compose extension, and Google's [migrate XML views to Jetpack Compose](https://developer.android.com/agents/skills/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/skill) skill covers the rest of the screen. Navigation SDK v3 has no Compose UI components: its `ui-components` (maneuver, trip progress, speed info, buttons) are Views, hosted in `AndroidView` or rebuilt in Compose. Don't do it as part of this migration. If the developer chose the app's own UI over Drop-in UI (rule 5), building that UI in Compose is a reasonable choice.
+- **Android apps on the View system:** recommend moving to Jetpack Compose as a separate follow-up, since Compose is the standard Android UI toolkit. The map moves to the `MapboxMap` composable from the Mapbox Compose extension, and Google's [migrate XML views to Jetpack Compose](https://developer.android.com/agents/skills/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/skill) skill covers the rest of the screen. Navigation SDK v3 has no Compose UI components: its `ui-components` (maneuver, trip progress, speed info, buttons) are Views, hosted in `AndroidView` or rebuilt in Compose. Don't do it as part of this migration. If the app copied the v2 Drop-in UI (rule 5, option 1), the copied screens are the starting point for that follow-up. If the developer chose the app's own UI, building that UI in Compose is a reasonable choice.
 
 The summary should be short enough for a PM to read: areas, effort, blockers, decisions, telemetry gaps.
 
@@ -230,4 +238,4 @@ If the developer needs v2 and v3 side by side (A/B test, fast rollback), don't t
 | Reroute veto   | `shouldRerouteFrom -> Bool` → none; reroute detection can only be turned off entirely                              | No custom reroute controller; turn rerouting off with `setRerouteEnabled(false)`                         |
 | Leg advancing  | `didArriveAt -> Bool` → `CoreConfig.multilegAdvancing`                                                             | `ArrivalController` / `navigateNextRouteLeg`: see the Android reference                                  |
 | Custom routing | Custom routing provider → not available                                                                            | Custom router → removed; built-in hybrid router                                                          |
-| Drop-in UI     | `MapboxNavigation` UI → `MapboxNavigationUIKit`                                                                    | Drop-in `NavigationView` → UX Framework (beta) or the app's own UI                                       |
+| Drop-in UI     | `MapboxNavigation` UI → `MapboxNavigationUIKit`                                                                    | Drop-in `NavigationView` → copy of the v2 Drop-in sources, UX Framework (beta) or the app's own UI       |

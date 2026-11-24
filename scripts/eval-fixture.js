@@ -34,6 +34,21 @@ const AGENT_TIMEOUT_MS = parseInt(
   10
 );
 const BUILD_TIMEOUT_MS = 20 * 60 * 1000;
+const CLAUDE_ALLOWED_TOOLS = [
+  'Read',
+  'Edit',
+  'Write',
+  'Glob',
+  'Grep',
+  'Skill',
+  'Bash(./gradlew:*)',
+  'Bash(ls:*)',
+  'Bash(cat:*)',
+  'Bash(grep:*)',
+  'Bash(find:*)',
+  'Bash(git diff:*)',
+  'Bash(git status:*)'
+];
 const SKIP_DIRS = ['build', '.gradle', '.git', '.claude', '.agents', '.codex'];
 
 function parseArgs(argv) {
@@ -132,7 +147,12 @@ function runAgent(agent, ws, prompt, model) {
       prompt,
       '--output-format',
       'json',
-      '--dangerously-skip-permissions',
+      // Edits stay inside the workspace; the shell is limited to the build
+      // and read-only commands. Anything else is denied, not prompted.
+      '--permission-mode',
+      'acceptEdits',
+      '--allowedTools',
+      CLAUDE_ALLOWED_TOOLS.join(','),
       '--setting-sources',
       'project',
       '--strict-mcp-config',
@@ -191,6 +211,10 @@ function sourceFiles(ws, globs) {
   return [...files].sort();
 }
 
+// Whole-line comments don't count: "Replaces queryRenderedFeatures" isn't a call,
+// and a style URL kept only in a comment isn't preserved.
+const COMMENT_LINE = /^\s*(\/\/|\/\*|\*|<!--|#)/;
+
 function patternHits(ws, files, pattern) {
   const re = new RegExp(pattern);
   const hits = [];
@@ -198,7 +222,8 @@ function patternHits(ws, files, pattern) {
     readFileSync(join(ws, f), 'utf-8')
       .split('\n')
       .forEach((line, i) => {
-        if (re.test(line)) hits.push(`${f}:${i + 1}`);
+        if (!COMMENT_LINE.test(line) && re.test(line))
+          hits.push(`${f}:${i + 1}`);
       });
   }
   return hits;

@@ -21,6 +21,8 @@ Each run copies the fixture into a temp directory, installs the skill in `.claud
 | Preserve    | Each pattern still appears (style URL, the app's analytics events)     |
 | Report      | A judge model scores the migration report against `reportExpectations` |
 
+With `--agent claude`, the agent runs with `--permission-mode acceptEdits` and an allowlist: file tools, `./gradlew`, and read-only shell commands. Anything else is denied, not prompted. `--agent codex` runs without its sandbox, because Gradle needs the network and `~/.gradle`; the workspace is a throwaway copy.
+
 Results go to `fixtures/results/` (not committed). Pass `--keep` to keep the migrated workspace for inspection.
 
 ## Requirements

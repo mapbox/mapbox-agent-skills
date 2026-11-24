@@ -19,3 +19,6 @@ evals/latest.json
 
 
 .env
+
+# Fixture eval results and workspaces
+fixtures/results/

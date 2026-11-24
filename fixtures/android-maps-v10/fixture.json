@@ -1,0 +1,67 @@
+{
+  "name": "android-maps-v10",
+  "description": "Store finder on Maps SDK v10.19 with an XML MapView, a custom style, a GeoJSON circle layer, selection by rebuilding the source, tap handling with queryRenderedFeatures, point annotations with click handling, the location puck, and camera-change and map-idle analytics hooks.",
+  "skill": "mapbox-android-maps-v10-to-v11-migration",
+  "prompt": "Migrate this Android app from Mapbox Maps SDK v10 to v11. Make the code changes, build the app with ./gradlew assembleDebug until it passes, and write your migration report to MIGRATION_REPORT.md in the project root.",
+  "build": "./gradlew -q assembleDebug",
+  "sourceGlobs": ["*.kts", "app/**/*.kt", "app/**/*.kts", "app/**/*.xml"],
+  "reportFile": "MIGRATION_REPORT.md",
+  "checks": {
+    "required": [
+      {
+        "pattern": "com\\.mapbox\\.maps:android(-ndk27)?:11\\.",
+        "why": "Depends on Maps SDK v11"
+      }
+    ],
+    "forbidden": [
+      {
+        "pattern": "com\\.mapbox\\.maps:android:10\\.",
+        "why": "Still on the v10 artifact"
+      },
+      {
+        "pattern": "OnCameraChangeListener|addOnCameraChangeListener",
+        "why": "v10 camera listener, removed in v11 (subscribeCameraChanged)"
+      },
+      {
+        "pattern": "OnMapIdleListener|addOnMapIdleListener",
+        "why": "v10 map-idle listener, removed in v11 (subscribeMapIdle)"
+      }
+    ],
+    "discouraged": [
+      {
+        "pattern": "getMapboxMap\\(",
+        "why": "Deprecated in v11; use mapView.mapboxMap"
+      },
+      {
+        "pattern": "queryRenderedFeatures",
+        "why": "Tap handling should move to Interactions (addInteraction) in v11"
+      },
+      {
+        "pattern": "getSourceAs<GeoJsonSource>",
+        "why": "Selection by rebuilding the source; Feature State is the current pattern"
+      }
+    ],
+    "preserve": [
+      {
+        "pattern": "mapbox://styles/example-org/clstorefinder01",
+        "why": "The app's own style URL must not change"
+      },
+      {
+        "pattern": "Analytics\\.log\\(\"map_idle\"",
+        "why": "The map-idle analytics event must still be logged"
+      },
+      {
+        "pattern": "Analytics\\.log\\(\"store_selected\"",
+        "why": "The store-selected analytics event must still be logged"
+      }
+    ]
+  },
+  "reportExpectations": [
+    "Lists the areas migrated (dependencies, camera and map events, tap handling, annotations, location puck, style and layers) with what changed in each",
+    "Raises the location puck bearing behavior as a decision for the developer instead of silently changing or dropping the bearing image",
+    "States that the app's custom style URL was kept and does not switch the app to Mapbox Standard",
+    "Says the camera-change and map-idle analytics hooks were moved to the v11 event API and still log the same events",
+    "Explains how tap handling and store selection were migrated (Interactions and Feature State, or why queryRenderedFeatures and the source rebuild were kept)",
+    "Recommends the post-migration audit (mapbox-android-maps-audit) or a best-practices review as a next step"
+  ]
+}

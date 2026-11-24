@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Store Finder</string>
+    <string name="mapbox_access_token" translatable="false">YOUR_MAPBOX_ACCESS_TOKEN</string>
+</resources>

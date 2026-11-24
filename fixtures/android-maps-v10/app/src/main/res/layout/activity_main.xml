@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.mapbox.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        mapbox:mapbox_cameraTargetLat="37.7749"
+        mapbox:mapbox_cameraTargetLng="-122.4194"
+        mapbox:mapbox_cameraZoom="12.0" />
+
+    <TextView
+        android:id="@+id/selectedStore"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#CCFFFFFF"
+        android:padding="16dp"
+        android:textSize="16sp" />
+</FrameLayout>

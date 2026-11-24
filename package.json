@@ -17,7 +17,8 @@
     "eval:diff": "node scripts/eval.js --diff",
     "eval:update-baseline": "node scripts/eval.js --update-baseline",
     "setup": "node scripts/setup-hooks.js",
-    "postinstall": "node scripts/setup-hooks.js"
+    "postinstall": "node scripts/setup-hooks.js",
+    "eval:fixture": "node scripts/eval-fixture.js"
   },
   "keywords": [
     "agent-skills",

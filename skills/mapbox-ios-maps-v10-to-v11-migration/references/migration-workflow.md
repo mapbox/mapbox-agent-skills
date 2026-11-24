@@ -76,6 +76,8 @@ When the developer doesn't answer, write "default (no answer, v10 behavior kept)
 
 Keep it to one screen. A PM should be able to read it without opening the code.
 
+Under **App events kept**, list every SDK callback that feeds the app's analytics or logs (camera changes, map idle, taps, style load), where it comes from in v11, and whether the app still logs the same event with the same data. Leave the section out when there are none.
+
 ```markdown
 ## Maps SDK v10 → v11 migration summary
 
@@ -88,6 +90,12 @@ Keep it to one screen. A PM should be able to read it without opening the code.
 | -------------------- | ----- | ---------------------- | ---------------------------------- |
 | Events and observers | 6     | M → M                  | Moved to typed events              |
 | Gestures             | 2     | M → L                  | Tap handling moved to interactions |
+
+### App events kept
+
+| App event or log | v10 source                                              | v11 source                                  | Same data |
+| ---------------- | ------------------------------------------------------- | ------------------------------------------- | --------- |
+| `map_idle`       | iOS `onEvery(.mapIdle)`, Android `addOnMapIdleListener` | iOS `onMapIdle`, Android `subscribeMapIdle` | yes       |
 
 ### Behavior decisions
 

@@ -99,7 +99,7 @@ The same rule covers **private modules** (`MapboxCommon_Private`, `MapboxNavigat
 
 ### 7. Target the latest v3 release
 
-Use the latest stable 3.x unless the developer pins a version. The v3 API changed during the 3.x line. Check each Target entry's minimum version when the developer pins an older 3.x. Pair it with the Maps SDK v11 version from the release notes.
+Use the latest stable 3.x unless the developer pins a version. Look it up on the SDK's GitHub releases (`gh release list -R mapbox/mapbox-navigation-ios --exclude-pre-releases`, or <https://github.com/mapbox/mapbox-navigation-ios/releases>). If you can't confirm the latest version, ask the developer, or use the newest version you could confirm and say in the summary that it may not be the latest. The v3 API changed during the 3.x line. Check each Target entry's minimum version when the developer pins an older 3.x. Pair it with the Maps SDK v11 version from the release notes.
 
 To find it, don't sort release tags as strings: the tag format changed during 3.x (`v3.27.3`, then `3.28.0`). Strip a leading `v`, drop pre-releases (`-rc`, `-beta`), and compare as versions. Simpler: add the package with "up to next major" from `3.0.0` and read the resolved version from `Package.resolved`.
 

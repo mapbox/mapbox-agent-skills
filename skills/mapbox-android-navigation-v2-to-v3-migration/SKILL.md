@@ -97,7 +97,7 @@ Only use v3 symbols that appear in `references/android.md`, the official migrati
 
 ### 7. Target the latest v3 release
 
-Use the latest stable 3.x unless the developer pins a version. The v3 API changed during the 3.x line. Check each Target entry's minimum version when the developer pins an older 3.x. Pair it with the Maps SDK v11 version from the release notes.
+Use the latest stable 3.x unless the developer pins a version. Look it up on the SDK's GitHub releases (`gh release list -R mapbox/mapbox-navigation-android --exclude-pre-releases`, or <https://github.com/mapbox/mapbox-navigation-android/releases>). The Mapbox Maven repository has no version listing, so don't guess version numbers and test which ones resolve. If you can't confirm the latest version, ask the developer, or use the newest version you could confirm and say in the summary that it may not be the latest. The v3 API changed during the 3.x line. Check each Target entry's minimum version when the developer pins an older 3.x. Pair it with the Maps SDK v11 version from the release notes.
 
 ### 8. Running without the developer
 

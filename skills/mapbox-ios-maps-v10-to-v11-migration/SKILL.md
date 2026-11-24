@@ -64,7 +64,7 @@ Only use v11 symbols that appear in `references/ios.md`, the official migration 
 
 ### 5. Target the latest v11 release
 
-Use the latest stable 11.x unless the developer pins a version. Several target APIs need a minimum v11 minor version (for example, Featureset Interactions are stable from 11.13, and `LocationManager.dataModel` needs 11.17). If the developer pins an older 11.x, check each Target entry's minimum version and fall back to the entry's "older 11.x" alternative.
+Use the latest stable 11.x unless the developer pins a version. Look it up on the SDK's GitHub releases (`gh release list -R mapbox/mapbox-maps-ios --exclude-pre-releases`, or <https://github.com/mapbox/mapbox-maps-ios/releases>). If you can't confirm the latest version, ask the developer, or use the newest version you could confirm and say in the summary that it may not be the latest. Several target APIs need a minimum v11 minor version (for example, Featureset Interactions are stable from 11.13, and `LocationManager.dataModel` needs 11.17). If the developer pins an older 11.x, check each Target entry's minimum version and fall back to the entry's "older 11.x" alternative.
 
 ## Workflow
 
